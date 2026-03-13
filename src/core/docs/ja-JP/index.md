@@ -12,7 +12,7 @@ x-i18n:
   workflow: 15
 ---
 
-# Must-b 🦞
+# Must-b 
 
 <p align="center">
     <img

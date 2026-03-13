@@ -219,7 +219,7 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/agent", "docs.must-b.ai/cli/agent
         `
 ${theme.heading("Examples:")}
 ${formatHelpExamples([
-  ['must-b agents set-identity --agent main --name "Must-b" --emoji "🦞"', "Set name + emoji."],
+  ['must-b agents set-identity --agent main --name "Must-b" --emoji ""', "Set name + emoji."],
   ["must-b agents set-identity --agent main --avatar avatars/must-b.png", "Set avatar path."],
   [
     "must-b agents set-identity --workspace ~/.must-b/workspace --from-identity",

@@ -159,7 +159,7 @@ describe("runCronIsolatedAgentTurn", () => {
 
       vi.mocked(runSubagentAnnounceFlow).mockClear();
       vi.mocked(deps.sendMessageTelegram).mockClear();
-      mockEmbeddedAgentPayloads([{ text: "HEARTBEAT_OK 🦞" }]);
+      mockEmbeddedAgentPayloads([{ text: "HEARTBEAT_OK " }]);
 
       const cfg = makeCfg(home, storePath);
       cfg.agents = {
@@ -191,7 +191,7 @@ describe("runCronIsolatedAgentTurn", () => {
       expect(deps.sendMessageTelegram).toHaveBeenCalledTimes(1);
       expect(deps.sendMessageTelegram).toHaveBeenCalledWith(
         "123",
-        "HEARTBEAT_OK 🦞",
+        "HEARTBEAT_OK ",
         expect.objectContaining({ accountId: undefined }),
       );
 
@@ -221,7 +221,7 @@ describe("runCronIsolatedAgentTurn", () => {
       expect(deps.sendMessageTelegram).toHaveBeenCalledTimes(1);
       expect(deps.sendMessageTelegram).toHaveBeenCalledWith(
         "123",
-        "HEARTBEAT_OK 🦞",
+        "HEARTBEAT_OK ",
         expect.objectContaining({ accountId: undefined }),
       );
       expect(callGateway).toHaveBeenCalledTimes(1);

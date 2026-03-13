@@ -216,7 +216,7 @@ describe("web processMessage inbound contract", () => {
           {
             id: "main",
             default: true,
-            identity: { name: "Mainbot", emoji: "🦞", theme: "space lobster" },
+            identity: { name: "Mainbot", emoji: "", theme: "space lobster" },
           },
         ],
       },

@@ -1,6 +1,6 @@
 # Contributing to Must-b
 
-Welcome to the lobster tank! 🦞
+Welcome to the lobster tank! 
 
 ## Quick Links
 

@@ -1,4 +1,4 @@
-# 🦞 Must-b — Personal AI Assistant
+# Must-b — Personal AI Assistant
 
 <p align="center">
     <picture>
@@ -482,7 +482,7 @@ Use these when you’re past the onboarding flow and want the deeper reference.
 
 ## Molty
 
-Must-b was built for **Molty**, a space lobster AI assistant. 🦞
+Must-b was built for **Molty**, a space lobster AI assistant. 
 by Peter Steinberger and the community.
 
 - [must-b.ai](https://must-b.ai)

@@ -58,7 +58,7 @@ must-b agents set-identity --workspace ~/.must-b/workspace --from-identity
 显式覆盖字段：
 
 ```bash
-must-b agents set-identity --agent main --name "Must-b" --emoji "🦞" --avatar avatars/must-b.png
+must-b agents set-identity --agent main --name "Must-b" --emoji "" --avatar avatars/must-b.png
 ```
 
 配置示例：
@@ -72,7 +72,7 @@ must-b agents set-identity --agent main --name "Must-b" --emoji "🦞" --avatar 
         identity: {
           name: "Must-b",
           theme: "space lobster",
-          emoji: "🦞",
+          emoji: "",
           avatar: "avatars/must-b.png",
         },
       },

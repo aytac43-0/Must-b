@@ -5,7 +5,7 @@ read_when:
 title: "Must-b"
 ---
 
-# Must-b 🦞
+# Must-b 
 
 <p align="center">
     <img

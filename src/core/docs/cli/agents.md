@@ -99,7 +99,7 @@ must-b agents set-identity --workspace ~/.must-b/workspace --from-identity
 Override fields explicitly:
 
 ```bash
-must-b agents set-identity --agent main --name "Must-b" --emoji "🦞" --avatar avatars/must-b.png
+must-b agents set-identity --agent main --name "Must-b" --emoji "" --avatar avatars/must-b.png
 ```
 
 Config sample:
@@ -113,7 +113,7 @@ Config sample:
         identity: {
           name: "Must-b",
           theme: "space lobster",
-          emoji: "🦞",
+          emoji: "",
           avatar: "avatars/must-b.png",
         },
       },

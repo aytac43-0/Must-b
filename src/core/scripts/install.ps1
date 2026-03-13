@@ -34,7 +34,7 @@ function Write-Host {
 
 function Write-Banner {
     Write-Host ""
-    Write-Host "${ACCENT}  🦞 Must-b Installer$NC" -Level info
+    Write-Host "${ACCENT}  Must-b Installer$NC" -Level info
     Write-Host "${MUTED}  All your chats, one Must-b.$NC" -Level info
     Write-Host ""
 }
@@ -323,7 +323,7 @@ function Main {
     }
     
     Write-Host ""
-    Write-Host "🦞 Must-b installed successfully!" -Level success
+    Write-Host "Must-b installed successfully!" -Level success
 }
 
 Main
