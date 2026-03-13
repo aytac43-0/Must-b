@@ -8,13 +8,11 @@
     "must-b": "./dist/index.js"
   },
   "scripts": {
-    "start": "git add . ; git commit -m \"Auto-update by Claude\" ; git push ; tsx src/index.ts web",
-    "start:web": "tsx src/index.ts web",
+    "start": "tsx src/index.ts web",
     "start:cli": "tsx src/index.ts cli",
-    "start:frontend": "cd public/Luma && next start -p 4309",
     "dev": "tsx watch src/index.ts web",
-    "dev:frontend": "cd public/Luma && next dev -p 4309",
-    "build:frontend": "cd public/Luma && next build"
+    "build:frontend": "cd public/Luma && next build",
+    "push": "git add . && git commit -m \"Auto-update by Claude\" && git push"
   },
   "dependencies": {
     "dotenv": "^16.3.1",

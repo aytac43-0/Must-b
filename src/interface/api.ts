@@ -21,7 +21,7 @@ export class ApiServer {
     logger: winston.Logger, 
     orchestrator: Orchestrator, 
     history: SessionHistory,
-    port: number = 4310
+    port: number = 4309
   ) {
     this.logger = logger;
     this.orchestrator = orchestrator;
@@ -39,7 +39,15 @@ export class ApiServer {
 
   private setupMiddleware() {
     this.app.use(express.json());
-    this.app.use(express.static(path.join(process.cwd(), 'public', 'Luma', 'public')));
+    const frontendOut = path.join(process.cwd(), 'public', 'Luma', 'out');
+    this.app.use(express.static(frontendOut));
+    // SPA fallback — serve index.html for all non-API routes
+    this.app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api/')) return next();
+      res.sendFile(path.join(frontendOut, 'index.html'), (err) => {
+        if (err) res.sendFile(path.join(frontendOut, '404.html'));
+      });
+    });
   }
 
   private setupRoutes() {
@@ -81,7 +89,7 @@ export class ApiServer {
 
   start() {
     this.server.listen(this.port, () => {
-      this.logger.info(`[Gateway] Must-b API live at http://localhost:${this.port} (Frontend: http://localhost:4309)`);
+      this.logger.info(`[Gateway] Must-b live at http://localhost:${this.port} — UI + API on single port`);
     });
   }
 }
