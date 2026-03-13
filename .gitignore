@@ -1,6 +1,5 @@
-# Dependencies
+# Dependencies (single root node_modules)
 node_modules/
-public/Luma/node_modules/
 
 # Build outputs
 dist/
