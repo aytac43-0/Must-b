@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Mail, Lock, User, Building, Bot, CheckCircle2 } from "lucide-react";
@@ -14,31 +14,13 @@ export default function RegisterPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const supabase = createClient();
+    const router = useRouter();
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
-
-        const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    full_name: fullName,
-                    company: company || null,
-                }
-            }
-        });
-
-        if (error) {
-            setError(error.message);
-            setLoading(false);
-        } else {
-            setIsSubmitted(true);
-            setLoading(false);
-        }
+        // Local mode: pass-through registration — go directly to dashboard
+        router.push("/app");
     };
 
     if (isSubmitted) {
