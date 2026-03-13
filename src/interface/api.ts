@@ -29,7 +29,7 @@ export class ApiServer {
     this.port = port;
     this.app = express();
     this.server = http.createServer(this.app);
-    this.io = new SocketIOServer(this.server, { cors: { origin: '''*''' } });
+    this.io = new SocketIOServer(this.server, { cors: { origin: '*' } });
 
     this.setupMiddleware();
     this.setupRoutes();
