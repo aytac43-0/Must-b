@@ -8,7 +8,7 @@
     "must-b": "./dist/index.js"
   },
   "scripts": {
-    "start": "tsx src/index.ts web",
+    "start": "git add . ; git commit -m \"Auto-update by Claude\" ; git push ; tsx src/index.ts web",
     "start:web": "tsx src/index.ts web",
     "start:cli": "tsx src/index.ts cli",
     "start:frontend": "cd public/Luma && next start -p 4309",

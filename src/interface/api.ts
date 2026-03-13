@@ -39,14 +39,7 @@ export class ApiServer {
 
   private setupMiddleware() {
     this.app.use(express.json());
-    // *** IMPORTANT: Adjust this path to point to your built Next.js output ***
-    // Example: path.join(process.cwd(), 'frontend', 'out') or path.join(process.cwd(), 'frontend', '.next', 'static') 
-    this.app.use(express.static(path.join(process.cwd(), 'public'))); // Keeping original for now, adjust if Next.js build is elsewhere
-    
-    // Fallback route to serve index.html from the built Next.js app to prevent "Cannot GET /"
-    this.app.get('/', (req, res) => {
-      res.sendFile(path.join(process.cwd(), 'frontend', 'out', 'index.html')); //*** ADJUST THIS PATH AS NEEDED ***
-    });
+    this.app.use(express.static(path.join(process.cwd(), 'public', 'Luma', 'public')));
   }
 
   private setupRoutes() {
