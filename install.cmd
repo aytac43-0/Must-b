@@ -22,7 +22,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo [1/5] Cloning Must-b repository...
+echo [1/4] Cloning Must-b repository...
 git clone https://github.com/aytac43-0/must-b.git must-b
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to clone repository. Check your internet connection.
@@ -32,25 +32,15 @@ if %errorlevel% neq 0 (
 
 cd must-b
 
-echo [2/5] Installing backend dependencies...
+echo [2/4] Installing dependencies...
 npm install
 if %errorlevel% neq 0 (
-    echo [ERROR] Backend npm install failed.
+    echo [ERROR] npm install failed.
     pause
     exit /b 1
 )
 
-echo [3/5] Installing frontend dependencies...
-cd public\Luma
-npm install
-if %errorlevel% neq 0 (
-    echo [ERROR] Frontend npm install failed.
-    pause
-    exit /b 1
-)
-cd ..\..
-
-echo [4/5] Setting up environment config...
+echo [3/4] Setting up environment config...
 if not exist .env (
     copy .env.example .env >nul 2>&1
     echo [INFO] .env file created from .env.example — please edit it with your API keys.
@@ -58,19 +48,25 @@ if not exist .env (
     echo [INFO] .env file already exists.
 )
 
-echo [5/5] Installation complete!
+echo [4/4] Registering global "must-b" command...
+npm link
+if %errorlevel% neq 0 (
+    echo [WARN] npm link failed — try running as Administrator, or run "npm link" manually.
+)
+
 echo.
 echo  =============================================
-echo   HOW TO RUN Must-b:
-echo  =============================================
-echo   Backend API  (port 4310): npm start
-echo   Frontend UI  (port 4309): npm run start:frontend
-echo.
-echo   For development:
-echo     Backend:  npm run dev
-echo     Frontend: npm run dev:frontend
+echo   Installation complete!
 echo  =============================================
 echo.
-echo  Open http://localhost:4309 in your browser.
+echo   Build the frontend once (required before first run):
+echo     npm run build:frontend
+echo.
+echo   Then start Must-b:
+echo     must-b          (global command)
+echo     npm start       (from project folder)
+echo.
+echo   Open http://localhost:4309 in your browser.
+echo  =============================================
 echo.
 pause

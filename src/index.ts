@@ -1,3 +1,4 @@
+#!/usr/bin/env tsx
 import winston from 'winston';
 import dotenv from 'dotenv';
 import fs from 'fs';
