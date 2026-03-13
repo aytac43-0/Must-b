@@ -1,0 +1,14 @@
+{
+  "name": "@must-b/irc",
+  "version": "2026.3.13",
+  "description": "Must-b IRC channel plugin",
+  "type": "module",
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@must-b/telegram",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "Must-b Telegram channel plugin",
+  "type": "module",
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

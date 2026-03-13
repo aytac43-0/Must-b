@@ -1,0 +1,20 @@
+{
+  "name": "@must-b/memory-core",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "Must-b core memory search plugin",
+  "type": "module",
+  "peerDependencies": {
+    "must-b": ">=2026.3.11"
+  },
+  "peerDependenciesMeta": {
+    "must-b": {
+      "optional": true
+    }
+  },
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

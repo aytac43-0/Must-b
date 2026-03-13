@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/**)",
+      "Bash(perl -pi -e 's/OpenClaw/Must-b/g; s/openClaw/mustB/g; s/open-claw/must-b/g; s/openclaw/must-b/g; s/OPENCLAW_/MUSTB_/g' src/core/docs/CNAME src/core/scripts/docs-i18n/go.mod src/core/scripts/e2e/Dockerfile.qr-import src/core/scripts/pr)",
+      "Bash(git -C /c/Users/aytac/.openclaw/workspace/must-b status --short)",
+      "Bash(git -C /c/Users/aytac/.openclaw/workspace/must-b add -A)"
+    ]
+  }
+}

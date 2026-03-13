@@ -1,0 +1,12 @@
+{
+  "name": "@must-b/signal",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "Must-b Signal channel plugin",
+  "type": "module",
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

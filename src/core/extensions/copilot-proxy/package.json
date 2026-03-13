@@ -1,0 +1,12 @@
+{
+  "name": "@must-b/copilot-proxy",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "Must-b Copilot Proxy provider plugin",
+  "type": "module",
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

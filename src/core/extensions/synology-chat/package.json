@@ -1,0 +1,28 @@
+{
+  "name": "@must-b/synology-chat",
+  "version": "2026.3.13",
+  "description": "Synology Chat channel plugin for Must-b",
+  "type": "module",
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "channel": {
+      "id": "synology-chat",
+      "label": "Synology Chat",
+      "selectionLabel": "Synology Chat (Webhook)",
+      "docsPath": "/channels/synology-chat",
+      "docsLabel": "synology-chat",
+      "blurb": "Connect your Synology NAS Chat to Must-b with full agent capabilities.",
+      "order": 90
+    },
+    "install": {
+      "npmSpec": "@must-b/synology-chat",
+      "localPath": "extensions/synology-chat",
+      "defaultChoice": "npm"
+    }
+  }
+}
