@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Must-b NextUI</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background:#0b1020; color:#e6eefe; }
+    .card { padding:20px; margin:10px; border-radius:12px; background:#111a2b; }
+  </style>
+</head>
+<body>
+  <div class="card"><h1>Must-b Next UI</h1><p id="subtitle">Must-b v2.0 — Auto Step</p></div>
+  <div id="root"></div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    socket.on('agentUpdate', (payload) => {
+      // Basic hook to display payload type
+      const div = document.createElement('div');
+      div.textContent = `Event: ${payload.type} - ${payload.message || ''}`;
+      document.getElementById('root').appendChild(div);
+    });
+  </script>
+</body>
+</html>
