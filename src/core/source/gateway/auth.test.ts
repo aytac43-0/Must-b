@@ -87,7 +87,7 @@ describe("gateway auth", () => {
     expect(res.user).toBe(params.expected.user);
   }
 
-  it("resolves token/password from OPENCLAW gateway env vars", () => {
+  it("resolves token/password from MUST-B gateway env vars", () => {
     expect(
       resolveGatewayAuth({
         authConfig: {},

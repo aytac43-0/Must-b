@@ -281,7 +281,7 @@ describe("resolveGatewayConnectionAuth", () => {
     });
   });
 
-  it("resolves config-first token SecretRef even when OPENCLAW env token exists", async () => {
+  it("resolves config-first token SecretRef even when MUST-B env token exists", async () => {
     const config = cfg({
       gateway: {
         mode: "local",
@@ -312,7 +312,7 @@ describe("resolveGatewayConnectionAuth", () => {
     });
   });
 
-  it("resolves config-first password SecretRef even when OPENCLAW env password exists", async () => {
+  it("resolves config-first password SecretRef even when MUST-B env password exists", async () => {
     const config = cfg({
       gateway: {
         mode: "local",
