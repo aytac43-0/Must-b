@@ -84,14 +84,40 @@ async function main() {
       process.exit(0);
     }
 
+    case 'gateway':
     default:
       await bootServer(rawArg);
+  }
+}
+
+// ── Silent pre-boot health check (auto-doctor) ────────────────────────────
+function quickHealthCheck(): void {
+  const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
+  const red    = (s: string) => `\x1b[31m${s}\x1b[0m`;
+
+  // Node version — hard block
+  const major = parseInt(process.version.replace('v', '').split('.')[0], 10);
+  if (major < 18) {
+    console.error(red(`\n  [must-b] Node ${process.version} is unsupported. Requires 18+.\n`));
+    process.exit(1);
+  }
+
+  // .env missing — soft warning
+  if (!fs.existsSync(path.join(ROOT, '.env'))) {
+    console.warn(yellow('  [must-b] No .env file found. Run: must-b onboard'));
+  }
+
+  // API key missing — soft warning
+  const key = process.env.OPENROUTER_API_KEY ?? '';
+  if (!key || key.startsWith('sk-or-v1-...')) {
+    console.warn(yellow('  [must-b] OPENROUTER_API_KEY not set — AI calls will fail. Run: must-b onboard'));
   }
 }
 
 // ── Server / CLI boot ──────────────────────────────────────────────────────
 async function bootServer(arg: string) {
   ensureWorldUid();
+  quickHealthCheck();
 
   const mode = arg === 'cli' ? 'cli' : 'web';
   const PORT = parseInt(process.env.PORT || '4309', 10);
