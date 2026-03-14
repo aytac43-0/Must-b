@@ -5,12 +5,15 @@
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "must-b": "src/index.ts"
+    "must-b": "bin/must-b.cjs"
   },
   "scripts": {
     "start": "tsx src/index.ts web",
     "start:cli": "tsx src/index.ts cli",
     "dev": "tsx watch src/index.ts web",
+    "doctor": "tsx src/index.ts doctor",
+    "onboard": "tsx src/index.ts onboard",
+    "memory-sync": "tsx src/index.ts memory-sync",
     "build:frontend": "cd public/Luma && next build",
     "push": "git add . && git commit -m \"Auto-update by Claude\" && git push"
   },
