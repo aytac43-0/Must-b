@@ -142,9 +142,10 @@ async function bootServer(arg: string) {
     process.exit(1);
   }
 
-  // Greet returning users via long-term memory
+  // Greet returning users via long-term memory + start semantic engine
   const mem = new LongTermMemory(ROOT);
   await mem.load();
+  await mem.initSemantic();
   const profile = mem.getProfile();
   if (profile) {
     mem.touchLastSeen();
@@ -153,7 +154,7 @@ async function bootServer(arg: string) {
   }
 
   const planner = new Planner(logger);
-  const executor = new Executor(logger);
+  const executor = new Executor(logger, mem);
   const orchestrator = new Orchestrator(logger, planner, executor);
 
   if (mode === 'web') {

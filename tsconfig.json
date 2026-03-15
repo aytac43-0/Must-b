@@ -16,6 +16,17 @@
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/index.ts",
+    "src/core/orchestrator.ts",
+    "src/core/executor.ts",
+    "src/core/planner.ts",
+    "src/core/provider.ts",
+    "src/commands/**/*",
+    "src/interface/**/*",
+    "src/memory/**/*",
+    "src/tools/**/*",
+    "src/utils/**/*"
+  ],
+  "exclude": ["node_modules", "dist", "src/core/source", "src/core/extensions", "src/core/vendor"]
 }

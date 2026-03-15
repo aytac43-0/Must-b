@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 
 export interface TelegramSendParams {
   botToken: string;

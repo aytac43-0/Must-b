@@ -3,12 +3,12 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 
-const cyan  = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
-const green = (s: string) => `\x1b[32m${s}\x1b[0m`;
-const red   = (s: string) => `\x1b[31m${s}\x1b[0m`;
+const cyan   = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
+const green  = (s: string) => `\x1b[32m${s}\x1b[0m`;
+const red    = (s: string) => `\x1b[31m${s}\x1b[0m`;
 const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
-const dim   = (s: string) => `\x1b[2m${s}\x1b[0m`;
-const bold  = (s: string) => `\x1b[1m${s}\x1b[0m`;
+const dim    = (s: string) => `\x1b[2m${s}\x1b[0m`;
+const bold   = (s: string) => `\x1b[1m${s}\x1b[0m`;
 
 const PASS = green('✓');
 const FAIL = red('✗');
@@ -21,8 +21,10 @@ interface CheckResult {
   fix?: string;
 }
 
+// ── Core system checks ────────────────────────────────────────────────────
+
 function checkNode(): CheckResult {
-  const version = process.version; // e.g. "v20.11.0"
+  const version = process.version;
   const major = parseInt(version.replace('v', '').split('.')[0], 10);
   const ok = major >= 18;
   return {
@@ -71,7 +73,7 @@ function checkEnvFile(root: string): CheckResult {
       label: '.env file',
       ok: false,
       detail: 'missing',
-      fix: `Copy .env.example to .env and fill in your API keys:\n    cp .env.example .env`,
+      fix: 'Copy .env.example to .env and fill in your API keys:\n    cp .env.example .env',
     };
   }
   return { label: '.env file', ok: true, detail: envPath };
@@ -102,11 +104,7 @@ function checkMode(): CheckResult {
       fix: 'Add MUSTB_MODE=local or MUSTB_MODE=world to .env',
     };
   }
-  return {
-    label: 'MUSTB_MODE',
-    ok: true,
-    detail: mode,
-  };
+  return { label: 'MUSTB_MODE', ok: true, detail: mode };
 }
 
 function checkMemoryDir(root: string): CheckResult {
@@ -125,13 +123,101 @@ function checkMemoryDir(root: string): CheckResult {
   }
 }
 
+// ── Capability checks ─────────────────────────────────────────────────────
+
+async function checkPlaywright(): Promise<CheckResult> {
+  try {
+    const { chromium } = await import('playwright');
+    const executablePath = chromium.executablePath();
+    const exists = fs.existsSync(executablePath);
+    if (!exists) {
+      return {
+        label: 'Playwright (Chromium)',
+        ok: false,
+        detail: 'browser not installed',
+        fix: 'Run: npx playwright install chromium',
+      };
+    }
+    return {
+      label: 'Playwright (Chromium)',
+      ok: true,
+      detail: 'executable found — browser ready',
+    };
+  } catch {
+    return {
+      label: 'Playwright (Chromium)',
+      ok: false,
+      detail: 'package not installed',
+      fix: 'Run: npm install && npx playwright install chromium',
+    };
+  }
+}
+
+async function checkSQLite(): Promise<CheckResult> {
+  try {
+    const { DatabaseSync } = await import('node:sqlite');
+    const db = new DatabaseSync(':memory:');
+    db.exec(`CREATE VIRTUAL TABLE _test_fts USING fts5(content, tokenize='unicode61')`);
+    db.close();
+    return {
+      label: 'SQLite + FTS5 (node:sqlite)',
+      ok: true,
+      detail: `built-in Node ${process.version} — unicode61 tokenizer active`,
+    };
+  } catch (e: any) {
+    return {
+      label: 'SQLite + FTS5 (node:sqlite)',
+      ok: false,
+      detail: (e?.message ?? 'unknown error').slice(0, 80),
+      fix: 'Requires Node 22.5+. Current: ' + process.version,
+    };
+  }
+}
+
+async function checkChokidar(): Promise<CheckResult> {
+  try {
+    await import('chokidar');
+    return { label: 'chokidar (file watcher)', ok: true, detail: 'installed — memory sync active' };
+  } catch {
+    return {
+      label: 'chokidar (file watcher)',
+      ok: false,
+      detail: 'not installed',
+      fix: 'Run: npm install chokidar',
+    };
+  }
+}
+
+async function checkSharp(): Promise<CheckResult> {
+  try {
+    const sharp = (await import('sharp')).default;
+    const vipsVersion = (sharp as any).versions?.vips ?? 'unknown';
+    return {
+      label: 'sharp (image processing)',
+      ok: true,
+      detail: `vips ${vipsVersion}`,
+    };
+  } catch {
+    return {
+      label: 'sharp (image processing)',
+      ok: false,
+      detail: 'not installed',
+      fix: 'Run: npm install sharp',
+    };
+  }
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────
+
 function printResult(r: CheckResult) {
-  const icon = r.ok ? PASS : (r.fix ? FAIL : WARN);
-  console.log(`  ${icon}  ${bold(r.label.padEnd(24))} ${dim(r.detail)}`);
+  const icon = r.ok ? PASS : r.fix ? FAIL : WARN;
+  console.log(`  ${icon}  ${bold(r.label.padEnd(28))} ${dim(r.detail)}`);
   if (!r.ok && r.fix) {
     console.log(`       ${yellow('→')} ${r.fix}`);
   }
 }
+
+// ── Main ──────────────────────────────────────────────────────────────────
 
 export async function runDoctor(root: string) {
   console.log('');
@@ -140,7 +226,8 @@ export async function runDoctor(root: string) {
   console.log(cyan('  ══════════════════════════════════════════════'));
   console.log('');
 
-  const checks: CheckResult[] = [
+  console.log(dim('  [ Core ]'));
+  const coreChecks: CheckResult[] = [
     checkNode(),
     checkGit(),
     checkPython(),
@@ -149,17 +236,26 @@ export async function runDoctor(root: string) {
     checkMode(),
     checkMemoryDir(root),
   ];
+  for (const c of coreChecks) printResult(c);
 
-  for (const c of checks) {
-    printResult(c);
-  }
+  console.log('');
+  console.log(dim('  [ Capabilities ]'));
+  const capChecks = await Promise.all([
+    checkPlaywright(),
+    checkSQLite(),
+    checkChokidar(),
+    checkSharp(),
+  ]);
+  for (const c of capChecks) printResult(c);
 
-  const failed = checks.filter(c => !c.ok && c.fix);
-  const warned = checks.filter(c => !c.ok && !c.fix);
+  const allChecks = [...coreChecks, ...capChecks];
+  const failed = allChecks.filter((c) => !c.ok && c.fix);
+  const warned  = allChecks.filter((c) => !c.ok && !c.fix);
 
   console.log('');
   if (failed.length === 0 && warned.length === 0) {
-    console.log(green('  ✔  All checks passed. Must-b is ready.'));
+    console.log(green('  ✔  All checks passed. Must-b is fully operational.'));
+    console.log(dim('     Browser: Playwright  |  Memory: SQLite FTS5  |  Watcher: chokidar'));
   } else {
     if (failed.length > 0) {
       console.log(red(`  ${failed.length} issue(s) need your attention (see → hints above).`));

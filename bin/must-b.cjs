@@ -13,6 +13,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { createRequire } = require('module');
+const { pathToFileURL } = require('url');
 
 // ── 1. Resolve real project root (follows symlinks — handles npm link) ─────
 function findRoot() {
@@ -56,15 +57,20 @@ try {
 }
 
 // ── 4. Pick the right hook flag for this Node version ─────────────────────
-//   Node 20.6+: --import (stable)
+//   Node 20.6+: --import (stable, requires file:// URL on Windows)
 //   Node 18/19: --loader (experimental but fully functional)
 const nodeMajor = parseInt(process.versions.node.split('.')[0], 10);
 const hookFlag = nodeMajor >= 20 ? '--import' : '--loader';
 
+// --import requires a file:// URL on Windows; --loader accepts bare paths
+const hookArg = hookFlag === '--import'
+  ? pathToFileURL(loaderPath).href
+  : loaderPath;
+
 // ── 5. Spawn Node itself with tsx hook — no tsx binary required ────────────
 const result = spawnSync(
   process.execPath,
-  [hookFlag, loaderPath, '--no-warnings', entry, ...args],
+  [hookFlag, hookArg, '--no-warnings', entry, ...args],
   { stdio: 'inherit', cwd: root, env }
 );
 

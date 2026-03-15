@@ -4,7 +4,23 @@ import { LLMProvider, CompletionMessage } from './provider.js';
 export interface PlanStep {
   id: string;
   description: string;
-  tool: "filesystem_read" | "filesystem_write" | "filesystem_list" | "terminal" | "log";
+  tool:
+    | 'filesystem_read'
+    | 'filesystem_write'
+    | 'filesystem_list'
+    | 'terminal'
+    | 'browser_navigate'
+    | 'browser_screenshot'
+    | 'browser_click'
+    | 'browser_type'
+    | 'browser_extract'
+    | 'browser_snapshot'
+    | 'browser_evaluate'
+    | 'browser_url'
+    | 'browser_close'
+    | 'memory_search'
+    | 'memory_write'
+    | 'log';
   parameters: Record<string, any>;
 }
 
@@ -24,39 +40,67 @@ export class Planner {
   async plan(goal: string): Promise<PlanStep[]> {
     this.logger.info(`Planner: Generating plan for goal: "${goal}"`);
 
-    const systemPrompt = `You are the Planner for Must-b, an autonomous AI agent.
-Your job is to break down a high-level user Goal into a linear sequence of executable steps.
+    const systemPrompt = `You are the Planner for Must-b, an autonomous AI agent with full browser, filesystem, terminal, and memory capabilities.
+Your job is to break down a high-level user Goal into a precise, executable sequence of steps.
 
 Available Tools:
-1. filesystem_read { path: string } - Read file content.
-2. filesystem_write { path: string, content: string } - Write text to a file.
-3. filesystem_list { path: string } - List files in a directory.
-4. terminal { command: string } - Execute a shell command (git, npm, node, ls).
-5. log { message: string } - Log a message or observation.
+
+FILESYSTEM:
+1.  filesystem_read    { path: string }                          – Read file content.
+2.  filesystem_write   { path: string, content: string }         – Write text to a file.
+3.  filesystem_list    { path: string }                          – List files in a directory.
+
+TERMINAL:
+4.  terminal           { command: string }                       – Execute a shell command (git, npm, node, ls, etc).
+
+BROWSER (Playwright-powered):
+5.  browser_navigate   { url: string, waitFor?: "load"|"domcontentloaded"|"networkidle" }
+                                                                 – Navigate to a URL. Returns { url, title, status }.
+6.  browser_screenshot { selector?: string, fullPage?: boolean } – Take a screenshot. Returns { base64, width, height }.
+7.  browser_click      { selector: string, timeout?: number }    – Click an element by CSS selector.
+8.  browser_type       { selector: string, text: string, clear?: boolean }
+                                                                 – Type text into an input field.
+9.  browser_extract    { selector: string }                      – Extract text/html from an element.
+10. browser_snapshot   {}                                        – Get ARIA accessibility snapshot of the page (great for AI navigation).
+11. browser_evaluate   { script: string }                        – Run JavaScript in the browser and return result.
+12. browser_url        {}                                        – Get current URL and page title.
+13. browser_close      {}                                        – Close the browser and free resources.
+
+MEMORY (SQLite FTS5 + Temporal Decay):
+14. memory_search      { query: string, limit?: number }         – Search past conversations and memory files.
+15. memory_write       { content: string, summary?: string }     – Save an important note to long-term memory.
+
+UTILITY:
+16. log                { message: string }                       – Log a message or observation.
 
 Rules:
-- Return ONLY a valid JSON object.
-- The JSON object must have a single key "steps" which is an array of steps.
-- Each step must have: "id" (unique string), "description" (what this step does), "tool" (exact tool name), and "parameters" (object matching the tool signature).
-- Be precise with file paths.
-- Do not output markdown or explanations, just the JSON.
+- Return ONLY a valid JSON object with no markdown, no backticks, no explanation.
+- The JSON must have a single key "steps" which is an array of step objects.
+- Each step must have: "id" (unique string), "description" (what this step does), "tool" (exact name), "parameters" (object).
+- For browser tasks: always start with browser_navigate, then use browser_snapshot to understand the page before clicking.
+- For memory-intensive tasks: start with memory_search to check what was done before.
+- Be precise with CSS selectors. Prefer IDs and aria-labels over class names.
+- Close the browser with browser_close when the browsing task is complete.
 
 Example Output:
 {
   "steps": [
-    { "id": "1", "description": "List files", "tool": "filesystem_list", "parameters": { "path": "." } },
-    { "id": "2", "description": "Say hello", "tool": "log", "parameters": { "message": "Done" } }
+    { "id": "1", "description": "Navigate to target page", "tool": "browser_navigate", "parameters": { "url": "https://example.com" } },
+    { "id": "2", "description": "Get page structure", "tool": "browser_snapshot", "parameters": {} },
+    { "id": "3", "description": "Extract main content", "tool": "browser_extract", "parameters": { "selector": "main" } },
+    { "id": "4", "description": "Save result to memory", "tool": "memory_write", "parameters": { "content": "Visited example.com", "summary": "page content extracted" } },
+    { "id": "5", "description": "Close browser", "tool": "browser_close", "parameters": {} }
   ]
 }`;
 
     const messages: CompletionMessage[] = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Goal: ${goal}` }
+      { role: 'user', content: `Goal: ${goal}` },
     ];
 
     try {
       const planResponse = await this.provider.generateJson<PlanResponse>(messages);
-      
+
       if (!planResponse.steps || !Array.isArray(planResponse.steps)) {
         throw new Error('Planner: Generated JSON is missing the "steps" array.');
       }
@@ -64,15 +108,16 @@ Example Output:
       this.logger.info(`Planner: Generated ${planResponse.steps.length} steps.`);
       return planResponse.steps;
     } catch (error: any) {
-      this.logger.error(`Planner: Failed to generate plan - ${error.message}`);
-      // Fallback to a safe logging plan if LLM fails
+      this.logger.error(`Planner: Failed to generate plan — ${error.message}`);
       return [
         {
           id: 'fallback-error',
           description: 'Report planning failure',
           tool: 'log',
-          parameters: { message: `Planning failed for goal: ${goal}. Error: ${error.message}` }
-        }
+          parameters: {
+            message: `Planning failed for goal: ${goal}. Error: ${error.message}`,
+          },
+        },
       ];
     }
   }

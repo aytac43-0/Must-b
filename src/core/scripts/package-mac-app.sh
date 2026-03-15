@@ -243,12 +243,12 @@ else
 fi
 
 echo "📦 Copying Must-bKit resources"
-OPENCLAWKIT_BUNDLE="$(build_path_for_arch "$PRIMARY_ARCH")/$BUILD_CONFIG/Must-bKit_Must-bKit.bundle"
-if [ -d "$OPENCLAWKIT_BUNDLE" ]; then
+MUST-BKIT_BUNDLE="$(build_path_for_arch "$PRIMARY_ARCH")/$BUILD_CONFIG/Must-bKit_Must-bKit.bundle"
+if [ -d "$MUST-BKIT_BUNDLE" ]; then
   rm -rf "$APP_ROOT/Contents/Resources/Must-bKit_Must-bKit.bundle"
-  cp -R "$OPENCLAWKIT_BUNDLE" "$APP_ROOT/Contents/Resources/Must-bKit_Must-bKit.bundle"
+  cp -R "$MUST-BKIT_BUNDLE" "$APP_ROOT/Contents/Resources/Must-bKit_Must-bKit.bundle"
 else
-  echo "WARN: Must-bKit resource bundle not found at $OPENCLAWKIT_BUNDLE (continuing)" >&2
+  echo "WARN: Must-bKit resource bundle not found at $MUST-BKIT_BUNDLE (continuing)" >&2
 fi
 
 echo "📦 Copying Textual resources"
