@@ -1,17 +1,17 @@
 import { parseFrontmatterBlock } from "../markdown/frontmatter.js";
 import {
-  applyMust-bManifestInstallCommonFields,
+  applyMustBanifestInstallCommonFields,
   getFrontmatterString,
   normalizeStringList,
-  parseMust-bManifestInstallBase,
+  parseMustBanifestInstallBase,
   parseFrontmatterBool,
-  resolveMust-bManifestBlock,
-  resolveMust-bManifestInstall,
-  resolveMust-bManifestOs,
-  resolveMust-bManifestRequires,
+  resolveMustBanifestBlock,
+  resolveMustBanifestInstall,
+  resolveMustBanifestOs,
+  resolveMustBanifestRequires,
 } from "../shared/frontmatter.js";
 import type {
-  Must-bHookMetadata,
+  MustBookMetadata,
   HookEntry,
   HookInstallSpec,
   HookInvocationPolicy,
@@ -23,12 +23,12 @@ export function parseFrontmatter(content: string): ParsedHookFrontmatter {
 }
 
 function parseInstallSpec(input: unknown): HookInstallSpec | undefined {
-  const parsed = parseMust-bManifestInstallBase(input, ["bundled", "npm", "git"]);
+  const parsed = parseMustBanifestInstallBase(input, ["bundled", "npm", "git"]);
   if (!parsed) {
     return undefined;
   }
   const { raw } = parsed;
-  const spec = applyMust-bManifestInstallCommonFields<HookInstallSpec>(
+  const spec = applyMustBanifestInstallCommonFields<HookInstallSpec>(
     {
       kind: parsed.kind as HookInstallSpec["kind"],
     },
@@ -44,16 +44,16 @@ function parseInstallSpec(input: unknown): HookInstallSpec | undefined {
   return spec;
 }
 
-export function resolveMust-bMetadata(
+export function resolveMustBetadata(
   frontmatter: ParsedHookFrontmatter,
-): Must-bHookMetadata | undefined {
-  const metadataObj = resolveMust-bManifestBlock({ frontmatter });
+): MustBookMetadata | undefined {
+  const metadataObj = resolveMustBanifestBlock({ frontmatter });
   if (!metadataObj) {
     return undefined;
   }
-  const requires = resolveMust-bManifestRequires(metadataObj);
-  const install = resolveMust-bManifestInstall(metadataObj, parseInstallSpec);
-  const osRaw = resolveMust-bManifestOs(metadataObj);
+  const requires = resolveMustBanifestRequires(metadataObj);
+  const install = resolveMustBanifestInstall(metadataObj, parseInstallSpec);
+  const osRaw = resolveMustBanifestOs(metadataObj);
   const eventsRaw = normalizeStringList(metadataObj.events);
   return {
     always: typeof metadataObj.always === "boolean" ? metadataObj.always : undefined,

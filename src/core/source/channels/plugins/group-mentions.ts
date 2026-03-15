@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   resolveChannelGroupRequireMention,
   resolveChannelGroupToolsPolicy,
@@ -41,7 +41,7 @@ function parseTelegramGroupId(value?: string | null) {
 }
 
 function resolveTelegramRequireMention(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   chatId?: string;
   topicId?: string;
 }): boolean | undefined {

@@ -12,16 +12,16 @@ import {
   resolveConfigPathFromTempState,
 } from "./config.backup-rotation.test-helpers.js";
 import { withTempHome } from "./test-helpers.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 
 describe("config backup rotation", () => {
   it("keeps a 5-deep backup ring for config writes", async () => {
     await withTempHome(async () => {
       const configPath = resolveConfigPathFromTempState();
-      const buildConfig = (version: number): Must-bConfig =>
+      const buildConfig = (version: number): MustBonfig =>
         ({
           agents: { list: [{ id: `v${version}` }] },
-        }) as Must-bConfig;
+        }) as MustBonfig;
 
       const writeVersion = async (version: number) => {
         const json = JSON.stringify(buildConfig(version), null, 2).trimEnd().concat("\n");

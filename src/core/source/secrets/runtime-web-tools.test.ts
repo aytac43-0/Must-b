@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import * as secretResolve from "./resolve.js";
 import { createResolverContext } from "./runtime-shared.js";
 import { resolveRuntimeWebTools } from "./runtime-web-tools.js";
 
 type ProviderUnderTest = "brave" | "gemini" | "grok" | "kimi" | "perplexity";
 
-function asConfig(value: unknown): Must-bConfig {
-  return value as Must-bConfig;
+function asConfig(value: unknown): MustBonfig {
+  return value as MustBonfig;
 }
 
-async function runRuntimeWebTools(params: { config: Must-bConfig; env?: NodeJS.ProcessEnv }) {
+async function runRuntimeWebTools(params: { config: MustBonfig; env?: NodeJS.ProcessEnv }) {
   const sourceConfig = structuredClone(params.config);
   const resolvedConfig = structuredClone(params.config);
   const context = createResolverContext({
@@ -28,7 +28,7 @@ async function runRuntimeWebTools(params: { config: Must-bConfig; env?: NodeJS.P
 function createProviderSecretRefConfig(
   provider: ProviderUnderTest,
   envRefId: string,
-): Must-bConfig {
+): MustBonfig {
   const search: Record<string, unknown> = {
     enabled: true,
     provider,
@@ -49,7 +49,7 @@ function createProviderSecretRefConfig(
   });
 }
 
-function readProviderKey(config: Must-bConfig, provider: ProviderUnderTest): unknown {
+function readProviderKey(config: MustBonfig, provider: ProviderUnderTest): unknown {
   if (provider === "brave") {
     return config.tools?.web?.search?.apiKey;
   }

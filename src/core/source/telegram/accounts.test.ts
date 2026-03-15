@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { withEnv } from "../test-utils/env.js";
 import {
   listTelegramAccountIds,
@@ -35,7 +35,7 @@ describe("resolveTelegramAccount", () => {
 
   it("falls back to the first configured account when accountId is omitted", () => {
     withEnv({ TELEGRAM_BOT_TOKEN: "" }, () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           telegram: { accounts: { work: { botToken: "tok-work" } } },
         },
@@ -50,7 +50,7 @@ describe("resolveTelegramAccount", () => {
 
   it("uses TELEGRAM_BOT_TOKEN when default account config is missing", () => {
     withEnv({ TELEGRAM_BOT_TOKEN: "tok-env" }, () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           telegram: { accounts: { work: { botToken: "tok-work" } } },
         },
@@ -65,7 +65,7 @@ describe("resolveTelegramAccount", () => {
 
   it("prefers default config token over TELEGRAM_BOT_TOKEN", () => {
     withEnv({ TELEGRAM_BOT_TOKEN: "tok-env" }, () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           telegram: { botToken: "tok-config" },
         },
@@ -80,7 +80,7 @@ describe("resolveTelegramAccount", () => {
 
   it("does not fall back when accountId is explicitly provided", () => {
     withEnv({ TELEGRAM_BOT_TOKEN: "" }, () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           telegram: { accounts: { work: { botToken: "tok-work" } } },
         },
@@ -95,7 +95,7 @@ describe("resolveTelegramAccount", () => {
 
   it("formats debug logs with inspect-style output when debug env is enabled", () => {
     withEnv({ TELEGRAM_BOT_TOKEN: "", MUSTB_DEBUG_TELEGRAM_ACCOUNTS: "1" }, () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           telegram: { accounts: { work: { botToken: "tok-work" } } },
         },
@@ -122,7 +122,7 @@ describe("resolveDefaultTelegramAccountId", () => {
   });
 
   it("warns when accounts.default is missing in multi-account setup (#32137)", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           accounts: { work: { botToken: "tok-work" }, alerts: { botToken: "tok-alerts" } },
@@ -136,7 +136,7 @@ describe("resolveDefaultTelegramAccountId", () => {
   });
 
   it("does not warn when accounts.default exists", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           accounts: { default: { botToken: "tok-default" }, work: { botToken: "tok-work" } },
@@ -151,7 +151,7 @@ describe("resolveDefaultTelegramAccountId", () => {
   });
 
   it("does not warn when defaultAccount is explicitly set", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           defaultAccount: "work",
@@ -167,7 +167,7 @@ describe("resolveDefaultTelegramAccountId", () => {
   });
 
   it("does not warn when only one non-default account is configured", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           accounts: { work: { botToken: "tok-work" } },
@@ -182,7 +182,7 @@ describe("resolveDefaultTelegramAccountId", () => {
   });
 
   it("warns only once per process lifetime", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           accounts: { work: { botToken: "tok-work" }, alerts: { botToken: "tok-alerts" } },
@@ -201,7 +201,7 @@ describe("resolveDefaultTelegramAccountId", () => {
   });
 
   it("prefers channels.telegram.defaultAccount when it matches a configured account", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           defaultAccount: "work",
@@ -214,7 +214,7 @@ describe("resolveDefaultTelegramAccountId", () => {
   });
 
   it("normalizes channels.telegram.defaultAccount before lookup", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           defaultAccount: "Router D",
@@ -227,7 +227,7 @@ describe("resolveDefaultTelegramAccountId", () => {
   });
 
   it("falls back when channels.telegram.defaultAccount is not configured", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           defaultAccount: "missing",
@@ -330,7 +330,7 @@ describe("resolveTelegramPollActionGateState", () => {
 });
 
 describe("resolveTelegramAccount groups inheritance (#30673)", () => {
-  const createMultiAccountGroupsConfig = (): Must-bConfig => ({
+  const createMultiAccountGroupsConfig = (): MustBonfig => ({
     channels: {
       telegram: {
         groups: { "-100123": { requireMention: false } },
@@ -342,7 +342,7 @@ describe("resolveTelegramAccount groups inheritance (#30673)", () => {
     },
   });
 
-  const createDefaultAccountGroupsConfig = (includeDevAccount: boolean): Must-bConfig => ({
+  const createDefaultAccountGroupsConfig = (includeDevAccount: boolean): MustBonfig => ({
     channels: {
       telegram: {
         groups: { "-100999": { requireMention: true } },

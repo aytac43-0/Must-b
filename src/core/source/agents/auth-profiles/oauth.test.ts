@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBConfig } from "../../config/config.js";
 import { resolveApiKeyForProfile } from "./oauth.js";
 import type { AuthProfileStore } from "./types.js";
 
@@ -10,7 +10,7 @@ function cfgFor(profileId: string, provider: string, mode: "api_key" | "token" |
         [profileId]: { provider, mode },
       },
     },
-  } satisfies Must-bConfig;
+  } satisfies MustBConfig;
 }
 
 function tokenStore(params: {

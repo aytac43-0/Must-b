@@ -24,7 +24,7 @@ import {
 } from "../channels/thread-bindings-policy.js";
 import { parseDurationMs } from "../cli/parse-duration.js";
 import { loadConfig } from "../config/config.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBConfig } from "../config/config.js";
 import { loadSessionStore, resolveStorePath, type SessionEntry } from "../config/sessions.js";
 import { resolveSessionTranscriptFile } from "../config/sessions/transcript.js";
 import { callGateway } from "../gateway/call.js";
@@ -97,7 +97,7 @@ export const ACP_SPAWN_SESSION_ACCEPTED_NOTE =
   "thread-bound ACP session stays active after this task; continue in-thread for follow-ups.";
 
 export function resolveAcpSpawnRuntimePolicyError(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   requesterSessionKey?: string;
   requesterSandboxed?: boolean;
   sandbox?: SpawnAcpSandboxMode;
@@ -139,7 +139,7 @@ function resolveAcpSessionMode(mode: SpawnAcpMode): AcpRuntimeSessionMode {
 }
 
 function isHeartbeatEnabledForSessionAgent(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   sessionKey?: string;
 }): boolean {
   if (!areHeartbeatsEnabled()) {
@@ -177,9 +177,9 @@ function isHeartbeatEnabledForSessionAgent(params: {
 }
 
 function resolveHeartbeatConfigForAgent(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   agentId: string;
-}): NonNullable<NonNullable<Must-bConfig["agents"]>["defaults"]>["heartbeat"] {
+}): NonNullable<NonNullable<MustBConfig["agents"]>["defaults"]>["heartbeat"] {
   const defaults = params.cfg.agents?.defaults?.heartbeat;
   const overrides = resolveAgentConfig(params.cfg, params.agentId)?.heartbeat;
   if (!defaults && !overrides) {
@@ -192,7 +192,7 @@ function resolveHeartbeatConfigForAgent(params: {
 }
 
 function hasSessionLocalHeartbeatRelayRoute(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   parentSessionKey: string;
   requesterAgentId: string;
 }): boolean {
@@ -229,7 +229,7 @@ function hasSessionLocalHeartbeatRelayRoute(params: {
 
 function resolveTargetAcpAgentId(params: {
   requestedAgentId?: string;
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
 }): { ok: true; agentId: string } | { ok: false; error: string } {
   const requested = normalizeOptionalAgentId(params.requestedAgentId);
   if (requested) {
@@ -267,7 +267,7 @@ function summarizeError(err: unknown): string {
 }
 
 function resolveRequesterInternalSessionKey(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   requesterSessionKey?: string;
 }): string {
   const { mainKey, alias } = resolveMainSessionAlias(params.cfg);
@@ -321,7 +321,7 @@ function resolveConversationIdForThreadBinding(params: {
 }
 
 function prepareAcpThreadBinding(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   channel?: string;
   accountId?: string;
   to?: string;

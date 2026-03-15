@@ -10,7 +10,7 @@ import type {
   ChannelGroupContext,
   ChannelMessageActionAdapter,
   ChannelPlugin,
-  Must-bConfig,
+  MustBConfig,
   GroupToolPolicyConfig,
 } from "must-b/plugin-sdk/zalouser";
 import {
@@ -167,11 +167,11 @@ function resolveZalouserQrProfile(accountId?: string | null): string {
   return normalized;
 }
 
-function resolveZalouserOutboundChunkMode(cfg: Must-bConfig, accountId?: string) {
+function resolveZalouserOutboundChunkMode(cfg: MustBConfig, accountId?: string) {
   return getZalouserRuntime().channel.text.resolveChunkMode(cfg, "zalouser", accountId);
 }
 
-function resolveZalouserOutboundTextChunkLimit(cfg: Must-bConfig, accountId?: string) {
+function resolveZalouserOutboundTextChunkLimit(cfg: MustBConfig, accountId?: string) {
   return getZalouserRuntime().channel.text.resolveTextChunkLimit(cfg, "zalouser", accountId, {
     fallbackLimit: zalouserDock.outbound?.textChunkLimit ?? 2000,
   });

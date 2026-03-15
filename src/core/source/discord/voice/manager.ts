@@ -19,12 +19,12 @@ import {
 import { resolveAgentDir } from "../../agents/agent-scope.js";
 import type { MsgContext } from "../../auto-reply/templating.js";
 import { agentCommandFromIngress } from "../../commands/agent.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { isDangerousNameMatchingEnabled } from "../../config/dangerous-name-matching.js";
 import type { DiscordAccountConfig, TtsConfig } from "../../config/types.js";
 import { logVerbose, shouldLogVerbose } from "../../globals.js";
 import { formatErrorMessage } from "../../infra/errors.js";
-import { resolvePreferredMust-bTmpDir } from "../../infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../../infra/tmp-must-b-dir.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import {
   buildProviderRegistry,
@@ -113,8 +113,8 @@ function mergeTtsConfig(base: TtsConfig, override?: TtsConfig): TtsConfig {
   };
 }
 
-function resolveVoiceTtsConfig(params: { cfg: Must-bConfig; override?: TtsConfig }): {
-  cfg: Must-bConfig;
+function resolveVoiceTtsConfig(params: { cfg: MustBonfig; override?: TtsConfig }): {
+  cfg: MustBonfig;
   resolved: ResolvedTtsConfig;
 } {
   if (!params.override) {
@@ -212,7 +212,7 @@ function estimateDurationSeconds(pcm: Buffer): number {
 }
 
 async function writeWavFile(pcm: Buffer): Promise<{ path: string; durationSeconds: number }> {
-  const tempDir = await fs.mkdtemp(path.join(resolvePreferredMust-bTmpDir(), "discord-voice-"));
+  const tempDir = await fs.mkdtemp(path.join(resolvePreferredMustBmpDir(), "discord-voice-"));
   const filePath = path.join(tempDir, `segment-${randomUUID()}.wav`);
   const wav = buildWavBuffer(pcm);
   await fs.writeFile(filePath, wav);
@@ -232,7 +232,7 @@ function scheduleTempCleanup(tempDir: string, delayMs: number = 30 * 60 * 1000):
 }
 
 async function transcribeAudio(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   filePath: string;
 }): Promise<string | undefined> {
@@ -284,7 +284,7 @@ export class DiscordVoiceManager {
   constructor(
     private params: {
       client: Client;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       discordConfig: DiscordAccountConfig;
       accountId: string;
       runtime: RuntimeEnv;

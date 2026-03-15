@@ -7,7 +7,7 @@
 
 import type { WorkspaceBootstrapFile } from "../agents/workspace.js";
 import type { CliDeps } from "../cli/deps.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 
 export type InternalHookEventType = "command" | "session" | "agent" | "gateway" | "message";
@@ -15,7 +15,7 @@ export type InternalHookEventType = "command" | "session" | "agent" | "gateway" 
 export type AgentBootstrapHookContext = {
   workspaceDir: string;
   bootstrapFiles: WorkspaceBootstrapFile[];
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   sessionKey?: string;
   sessionId?: string;
   agentId?: string;
@@ -28,7 +28,7 @@ export type AgentBootstrapHookEvent = InternalHookEvent & {
 };
 
 export type GatewayStartupHookContext = {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   deps?: CliDeps;
   workspaceDir?: string;
 };

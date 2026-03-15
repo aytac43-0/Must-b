@@ -1,5 +1,5 @@
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "must-b/plugin-sdk/account-id";
-import { createAccountListHelpers, type Must-bConfig } from "must-b/plugin-sdk/zalo";
+import { createAccountListHelpers, type MustBConfig } from "must-b/plugin-sdk/zalo";
 import { resolveZaloToken } from "./token.js";
 import type { ResolvedZaloAccount, ZaloAccountConfig, ZaloConfig } from "./types.js";
 
@@ -10,7 +10,7 @@ const { listAccountIds: listZaloAccountIds, resolveDefaultAccountId: resolveDefa
 export { listZaloAccountIds, resolveDefaultZaloAccountId };
 
 function resolveAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
 ): ZaloAccountConfig | undefined {
   const accounts = (cfg.channels?.zalo as ZaloConfig | undefined)?.accounts;
@@ -20,7 +20,7 @@ function resolveAccountConfig(
   return accounts[accountId] as ZaloAccountConfig | undefined;
 }
 
-function mergeZaloAccountConfig(cfg: Must-bConfig, accountId: string): ZaloAccountConfig {
+function mergeZaloAccountConfig(cfg: MustBConfig, accountId: string): ZaloAccountConfig {
   const raw = (cfg.channels?.zalo ?? {}) as ZaloConfig;
   const { accounts: _ignored, defaultAccount: _ignored2, ...base } = raw;
   const account = resolveAccountConfig(cfg, accountId) ?? {};
@@ -28,7 +28,7 @@ function mergeZaloAccountConfig(cfg: Must-bConfig, accountId: string): ZaloAccou
 }
 
 export function resolveZaloAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId?: string | null;
   allowUnresolvedSecretRef?: boolean;
 }): ResolvedZaloAccount {
@@ -53,7 +53,7 @@ export function resolveZaloAccount(params: {
   };
 }
 
-export function listEnabledZaloAccounts(cfg: Must-bConfig): ResolvedZaloAccount[] {
+export function listEnabledZaloAccounts(cfg: MustBConfig): ResolvedZaloAccount[] {
   return listZaloAccountIds(cfg)
     .map((accountId) => resolveZaloAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

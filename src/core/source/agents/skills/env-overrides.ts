@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { normalizeResolvedSecretInputString } from "../../config/types.secrets.js";
 import { isDangerousHostEnvVarName } from "../../infra/host-env-security.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
@@ -210,7 +210,7 @@ function createEnvReverter(updates: EnvUpdate[]) {
   };
 }
 
-export function applySkillEnvOverrides(params: { skills: SkillEntry[]; config?: Must-bConfig }) {
+export function applySkillEnvOverrides(params: { skills: SkillEntry[]; config?: MustBonfig }) {
   const { skills, config } = params;
   const updates: EnvUpdate[] = [];
 
@@ -235,7 +235,7 @@ export function applySkillEnvOverrides(params: { skills: SkillEntry[]; config?: 
 
 export function applySkillEnvOverridesFromSnapshot(params: {
   snapshot?: SkillSnapshot;
-  config?: Must-bConfig;
+  config?: MustBonfig;
 }) {
   const { snapshot, config } = params;
   if (!snapshot) {

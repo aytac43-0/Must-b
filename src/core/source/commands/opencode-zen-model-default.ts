@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { applyAgentDefaultPrimaryModel } from "./model-default.js";
 
 export const OPENCODE_ZEN_DEFAULT_MODEL = "opencode/claude-opus-4-6";
@@ -7,8 +7,8 @@ const LEGACY_OPENCODE_ZEN_DEFAULT_MODELS = new Set([
   "opencode-zen/claude-opus-4-5",
 ]);
 
-export function applyOpencodeZenModelDefault(cfg: Must-bConfig): {
-  next: Must-bConfig;
+export function applyOpencodeZenModelDefault(cfg: MustBonfig): {
+  next: MustBonfig;
   changed: boolean;
 } {
   return applyAgentDefaultPrimaryModel({

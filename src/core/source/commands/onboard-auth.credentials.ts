@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { OAuthCredentials } from "@mariozechner/pi-ai";
-import { resolveMust-bAgentDir } from "../agents/agent-paths.js";
+import { resolveMustBgentDir } from "../agents/agent-paths.js";
 import { upsertAuthProfile } from "../agents/auth-profiles.js";
 import { resolveStateDir } from "../config/paths.js";
 import {
@@ -22,7 +22,7 @@ export {
 } from "./onboard-auth.models.js";
 export { KILOCODE_DEFAULT_MODEL_REF };
 
-const resolveAuthAgentDir = (agentDir?: string) => agentDir ?? resolveMust-bAgentDir();
+const resolveAuthAgentDir = (agentDir?: string) => agentDir ?? resolveMustBgentDir();
 
 const ENV_REF_PATTERN = /^\$\{([A-Z][A-Z0-9_]*)\}$/;
 

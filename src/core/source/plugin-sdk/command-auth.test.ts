@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveSenderCommandAuthorization } from "./command-auth.js";
 
 const baseCfg = {
   commands: { useAccessGroups: true },
-} as unknown as Must-bConfig;
+} as unknown as MustBonfig;
 
 describe("plugin-sdk/command-auth", () => {
   it("authorizes group commands from explicit group allowlist", async () => {

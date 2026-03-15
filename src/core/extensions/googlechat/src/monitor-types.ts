@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/googlechat";
+import type { MustBConfig } from "must-b/plugin-sdk/googlechat";
 import type { ResolvedGoogleChatAccount } from "./accounts.js";
 import type { GoogleChatAudienceType } from "./auth.js";
 import { getGoogleChatRuntime } from "./runtime.js";
@@ -10,7 +10,7 @@ export type GoogleChatRuntimeEnv = {
 
 export type GoogleChatMonitorOptions = {
   account: ResolvedGoogleChatAccount;
-  config: Must-bConfig;
+  config: MustBConfig;
   runtime: GoogleChatRuntimeEnv;
   abortSignal: AbortSignal;
   webhookPath?: string;
@@ -22,7 +22,7 @@ export type GoogleChatCoreRuntime = ReturnType<typeof getGoogleChatRuntime>;
 
 export type WebhookTarget = {
   account: ResolvedGoogleChatAccount;
-  config: Must-bConfig;
+  config: MustBConfig;
   runtime: GoogleChatRuntimeEnv;
   core: GoogleChatCoreRuntime;
   path: string;

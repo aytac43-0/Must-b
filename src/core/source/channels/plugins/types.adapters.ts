@@ -1,5 +1,5 @@
 import type { ReplyPayload } from "../../auto-reply/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { GroupToolPolicyConfig } from "../../config/types.tools.js";
 import type { OutboundDeliveryResult, OutboundSendDeps } from "../../infra/outbound/deliver.js";
 import type { OutboundIdentity } from "../../infra/outbound/identity.js";
@@ -23,59 +23,59 @@ import type {
 
 export type ChannelSetupAdapter = {
   resolveAccountId?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId?: string;
     input?: ChannelSetupInput;
   }) => string;
   resolveBindingAccountId?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     agentId: string;
     accountId?: string;
   }) => string | undefined;
   applyAccountName?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId: string;
     name?: string;
-  }) => Must-bConfig;
+  }) => MustBonfig;
   applyAccountConfig: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId: string;
     input: ChannelSetupInput;
-  }) => Must-bConfig;
+  }) => MustBonfig;
   validateInput?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId: string;
     input: ChannelSetupInput;
   }) => string | null;
 };
 
 export type ChannelConfigAdapter<ResolvedAccount> = {
-  listAccountIds: (cfg: Must-bConfig) => string[];
-  resolveAccount: (cfg: Must-bConfig, accountId?: string | null) => ResolvedAccount;
-  inspectAccount?: (cfg: Must-bConfig, accountId?: string | null) => unknown;
-  defaultAccountId?: (cfg: Must-bConfig) => string;
+  listAccountIds: (cfg: MustBonfig) => string[];
+  resolveAccount: (cfg: MustBonfig, accountId?: string | null) => ResolvedAccount;
+  inspectAccount?: (cfg: MustBonfig, accountId?: string | null) => unknown;
+  defaultAccountId?: (cfg: MustBonfig) => string;
   setAccountEnabled?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId: string;
     enabled: boolean;
-  }) => Must-bConfig;
-  deleteAccount?: (params: { cfg: Must-bConfig; accountId: string }) => Must-bConfig;
-  isEnabled?: (account: ResolvedAccount, cfg: Must-bConfig) => boolean;
-  disabledReason?: (account: ResolvedAccount, cfg: Must-bConfig) => string;
-  isConfigured?: (account: ResolvedAccount, cfg: Must-bConfig) => boolean | Promise<boolean>;
-  unconfiguredReason?: (account: ResolvedAccount, cfg: Must-bConfig) => string;
-  describeAccount?: (account: ResolvedAccount, cfg: Must-bConfig) => ChannelAccountSnapshot;
+  }) => MustBonfig;
+  deleteAccount?: (params: { cfg: MustBonfig; accountId: string }) => MustBonfig;
+  isEnabled?: (account: ResolvedAccount, cfg: MustBonfig) => boolean;
+  disabledReason?: (account: ResolvedAccount, cfg: MustBonfig) => string;
+  isConfigured?: (account: ResolvedAccount, cfg: MustBonfig) => boolean | Promise<boolean>;
+  unconfiguredReason?: (account: ResolvedAccount, cfg: MustBonfig) => string;
+  describeAccount?: (account: ResolvedAccount, cfg: MustBonfig) => ChannelAccountSnapshot;
   resolveAllowFrom?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId?: string | null;
   }) => Array<string | number> | undefined;
   formatAllowFrom?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId?: string | null;
     allowFrom: Array<string | number>;
   }) => string[];
   resolveDefaultTo?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId?: string | null;
   }) => string | undefined;
 };
@@ -87,7 +87,7 @@ export type ChannelGroupAdapter = {
 };
 
 export type ChannelOutboundContext = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   to: string;
   text: string;
   mediaUrl?: string;
@@ -112,7 +112,7 @@ export type ChannelOutboundAdapter = {
   textChunkLimit?: number;
   pollMaxOptions?: number;
   resolveTarget?: (params: {
-    cfg?: Must-bConfig;
+    cfg?: MustBonfig;
     to?: string;
     allowFrom?: string[];
     accountId?: string | null;
@@ -128,37 +128,37 @@ export type ChannelStatusAdapter<ResolvedAccount, Probe = unknown, Audit = unkno
   defaultRuntime?: ChannelAccountSnapshot;
   buildChannelSummary?: (params: {
     account: ResolvedAccount;
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     defaultAccountId: string;
     snapshot: ChannelAccountSnapshot;
   }) => Record<string, unknown> | Promise<Record<string, unknown>>;
   probeAccount?: (params: {
     account: ResolvedAccount;
     timeoutMs: number;
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
   }) => Promise<Probe>;
   auditAccount?: (params: {
     account: ResolvedAccount;
     timeoutMs: number;
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     probe?: Probe;
   }) => Promise<Audit>;
   buildAccountSnapshot?: (params: {
     account: ResolvedAccount;
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     runtime?: ChannelAccountSnapshot;
     probe?: Probe;
     audit?: Audit;
   }) => ChannelAccountSnapshot | Promise<ChannelAccountSnapshot>;
   logSelfId?: (params: {
     account: ResolvedAccount;
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     runtime: RuntimeEnv;
     includeChannelPrefix?: boolean;
   }) => void;
   resolveAccountState?: (params: {
     account: ResolvedAccount;
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     configured: boolean;
     enabled: boolean;
   }) => ChannelAccountState;
@@ -166,7 +166,7 @@ export type ChannelStatusAdapter<ResolvedAccount, Probe = unknown, Audit = unkno
 };
 
 export type ChannelGatewayContext<ResolvedAccount = unknown> = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   account: ResolvedAccount;
   runtime: RuntimeEnv;
@@ -255,7 +255,7 @@ export type ChannelLoginWithQrWaitResult = {
 };
 
 export type ChannelLogoutContext<ResolvedAccount = unknown> = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   account: ResolvedAccount;
   runtime: RuntimeEnv;
@@ -266,7 +266,7 @@ export type ChannelPairingAdapter = {
   idLabel: string;
   normalizeAllowEntry?: (entry: string) => string;
   notifyApproval?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     id: string;
     runtime?: RuntimeEnv;
   }) => Promise<void>;
@@ -290,7 +290,7 @@ export type ChannelGatewayAdapter<ResolvedAccount = unknown> = {
 
 export type ChannelAuthAdapter = {
   login?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId?: string | null;
     runtime: RuntimeEnv;
     verbose?: boolean;
@@ -300,24 +300,24 @@ export type ChannelAuthAdapter = {
 
 export type ChannelHeartbeatAdapter = {
   checkReady?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId?: string | null;
     deps?: ChannelHeartbeatDeps;
   }) => Promise<{ ok: boolean; reason: string }>;
-  resolveRecipients?: (params: { cfg: Must-bConfig; opts?: { to?: string; all?: boolean } }) => {
+  resolveRecipients?: (params: { cfg: MustBonfig; opts?: { to?: string; all?: boolean } }) => {
     recipients: string[];
     source: string;
   };
 };
 
 type ChannelDirectorySelfParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   runtime: RuntimeEnv;
 };
 
 type ChannelDirectoryListParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;
@@ -325,7 +325,7 @@ type ChannelDirectoryListParams = {
 };
 
 type ChannelDirectoryListGroupMembersParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   groupId: string;
   limit?: number | null;
@@ -355,7 +355,7 @@ export type ChannelResolveResult = {
 
 export type ChannelResolverAdapter = {
   resolveTargets: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId?: string | null;
     inputs: string[];
     kind: ChannelResolveKind;
@@ -365,7 +365,7 @@ export type ChannelResolverAdapter = {
 
 export type ChannelElevatedAdapter = {
   allowFromFallback?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     accountId?: string | null;
   }) => Array<string | number> | undefined;
 };

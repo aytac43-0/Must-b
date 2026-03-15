@@ -14,7 +14,7 @@ import {
   type SessionNotification,
 } from "@agentclientprotocol/sdk";
 import { isKnownCoreToolId } from "../agents/tool-catalog.js";
-import { ensureMust-bCliOnPath } from "../infra/path-env.js";
+import { ensureMustBCliOnPath } from "../infra/path-env.js";
 import {
   materializeWindowsSpawnProgram,
   resolveWindowsSpawnProgram,
@@ -492,7 +492,7 @@ export async function createAcpClient(opts: AcpClientOptions = {}): Promise<AcpC
   const verbose = Boolean(opts.verbose);
   const log = verbose ? (msg: string) => console.error(`[acp-client] ${msg}`) : () => {};
 
-  ensureMust-bCliOnPath();
+  ensureMustBCliOnPath();
   const serverArgs = buildServerArgs(opts);
 
   const entryPath = resolveSelfEntryPath();

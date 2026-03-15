@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 
 const buildGatewayInstallPlan = vi.hoisted(() => vi.fn());
 const gatewayInstallErrorHint = vi.hoisted(() => vi.fn(() => "hint"));
@@ -67,7 +67,7 @@ describe("installGatewayDaemonNonInteractive", () => {
             },
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       opts: { installDaemon: true },
       runtime,
       port: 18789,
@@ -89,7 +89,7 @@ describe("installGatewayDaemonNonInteractive", () => {
     const runtime = { log: vi.fn(), error: vi.fn(), exit: vi.fn() };
 
     await installGatewayDaemonNonInteractive({
-      nextConfig: {} as Must-bConfig,
+      nextConfig: {} as MustBonfig,
       opts: { installDaemon: true },
       runtime,
       port: 18789,

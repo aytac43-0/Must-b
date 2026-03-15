@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { TelegramInlineButtonsScope } from "../config/types.telegram.js";
 import { listTelegramAccountIds, resolveTelegramAccount } from "./accounts.js";
 
@@ -41,7 +41,7 @@ function resolveInlineButtonsScopeFromCapabilities(
 }
 
 export function resolveTelegramInlineButtonsScope(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): TelegramInlineButtonsScope {
   const account = resolveTelegramAccount({ cfg: params.cfg, accountId: params.accountId });
@@ -49,7 +49,7 @@ export function resolveTelegramInlineButtonsScope(params: {
 }
 
 export function isTelegramInlineButtonsEnabled(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): boolean {
   if (params.accountId) {

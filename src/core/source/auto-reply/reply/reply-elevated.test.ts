@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { MsgContext } from "../templating.js";
 import { resolveElevatedPermissions } from "./reply-elevated.js";
 
-function buildConfig(allowFrom: string[]): Must-bConfig {
+function buildConfig(allowFrom: string[]): MustBonfig {
   return {
     tools: {
       elevated: {
@@ -12,7 +12,7 @@ function buildConfig(allowFrom: string[]): Must-bConfig {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 function buildContext(overrides?: Partial<MsgContext>): MsgContext {

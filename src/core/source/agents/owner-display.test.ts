@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { ensureOwnerDisplaySecret, resolveOwnerDisplaySetting } from "./owner-display.js";
 
 describe("resolveOwnerDisplaySetting", () => {
@@ -9,7 +9,7 @@ describe("resolveOwnerDisplaySetting", () => {
         ownerDisplay: "hash",
         ownerDisplaySecret: "  owner-secret  ",
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     expect(resolveOwnerDisplaySetting(cfg)).toEqual({
       ownerDisplay: "hash",
@@ -26,7 +26,7 @@ describe("resolveOwnerDisplaySetting", () => {
         auth: { token: "gateway-auth-token" },
         remote: { token: "gateway-remote-token" },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     expect(resolveOwnerDisplaySetting(cfg)).toEqual({
       ownerDisplay: "hash",
@@ -40,7 +40,7 @@ describe("resolveOwnerDisplaySetting", () => {
         ownerDisplay: "raw",
         ownerDisplaySecret: "owner-secret", // pragma: allowlist secret
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     expect(resolveOwnerDisplaySetting(cfg)).toEqual({
       ownerDisplay: "raw",
@@ -55,7 +55,7 @@ describe("ensureOwnerDisplaySecret", () => {
       commands: {
         ownerDisplay: "hash",
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const result = ensureOwnerDisplaySecret(cfg, () => "generated-owner-secret");
     expect(result.generatedSecret).toBe("generated-owner-secret");
@@ -69,7 +69,7 @@ describe("ensureOwnerDisplaySecret", () => {
         ownerDisplay: "hash",
         ownerDisplaySecret: "existing-owner-secret", // pragma: allowlist secret
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const result = ensureOwnerDisplaySecret(cfg, () => "generated-owner-secret");
     expect(result.generatedSecret).toBeUndefined();

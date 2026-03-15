@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   isResolvedSessionVisibleToRequester,
   looksLikeSessionId,
@@ -15,7 +15,7 @@ describe("resolveMainSessionAlias", () => {
   it("uses normalized main key and global alias for global scope", () => {
     const cfg = {
       session: { mainKey: " Primary ", scope: "global" },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     expect(resolveMainSessionAlias(cfg)).toEqual({
       mainKey: "primary",
@@ -25,7 +25,7 @@ describe("resolveMainSessionAlias", () => {
   });
 
   it("falls back to per-sender defaults", () => {
-    expect(resolveMainSessionAlias({} as Must-bConfig)).toEqual({
+    expect(resolveMainSessionAlias({} as MustBonfig)).toEqual({
       mainKey: "main",
       alias: "main",
       scope: "per-sender",
@@ -36,7 +36,7 @@ describe("resolveMainSessionAlias", () => {
     const cfg = {
       session: { mainKey: "  work ", scope: "per-sender" },
       routing: { sessions: { mainKey: "legacy-main" } },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     expect(resolveMainSessionAlias(cfg)).toEqual({
       mainKey: "work",

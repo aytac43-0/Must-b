@@ -1,5 +1,5 @@
 import type * as Lark from "@larksuiteoapi/node-sdk";
-import type { Must-bPluginApi } from "must-b/plugin-sdk/feishu";
+import type { MustBPluginApi } from "must-b/plugin-sdk/feishu";
 import { listEnabledFeishuAccounts } from "./accounts.js";
 import { FeishuPermSchema, type FeishuPermParams } from "./perm-schema.js";
 import { createFeishuToolClient, resolveAnyEnabledFeishuToolsConfig } from "./tool-account.js";
@@ -112,7 +112,7 @@ async function removeMember(
 
 // ============ Tool Registration ============
 
-export function registerFeishuPermTools(api: Must-bPluginApi) {
+export function registerFeishuPermTools(api: MustBPluginApi) {
   if (!api.config) {
     api.logger.debug?.("feishu_perm: No config available, skipping perm tools");
     return;

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/tlon";
+import type { MustBConfig } from "must-b/plugin-sdk/tlon";
 
 export type TlonResolvedAccount = {
   accountId: string;
@@ -23,7 +23,7 @@ export type TlonResolvedAccount = {
 };
 
 export function resolveTlonAccount(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId?: string | null,
 ): TlonResolvedAccount {
   const base = cfg.channels?.tlon as
@@ -121,7 +121,7 @@ export function resolveTlonAccount(
   };
 }
 
-export function listTlonAccountIds(cfg: Must-bConfig): string[] {
+export function listTlonAccountIds(cfg: MustBConfig): string[] {
   const base = cfg.channels?.tlon as
     | { ship?: string; accounts?: Record<string, Record<string, unknown>> }
     | undefined;

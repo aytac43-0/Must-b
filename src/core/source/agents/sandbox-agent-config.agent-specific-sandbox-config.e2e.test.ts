@@ -2,7 +2,7 @@ import { EventEmitter } from "node:events";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { createRestrictedAgentSandboxConfig } from "./test-helpers/sandbox-agent-config-fixtures.js";
 
 type SpawnCall = {
@@ -54,7 +54,7 @@ let resolveSandboxContext: typeof import("./sandbox/context.js").resolveSandboxC
 let resolveSandboxConfigForAgent: typeof import("./sandbox/config.js").resolveSandboxConfigForAgent;
 let resolveSandboxRuntimeStatus: typeof import("./sandbox/runtime-status.js").resolveSandboxRuntimeStatus;
 
-async function resolveContext(config: Must-bConfig, sessionKey: string, workspaceDir: string) {
+async function resolveContext(config: MustBonfig, sessionKey: string, workspaceDir: string) {
   return resolveSandboxContext({
     config,
     sessionKey,
@@ -76,7 +76,7 @@ function expectDockerSetupCommand(command: string) {
 
 function createDefaultsSandboxConfig(
   scope: "agent" | "shared" | "session" = "agent",
-): Must-bConfig {
+): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -89,7 +89,7 @@ function createDefaultsSandboxConfig(
   };
 }
 
-function createWorkSetupCommandConfig(scope: "agent" | "shared"): Must-bConfig {
+function createWorkSetupCommandConfig(scope: "agent" | "shared"): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -135,7 +135,7 @@ describe("Agent-specific sandbox config", () => {
   });
 
   it("should use agent-specific workspaceRoot", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: {
@@ -165,7 +165,7 @@ describe("Agent-specific sandbox config", () => {
   });
 
   it("should prefer agent config over global for multiple agents", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: {
@@ -232,7 +232,7 @@ describe("Agent-specific sandbox config", () => {
   });
 
   it("should use global sandbox config when no agent-specific config exists", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: {
@@ -278,7 +278,7 @@ describe("Agent-specific sandbox config", () => {
   });
 
   it("should allow agent-specific docker settings beyond setupCommand", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: {
@@ -333,7 +333,7 @@ describe("Agent-specific sandbox config", () => {
               },
             ],
           },
-        } satisfies Must-bConfig,
+        } satisfies MustBonfig,
         sessionKey: "agent:main:main",
         assert: (runtime: ReturnType<typeof resolveSandboxRuntimeStatus>) => {
           expect(runtime.mode).toBe("off");
@@ -359,7 +359,7 @@ describe("Agent-specific sandbox config", () => {
               },
             ],
           },
-        } satisfies Must-bConfig,
+        } satisfies MustBonfig,
         sessionKey: "agent:family:whatsapp:group:123",
         assert: (runtime: ReturnType<typeof resolveSandboxRuntimeStatus>) => {
           expect(runtime.mode).toBe("all");
@@ -376,7 +376,7 @@ describe("Agent-specific sandbox config", () => {
   });
 
   it("should use agent-specific scope", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: {
@@ -425,7 +425,7 @@ describe("Agent-specific sandbox config", () => {
               },
             },
           },
-        } satisfies Must-bConfig,
+        } satisfies MustBonfig,
         expected: ["image"],
       },
     ]) {

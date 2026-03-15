@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   registerTelegramNativeCommands,
   type RegisterTelegramHandlerParams,
@@ -141,7 +141,7 @@ function buildStatusTopicCommandContext() {
 }
 
 function registerAndResolveStatusHandler(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   allowFrom?: string[];
   groupAllowFrom?: string[];
   resolveTelegramGroupConfig?: RegisterTelegramHandlerParams["resolveTelegramGroupConfig"];
@@ -162,7 +162,7 @@ function registerAndResolveStatusHandler(params: {
 
 function registerAndResolveCommandHandlerBase(params: {
   commandName: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   allowFrom: string[];
   groupAllowFrom: string[];
   useAccessGroups: boolean;
@@ -207,7 +207,7 @@ function registerAndResolveCommandHandlerBase(params: {
 
 function registerAndResolveCommandHandler(params: {
   commandName: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   allowFrom?: string[];
   groupAllowFrom?: string[];
   useAccessGroups?: boolean;
@@ -291,7 +291,7 @@ describe("registerTelegramNativeCommands — session metadata", () => {
   });
 
   it("calls recordSessionMetaFromInbound after a native slash command", async () => {
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const { handler } = registerAndResolveStatusHandler({ cfg });
     await handler(buildStatusCommandContext());
 
@@ -310,7 +310,7 @@ describe("registerTelegramNativeCommands — session metadata", () => {
     const deferred = createDeferred<void>();
     sessionMocks.recordSessionMetaFromInbound.mockReturnValue(deferred.promise);
 
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const { handler } = registerAndResolveStatusHandler({ cfg });
     const runPromise = handler(buildStatusCommandContext());
 

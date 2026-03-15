@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { containsEnvVarReference } from "../config/env-substitution.js";
 import { hasConfiguredSecretInput, resolveSecretInputRef } from "../config/types.secrets.js";
 
@@ -40,7 +40,7 @@ export type GatewayCredentialPlan = {
   remotePasswordActive: boolean;
 };
 
-type GatewaySecretDefaults = NonNullable<Must-bConfig["secrets"]>["defaults"];
+type GatewaySecretDefaults = NonNullable<MustBonfig["secrets"]>["defaults"];
 
 function readGatewayEnv(
   env: NodeJS.ProcessEnv,
@@ -135,7 +135,7 @@ function resolveConfiguredGatewayCredentialInput(params: {
 }
 
 export function createGatewayCredentialPlan(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   env?: NodeJS.ProcessEnv;
   includeLegacyEnv?: boolean;
   defaults?: GatewaySecretDefaults;

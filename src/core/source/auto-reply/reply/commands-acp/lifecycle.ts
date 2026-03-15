@@ -27,7 +27,7 @@ import {
   resolveThreadBindingMaxAgeMsForChannel,
   resolveThreadBindingSpawnPolicy,
 } from "../../../channels/thread-bindings-policy.js";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import type { SessionAcpMeta } from "../../../config/sessions/types.js";
 import { callGateway } from "../../../gateway/call.js";
 import {
@@ -226,7 +226,7 @@ async function bindSpawnedAcpSessionToThread(params: {
 }
 
 async function cleanupFailedSpawn(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey: string;
   shouldDeleteSession: boolean;
   initializedRuntime?: AcpSpawnRuntimeCloseHandle;
@@ -383,7 +383,7 @@ export async function handleAcpSpawnAction(
 
 function resolveAcpSessionForCommandOrStop(params: {
   acpManager: ReturnType<typeof getAcpSessionManager>;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey: string;
 }): CommandHandlerResult | null {
   const resolved = params.acpManager.resolveSession({
@@ -471,7 +471,7 @@ export async function handleAcpCancelAction(
 }
 
 async function runAcpSteer(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey: string;
   instruction: string;
   requestId: string;

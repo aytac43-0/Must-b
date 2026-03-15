@@ -14,7 +14,7 @@ import { finalizeInboundContext } from "../../auto-reply/reply/inbound-context.j
 import { buildMentionRegexes, matchesMentionPatterns } from "../../auto-reply/reply/mentions.js";
 import { resolveControlCommandGate } from "../../channels/command-gating.js";
 import { logInboundDrop } from "../../channels/logging.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   resolveChannelGroupPolicy,
   resolveChannelGroupRequireMention,
@@ -89,7 +89,7 @@ export type IMessageInboundDecision =
   | IMessageInboundDispatchDecision;
 
 export function resolveIMessageInboundDecision(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   message: IMessagePayload;
   opts?: Pick<MonitorIMessageOpts, "requireMention">;
@@ -376,7 +376,7 @@ export function resolveIMessageInboundDecision(params: {
 }
 
 export function buildIMessageInboundContext(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   decision: IMessageInboundDispatchDecision;
   message: IMessagePayload;
   envelopeOptions?: EnvelopeFormatOptions;

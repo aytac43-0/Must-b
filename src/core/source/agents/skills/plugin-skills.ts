@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import {
   normalizePluginsConfig,
@@ -14,7 +14,7 @@ const log = createSubsystemLogger("skills");
 
 export function resolvePluginSkillDirs(params: {
   workspaceDir: string | undefined;
-  config?: Must-bConfig;
+  config?: MustBonfig;
 }): string[] {
   const workspaceDir = (params.workspaceDir ?? "").trim();
   if (!workspaceDir) {

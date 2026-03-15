@@ -206,16 +206,16 @@ describe("handleSystemRunInvoke mac app exec host routing", () => {
     run: (ctx: { tempHome: string }) => Promise<T>;
   }): Promise<T> {
     const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "must-b-exec-approvals-"));
-    const previousMust-bHome = process.env.MUSTB_HOME;
+    const previousMustBome = process.env.MUSTB_HOME;
     process.env.MUSTB_HOME = tempHome;
     saveExecApprovals(params.approvals);
     try {
       return await params.run({ tempHome });
     } finally {
-      if (previousMust-bHome === undefined) {
+      if (previousMustBome === undefined) {
         delete process.env.MUSTB_HOME;
       } else {
-        process.env.MUSTB_HOME = previousMust-bHome;
+        process.env.MUSTB_HOME = previousMustBome;
       }
       fs.rmSync(tempHome, { recursive: true, force: true });
     }

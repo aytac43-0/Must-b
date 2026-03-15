@@ -1,10 +1,10 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { hasConfiguredSecretInput } from "../config/types.secrets.js";
 
 export const EXPLICIT_GATEWAY_AUTH_MODE_REQUIRED_ERROR =
   "Invalid config: gateway.auth.token and gateway.auth.password are both configured, but gateway.auth.mode is unset. Set gateway.auth.mode to token or password.";
 
-export function hasAmbiguousGatewayAuthModeConfig(cfg: Must-bConfig): boolean {
+export function hasAmbiguousGatewayAuthModeConfig(cfg: MustBonfig): boolean {
   const auth = cfg.gateway?.auth;
   if (!auth) {
     return false;
@@ -18,7 +18,7 @@ export function hasAmbiguousGatewayAuthModeConfig(cfg: Must-bConfig): boolean {
   return tokenConfigured && passwordConfigured;
 }
 
-export function assertExplicitGatewayAuthModeWhenBothConfigured(cfg: Must-bConfig): void {
+export function assertExplicitGatewayAuthModeWhenBothConfigured(cfg: MustBonfig): void {
   if (!hasAmbiguousGatewayAuthModeConfig(cfg)) {
     return;
   }

@@ -177,7 +177,7 @@ export function getLaunchCalls() {
 vi.mock("./chrome.js", () => ({
   isChromeCdpReady: vi.fn(async () => state.reachable),
   isChromeReachable: vi.fn(async () => state.reachable),
-  launchMust-bChrome: vi.fn(async (_resolved: unknown, profile: { cdpPort: number }) => {
+  launchMustBhrome: vi.fn(async (_resolved: unknown, profile: { cdpPort: number }) => {
     launchCalls.push({ port: profile.cdpPort });
     state.reachable = true;
     return {
@@ -189,8 +189,8 @@ vi.mock("./chrome.js", () => ({
       proc,
     };
   }),
-  resolveMust-bUserDataDir: vi.fn(() => chromeUserDataDir.dir),
-  stopMust-bChrome: vi.fn(async () => {
+  resolveMustBserDataDir: vi.fn(() => chromeUserDataDir.dir),
+  stopMustBhrome: vi.fn(async () => {
     state.reachable = false;
   }),
 }));

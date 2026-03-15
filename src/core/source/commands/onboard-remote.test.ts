@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { GatewayBonjourBeacon } from "../infra/bonjour-discovery.js";
 import { captureEnv } from "../test-utils/env.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
@@ -47,7 +47,7 @@ describe("promptRemoteGatewayConfig", () => {
     selectResponses: Partial<Record<string, string>>;
     confirm: boolean;
   }) {
-    const cfg = {} as Must-bConfig;
+    const cfg = {} as MustBonfig;
     const prompter = createPrompter({
       confirm: vi.fn(async () => params.confirm),
       select: createSelectPrompter(params.selectResponses),
@@ -178,7 +178,7 @@ describe("promptRemoteGatewayConfig", () => {
       return (params.options[0]?.value ?? "") as never;
     });
 
-    const cfg = {} as Must-bConfig;
+    const cfg = {} as MustBonfig;
     const prompter = createPrompter({
       confirm: vi.fn(async () => false),
       select,

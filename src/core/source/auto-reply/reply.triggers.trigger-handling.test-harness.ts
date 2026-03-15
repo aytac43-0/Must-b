@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, expect, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 // Avoid exporting vitest mock types (TS2742 under pnpm + d.ts emit).
 // oxlint-disable-next-line typescript/no-explicit-any
@@ -192,7 +192,7 @@ export async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise
   }
 }
 
-export function makeCfg(home: string): Must-bConfig {
+export function makeCfg(home: string): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -215,7 +215,7 @@ export function makeCfg(home: string): Must-bConfig {
       },
     },
     session: { store: join(home, "sessions.json") },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 export async function loadGetReplyFromConfig() {
@@ -251,7 +251,7 @@ export async function readSessionStore(cfg: {
 export function makeWhatsAppElevatedCfg(
   home: string,
   opts?: { elevatedEnabled?: boolean; requireMentionInGroups?: boolean },
-): Must-bConfig {
+): MustBonfig {
   const cfg = makeCfg(home);
   cfg.channels ??= {};
   cfg.channels.whatsapp = {
@@ -273,7 +273,7 @@ export function makeWhatsAppElevatedCfg(
 }
 
 export async function runDirectElevatedToggleAndLoadStore(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   getReplyFromConfig: typeof import("./reply.js").getReplyFromConfig;
   body?: string;
 }): Promise<{

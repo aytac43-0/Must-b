@@ -5,7 +5,7 @@ import { listAgentIds, resolveAgentDir, resolveDefaultAgentId } from "../agents/
 import type { AuthProfileStore } from "../agents/auth-profiles.js";
 import { AUTH_STORE_VERSION } from "../agents/auth-profiles/constants.js";
 import { resolveAuthStorePath } from "../agents/auth-profiles/paths.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SecretProviderConfig, SecretRef, SecretRefSource } from "../config/types.secrets.js";
 import { isSafeExecutableValue } from "../infra/exec-safety.js";
 import { normalizeAgentId } from "../routing/session-key.js";
@@ -70,7 +70,7 @@ function parseOptionalPositiveInt(value: string, max: number): number | undefine
   return parsed;
 }
 
-function getSecretProviders(config: Must-bConfig): Record<string, SecretProviderConfig> {
+function getSecretProviders(config: MustBonfig): Record<string, SecretProviderConfig> {
   if (!isRecord(config.secrets?.providers)) {
     return {};
   }
@@ -78,7 +78,7 @@ function getSecretProviders(config: Must-bConfig): Record<string, SecretProvider
 }
 
 function setSecretProvider(
-  config: Must-bConfig,
+  config: MustBonfig,
   providerAlias: string,
   providerConfig: SecretProviderConfig,
 ): void {
@@ -89,7 +89,7 @@ function setSecretProvider(
   config.secrets.providers[providerAlias] = providerConfig;
 }
 
-function removeSecretProvider(config: Must-bConfig, providerAlias: string): boolean {
+function removeSecretProvider(config: MustBonfig, providerAlias: string): boolean {
   if (!isRecord(config.secrets?.providers)) {
     return false;
   }
@@ -135,7 +135,7 @@ function providerHint(provider: SecretProviderConfig): string {
   return `exec (${provider.jsonOnly === false ? "json+text" : "json"})`;
 }
 
-function toSourceChoices(config: Must-bConfig): Array<{ value: SecretRefSource; label: string }> {
+function toSourceChoices(config: MustBonfig): Array<{ value: SecretRefSource; label: string }> {
   const hasSource = (source: SecretRefSource) =>
     Object.values(config.secrets?.providers ?? {}).some((provider) => provider?.source === source);
   const choices: Array<{ value: SecretRefSource; label: string }> = [
@@ -254,7 +254,7 @@ function resolveSuggestedEnvSecretId(candidate: ConfigureCandidate): string | un
   return envCandidates[0];
 }
 
-function resolveConfigureAgentId(config: Must-bConfig, explicitAgentId?: string): string {
+function resolveConfigureAgentId(config: MustBonfig, explicitAgentId?: string): string {
   const knownAgentIds = new Set(listAgentIds(config));
   if (!explicitAgentId) {
     return resolveDefaultAgentId(config);
@@ -297,7 +297,7 @@ function normalizeAuthStoreForConfigure(
 }
 
 function loadAuthProfileStoreForConfigure(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   agentId: string;
 }): AuthProfileStore {
   const agentDir = resolveAgentDir(params.config, params.agentId);
@@ -634,7 +634,7 @@ async function promptProviderConfig(
   return await promptExecProvider(current?.source === "exec" ? current : undefined);
 }
 
-async function configureProvidersInteractive(config: Must-bConfig): Promise<void> {
+async function configureProvidersInteractive(config: MustBonfig): Promise<void> {
   while (true) {
     const providers = getSecretProviders(config);
     const providerEntries = Object.entries(providers).toSorted(([left], [right]) =>
@@ -783,7 +783,7 @@ export async function runSecretsConfigureInteractive(
     });
     const candidates = buildConfigureCandidatesForScope({
       config: stagedConfig,
-      authoredMust-bConfig: snapshot.resolved,
+      authoredMustBonfig: snapshot.resolved,
       authProfiles: {
         agentId: configureAgentId,
         store: authStore,

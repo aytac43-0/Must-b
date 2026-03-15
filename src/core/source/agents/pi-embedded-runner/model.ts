@@ -1,8 +1,8 @@
 import type { Api, Model } from "@mariozechner/pi-ai";
 import type { AuthStorage, ModelRegistry } from "@mariozechner/pi-coding-agent";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { ModelDefinitionConfig } from "../../config/types.js";
-import { resolveMust-bAgentDir } from "../agent-paths.js";
+import { resolveMustBgentDir } from "../agent-paths.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../defaults.js";
 import { buildModelAliasLines } from "../model-alias-lines.js";
 import { isSecretRefHeaderValueMarker } from "../model-auth-markers.js";
@@ -54,7 +54,7 @@ function normalizeResolvedModel(params: { provider: string; model: Model<Api> })
 export { buildModelAliasLines };
 
 function resolveConfiguredProviderConfig(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   provider: string,
 ): InlineProviderConfig | undefined {
   const configuredProviders = cfg?.models?.providers;
@@ -160,7 +160,7 @@ export function resolveModelWithRegistry(params: {
   provider: string;
   modelId: string;
   modelRegistry: ModelRegistry;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
 }): Model<Api> | undefined {
   const { provider, modelId, modelRegistry, cfg } = params;
   if (shouldSuppressBuiltInModel({ provider, id: modelId })) {
@@ -265,14 +265,14 @@ export function resolveModel(
   provider: string,
   modelId: string,
   agentDir?: string,
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
 ): {
   model?: Model<Api>;
   error?: string;
   authStorage: AuthStorage;
   modelRegistry: ModelRegistry;
 } {
-  const resolvedAgentDir = agentDir ?? resolveMust-bAgentDir();
+  const resolvedAgentDir = agentDir ?? resolveMustBgentDir();
   const authStorage = discoverAuthStorage(resolvedAgentDir);
   const modelRegistry = discoverModels(authStorage, resolvedAgentDir);
   const model = resolveModelWithRegistry({ provider, modelId, modelRegistry, cfg });

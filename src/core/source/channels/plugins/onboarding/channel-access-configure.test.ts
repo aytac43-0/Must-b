@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { configureChannelAccessWithAllowlist } from "./channel-access-configure.js";
 import type { ChannelAccessPolicy } from "./channel-access.js";
 
@@ -13,13 +13,13 @@ function createPrompter(params: { confirm: boolean; policy?: ChannelAccessPolicy
 }
 
 async function runConfigureChannelAccess<TResolved>(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: ReturnType<typeof createPrompter>;
   label?: string;
   placeholder?: string;
-  setPolicy: (cfg: Must-bConfig, policy: ChannelAccessPolicy) => Must-bConfig;
-  resolveAllowlist: (params: { cfg: Must-bConfig; entries: string[] }) => Promise<TResolved>;
-  applyAllowlist: (params: { cfg: Must-bConfig; resolved: TResolved }) => Must-bConfig;
+  setPolicy: (cfg: MustBonfig, policy: ChannelAccessPolicy) => MustBonfig;
+  resolveAllowlist: (params: { cfg: MustBonfig; entries: string[] }) => Promise<TResolved>;
+  applyAllowlist: (params: { cfg: MustBonfig; resolved: TResolved }) => MustBonfig;
 }) {
   return await configureChannelAccessWithAllowlist({
     cfg: params.cfg,
@@ -38,11 +38,11 @@ async function runConfigureChannelAccess<TResolved>(params: {
 
 describe("configureChannelAccessWithAllowlist", () => {
   it("returns input config when user skips access configuration", async () => {
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const prompter = createPrompter({ confirm: false });
-    const setPolicy = vi.fn((next: Must-bConfig) => next);
+    const setPolicy = vi.fn((next: MustBonfig) => next);
     const resolveAllowlist = vi.fn(async () => [] as string[]);
-    const applyAllowlist = vi.fn((params: { cfg: Must-bConfig }) => params.cfg);
+    const applyAllowlist = vi.fn((params: { cfg: MustBonfig }) => params.cfg);
 
     const next = await runConfigureChannelAccess({
       cfg,
@@ -59,19 +59,19 @@ describe("configureChannelAccessWithAllowlist", () => {
   });
 
   it("applies non-allowlist policy directly", async () => {
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const prompter = createPrompter({
       confirm: true,
       policy: "open",
     });
     const setPolicy = vi.fn(
-      (next: Must-bConfig, policy: ChannelAccessPolicy): Must-bConfig => ({
+      (next: MustBonfig, policy: ChannelAccessPolicy): MustBonfig => ({
         ...next,
         channels: { discord: { groupPolicy: policy } },
       }),
     );
     const resolveAllowlist = vi.fn(async () => ["ignored"]);
-    const applyAllowlist = vi.fn((params: { cfg: Must-bConfig }) => params.cfg);
+    const applyAllowlist = vi.fn((params: { cfg: MustBonfig }) => params.cfg);
 
     const next = await runConfigureChannelAccess({
       cfg,
@@ -90,27 +90,27 @@ describe("configureChannelAccessWithAllowlist", () => {
   });
 
   it("resolves allowlist entries and applies them after forcing allowlist policy", async () => {
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const prompter = createPrompter({
       confirm: true,
       policy: "allowlist",
       text: "#general, #support",
     });
     const calls: string[] = [];
-    const setPolicy = vi.fn((next: Must-bConfig, policy: ChannelAccessPolicy): Must-bConfig => {
+    const setPolicy = vi.fn((next: MustBonfig, policy: ChannelAccessPolicy): MustBonfig => {
       calls.push("setPolicy");
       return {
         ...next,
         channels: { slack: { groupPolicy: policy } },
       };
     });
-    const resolveAllowlist = vi.fn(async (params: { cfg: Must-bConfig; entries: string[] }) => {
+    const resolveAllowlist = vi.fn(async (params: { cfg: MustBonfig; entries: string[] }) => {
       calls.push("resolve");
       expect(params.cfg).toBe(cfg);
       expect(params.entries).toEqual(["#general", "#support"]);
       return ["C1", "C2"];
     });
-    const applyAllowlist = vi.fn((params: { cfg: Must-bConfig; resolved: string[] }) => {
+    const applyAllowlist = vi.fn((params: { cfg: MustBonfig; resolved: string[] }) => {
       calls.push("apply");
       expect(params.cfg.channels?.slack?.groupPolicy).toBe("allowlist");
       return {

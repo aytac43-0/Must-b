@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { RuntimeEnv } from "../../runtime.js";
 
 const mocks = vi.hoisted(() => ({
@@ -112,8 +112,8 @@ function withInteractiveStdin() {
 
 describe("modelsAuthLoginCommand", () => {
   let restoreStdin: (() => void) | null = null;
-  let currentConfig: Must-bConfig;
-  let lastUpdatedConfig: Must-bConfig | null;
+  let currentConfig: MustBonfig;
+  let lastUpdatedConfig: MustBonfig | null;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -135,7 +135,7 @@ describe("modelsAuthLoginCommand", () => {
     mocks.resolveDefaultAgentWorkspaceDir.mockReturnValue("/tmp/must-b/workspace");
     mocks.loadValidConfigOrThrow.mockImplementation(async () => currentConfig);
     mocks.updateConfig.mockImplementation(
-      async (mutator: (cfg: Must-bConfig) => Must-bConfig) => {
+      async (mutator: (cfg: MustBonfig) => MustBonfig) => {
         lastUpdatedConfig = mutator(currentConfig);
         currentConfig = lastUpdatedConfig;
         return lastUpdatedConfig;

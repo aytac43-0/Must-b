@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBConfig } from "../config/config.js";
 import type { AuthProfileStore } from "./auth-profiles.js";
 
 export const ANTHROPIC_STORE: AuthProfileStore = {
@@ -17,7 +17,7 @@ export const ANTHROPIC_STORE: AuthProfileStore = {
   },
 };
 
-export const ANTHROPIC_CFG: Must-bConfig = {
+export const ANTHROPIC_CFG: MustBConfig = {
   auth: {
     profiles: {
       "anthropic:default": { provider: "anthropic", mode: "api_key" },

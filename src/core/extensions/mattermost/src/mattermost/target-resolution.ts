@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/mattermost";
+import type { MustBConfig } from "must-b/plugin-sdk/mattermost";
 import { resolveMattermostAccount } from "./accounts.js";
 import {
   createMattermostClient,
@@ -50,7 +50,7 @@ export function parseMattermostApiStatus(err: unknown): number | undefined {
 
 export async function resolveMattermostOpaqueTarget(params: {
   input: string;
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   accountId?: string | null;
   token?: string;
   baseUrl?: string;

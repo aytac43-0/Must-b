@@ -1,4 +1,4 @@
-import type { Must-bConfig, DmPolicy } from "must-b/plugin-sdk/googlechat";
+import type { MustBConfig, DmPolicy } from "must-b/plugin-sdk/googlechat";
 import {
   DEFAULT_ACCOUNT_ID,
   applySetupAccountConfigPatch,
@@ -23,7 +23,7 @@ const channel = "googlechat" as const;
 const ENV_SERVICE_ACCOUNT = "GOOGLE_CHAT_SERVICE_ACCOUNT";
 const ENV_SERVICE_ACCOUNT_FILE = "GOOGLE_CHAT_SERVICE_ACCOUNT_FILE";
 
-function setGoogleChatDmPolicy(cfg: Must-bConfig, policy: DmPolicy) {
+function setGoogleChatDmPolicy(cfg: MustBConfig, policy: DmPolicy) {
   const allowFrom =
     policy === "open"
       ? addWildcardAllowFrom(cfg.channels?.["googlechat"]?.dm?.allowFrom)
@@ -45,9 +45,9 @@ function setGoogleChatDmPolicy(cfg: Must-bConfig, policy: DmPolicy) {
 }
 
 async function promptAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   prompter: WizardPrompter;
-}): Promise<Must-bConfig> {
+}): Promise<MustBConfig> {
   const current = params.cfg.channels?.["googlechat"]?.dm?.allowFrom ?? [];
   const entry = await params.prompter.text({
     message: "Google Chat allowFrom (users/<id> or raw email; avoid users/<email>)",
@@ -85,10 +85,10 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
 };
 
 async function promptCredentials(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   prompter: WizardPrompter;
   accountId: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBConfig> {
   const { cfg, prompter, accountId } = params;
   const envReady =
     accountId === DEFAULT_ACCOUNT_ID &&
@@ -140,10 +140,10 @@ async function promptCredentials(params: {
 }
 
 async function promptAudience(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   prompter: WizardPrompter;
   accountId: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBConfig> {
   const account = resolveGoogleChatAccount({
     cfg: params.cfg,
     accountId: params.accountId,

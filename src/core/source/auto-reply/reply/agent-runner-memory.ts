@@ -13,7 +13,7 @@ import {
   normalizeUsage,
   type UsageLike,
 } from "../../agents/usage.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   resolveAgentIdFromSessionKey,
   resolveSessionFilePath,
@@ -249,7 +249,7 @@ export async function readPromptTokensFromSessionLog(
 }
 
 export async function runMemoryFlushIfNeeded(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   followupRun: FollowupRun;
   promptForEstimate?: string;
   sessionCtx: TemplateContext;

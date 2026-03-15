@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { DmPolicy } from "../../config/types.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import type { WizardPrompter } from "../../wizard/prompts.js";
@@ -24,11 +24,11 @@ export type SetupChannelsOptions = {
 };
 
 export type PromptAccountIdParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   label: string;
   currentId?: string;
-  listAccountIds: (cfg: Must-bConfig) => string[];
+  listAccountIds: (cfg: MustBonfig) => string[];
   defaultAccountId: string;
 };
 
@@ -43,13 +43,13 @@ export type ChannelOnboardingStatus = {
 };
 
 export type ChannelOnboardingStatusContext = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   options?: SetupChannelsOptions;
   accountOverrides: Partial<Record<ChannelId, string>>;
 };
 
 export type ChannelOnboardingConfigureContext = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   runtime: RuntimeEnv;
   prompter: WizardPrompter;
   options?: SetupChannelsOptions;
@@ -59,7 +59,7 @@ export type ChannelOnboardingConfigureContext = {
 };
 
 export type ChannelOnboardingResult = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string;
 };
 
@@ -75,13 +75,13 @@ export type ChannelOnboardingDmPolicy = {
   channel: ChannelId;
   policyKey: string;
   allowFromKey: string;
-  getCurrent: (cfg: Must-bConfig) => DmPolicy;
-  setPolicy: (cfg: Must-bConfig, policy: DmPolicy) => Must-bConfig;
+  getCurrent: (cfg: MustBonfig) => DmPolicy;
+  setPolicy: (cfg: MustBonfig, policy: DmPolicy) => MustBonfig;
   promptAllowFrom?: (params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     prompter: WizardPrompter;
     accountId?: string;
-  }) => Promise<Must-bConfig>;
+  }) => Promise<MustBonfig>;
 };
 
 export type ChannelOnboardingAdapter = {
@@ -96,5 +96,5 @@ export type ChannelOnboardingAdapter = {
   ) => Promise<ChannelOnboardingConfiguredResult>;
   dmPolicy?: ChannelOnboardingDmPolicy;
   onAccountRecorded?: (accountId: string, options?: SetupChannelsOptions) => void;
-  disable?: (cfg: Must-bConfig) => Must-bConfig;
+  disable?: (cfg: MustBonfig) => MustBonfig;
 };

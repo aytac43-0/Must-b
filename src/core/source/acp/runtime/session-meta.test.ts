@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBConfig } from "../../config/config.js";
 
 const hoisted = vi.hoisted(() => {
   const resolveAllAgentSessionStoreTargetsMock = vi.fn();
@@ -16,7 +16,7 @@ vi.mock("../../config/sessions.js", async () => {
   );
   return {
     ...actual,
-    resolveAllAgentSessionStoreTargets: (cfg: Must-bConfig, opts: unknown) =>
+    resolveAllAgentSessionStoreTargets: (cfg: MustBConfig, opts: unknown) =>
       hoisted.resolveAllAgentSessionStoreTargetsMock(cfg, opts),
     loadSessionStore: (storePath: string) => hoisted.loadSessionStoreMock(storePath),
   };
@@ -34,7 +34,7 @@ describe("listAcpSessionEntries", () => {
       session: {
         store: "/custom/sessions/{agentId}.json",
       },
-    } as Must-bConfig;
+    } as MustBConfig;
     hoisted.resolveAllAgentSessionStoreTargetsMock.mockResolvedValue([
       {
         agentId: "ops",

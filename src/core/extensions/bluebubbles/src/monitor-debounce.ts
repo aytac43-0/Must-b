@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/bluebubbles";
+import type { MustBConfig } from "must-b/plugin-sdk/bluebubbles";
 import type { NormalizedWebhookMessage } from "./monitor-normalize.js";
 import type { BlueBubblesCoreRuntime, WebhookTarget } from "./monitor-shared.js";
 
@@ -95,7 +95,7 @@ function combineDebounceEntries(entries: BlueBubblesDebounceEntry[]): Normalized
 }
 
 function resolveBlueBubblesDebounceMs(
-  config: Must-bConfig,
+  config: MustBConfig,
   core: BlueBubblesCoreRuntime,
 ): number {
   const inbound = config.messages?.inbound;

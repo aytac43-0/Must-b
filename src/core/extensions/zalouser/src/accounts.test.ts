@@ -1,5 +1,5 @@
 import { DEFAULT_ACCOUNT_ID } from "must-b/plugin-sdk/account-id";
-import type { Must-bConfig } from "must-b/plugin-sdk/zalouser";
+import type { MustBConfig } from "must-b/plugin-sdk/zalouser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getZcaUserInfo,
@@ -19,8 +19,8 @@ vi.mock("./zalo-js.js", () => ({
 const mockCheckAuthenticated = vi.mocked(checkZaloAuthenticated);
 const mockGetUserInfo = vi.mocked(getZaloUserInfo);
 
-function asConfig(value: unknown): Must-bConfig {
-  return value as Must-bConfig;
+function asConfig(value: unknown): MustBConfig {
+  return value as MustBConfig;
 }
 
 describe("zalouser account resolution", () => {

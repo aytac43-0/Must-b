@@ -2,8 +2,8 @@
 // Keep this list additive and scoped to symbols used under extensions/phone-control.
 
 export type {
-  Must-bPluginApi,
-  Must-bPluginCommandDefinition,
-  Must-bPluginService,
+  MustBluginApi,
+  MustBluginCommandDefinition,
+  MustBluginService,
   PluginCommandContext,
 } from "../plugins/types.js";

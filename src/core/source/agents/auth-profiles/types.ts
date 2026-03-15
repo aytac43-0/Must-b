@@ -1,5 +1,5 @@
 import type { OAuthCredentials } from "@mariozechner/pi-ai";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBConfig } from "../../config/config.js";
 import type { SecretRef } from "../../config/types.secrets.js";
 
 export type ApiKeyCredential = {
@@ -73,7 +73,7 @@ export type AuthProfileStore = {
 };
 
 export type AuthProfileIdRepairResult = {
-  config: Must-bConfig;
+  config: MustBConfig;
   changes: string[];
   migrated: boolean;
   fromProfileId?: string;

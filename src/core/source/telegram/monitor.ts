@@ -1,6 +1,6 @@
 import type { RunOptions } from "@grammyjs/runner";
 import { resolveAgentMaxConcurrent } from "../config/agent-limits.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import { waitForAbortSignal } from "../infra/abort-signal.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -21,7 +21,7 @@ import { startTelegramWebhook } from "./webhook.js";
 export type MonitorTelegramOpts = {
   token?: string;
   accountId?: string;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   useWebhook?: boolean;
@@ -34,7 +34,7 @@ export type MonitorTelegramOpts = {
   webhookCertPath?: string;
 };
 
-export function createTelegramRunnerOptions(cfg: Must-bConfig): RunOptions<unknown> {
+export function createTelegramRunnerOptions(cfg: MustBonfig): RunOptions<unknown> {
   return {
     sink: {
       concurrency: resolveAgentMaxConcurrent(cfg),

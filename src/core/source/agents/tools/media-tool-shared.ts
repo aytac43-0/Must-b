@@ -1,5 +1,5 @@
 import { type Api, type Model } from "@mariozechner/pi-ai";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { getDefaultLocalRoots } from "../../web/media.js";
 import type { ImageModelConfig } from "./image-tool.helpers.js";
 import { getApiKeyForModel, normalizeWorkspaceDir, requireApiKey } from "./tool-runtime.helpers.js";
@@ -18,9 +18,9 @@ type TextToolResult = {
 };
 
 export function applyImageModelConfigDefaults(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   imageModelConfig: ImageModelConfig,
-): Must-bConfig | undefined {
+): MustBonfig | undefined {
   if (!cfg) {
     return undefined;
   }
@@ -96,7 +96,7 @@ export function resolveModelFromRegistry(params: {
 
 export async function resolveModelRuntimeApiKey(params: {
   model: Model<Api>;
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   agentDir: string;
   authStorage: {
     setRuntimeApiKey: (provider: string, apiKey: string) => void;

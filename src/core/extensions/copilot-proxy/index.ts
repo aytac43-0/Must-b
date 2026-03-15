@@ -1,6 +1,6 @@
 import {
   emptyPluginConfigSchema,
-  type Must-bPluginApi,
+  type MustBPluginApi,
   type ProviderAuthContext,
   type ProviderAuthResult,
 } from "must-b/plugin-sdk/copilot-proxy";
@@ -76,7 +76,7 @@ const copilotProxyPlugin = {
   name: "Copilot Proxy",
   description: "Local Copilot Proxy (VS Code LM) provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     api.registerProvider({
       id: "copilot-proxy",
       label: "Copilot Proxy",

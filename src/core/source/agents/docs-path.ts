@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import { resolveMust-bPackageRoot } from "../infra/must-b-root.js";
+import { resolveMustBackageRoot } from "../infra/must-b-root.js";
 
-export async function resolveMust-bDocsPath(params: {
+export async function resolveMustBocsPath(params: {
   workspaceDir?: string;
   argv1?: string;
   cwd?: string;
@@ -16,7 +16,7 @@ export async function resolveMust-bDocsPath(params: {
     }
   }
 
-  const packageRoot = await resolveMust-bPackageRoot({
+  const packageRoot = await resolveMustBackageRoot({
     cwd: params.cwd,
     argv1: params.argv1,
     moduleUrl: params.moduleUrl,

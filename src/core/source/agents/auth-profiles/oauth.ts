@@ -4,7 +4,7 @@ import {
   type OAuthCredentials,
   type OAuthProvider,
 } from "@mariozechner/pi-ai/oauth";
-import { loadConfig, type Must-bConfig } from "../../config/config.js";
+import { loadConfig, type MustBConfig } from "../../config/config.js";
 import { coerceSecretRef } from "../../config/types.secrets.js";
 import { withFileLock } from "../../infra/file-lock.js";
 import { refreshQwenPortalCredentials } from "../../providers/qwen-portal-oauth.js";
@@ -42,7 +42,7 @@ const isCompatibleModeType = (mode: string | undefined, type: string | undefined
 };
 
 function isProfileConfigCompatible(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   profileId: string;
   provider: string;
   mode: "api_key" | "token" | "oauth";
@@ -110,13 +110,13 @@ function shouldUseOpenaiCodexRefreshFallback(params: {
 }
 
 type ResolveApiKeyForProfileParams = {
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   store: AuthProfileStore;
   profileId: string;
   agentDir?: string;
 };
 
-type SecretDefaults = NonNullable<Must-bConfig["secrets"]>["defaults"];
+type SecretDefaults = NonNullable<MustBConfig["secrets"]>["defaults"];
 
 function adoptNewerMainOAuthCredential(params: {
   store: AuthProfileStore;
@@ -261,7 +261,7 @@ async function resolveProfileSecretString(params: {
   value: string | undefined;
   valueRef: unknown;
   refDefaults: SecretDefaults | undefined;
-  configForRefResolution: Must-bConfig;
+  configForRefResolution: MustBConfig;
   cache: SecretRefResolveCache;
   inlineFailureMessage: string;
   refFailureMessage: string;

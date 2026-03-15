@@ -86,7 +86,7 @@ describe("detectMacCloudSyncedStateDir", () => {
 
   it("anchors cloud detection to OS homedir when MUSTB_HOME is overridden", () => {
     const stateDir = path.join(home, "Library", "CloudStorage", "iCloud Drive", ".must-b");
-    const originalMust-bHome = process.env.MUSTB_HOME;
+    const originalMustBome = process.env.MUSTB_HOME;
     process.env.MUSTB_HOME = "/tmp/must-b-home-override";
     const homedirSpy = vi.spyOn(os, "homedir").mockReturnValue(home);
     try {
@@ -100,10 +100,10 @@ describe("detectMacCloudSyncedStateDir", () => {
       });
     } finally {
       homedirSpy.mockRestore();
-      if (originalMust-bHome === undefined) {
+      if (originalMustBome === undefined) {
         delete process.env.MUSTB_HOME;
       } else {
-        process.env.MUSTB_HOME = originalMust-bHome;
+        process.env.MUSTB_HOME = originalMustBome;
       }
     }
   });

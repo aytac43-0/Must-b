@@ -1,10 +1,10 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveWhatsAppAccount } from "../../web/accounts.js";
 import { resolveWhatsAppOutboundTarget } from "../../whatsapp/resolve-outbound-target.js";
 import { ToolAuthorizationError } from "./common.js";
 
 export function resolveAuthorizedWhatsAppOutboundTarget(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   chatJid: string;
   accountId?: string;
   actionLabel: string;

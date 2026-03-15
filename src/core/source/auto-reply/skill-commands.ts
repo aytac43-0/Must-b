@@ -5,7 +5,7 @@ import {
   resolveAgentWorkspaceDir,
 } from "../agents/agent-scope.js";
 import { buildWorkspaceSkillCommandSpecs, type SkillCommandSpec } from "../agents/skills.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { logVerbose } from "../globals.js";
 import { getRemoteSkillEligibility } from "../infra/skills-remote.js";
 import { listChatCommands } from "./commands-registry.js";
@@ -35,7 +35,7 @@ export function listReservedChatSlashCommandNames(extraNames: string[] = []): Se
 
 export function listSkillCommandsForWorkspace(params: {
   workspaceDir: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   skillFilter?: string[];
 }): SkillCommandSpec[] {
   return buildWorkspaceSkillCommandSpecs(params.workspaceDir, {
@@ -63,7 +63,7 @@ function dedupeBySkillName(commands: SkillCommandSpec[]): SkillCommandSpec[] {
 }
 
 export function listSkillCommandsForAgents(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentIds?: string[];
 }): SkillCommandSpec[] {
   const mergeSkillFilters = (existing?: string[], incoming?: string[]): string[] | undefined => {

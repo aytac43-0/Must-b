@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   loadConfig,
   resolveConfigPath,
@@ -8,7 +8,7 @@ import {
 import { buildCleanupPlan } from "./cleanup-utils.js";
 
 export function resolveCleanupPlanFromDisk(): {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   stateDir: string;
   configPath: string;
   oauthDir: string;

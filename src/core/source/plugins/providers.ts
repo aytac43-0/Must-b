@@ -1,5 +1,5 @@
 import { createSubsystemLogger } from "../logging/subsystem.js";
-import { loadMust-bPlugins, type PluginLoadOptions } from "./loader.js";
+import { loadMustBlugins, type PluginLoadOptions } from "./loader.js";
 import { createPluginLoaderLogger } from "./logger.js";
 import type { ProviderPlugin } from "./types.js";
 
@@ -11,7 +11,7 @@ export function resolvePluginProviders(params: {
   /** Use an explicit env when plugin roots should resolve independently from process.env. */
   env?: PluginLoadOptions["env"];
 }): ProviderPlugin[] {
-  const registry = loadMust-bPlugins({
+  const registry = loadMustBlugins({
     config: params.config,
     workspaceDir: params.workspaceDir,
     env: params.env,

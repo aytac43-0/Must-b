@@ -4,7 +4,7 @@ import type { PluginRuntime } from "../plugins/runtime/types.js";
 import type { PluginDiagnostic } from "../plugins/types.js";
 import type { GatewayRequestContext, GatewayRequestOptions } from "./server-methods/types.js";
 
-const loadMust-bPlugins = vi.hoisted(() => vi.fn());
+const loadMustBlugins = vi.hoisted(() => vi.fn());
 type HandleGatewayRequestOptions = GatewayRequestOptions & {
   extraHandlers?: Record<string, unknown>;
 };
@@ -13,7 +13,7 @@ const handleGatewayRequest = vi.hoisted(() =>
 );
 
 vi.mock("../plugins/loader.js", () => ({
-  loadMust-bPlugins,
+  loadMustBlugins,
 }));
 
 vi.mock("./server-methods.js", () => ({
@@ -57,7 +57,7 @@ function createSubagentRuntime(serverPlugins: ServerPluginsModule): PluginRuntim
     error: vi.fn(),
     debug: vi.fn(),
   };
-  loadMust-bPlugins.mockReturnValue(createRegistry([]));
+  loadMustBlugins.mockReturnValue(createRegistry([]));
   serverPlugins.loadGatewayPlugins({
     cfg: {},
     workspaceDir: "/tmp",
@@ -65,7 +65,7 @@ function createSubagentRuntime(serverPlugins: ServerPluginsModule): PluginRuntim
     coreGatewayHandlers: {},
     baseMethods: [],
   });
-  const call = loadMust-bPlugins.mock.calls.at(-1)?.[0] as
+  const call = loadMustBlugins.mock.calls.at(-1)?.[0] as
     | { runtimeOptions?: { subagent?: PluginRuntime["subagent"] } }
     | undefined;
   if (!call?.runtimeOptions?.subagent) {
@@ -75,7 +75,7 @@ function createSubagentRuntime(serverPlugins: ServerPluginsModule): PluginRuntim
 }
 
 beforeEach(() => {
-  loadMust-bPlugins.mockReset();
+  loadMustBlugins.mockReset();
   handleGatewayRequest.mockReset();
   handleGatewayRequest.mockImplementation(async (opts: HandleGatewayRequestOptions) => {
     switch (opts.req.method) {
@@ -112,7 +112,7 @@ describe("loadGatewayPlugins", () => {
         message: "failed to load plugin: boom",
       },
     ];
-    loadMust-bPlugins.mockReturnValue(createRegistry(diagnostics));
+    loadMustBlugins.mockReturnValue(createRegistry(diagnostics));
 
     const log = {
       info: vi.fn(),
@@ -137,7 +137,7 @@ describe("loadGatewayPlugins", () => {
 
   test("provides subagent runtime with sessions.get method aliases", async () => {
     const { loadGatewayPlugins } = await importServerPluginsModule();
-    loadMust-bPlugins.mockReturnValue(createRegistry([]));
+    loadMustBlugins.mockReturnValue(createRegistry([]));
 
     const log = {
       info: vi.fn(),
@@ -154,7 +154,7 @@ describe("loadGatewayPlugins", () => {
       baseMethods: [],
     });
 
-    const call = loadMust-bPlugins.mock.calls.at(-1)?.[0];
+    const call = loadMustBlugins.mock.calls.at(-1)?.[0];
     const subagent = call?.runtimeOptions?.subagent;
     expect(typeof subagent?.getSessionMessages).toBe("function");
     expect(typeof subagent?.getSession).toBe("function");

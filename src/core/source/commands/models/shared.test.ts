@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
 const mocks = vi.hoisted(() => ({
   readConfigFileSnapshot: vi.fn(),
@@ -20,7 +20,7 @@ describe("models/shared", () => {
   });
 
   it("returns config when snapshot is valid", async () => {
-    const cfg = { providers: {} } as unknown as Must-bConfig;
+    const cfg = { providers: {} } as unknown as MustBonfig;
     mocks.readConfigFileSnapshot.mockResolvedValue({
       valid: true,
       config: cfg,
@@ -42,7 +42,7 @@ describe("models/shared", () => {
   });
 
   it("updateConfig writes mutated config", async () => {
-    const cfg = { update: { channel: "stable" } } as unknown as Must-bConfig;
+    const cfg = { update: { channel: "stable" } } as unknown as MustBonfig;
     mocks.readConfigFileSnapshot.mockResolvedValue({
       valid: true,
       config: cfg,

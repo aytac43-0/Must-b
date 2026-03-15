@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/memory-core";
+import type { MustBPluginApi } from "must-b/plugin-sdk/memory-core";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/memory-core";
 
 const memoryCorePlugin = {
@@ -7,7 +7,7 @@ const memoryCorePlugin = {
   description: "File-backed memory search tools and CLI",
   kind: "memory",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     api.registerTool(
       (ctx) => {
         const memorySearchTool = api.runtime.tools.createMemorySearchTool({

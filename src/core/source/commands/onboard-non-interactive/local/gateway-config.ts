@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { isValidEnvSecretRefId } from "../../../config/types.secrets.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import { resolveDefaultSecretProviderAlias } from "../../../secrets/ref-contract.js";
@@ -6,12 +6,12 @@ import { normalizeGatewayTokenInput, randomToken } from "../../onboard-helpers.j
 import type { OnboardOptions } from "../../onboard-types.js";
 
 export function applyNonInteractiveGatewayConfig(params: {
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
   defaultPort: number;
 }): {
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   port: number;
   bind: string;
   authMode: string;

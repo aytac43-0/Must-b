@@ -1,4 +1,4 @@
-import { resolveMust-bAgentDir } from "../agents/agent-paths.js";
+import { resolveMustBgentDir } from "../agents/agent-paths.js";
 import {
   resolveDefaultAgentId,
   resolveAgentDir,
@@ -48,7 +48,7 @@ export async function runProviderPluginAuthMethod(params: {
   const agentDir =
     params.agentDir ??
     (agentId === defaultAgentId
-      ? resolveMust-bAgentDir()
+      ? resolveMustBgentDir()
       : resolveAgentDir(params.config, agentId));
   const workspaceDir =
     params.workspaceDir ??
@@ -173,7 +173,7 @@ export async function applyAuthChoicePluginProvider(
   const defaultAgentId = resolveDefaultAgentId(nextConfig);
   const agentDir =
     params.agentDir ??
-    (agentId === defaultAgentId ? resolveMust-bAgentDir() : resolveAgentDir(nextConfig, agentId));
+    (agentId === defaultAgentId ? resolveMustBgentDir() : resolveAgentDir(nextConfig, agentId));
   const workspaceDir =
     resolveAgentWorkspaceDir(nextConfig, agentId) ?? resolveDefaultAgentWorkspaceDir();
 

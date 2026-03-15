@@ -2,9 +2,9 @@ import { normalizeToolName } from "../agents/tool-policy.js";
 import type { AnyAgentTool } from "../agents/tools/common.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { applyTestPluginDefaults, normalizePluginsConfig } from "./config-state.js";
-import { loadMust-bPlugins } from "./loader.js";
+import { loadMustBlugins } from "./loader.js";
 import { createPluginLoaderLogger } from "./logger.js";
-import type { Must-bPluginToolContext } from "./types.js";
+import type { MustBluginToolContext } from "./types.js";
 
 const log = createSubsystemLogger("plugins");
 
@@ -43,7 +43,7 @@ function isOptionalToolAllowed(params: {
 }
 
 export function resolvePluginTools(params: {
-  context: Must-bPluginToolContext;
+  context: MustBluginToolContext;
   existingToolNames?: Set<string>;
   toolAllowlist?: string[];
   suppressNameConflicts?: boolean;
@@ -58,7 +58,7 @@ export function resolvePluginTools(params: {
     return [];
   }
 
-  const registry = loadMust-bPlugins({
+  const registry = loadMustBlugins({
     config: effectiveConfig,
     workspaceDir: params.context.workspaceDir,
     env,

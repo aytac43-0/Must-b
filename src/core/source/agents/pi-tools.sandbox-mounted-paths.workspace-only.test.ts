@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
-import { createMust-bCodingTools } from "./pi-tools.js";
+import type { MustBonfig } from "../config/config.js";
+import { createMustBodingTools } from "./pi-tools.js";
 import {
   expectReadWriteEditTools,
   expectReadWriteTools,
@@ -18,7 +18,7 @@ vi.mock("../infra/shell-env.js", async (importOriginal) => {
 type ToolWithExecute = {
   execute: (toolCallId: string, args: unknown, signal?: AbortSignal) => Promise<unknown>;
 };
-type CodingToolsInput = NonNullable<Parameters<typeof createMust-bCodingTools>[0]>;
+type CodingToolsInput = NonNullable<Parameters<typeof createMustBodingTools>[0]>;
 
 const APPLY_PATCH_PAYLOAD = `*** Begin Patch
 *** Add File: /agent/pwned.txt
@@ -26,9 +26,9 @@ const APPLY_PATCH_PAYLOAD = `*** Begin Patch
 *** End Patch`;
 
 function resolveApplyPatchTool(
-  params: Pick<CodingToolsInput, "sandbox" | "workspaceDir"> & { config: Must-bConfig },
+  params: Pick<CodingToolsInput, "sandbox" | "workspaceDir"> & { config: MustBonfig },
 ): ToolWithExecute {
-  const tools = createMust-bCodingTools({
+  const tools = createMustBodingTools({
     sandbox: params.sandbox,
     workspaceDir: params.workspaceDir,
     config: params.config,
@@ -47,7 +47,7 @@ describe("tools.fs.workspaceOnly", () => {
     await withUnsafeMountedSandboxHarness(async ({ sandboxRoot, agentRoot, sandbox }) => {
       await fs.writeFile(path.join(agentRoot, "secret.txt"), "shh", "utf8");
 
-      const tools = createMust-bCodingTools({ sandbox, workspaceDir: sandboxRoot });
+      const tools = createMustBodingTools({ sandbox, workspaceDir: sandboxRoot });
       const { readTool, writeTool } = expectReadWriteTools(tools);
 
       const readResult = await readTool?.execute("t1", { path: "/agent/secret.txt" });
@@ -62,8 +62,8 @@ describe("tools.fs.workspaceOnly", () => {
     await withUnsafeMountedSandboxHarness(async ({ sandboxRoot, agentRoot, sandbox }) => {
       await fs.writeFile(path.join(agentRoot, "secret.txt"), "shh", "utf8");
 
-      const cfg = { tools: { fs: { workspaceOnly: true } } } as unknown as Must-bConfig;
-      const tools = createMust-bCodingTools({ sandbox, workspaceDir: sandboxRoot, config: cfg });
+      const cfg = { tools: { fs: { workspaceOnly: true } } } as unknown as MustBonfig;
+      const tools = createMustBodingTools({ sandbox, workspaceDir: sandboxRoot, config: cfg });
       const { readTool, writeTool, editTool } = expectReadWriteEditTools(tools);
 
       await expect(readTool?.execute("t1", { path: "/agent/secret.txt" })).rejects.toThrow(
@@ -94,7 +94,7 @@ describe("tools.fs.workspaceOnly", () => {
             allow: ["read", "exec"],
             exec: { applyPatch: { enabled: true } },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
       });
 
       await expect(applyPatchTool.execute("t1", { input: APPLY_PATCH_PAYLOAD })).rejects.toThrow(
@@ -116,7 +116,7 @@ describe("tools.fs.workspaceOnly", () => {
             allow: ["read", "exec"],
             exec: { applyPatch: { enabled: true, workspaceOnly: false } },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
       });
 
       await applyPatchTool.execute("t2", { input: APPLY_PATCH_PAYLOAD });

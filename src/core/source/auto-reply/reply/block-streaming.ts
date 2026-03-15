@@ -1,6 +1,6 @@
 import { getChannelDock } from "../../channels/dock.js";
 import { normalizeChannelId } from "../../channels/plugins/index.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { BlockStreamingCoalesceConfig } from "../../config/types.js";
 import { resolveAccountEntry } from "../../routing/account-lookup.js";
 import { normalizeAccountId } from "../../routing/session-key.js";
@@ -32,7 +32,7 @@ type ProviderBlockStreamingConfig = {
 };
 
 function resolveProviderBlockStreamingCoalesce(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   providerKey?: TextChunkProvider;
   accountId?: string | null;
 }): BlockStreamingCoalesceConfig | undefined {
@@ -85,7 +85,7 @@ export function clampPositiveInteger(
 }
 
 export function resolveEffectiveBlockStreamingConfig(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   provider?: string;
   accountId?: string | null;
   chunking?: BlockStreamingChunking;
@@ -150,7 +150,7 @@ export function resolveEffectiveBlockStreamingConfig(params: {
 }
 
 export function resolveBlockStreamingChunking(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   provider?: string,
   accountId?: string | null,
 ): BlockStreamingChunking {
@@ -188,7 +188,7 @@ export function resolveBlockStreamingChunking(
 }
 
 export function resolveBlockStreamingCoalescing(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   provider?: string,
   accountId?: string | null,
   chunking?: {

@@ -1,4 +1,4 @@
-import { loadOutboundMediaFromUrl, type Must-bConfig } from "must-b/plugin-sdk/mattermost";
+import { loadOutboundMediaFromUrl, type MustBConfig } from "must-b/plugin-sdk/mattermost";
 import { getMattermostRuntime } from "../runtime.js";
 import { resolveMattermostAccount } from "./accounts.js";
 import {
@@ -22,7 +22,7 @@ import {
 import { isMattermostId, resolveMattermostOpaqueTarget } from "./target-resolution.js";
 
 export type MattermostSendOpts = {
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   botToken?: string;
   baseUrl?: string;
   accountId?: string;
@@ -220,7 +220,7 @@ async function resolveTargetChannelId(params: {
 }
 
 type MattermostSendContext = {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId: string;
   token: string;
   baseUrl: string;

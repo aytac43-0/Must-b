@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { logVerbose } from "../../globals.js";
 
 type DiscordAudioAttachment = {
@@ -23,7 +23,7 @@ export async function resolveDiscordPreflightAudioMentionContext(params: {
   isDirectMessage: boolean;
   shouldRequireMention: boolean;
   mentionRegexes: RegExp[];
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   abortSignal?: AbortSignal;
 }): Promise<{
   hasAudioAttachment: boolean;

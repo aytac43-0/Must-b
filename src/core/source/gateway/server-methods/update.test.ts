@@ -33,7 +33,7 @@ vi.mock("../../config/sessions.js", () => ({
 }));
 
 vi.mock("../../infra/must-b-root.js", () => ({
-  resolveMust-bPackageRoot: async () => "/tmp/must-b",
+  resolveMustBackageRoot: async () => "/tmp/must-b",
 }));
 
 vi.mock("../../infra/restart-sentinel.js", async (importOriginal) => {

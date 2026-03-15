@@ -2,11 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createJiti } from "jiti";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import type { GatewayRequestHandler } from "../gateway/server-methods/types.js";
 import { openBoundaryFileSync } from "../infra/boundary-file-read.js";
-import { resolveMust-bPackageRootSync } from "../infra/must-b-root.js";
+import { resolveMustBackageRootSync } from "../infra/must-b-root.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { resolveUserPath } from "../utils.js";
 import { clearPluginCommands } from "./commands.js";
@@ -17,7 +17,7 @@ import {
   resolveMemorySlotDecision,
   type NormalizedPluginsConfig,
 } from "./config-state.js";
-import { discoverMust-bPlugins } from "./discovery.js";
+import { discoverMustBlugins } from "./discovery.js";
 import { initializeGlobalHookRunner } from "./hook-runner-global.js";
 import { loadPluginManifestRegistry } from "./manifest-registry.js";
 import { isPathInside, safeStatSync } from "./path-safety.js";
@@ -28,8 +28,8 @@ import { createPluginRuntime, type CreatePluginRuntimeOptions } from "./runtime/
 import type { PluginRuntime } from "./runtime/types.js";
 import { validateJsonSchemaValue } from "./schema-validator.js";
 import type {
-  Must-bPluginDefinition,
-  Must-bPluginModule,
+  MustBluginDefinition,
+  MustBluginModule,
   PluginDiagnostic,
   PluginLogger,
 } from "./types.js";
@@ -37,7 +37,7 @@ import type {
 export type PluginLoadResult = PluginRegistry;
 
 export type PluginLoadOptions = {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string;
   // Allows callers to resolve plugin roots and load paths against an explicit env
   // instead of the process-global environment.
@@ -126,7 +126,7 @@ const cachedPluginSdkExportedSubpaths = new Map<string, string[]>();
 
 function listPluginSdkExportedSubpaths(params: { modulePath?: string } = {}): string[] {
   const modulePath = params.modulePath ?? fileURLToPath(import.meta.url);
-  const packageRoot = resolveMust-bPackageRootSync({
+  const packageRoot = resolveMustBackageRootSync({
     cwd: path.dirname(modulePath),
   });
   if (!packageRoot) {
@@ -256,8 +256,8 @@ function validatePluginConfig(params: {
 }
 
 function resolvePluginModuleExport(moduleExport: unknown): {
-  definition?: Must-bPluginDefinition;
-  register?: Must-bPluginDefinition["register"];
+  definition?: MustBluginDefinition;
+  register?: MustBluginDefinition["register"];
 } {
   const resolved =
     moduleExport &&
@@ -267,11 +267,11 @@ function resolvePluginModuleExport(moduleExport: unknown): {
       : moduleExport;
   if (typeof resolved === "function") {
     return {
-      register: resolved as Must-bPluginDefinition["register"],
+      register: resolved as MustBluginDefinition["register"],
     };
   }
   if (resolved && typeof resolved === "object") {
-    const def = resolved as Must-bPluginDefinition;
+    const def = resolved as MustBluginDefinition;
     const register = def.register ?? def.activate;
     return { definition: def, register };
   }
@@ -400,7 +400,7 @@ function matchesPathMatcher(matcher: PathMatcher, sourcePath: string): boolean {
 }
 
 function buildProvenanceIndex(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   normalizedLoadPaths: string[];
   env: NodeJS.ProcessEnv;
 }): PluginProvenanceIndex {
@@ -514,7 +514,7 @@ function activatePluginRegistry(registry: PluginRegistry, cacheKey: string): voi
   initializeGlobalHookRunner(registry);
 }
 
-export function loadMust-bPlugins(options: PluginLoadOptions = {}): PluginRegistry {
+export function loadMustBlugins(options: PluginLoadOptions = {}): PluginRegistry {
   const env = options.env ?? process.env;
   // Test env: default-disable plugins unless explicitly configured.
   // This keeps unit/gateway suites fast and avoids loading heavyweight plugin deps by accident.
@@ -579,7 +579,7 @@ export function loadMust-bPlugins(options: PluginLoadOptions = {}): PluginRegist
     coreGatewayHandlers: options.coreGatewayHandlers as Record<string, GatewayRequestHandler>,
   });
 
-  const discovery = discoverMust-bPlugins({
+  const discovery = discoverMustBlugins({
     workspaceDir: options.workspaceDir,
     extraPaths: normalized.loadPaths,
     cache: options.cache,
@@ -748,9 +748,9 @@ export function loadMust-bPlugins(options: PluginLoadOptions = {}): PluginRegist
     const safeSource = opened.path;
     fs.closeSync(opened.fd);
 
-    let mod: Must-bPluginModule | null = null;
+    let mod: MustBluginModule | null = null;
     try {
-      mod = getJiti()(safeSource) as Must-bPluginModule;
+      mod = getJiti()(safeSource) as MustBluginModule;
     } catch (err) {
       recordPluginError({
         logger,

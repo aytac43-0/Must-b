@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { Must-bConfig } from "must-b/plugin-sdk/zalo";
+import type { MustBConfig } from "must-b/plugin-sdk/zalo";
 import {
   createDedupeCache,
   createFixedWindowRateLimiter,
@@ -26,7 +26,7 @@ const ZALO_WEBHOOK_REPLAY_WINDOW_MS = 5 * 60_000;
 export type ZaloWebhookTarget = {
   token: string;
   account: ResolvedZaloAccount;
-  config: Must-bConfig;
+  config: MustBConfig;
   runtime: ZaloRuntimeEnv;
   core: unknown;
   secret: string;

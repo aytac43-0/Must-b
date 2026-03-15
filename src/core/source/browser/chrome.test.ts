@@ -7,21 +7,21 @@ import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { WebSocketServer } from "ws";
 import {
-  decorateMust-bProfile,
+  decorateMustBrofile,
   ensureProfileCleanExit,
   findChromeExecutableMac,
   findChromeExecutableWindows,
   isChromeCdpReady,
   isChromeReachable,
   resolveBrowserExecutableForPlatform,
-  stopMust-bChrome,
+  stopMustBhrome,
 } from "./chrome.js";
 import {
   DEFAULT_MUSTB_BROWSER_COLOR,
   DEFAULT_MUSTB_BROWSER_PROFILE_NAME,
 } from "./constants.js";
 
-type StopChromeTarget = Parameters<typeof stopMust-bChrome>[0];
+type StopChromeTarget = Parameters<typeof stopMustBhrome>[0];
 
 async function readJson(filePath: string): Promise<Record<string, unknown>> {
   const raw = await fsp.readFile(filePath, "utf-8");
@@ -81,7 +81,7 @@ async function withMockChromeCdpServer(params: {
 }
 
 async function stopChromeWithProc(proc: ReturnType<typeof makeChromeTestProc>, timeoutMs: number) {
-  await stopMust-bChrome(
+  await stopMustBhrome(
     {
       proc,
       cdpPort: 12345,
@@ -125,7 +125,7 @@ describe("browser chrome profile decoration", () => {
 
   it("writes expected name + signed ARGB seed to Chrome prefs", async () => {
     const userDataDir = await createUserDataDir();
-    decorateMust-bProfile(userDataDir, { color: DEFAULT_MUSTB_BROWSER_COLOR });
+    decorateMustBrofile(userDataDir, { color: DEFAULT_MUSTB_BROWSER_COLOR });
 
     const expectedSignedArgb = ((0xff << 24) | 0xff4500) >> 0;
 
@@ -156,7 +156,7 @@ describe("browser chrome profile decoration", () => {
 
   it("best-effort writes name when color is invalid", async () => {
     const userDataDir = await createUserDataDir();
-    decorateMust-bProfile(userDataDir, { color: "lobster-orange" });
+    decorateMustBrofile(userDataDir, { color: "orange" });
     const def = await readDefaultProfileFromLocalState(userDataDir);
 
     expect(def.name).toBe(DEFAULT_MUSTB_BROWSER_PROFILE_NAME);
@@ -173,7 +173,7 @@ describe("browser chrome profile decoration", () => {
       "utf-8",
     );
 
-    decorateMust-bProfile(userDataDir, { color: DEFAULT_MUSTB_BROWSER_COLOR });
+    decorateMustBrofile(userDataDir, { color: DEFAULT_MUSTB_BROWSER_COLOR });
 
     const localState = await readJson(path.join(userDataDir, "Local State"));
     expect(typeof localState.profile).toBe("object");
@@ -192,8 +192,8 @@ describe("browser chrome profile decoration", () => {
 
   it("is idempotent when rerun on an existing profile", async () => {
     const userDataDir = await createUserDataDir();
-    decorateMust-bProfile(userDataDir, { color: DEFAULT_MUSTB_BROWSER_COLOR });
-    decorateMust-bProfile(userDataDir, { color: DEFAULT_MUSTB_BROWSER_COLOR });
+    decorateMustBrofile(userDataDir, { color: DEFAULT_MUSTB_BROWSER_COLOR });
+    decorateMustBrofile(userDataDir, { color: DEFAULT_MUSTB_BROWSER_COLOR });
 
     const prefs = await readJson(path.join(userDataDir, "Default", "Preferences"));
     const profile = prefs.profile as Record<string, unknown>;
@@ -360,20 +360,20 @@ describe("browser chrome helpers", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it("stopMust-bChrome no-ops when process is already killed", async () => {
+  it("stopMustBhrome no-ops when process is already killed", async () => {
     const proc = makeChromeTestProc({ killed: true });
     await stopChromeWithProc(proc, 10);
     expect(proc.kill).not.toHaveBeenCalled();
   });
 
-  it("stopMust-bChrome sends SIGTERM and returns once CDP is down", async () => {
+  it("stopMustBhrome sends SIGTERM and returns once CDP is down", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("down")));
     const proc = makeChromeTestProc();
     await stopChromeWithProc(proc, 10);
     expect(proc.kill).toHaveBeenCalledWith("SIGTERM");
   });
 
-  it("stopMust-bChrome escalates to SIGKILL when CDP stays reachable", async () => {
+  it("stopMustBhrome escalates to SIGKILL when CDP stays reachable", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({

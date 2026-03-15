@@ -1,7 +1,7 @@
 import type {
   ChannelAccountSnapshot,
   ChannelPlugin,
-  Must-bConfig,
+  MustBConfig,
 } from "must-b/plugin-sdk/bluebubbles";
 import {
   applyAccountNameToChannelSection,

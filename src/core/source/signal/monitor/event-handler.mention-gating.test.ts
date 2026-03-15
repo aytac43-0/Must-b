@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildDispatchInboundCaptureMock } from "../../../test/helpers/dispatch-inbound-capture.js";
 import type { MsgContext } from "../../auto-reply/templating.js";
-import type { Must-bConfig } from "../../config/types.js";
+import type { MustBonfig } from "../../config/types.js";
 import {
   createBaseSignalEventHandlerDeps,
   createSignalReceiveEvent,
@@ -87,7 +87,7 @@ function createSignalConfig(params: { requireMention: boolean; mentionPattern?: 
         groups: { "*": { requireMention: params.requireMention } },
       },
     },
-  } as unknown as Must-bConfig;
+  } as unknown as MustBonfig;
 }
 
 async function expectSkippedGroupHistory(opts: GroupEventOpts, expectedBody: string) {

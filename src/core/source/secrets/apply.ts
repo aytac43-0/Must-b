@@ -7,7 +7,7 @@ import { loadAuthProfileStoreForSecretsRuntime } from "../agents/auth-profiles.j
 import { AUTH_STORE_VERSION } from "../agents/auth-profiles/constants.js";
 import { resolveAuthStorePath } from "../agents/auth-profiles/paths.js";
 import { normalizeProviderId } from "../agents/model-selection.js";
-import { resolveStateDir, type Must-bConfig } from "../config/config.js";
+import { resolveStateDir, type MustBonfig } from "../config/config.js";
 import type { ConfigWriteOptions } from "../config/io.js";
 import type { SecretProviderConfig } from "../config/types.secrets.js";
 import { normalizeAgentId } from "../routing/session-key.js";
@@ -46,7 +46,7 @@ type ApplyWrite = {
 };
 
 type ProjectedState = {
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   configPath: string;
   configWriteOptions: ConfigWriteOptions;
   authStoreByPath: Map<string, Record<string, unknown>>;
@@ -135,7 +135,7 @@ function scrubEnvRaw(
 }
 
 function applyProviderPlanMutations(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   upserts: Record<string, SecretProviderConfig> | undefined;
   deletes: string[] | undefined;
 }): boolean {
@@ -258,7 +258,7 @@ async function projectPlanState(params: {
 
 function applyConfigTargetMutations(params: {
   planTargets: SecretsPlanTarget[];
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   stateDir: string;
   authStoreByPath: Map<string, Record<string, unknown>>;
   changedFiles: Set<string>;
@@ -339,7 +339,7 @@ function applyConfigTargetMutations(params: {
 }
 
 function scrubAuthStoresForProviderTargets(params: {
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   stateDir: string;
   providerTargets: Set<string>;
   scrubbedValues: Set<string>;
@@ -411,7 +411,7 @@ function ensureMutableAuthStore(
 
 function resolveAuthStoreForTarget(params: {
   target: SecretsPlanTarget;
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   stateDir: string;
   authStoreByPath: Map<string, Record<string, unknown>>;
 }): { path: string; store: MutableAuthProfileStore } {
@@ -431,12 +431,12 @@ function resolveAuthStoreForTarget(params: {
   return { path: authStorePath, store };
 }
 
-function asConfigPathRoot(store: MutableAuthProfileStore): Must-bConfig {
-  return store as unknown as Must-bConfig;
+function asConfigPathRoot(store: MutableAuthProfileStore): MustBonfig {
+  return store as unknown as MustBonfig;
 }
 
 function resolveAuthStorePathForAgent(params: {
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   stateDir: string;
   agentId: string;
 }): string {
@@ -511,7 +511,7 @@ function ensureAuthProfileContainer(params: {
 function applyAuthProfileTargetMutation(params: {
   target: SecretsPlanTarget;
   resolved: ResolvedPlanTargetEntry["resolved"];
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   stateDir: string;
   authStoreByPath: Map<string, Record<string, unknown>>;
   scrubbedValues: Set<string>;
@@ -626,7 +626,7 @@ function scrubEnvFiles(params: {
 
 async function validateProjectedSecretsState(params: {
   env: NodeJS.ProcessEnv;
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   resolvedTargets: ResolvedPlanTargetEntry[];
   authStoreByPath: Map<string, Record<string, unknown>>;
 }): Promise<void> {

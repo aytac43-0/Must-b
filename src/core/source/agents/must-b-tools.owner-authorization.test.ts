@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import "./test-helpers/fast-core-tools.js";
-import { createMust-bTools } from "./must-b-tools.js";
+import { createMustBools } from "./must-b-tools.js";
 
 function readToolByName() {
-  return new Map(createMust-bTools().map((tool) => [tool.name, tool]));
+  return new Map(createMustBools().map((tool) => [tool.name, tool]));
 }
 
-describe("createMust-bTools owner authorization", () => {
+describe("createMustBools owner authorization", () => {
   it("marks owner-only core tools in raw registration", () => {
     const tools = readToolByName();
     expect(tools.get("cron")?.ownerOnly).toBe(true);

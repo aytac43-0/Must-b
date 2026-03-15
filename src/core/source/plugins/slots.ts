@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { PluginSlotsConfig } from "../config/types.plugins.js";
 import type { PluginKind } from "./types.js";
 
@@ -31,13 +31,13 @@ export function defaultSlotIdForKey(slotKey: PluginSlotKey): string {
 }
 
 export type SlotSelectionResult = {
-  config: Must-bConfig;
+  config: MustBonfig;
   warnings: string[];
   changed: boolean;
 };
 
 export function applyExclusiveSlotSelection(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   selectedId: string;
   selectedKind?: PluginKind;
   registry?: { plugins: SlotPluginRecord[] };

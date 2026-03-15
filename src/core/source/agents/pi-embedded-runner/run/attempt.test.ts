@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { resolveOllamaBaseUrlForRun } from "../../ollama-stream.js";
 import {
   buildAfterTurnRuntimeContext,
@@ -17,7 +17,7 @@ import {
   wrapStreamFnTrimToolCallNames,
 } from "./attempt.js";
 
-function createOllamaProviderConfig(injectNumCtxForOpenAICompat: boolean): Must-bConfig {
+function createOllamaProviderConfig(injectNumCtxForOpenAICompat: boolean): MustBonfig {
   return {
     models: {
       providers: {
@@ -150,7 +150,7 @@ describe("resolvePromptModeForSession", () => {
 
 describe("resolveAttemptFsWorkspaceOnly", () => {
   it("uses global tools.fs.workspaceOnly when agent has no override", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         fs: { workspaceOnly: true },
       },
@@ -165,7 +165,7 @@ describe("resolveAttemptFsWorkspaceOnly", () => {
   });
 
   it("prefers agent-specific tools.fs.workspaceOnly override", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         fs: { workspaceOnly: true },
       },
@@ -1103,7 +1103,7 @@ describe("buildAfterTurnRuntimeContext", () => {
         messageProvider: "slack",
         agentAccountId: "acct-1",
         authProfileId: "openai:p1",
-        config: {} as Must-bConfig,
+        config: {} as MustBonfig,
         skillsSnapshot: undefined,
         senderIsOwner: true,
         provider: "openai-codex",
@@ -1139,7 +1139,7 @@ describe("buildAfterTurnRuntimeContext", () => {
               },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         skillsSnapshot: undefined,
         senderIsOwner: true,
         provider: "openai-codex",
@@ -1168,7 +1168,7 @@ describe("buildAfterTurnRuntimeContext", () => {
         messageProvider: "slack",
         agentAccountId: "acct-1",
         authProfileId: "openai:p1",
-        config: { plugins: { slots: { contextEngine: "lossless-claw" } } } as Must-bConfig,
+        config: { plugins: { slots: { contextEngine: "lossless-claw" } } } as MustBonfig,
         skillsSnapshot: undefined,
         senderIsOwner: true,
         provider: "openai-codex",

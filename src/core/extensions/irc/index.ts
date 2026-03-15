@@ -1,4 +1,4 @@
-import type { ChannelPlugin, Must-bPluginApi } from "must-b/plugin-sdk/irc";
+import type { ChannelPlugin, MustBPluginApi } from "must-b/plugin-sdk/irc";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/irc";
 import { ircPlugin } from "./src/channel.js";
 import { setIrcRuntime } from "./src/runtime.js";
@@ -8,7 +8,7 @@ const plugin = {
   name: "IRC",
   description: "IRC channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     setIrcRuntime(api.runtime);
     api.registerChannel({ plugin: ircPlugin as ChannelPlugin });
   },

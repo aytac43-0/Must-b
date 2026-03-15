@@ -24,7 +24,7 @@ describe("resolveApiKeyForProfile fallback to main agent", () => {
     await fs.mkdir(mainAgentDir, { recursive: true });
     await fs.mkdir(secondaryAgentDir, { recursive: true });
 
-    // Set environment variables so resolveMust-bAgentDir() returns mainAgentDir
+    // Set environment variables so resolveMustBAgentDir() returns mainAgentDir
     process.env.MUSTB_STATE_DIR = tmpDir;
     process.env.MUSTB_AGENT_DIR = mainAgentDir;
     process.env.PI_CODING_AGENT_DIR = mainAgentDir;

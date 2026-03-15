@@ -41,9 +41,9 @@ vi.mock("../agents/workspace.js", () => ({
   resolveDefaultAgentWorkspaceDir,
 }));
 
-const resolveMust-bAgentDir = vi.hoisted(() => vi.fn(() => "/tmp/agent"));
+const resolveMustBgentDir = vi.hoisted(() => vi.fn(() => "/tmp/agent"));
 vi.mock("../agents/agent-paths.js", () => ({
-  resolveMust-bAgentDir,
+  resolveMustBgentDir,
 }));
 
 const applyAuthProfileConfig = vi.hoisted(() => vi.fn((config) => config));

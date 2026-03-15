@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 
 vi.mock("../../../slack/send.js", () => ({
   sendMessageSlack: vi.fn().mockResolvedValue({ messageId: "1234.5678", channelId: "C123" }),
@@ -34,7 +34,7 @@ const BASE_SLACK_SEND_CTX = {
 const sendSlackText = async (ctx: SlackSendTextCtx) => {
   const sendText = slackOutbound.sendText as NonNullable<typeof slackOutbound.sendText>;
   return await sendText({
-    cfg: {} as Must-bConfig,
+    cfg: {} as MustBonfig,
     ...ctx,
   });
 };
@@ -105,11 +105,11 @@ describe("slack outbound hook wiring", () => {
 
     await sendSlackTextWithDefaults({
       text: "hello",
-      identity: { emoji: ":lobster:" },
+      identity: { emoji: ":red_panda:" },
     });
 
     expectSlackSendCalledWith("hello", {
-      identity: { iconEmoji: ":lobster:" },
+      identity: { iconEmoji: ":red_panda:" },
     });
   });
 

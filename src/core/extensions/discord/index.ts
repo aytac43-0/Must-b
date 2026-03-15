@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/discord";
+import type { MustBPluginApi } from "must-b/plugin-sdk/discord";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/discord";
 import { discordPlugin } from "./src/channel.js";
 import { setDiscordRuntime } from "./src/runtime.js";
@@ -9,7 +9,7 @@ const plugin = {
   name: "Discord",
   description: "Discord channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     setDiscordRuntime(api.runtime);
     api.registerChannel({ plugin: discordPlugin });
     registerDiscordSubagentHooks(api);

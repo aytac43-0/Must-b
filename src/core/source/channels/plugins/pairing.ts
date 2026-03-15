@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import {
   type ChannelId,
@@ -51,7 +51,7 @@ export function resolvePairingChannel(raw: unknown): ChannelId {
 export async function notifyPairingApproved(params: {
   channelId: ChannelId;
   id: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   runtime?: RuntimeEnv;
   /** Extension channels can pass their adapter directly to bypass registry lookup. */
   pairingAdapter?: ChannelPairingAdapter;

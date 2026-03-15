@@ -1,4 +1,4 @@
-import type { Must-bConfig, PluginRuntime } from "must-b/plugin-sdk/discord";
+import type { MustBConfig, PluginRuntime } from "must-b/plugin-sdk/discord";
 import { describe, expect, it, vi } from "vitest";
 import { discordPlugin } from "./channel.js";
 import { setDiscordRuntime } from "./runtime.js";
@@ -15,7 +15,7 @@ describe("discordPlugin outbound", () => {
     } as unknown as PluginRuntime);
 
     const result = await discordPlugin.outbound!.sendMedia!({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBConfig,
       to: "channel:123",
       text: "hi",
       mediaUrl: "/tmp/image.png",

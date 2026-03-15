@@ -2,7 +2,7 @@ import { ChannelType } from "discord-api-types/v10";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NativeCommandSpec } from "../../auto-reply/commands-registry.js";
 import * as dispatcherModule from "../../auto-reply/reply/provider-dispatcher.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import * as pluginCommandsModule from "../../plugins/commands.js";
 import { createDiscordNativeCommand } from "./native-command.js";
 import {
@@ -51,17 +51,17 @@ function createInteraction(params?: {
   });
 }
 
-function createConfig(): Must-bConfig {
+function createConfig(): MustBonfig {
   return {
     channels: {
       discord: {
         dm: { enabled: true, policy: "open" },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
-function createStatusCommand(cfg: Must-bConfig) {
+function createStatusCommand(cfg: MustBonfig) {
   const commandSpec: NativeCommandSpec = {
     name: "status",
     description: "Status",
@@ -211,7 +211,7 @@ describe("Discord native plugin command dispatch", () => {
           },
         },
       ],
-    } as Must-bConfig;
+    } as MustBonfig;
     const command = createStatusCommand(cfg);
     const interaction = createInteraction({
       channelType: ChannelType.GuildText,
@@ -259,7 +259,7 @@ describe("Discord native plugin command dispatch", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const command = createStatusCommand(cfg);
     const interaction = createInteraction({
       channelType: ChannelType.GuildText,
@@ -311,7 +311,7 @@ describe("Discord native plugin command dispatch", () => {
           dm: { enabled: true, policy: "open" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const command = createStatusCommand(cfg);
     const interaction = createInteraction({
       channelType: ChannelType.DM,

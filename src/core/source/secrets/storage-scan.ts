@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { listAgentIds, resolveAgentDir } from "../agents/agent-scope.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveUserPath } from "../utils.js";
 import { listAuthProfileStorePaths as listAuthProfileStorePathsFromAuthStorePaths } from "./auth-store-paths.js";
 import { parseEnvValue } from "./shared.js";
@@ -10,7 +10,7 @@ export function parseEnvAssignmentValue(raw: string): string {
   return parseEnvValue(raw);
 }
 
-export function listAuthProfileStorePaths(config: Must-bConfig, stateDir: string): string[] {
+export function listAuthProfileStorePaths(config: MustBonfig, stateDir: string): string[] {
   return listAuthProfileStorePathsFromAuthStorePaths(config, stateDir);
 }
 
@@ -41,7 +41,7 @@ function resolveActiveAgentDir(stateDir: string, env: NodeJS.ProcessEnv = proces
 }
 
 export function listAgentModelsJsonPaths(
-  config: Must-bConfig,
+  config: MustBonfig,
   stateDir: string,
   env: NodeJS.ProcessEnv = process.env,
 ): string[] {

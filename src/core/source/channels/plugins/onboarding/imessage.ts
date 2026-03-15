@@ -1,5 +1,5 @@
 import { detectBinary } from "../../../commands/onboard-helpers.js";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import {
   listIMessageAccountIds,
   resolveDefaultIMessageAccountId,
@@ -50,10 +50,10 @@ export function parseIMessageAllowFromEntries(raw: string): { entries: string[];
 }
 
 async function promptIMessageAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   return promptParsedAllowFromForScopedChannel({
     cfg: params.cfg,
     channel: "imessage",

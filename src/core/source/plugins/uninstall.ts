@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import { resolvePluginInstallDir } from "./install.js";
 import { defaultSlotIdForKey } from "./slots.js";
@@ -17,7 +17,7 @@ export type UninstallActions = {
 export type UninstallPluginResult =
   | {
       ok: true;
-      config: Must-bConfig;
+      config: MustBonfig;
       pluginId: string;
       actions: UninstallActions;
       warnings: string[];
@@ -63,9 +63,9 @@ export function resolveUninstallDirectoryTarget(params: {
  * Returns a new config with the plugin removed from entries, installs, allow, load.paths, and slots.
  */
 export function removePluginFromConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   pluginId: string,
-): { config: Must-bConfig; actions: Omit<UninstallActions, "directory"> } {
+): { config: MustBonfig; actions: Omit<UninstallActions, "directory"> } {
   const actions: Omit<UninstallActions, "directory"> = {
     entry: false,
     install: false,
@@ -155,7 +155,7 @@ export function removePluginFromConfig(
     delete cleanedPlugins.slots;
   }
 
-  const config: Must-bConfig = {
+  const config: MustBonfig = {
     ...cfg,
     plugins: Object.keys(cleanedPlugins).length > 0 ? cleanedPlugins : undefined,
   };
@@ -164,7 +164,7 @@ export function removePluginFromConfig(
 }
 
 export type UninstallPluginParams = {
-  config: Must-bConfig;
+  config: MustBonfig;
   pluginId: string;
   deleteFiles?: boolean;
   extensionsDir?: string;

@@ -1,7 +1,7 @@
 import path from "node:path";
 import { loginWeb } from "../../../channel-web.js";
 import { formatCliCommand } from "../../../cli/command-format.js";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { mergeWhatsAppConfig } from "../../../config/merge-config.js";
 import type { DmPolicy } from "../../../config/types.js";
 import { DEFAULT_ACCOUNT_ID } from "../../../routing/session-key.js";
@@ -24,19 +24,19 @@ import {
 
 const channel = "whatsapp" as const;
 
-function setWhatsAppDmPolicy(cfg: Must-bConfig, dmPolicy: DmPolicy): Must-bConfig {
+function setWhatsAppDmPolicy(cfg: MustBonfig, dmPolicy: DmPolicy): MustBonfig {
   return mergeWhatsAppConfig(cfg, { dmPolicy });
 }
 
-function setWhatsAppAllowFrom(cfg: Must-bConfig, allowFrom?: string[]): Must-bConfig {
+function setWhatsAppAllowFrom(cfg: MustBonfig, allowFrom?: string[]): MustBonfig {
   return mergeWhatsAppConfig(cfg, { allowFrom }, { unsetOnUndefined: ["allowFrom"] });
 }
 
-function setWhatsAppSelfChatMode(cfg: Must-bConfig, selfChatMode: boolean): Must-bConfig {
+function setWhatsAppSelfChatMode(cfg: MustBonfig, selfChatMode: boolean): MustBonfig {
   return mergeWhatsAppConfig(cfg, { selfChatMode });
 }
 
-async function detectWhatsAppLinked(cfg: Must-bConfig, accountId: string): Promise<boolean> {
+async function detectWhatsAppLinked(cfg: MustBonfig, accountId: string): Promise<boolean> {
   const { authDir } = resolveWhatsAppAuthDir({ cfg, accountId });
   const credsPath = path.join(authDir, "creds.json");
   return await pathExists(credsPath);
@@ -81,12 +81,12 @@ async function promptWhatsAppOwnerAllowFrom(params: {
 }
 
 async function applyWhatsAppOwnerAllowlist(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   existingAllowFrom: string[];
   title: string;
   messageLines: string[];
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const { normalized, allowFrom } = await promptWhatsAppOwnerAllowFrom({
     prompter: params.prompter,
     existingAllowFrom: params.existingAllowFrom,
@@ -122,11 +122,11 @@ function parseWhatsAppAllowFromEntries(raw: string): { entries: string[]; invali
 }
 
 async function promptWhatsAppAllowFrom(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   _runtime: RuntimeEnv,
   prompter: WizardPrompter,
   options?: { forceAllowlist?: boolean },
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const existingPolicy = cfg.channels?.whatsapp?.dmPolicy ?? "pairing";
   const existingAllowFrom = cfg.channels?.whatsapp?.allowFrom ?? [];
   const existingLabel = existingAllowFrom.length > 0 ? existingAllowFrom.join(", ") : "unset";

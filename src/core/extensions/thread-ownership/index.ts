@@ -1,11 +1,11 @@
-import type { Must-bConfig, Must-bPluginApi } from "must-b/plugin-sdk/thread-ownership";
+import type { MustBConfig, MustBPluginApi } from "must-b/plugin-sdk/thread-ownership";
 
 type ThreadOwnershipConfig = {
   forwarderUrl?: string;
   abTestChannels?: string[];
 };
 
-type AgentEntry = NonNullable<NonNullable<Must-bConfig["agents"]>["list"]>[number];
+type AgentEntry = NonNullable<NonNullable<MustBConfig["agents"]>["list"]>[number];
 
 // In-memory set of {channel}:{thread} keys where this agent was @-mentioned.
 // Entries expire after 5 minutes.
@@ -21,7 +21,7 @@ function cleanExpiredMentions(): void {
   }
 }
 
-function resolveOwnershipAgent(config: Must-bConfig): { id: string; name: string } {
+function resolveOwnershipAgent(config: MustBConfig): { id: string; name: string } {
   const list = Array.isArray(config.agents?.list)
     ? config.agents.list.filter((entry): entry is AgentEntry =>
         Boolean(entry && typeof entry === "object"),
@@ -39,7 +39,7 @@ function resolveOwnershipAgent(config: Must-bConfig): { id: string; name: string
   return { id, name };
 }
 
-export default function register(api: Must-bPluginApi) {
+export default function register(api: MustBPluginApi) {
   const pluginCfg = (api.pluginConfig ?? {}) as ThreadOwnershipConfig;
   const forwarderUrl = (
     pluginCfg.forwarderUrl ??

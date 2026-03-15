@@ -1,10 +1,10 @@
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { resolveUserPath } from "../../../utils.js";
 import type { OnboardOptions } from "../../onboard-types.js";
 
 export function resolveNonInteractiveWorkspaceDir(params: {
   opts: OnboardOptions;
-  baseConfig: Must-bConfig;
+  baseConfig: MustBonfig;
   defaultWorkspaceDir: string;
 }) {
   const raw = (

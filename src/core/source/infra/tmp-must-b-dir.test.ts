@@ -1,8 +1,8 @@
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { POSIX_MUSTB_TMP_DIR, resolvePreferredMust-bTmpDir } from "./tmp-must-b-dir.js";
+import { POSIX_MUSTB_TMP_DIR, resolvePreferredMustBmpDir } from "./tmp-must-b-dir.js";
 
-type TmpDirOptions = NonNullable<Parameters<typeof resolvePreferredMust-bTmpDir>[0]>;
+type TmpDirOptions = NonNullable<Parameters<typeof resolvePreferredMustBmpDir>[0]>;
 
 function fallbackTmp(uid = 501) {
   return path.join("/var/fallback", `must-b-${uid}`);
@@ -51,7 +51,7 @@ function resolveWithReadOnlyTmpFallback(params: {
   chmodSync?: NonNullable<TmpDirOptions["chmodSync"]>;
   warn?: NonNullable<TmpDirOptions["warn"]>;
 }) {
-  return resolvePreferredMust-bTmpDir({
+  return resolvePreferredMustBmpDir({
     accessSync: readOnlyTmpAccessSync(),
     lstatSync: vi.fn((target: string) => {
       if (target === POSIX_MUSTB_TMP_DIR) {
@@ -118,7 +118,7 @@ function resolveWithMocks(params: {
   const mkdirSync = vi.fn();
   const getuid = vi.fn(() => uid);
   const tmpdir = vi.fn(() => params.tmpdirPath ?? "/var/fallback");
-  const resolved = resolvePreferredMust-bTmpDir({
+  const resolved = resolvePreferredMustBmpDir({
     accessSync,
     chmodSync,
     lstatSync: wrappedLstatSync,
@@ -130,7 +130,7 @@ function resolveWithMocks(params: {
   return { resolved, accessSync, lstatSync: wrappedLstatSync, mkdirSync, tmpdir };
 }
 
-describe("resolvePreferredMust-bTmpDir", () => {
+describe("resolvePreferredMustBmpDir", () => {
   it("prefers /tmp/must-b when it already exists and is writable", () => {
     const lstatSync: NonNullable<TmpDirOptions["lstatSync"]> = vi.fn(() => ({
       isDirectory: () => true,

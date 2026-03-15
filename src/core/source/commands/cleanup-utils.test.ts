@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it, test, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import {
   buildCleanupPlan,
@@ -19,7 +19,7 @@ describe("buildCleanupPlan", () => {
       },
     };
     const plan = buildCleanupPlan({
-      cfg: cfg as unknown as Must-bConfig,
+      cfg: cfg as unknown as MustBonfig,
       stateDir: path.join(tmpRoot, "must-b-state"),
       configPath: path.join(tmpRoot, "must-b-state", "must-b.json"),
       oauthDir: path.join(tmpRoot, "must-b-oauth"),
@@ -38,14 +38,14 @@ describe("buildCleanupPlan", () => {
 
 describe("applyAgentDefaultPrimaryModel", () => {
   it("does not mutate when already set", () => {
-    const cfg = { agents: { defaults: { model: { primary: "a/b" } } } } as Must-bConfig;
+    const cfg = { agents: { defaults: { model: { primary: "a/b" } } } } as MustBonfig;
     const result = applyAgentDefaultPrimaryModel({ cfg, model: "a/b" });
     expect(result.changed).toBe(false);
     expect(result.next).toBe(cfg);
   });
 
   it("normalizes legacy models", () => {
-    const cfg = { agents: { defaults: { model: { primary: "legacy" } } } } as Must-bConfig;
+    const cfg = { agents: { defaults: { model: { primary: "legacy" } } } } as MustBonfig;
     const result = applyAgentDefaultPrimaryModel({
       cfg,
       model: "a/b",

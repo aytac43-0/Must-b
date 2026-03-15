@@ -1,5 +1,5 @@
 import { normalizeChatChannelId } from "../channels/registry.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { PluginRecord } from "./registry.js";
 import { defaultSlotIdForKey } from "./slots.js";
 
@@ -91,7 +91,7 @@ const normalizePluginEntries = (entries: unknown): NormalizedPluginsConfig["entr
 };
 
 export const normalizePluginsConfig = (
-  config?: Must-bConfig["plugins"],
+  config?: MustBonfig["plugins"],
 ): NormalizedPluginsConfig => {
   const memorySlot = normalizeSlotValue(config?.slots?.memory);
   return {
@@ -106,13 +106,13 @@ export const normalizePluginsConfig = (
   };
 };
 
-const hasExplicitMemorySlot = (plugins?: Must-bConfig["plugins"]) =>
+const hasExplicitMemorySlot = (plugins?: MustBonfig["plugins"]) =>
   Boolean(plugins?.slots && Object.prototype.hasOwnProperty.call(plugins.slots, "memory"));
 
-const hasExplicitMemoryEntry = (plugins?: Must-bConfig["plugins"]) =>
+const hasExplicitMemoryEntry = (plugins?: MustBonfig["plugins"]) =>
   Boolean(plugins?.entries && Object.prototype.hasOwnProperty.call(plugins.entries, "memory-core"));
 
-const hasExplicitPluginConfig = (plugins?: Must-bConfig["plugins"]) => {
+const hasExplicitPluginConfig = (plugins?: MustBonfig["plugins"]) => {
   if (!plugins) {
     return false;
   }
@@ -138,9 +138,9 @@ const hasExplicitPluginConfig = (plugins?: Must-bConfig["plugins"]) => {
 };
 
 export function applyTestPluginDefaults(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv = process.env,
-): Must-bConfig {
+): MustBonfig {
   if (!env.VITEST) {
     return cfg;
   }
@@ -176,7 +176,7 @@ export function applyTestPluginDefaults(
 }
 
 export function isTestDefaultMemorySlotDisabled(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv = process.env,
 ): boolean {
   if (!env.VITEST) {
@@ -227,7 +227,7 @@ export function resolveEnableState(
 }
 
 export function isBundledChannelEnabledByChannelConfig(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   pluginId: string,
 ): boolean {
   if (!cfg) {
@@ -249,7 +249,7 @@ export function resolveEffectiveEnableState(params: {
   id: string;
   origin: PluginRecord["origin"];
   config: NormalizedPluginsConfig;
-  rootConfig?: Must-bConfig;
+  rootConfig?: MustBonfig;
 }): { enabled: boolean; reason?: string } {
   const base = resolveEnableState(params.id, params.origin, params.config);
   if (

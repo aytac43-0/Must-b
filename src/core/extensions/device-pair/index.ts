@@ -1,5 +1,5 @@
 import os from "node:os";
-import type { Must-bPluginApi } from "must-b/plugin-sdk/device-pair";
+import type { MustBPluginApi } from "must-b/plugin-sdk/device-pair";
 import {
   approveDevicePairing,
   issueDeviceBootstrapToken,
@@ -84,7 +84,7 @@ function parsePositiveInteger(raw: string | undefined): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-function resolveGatewayPort(cfg: Must-bPluginApi["config"]): number {
+function resolveGatewayPort(cfg: MustBPluginApi["config"]): number {
   const envPort =
     parsePositiveInteger(process.env.MUSTB_GATEWAY_PORT?.trim()) ??
     parsePositiveInteger(process.env.CLAWDBOT_GATEWAY_PORT?.trim());
@@ -99,7 +99,7 @@ function resolveGatewayPort(cfg: Must-bPluginApi["config"]): number {
 }
 
 function resolveScheme(
-  cfg: Must-bPluginApi["config"],
+  cfg: MustBPluginApi["config"],
   opts?: { forceSecure?: boolean },
 ): "ws" | "wss" {
   if (opts?.forceSecure) {
@@ -185,7 +185,7 @@ async function resolveTailnetHost(): Promise<string | null> {
   );
 }
 
-function resolveAuthLabel(cfg: Must-bPluginApi["config"]): ResolveAuthLabelResult {
+function resolveAuthLabel(cfg: MustBPluginApi["config"]): ResolveAuthLabelResult {
   const mode = cfg.gateway?.auth?.mode;
   const token =
     pickFirstDefined([
@@ -239,7 +239,7 @@ function resolveRequiredAuthLabel(
     : { error: "Gateway auth is set to password, but no password is configured." };
 }
 
-async function resolveGatewayUrl(api: Must-bPluginApi): Promise<ResolveUrlResult> {
+async function resolveGatewayUrl(api: MustBPluginApi): Promise<ResolveUrlResult> {
   const cfg = api.config;
   const pluginCfg = (api.pluginConfig ?? {}) as DevicePairPluginConfig;
   const scheme = resolveScheme(cfg);
@@ -321,7 +321,7 @@ function formatSetupInstructions(): string {
   ].join("\n");
 }
 
-export default function register(api: Must-bPluginApi) {
+export default function register(api: MustBPluginApi) {
   registerPairingNotifierService(api);
 
   api.registerCommand({

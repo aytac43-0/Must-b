@@ -6,7 +6,7 @@ import {
   loadSkillsFromDir,
   type Skill,
 } from "@mariozechner/pi-coding-agent";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { isPathInside } from "../../infra/path-guards.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import { CONFIG_DIR, resolveUserPath } from "../../utils.js";
@@ -16,7 +16,7 @@ import { shouldIncludeSkill } from "./config.js";
 import { normalizeSkillFilter } from "./filter.js";
 import {
   parseFrontmatter,
-  resolveMust-bMetadata,
+  resolveMustBetadata,
   resolveSkillInvocationPolicy,
 } from "./frontmatter.js";
 import { resolvePluginSkillDirs } from "./plugin-skills.js";
@@ -67,7 +67,7 @@ function debugSkillCommandOnce(
 
 function filterSkillEntries(
   entries: SkillEntry[],
-  config?: Must-bConfig,
+  config?: MustBonfig,
   skillFilter?: string[],
   eligibility?: SkillEligibilityContext,
 ): SkillEntry[] {
@@ -136,7 +136,7 @@ type ResolvedSkillsLimits = {
   maxSkillFileBytes: number;
 };
 
-function resolveSkillsLimits(config?: Must-bConfig): ResolvedSkillsLimits {
+function resolveSkillsLimits(config?: MustBonfig): ResolvedSkillsLimits {
   const limits = config?.skills?.limits;
   return {
     maxCandidatesPerRoot: limits?.maxCandidatesPerRoot ?? DEFAULT_MAX_CANDIDATES_PER_ROOT,
@@ -292,7 +292,7 @@ function unwrapLoadedSkills(loaded: unknown): Skill[] {
 function loadSkillEntries(
   workspaceDir: string,
   opts?: {
-    config?: Must-bConfig;
+    config?: MustBonfig;
     managedSkillsDir?: string;
     bundledSkillsDir?: string;
   },
@@ -519,14 +519,14 @@ function loadSkillEntries(
     return {
       skill,
       frontmatter,
-      metadata: resolveMust-bMetadata(frontmatter),
+      metadata: resolveMustBetadata(frontmatter),
       invocation: resolveSkillInvocationPolicy(frontmatter),
     };
   });
   return skillEntries;
 }
 
-function applySkillsPromptLimits(params: { skills: Skill[]; config?: Must-bConfig }): {
+function applySkillsPromptLimits(params: { skills: Skill[]; config?: MustBonfig }): {
   skillsForPrompt: Skill[];
   truncated: boolean;
   truncatedReason: "count" | "chars" | null;
@@ -591,7 +591,7 @@ export function buildWorkspaceSkillsPrompt(
 }
 
 type WorkspaceSkillBuildOptions = {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   managedSkillsDir?: string;
   bundledSkillsDir?: string;
   entries?: SkillEntry[];
@@ -640,7 +640,7 @@ function resolveWorkspaceSkillPromptState(
 export function resolveSkillsPromptForRun(params: {
   skillsSnapshot?: SkillSnapshot;
   entries?: SkillEntry[];
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir: string;
 }): string {
   const snapshotPrompt = params.skillsSnapshot?.prompt?.trim();
@@ -660,7 +660,7 @@ export function resolveSkillsPromptForRun(params: {
 export function loadWorkspaceSkillEntries(
   workspaceDir: string,
   opts?: {
-    config?: Must-bConfig;
+    config?: MustBonfig;
     managedSkillsDir?: string;
     bundledSkillsDir?: string;
   },
@@ -710,7 +710,7 @@ function resolveSyncedSkillDestinationPath(params: {
 export async function syncSkillsToWorkspace(params: {
   sourceWorkspaceDir: string;
   targetWorkspaceDir: string;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   managedSkillsDir?: string;
   bundledSkillsDir?: string;
 }) {
@@ -767,7 +767,7 @@ export async function syncSkillsToWorkspace(params: {
 
 export function filterWorkspaceSkillEntries(
   entries: SkillEntry[],
-  config?: Must-bConfig,
+  config?: MustBonfig,
 ): SkillEntry[] {
   return filterSkillEntries(entries, config);
 }
@@ -775,7 +775,7 @@ export function filterWorkspaceSkillEntries(
 export function buildWorkspaceSkillCommandSpecs(
   workspaceDir: string,
   opts?: {
-    config?: Must-bConfig;
+    config?: MustBonfig;
     managedSkillsDir?: string;
     bundledSkillsDir?: string;
     entries?: SkillEntry[];

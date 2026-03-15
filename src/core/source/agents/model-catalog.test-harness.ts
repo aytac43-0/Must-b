@@ -4,11 +4,11 @@ import { __setModelCatalogImportForTest, resetModelCatalogCacheForTest } from ".
 export type PiSdkModule = typeof import("./pi-model-discovery.js");
 
 vi.mock("./models-config.js", () => ({
-  ensureMust-bModelsJson: vi.fn().mockResolvedValue({ agentDir: "/tmp", wrote: false }),
+  ensureMustBodelsJson: vi.fn().mockResolvedValue({ agentDir: "/tmp", wrote: false }),
 }));
 
 vi.mock("./agent-paths.js", () => ({
-  resolveMust-bAgentDir: () => "/tmp/must-b",
+  resolveMustBgentDir: () => "/tmp/must-b",
 }));
 
 export function installModelCatalogTestHooks() {

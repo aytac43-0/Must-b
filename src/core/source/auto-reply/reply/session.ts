@@ -7,7 +7,7 @@ import {
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { clearBootstrapSnapshotOnSessionRollover } from "../../agents/bootstrap-cache.js";
 import { normalizeChatType } from "../../channels/chat-type.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   DEFAULT_RESET_TRIGGERS,
   deriveSessionMetaPatch,
@@ -169,7 +169,7 @@ function resolveAcpResetBindingContext(ctx: MsgContext): {
 }
 
 function resolveBoundAcpSessionForReset(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   ctx: MsgContext;
 }): string | undefined {
   const activeSessionKey = normalizeSessionText(params.ctx.SessionKey);
@@ -189,7 +189,7 @@ function resolveBoundAcpSessionForReset(params: {
 
 export async function initSessionState(params: {
   ctx: MsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   commandAuthorized: boolean;
 }): Promise<SessionInitResult> {
   const { ctx, cfg, commandAuthorized } = params;

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Must-bPluginConfigSchema } from "must-b/plugin-sdk/acpx";
+import type { MustBPluginConfigSchema } from "must-b/plugin-sdk/acpx";
 
 export const ACPX_PERMISSION_MODES = ["approve-all", "approve-reads", "deny-all"] as const;
 export type AcpxPermissionMode = (typeof ACPX_PERMISSION_MODES)[number];
@@ -245,7 +245,7 @@ function resolveConfiguredCommand(params: { configured?: string; workspaceDir?: 
   return configured;
 }
 
-export function createAcpxPluginConfigSchema(): Must-bPluginConfigSchema {
+export function createAcpxPluginConfigSchema(): MustBPluginConfigSchema {
   return {
     safeParse(value: unknown):
       | { success: true; data?: unknown }

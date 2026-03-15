@@ -11,7 +11,7 @@ import {
   resolveSenderScopedGroupPolicy,
   warnMissingProviderGroupPolicyFallbackOnce,
 } from "must-b/plugin-sdk/googlechat";
-import type { Must-bConfig } from "must-b/plugin-sdk/googlechat";
+import type { MustBConfig } from "must-b/plugin-sdk/googlechat";
 import type { ResolvedGoogleChatAccount } from "./accounts.js";
 import { sendGoogleChatMessage } from "./api.js";
 import type { GoogleChatCoreRuntime } from "./monitor-types.js";
@@ -130,7 +130,7 @@ function warnDeprecatedUsersEmailEntries(logVerbose: (message: string) => void, 
 
 export async function applyGoogleChatInboundAccessPolicy(params: {
   account: ResolvedGoogleChatAccount;
-  config: Must-bConfig;
+  config: MustBConfig;
   core: GoogleChatCoreRuntime;
   space: GoogleChatSpace;
   message: GoogleChatMessage;

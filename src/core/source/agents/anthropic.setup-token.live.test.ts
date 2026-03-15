@@ -10,7 +10,7 @@ import {
 } from "../commands/auth-token.js";
 import { loadConfig } from "../config/config.js";
 import { isTruthyEnvValue } from "../infra/env.js";
-import { resolveMust-bAgentDir } from "./agent-paths.js";
+import { resolveMustBAgentDir } from "./agent-paths.js";
 import {
   type AuthProfileCredential,
   ensureAuthProfileStore,
@@ -18,7 +18,7 @@ import {
 } from "./auth-profiles.js";
 import { getApiKeyForModel, requireApiKey } from "./model-auth.js";
 import { normalizeProviderId, parseModelRef } from "./model-selection.js";
-import { ensureMust-bModelsJson } from "./models-config.js";
+import { ensureMustBModelsJson } from "./models-config.js";
 import { discoverAuthStorage, discoverModels } from "./pi-model-discovery.js";
 
 const LIVE = isTruthyEnvValue(process.env.LIVE) || isTruthyEnvValue(process.env.MUSTB_LIVE_TEST);
@@ -95,7 +95,7 @@ async function resolveTokenSource(): Promise<TokenSource> {
     };
   }
 
-  const agentDir = resolveMust-bAgentDir();
+  const agentDir = resolveMustBAgentDir();
   const store = ensureAuthProfileStore(agentDir, {
     allowKeychainPrompt: false,
   });
@@ -185,7 +185,7 @@ describeLive("live anthropic setup-token", () => {
       const tokenSource = await resolveTokenSource();
       try {
         const cfg = loadConfig();
-        await ensureMust-bModelsJson(cfg, tokenSource.agentDir);
+        await ensureMustBModelsJson(cfg, tokenSource.agentDir);
 
         const authStorage = discoverAuthStorage(tokenSource.agentDir);
         const modelRegistry = discoverModels(authStorage, tokenSource.agentDir);

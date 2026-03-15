@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/matrix";
+import type { MustBConfig } from "must-b/plugin-sdk/matrix";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -38,7 +38,7 @@ describe("matrixOutbound cfg threading", () => {
           accessToken: "resolved-token",
         },
       },
-    } as Must-bConfig;
+    } as MustBConfig;
 
     await matrixOutbound.sendText!({
       cfg,
@@ -68,7 +68,7 @@ describe("matrixOutbound cfg threading", () => {
           accessToken: "resolved-token",
         },
       },
-    } as Must-bConfig;
+    } as MustBConfig;
 
     await matrixOutbound.sendMedia!({
       cfg,
@@ -95,7 +95,7 @@ describe("matrixOutbound cfg threading", () => {
           accessToken: "resolved-token",
         },
       },
-    } as Must-bConfig;
+    } as MustBConfig;
     const sendMatrix = vi.fn(async () => ({
       messageId: "evt-injected",
       roomId: "!room:example",
@@ -130,7 +130,7 @@ describe("matrixOutbound cfg threading", () => {
           accessToken: "resolved-token",
         },
       },
-    } as Must-bConfig;
+    } as MustBConfig;
 
     await matrixOutbound.sendPoll!({
       cfg,

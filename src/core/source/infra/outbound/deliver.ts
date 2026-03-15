@@ -11,7 +11,7 @@ import type {
   ChannelOutboundAdapter,
   ChannelOutboundContext,
 } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveMarkdownTableMode } from "../../config/markdown-tables.js";
 import {
   appendAssistantMessageToSessionTranscript,
@@ -55,7 +55,7 @@ type SendMatrixMessage = (
   to: string,
   text: string,
   opts?: {
-    cfg?: Must-bConfig;
+    cfg?: MustBonfig;
     mediaUrl?: string;
     replyToId?: string;
     threadId?: string;
@@ -124,7 +124,7 @@ type ChannelHandler = {
 };
 
 type ChannelHandlerParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channel: Exclude<OutboundChannel, "none">;
   to: string;
   accountId?: string;
@@ -222,7 +222,7 @@ function createChannelOutboundContextBase(
 const isAbortError = (err: unknown): boolean => err instanceof Error && err.name === "AbortError";
 
 type DeliverOutboundPayloadsCoreParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channel: Exclude<OutboundChannel, "none">;
   to: string;
   accountId?: string;
@@ -292,7 +292,7 @@ function normalizePayloadForChannelDelivery(
 function normalizePayloadsForChannelDelivery(
   payloads: ReplyPayload[],
   channel: Exclude<OutboundChannel, "none">,
-  _cfg: Must-bConfig,
+  _cfg: MustBonfig,
   _to: string,
   _accountId?: string,
 ): ReplyPayload[] {

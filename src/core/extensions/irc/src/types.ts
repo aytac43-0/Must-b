@@ -7,7 +7,7 @@ import type {
   GroupToolPolicyBySenderConfig,
   GroupToolPolicyConfig,
   MarkdownConfig,
-  Must-bConfig,
+  MustBConfig,
 } from "must-b/plugin-sdk/irc";
 
 export type IrcChannelConfig = {
@@ -71,8 +71,8 @@ export type IrcConfig = IrcAccountConfig & {
   defaultAccount?: string;
 };
 
-export type CoreConfig = Must-bConfig & {
-  channels?: Must-bConfig["channels"] & {
+export type CoreConfig = MustBConfig & {
+  channels?: MustBConfig["channels"] & {
     irc?: IrcConfig;
   };
 };

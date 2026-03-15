@@ -74,7 +74,7 @@ export function createAuthTestLifecycle(envKeys: string[]): AuthTestLifecycle {
   };
 }
 
-export function requireMust-bAgentDir(): string {
+export function requireMustBgentDir(): string {
   const agentDir = process.env.MUSTB_AGENT_DIR;
   if (!agentDir) {
     throw new Error("MUSTB_AGENT_DIR not set");

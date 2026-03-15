@@ -145,7 +145,7 @@ vi.mock("../pi-settings.js", () => ({
 }));
 
 vi.mock("../models-config.js", () => ({
-  ensureMust-bModelsJson: vi.fn(async () => {}),
+  ensureMustBodelsJson: vi.fn(async () => {}),
 }));
 
 vi.mock("../model-auth.js", () => ({
@@ -190,7 +190,7 @@ vi.mock("../bootstrap-files.js", () => ({
 }));
 
 vi.mock("../docs-path.js", () => ({
-  resolveMust-bDocsPath: vi.fn(async () => undefined),
+  resolveMustBocsPath: vi.fn(async () => undefined),
 }));
 
 vi.mock("../channel-tools.js", () => ({
@@ -199,7 +199,7 @@ vi.mock("../channel-tools.js", () => ({
 }));
 
 vi.mock("../pi-tools.js", () => ({
-  createMust-bCodingTools: vi.fn(() => []),
+  createMustBodingTools: vi.fn(() => []),
 }));
 
 vi.mock("./google.js", () => ({
@@ -237,7 +237,7 @@ vi.mock("../skills.js", () => ({
 }));
 
 vi.mock("../agent-paths.js", () => ({
-  resolveMust-bAgentDir: vi.fn(() => "/tmp"),
+  resolveMustBgentDir: vi.fn(() => "/tmp"),
 }));
 
 vi.mock("../agent-scope.js", () => ({

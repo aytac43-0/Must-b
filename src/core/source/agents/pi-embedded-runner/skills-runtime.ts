@@ -1,9 +1,9 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { loadWorkspaceSkillEntries, type SkillEntry, type SkillSnapshot } from "../skills.js";
 
 export function resolveEmbeddedRunSkillEntries(params: {
   workspaceDir: string;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   skillsSnapshot?: SkillSnapshot;
 }): {
   shouldLoadSkillEntries: boolean;

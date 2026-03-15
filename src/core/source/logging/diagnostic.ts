@@ -1,5 +1,5 @@
 import { loadConfig } from "../config/config.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { emitDiagnosticEvent } from "../infra/diagnostic-events.js";
 import {
   diagnosticSessionStates,
@@ -38,7 +38,7 @@ function markActivity() {
   lastActivityAt = Date.now();
 }
 
-export function resolveStuckSessionWarnMs(config?: Must-bConfig): number {
+export function resolveStuckSessionWarnMs(config?: MustBonfig): number {
   const raw = config?.diagnostics?.stuckSessionWarnMs;
   if (typeof raw !== "number" || !Number.isFinite(raw)) {
     return DEFAULT_STUCK_SESSION_WARN_MS;
@@ -330,7 +330,7 @@ export function logActiveRuns() {
 
 let heartbeatInterval: NodeJS.Timeout | null = null;
 
-export function startDiagnosticHeartbeat(config?: Must-bConfig) {
+export function startDiagnosticHeartbeat(config?: MustBonfig) {
   if (heartbeatInterval) {
     return;
   }

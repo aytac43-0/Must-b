@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { Must-bConfig } from "must-b/plugin-sdk/googlechat";
+import type { MustBConfig } from "must-b/plugin-sdk/googlechat";
 import {
   createWebhookInFlightLimiter,
   createReplyPrefixOptions,
@@ -118,7 +118,7 @@ async function processGoogleChatEvent(event: GoogleChatEvent, target: WebhookTar
 function resolveBotDisplayName(params: {
   accountName?: string;
   agentId: string;
-  config: Must-bConfig;
+  config: MustBConfig;
 }): string {
   const { accountName, agentId, config } = params;
   if (accountName?.trim()) {
@@ -134,7 +134,7 @@ function resolveBotDisplayName(params: {
 async function processMessageWithPipeline(params: {
   event: GoogleChatEvent;
   account: ResolvedGoogleChatAccount;
-  config: Must-bConfig;
+  config: MustBConfig;
   runtime: GoogleChatRuntimeEnv;
   core: GoogleChatCoreRuntime;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
@@ -369,7 +369,7 @@ async function deliverGoogleChatReply(params: {
   spaceId: string;
   runtime: GoogleChatRuntimeEnv;
   core: GoogleChatCoreRuntime;
-  config: Must-bConfig;
+  config: MustBConfig;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
   typingMessageName?: string;
 }): Promise<void> {

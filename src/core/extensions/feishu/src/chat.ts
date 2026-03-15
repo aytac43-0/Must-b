@@ -1,5 +1,5 @@
 import type * as Lark from "@larksuiteoapi/node-sdk";
-import type { Must-bPluginApi } from "must-b/plugin-sdk/feishu";
+import type { MustBPluginApi } from "must-b/plugin-sdk/feishu";
 import { listEnabledFeishuAccounts } from "./accounts.js";
 import { FeishuChatSchema, type FeishuChatParams } from "./chat-schema.js";
 import { createFeishuClient } from "./client.js";
@@ -71,7 +71,7 @@ async function getChatMembers(
   };
 }
 
-export function registerFeishuChatTools(api: Must-bPluginApi) {
+export function registerFeishuChatTools(api: MustBPluginApi) {
   if (!api.config) {
     api.logger.debug?.("feishu_chat: No config available, skipping chat tools");
     return;

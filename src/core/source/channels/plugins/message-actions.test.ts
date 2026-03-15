@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import {
   createChannelTestPluginBase,
@@ -66,22 +66,22 @@ describe("message action capability checks", () => {
   it("aggregates buttons/card support across plugins", () => {
     activateMessageActionTestRegistry();
 
-    expect(supportsChannelMessageButtons({} as Must-bConfig)).toBe(true);
-    expect(supportsChannelMessageCards({} as Must-bConfig)).toBe(true);
+    expect(supportsChannelMessageButtons({} as MustBonfig)).toBe(true);
+    expect(supportsChannelMessageCards({} as MustBonfig)).toBe(true);
   });
 
   it("checks per-channel capabilities", () => {
     activateMessageActionTestRegistry();
 
     expect(
-      supportsChannelMessageButtonsForChannel({ cfg: {} as Must-bConfig, channel: "discord" }),
+      supportsChannelMessageButtonsForChannel({ cfg: {} as MustBonfig, channel: "discord" }),
     ).toBe(true);
     expect(
-      supportsChannelMessageButtonsForChannel({ cfg: {} as Must-bConfig, channel: "telegram" }),
+      supportsChannelMessageButtonsForChannel({ cfg: {} as MustBonfig, channel: "telegram" }),
     ).toBe(false);
     expect(
-      supportsChannelMessageCardsForChannel({ cfg: {} as Must-bConfig, channel: "telegram" }),
+      supportsChannelMessageCardsForChannel({ cfg: {} as MustBonfig, channel: "telegram" }),
     ).toBe(true);
-    expect(supportsChannelMessageCardsForChannel({ cfg: {} as Must-bConfig })).toBe(false);
+    expect(supportsChannelMessageCardsForChannel({ cfg: {} as MustBonfig })).toBe(false);
   });
 });

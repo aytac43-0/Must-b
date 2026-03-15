@@ -9,7 +9,7 @@ import {
   listChatChannels,
 } from "../channels/registry.js";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { isChannelConfigured } from "../config/plugin-auto-enable.js";
 import type { DmPolicy } from "../config/types.js";
 import { enablePluginInConfig } from "../plugins/enable.js";
@@ -84,7 +84,7 @@ async function promptConfiguredAction(params: {
 }
 
 async function promptRemovalAccountId(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   label: string;
   channel: ChannelChoice;
@@ -111,7 +111,7 @@ async function promptRemovalAccountId(params: {
 }
 
 async function collectChannelStatus(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   options?: SetupChannelsOptions;
   accountOverrides: Partial<Record<ChannelChoice, string>>;
 }): Promise<ChannelStatusSummary> {
@@ -163,7 +163,7 @@ async function collectChannelStatus(params: {
 }
 
 export async function noteChannelStatus(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   options?: SetupChannelsOptions;
   accountOverrides?: Partial<Record<ChannelChoice, string>>;
@@ -223,11 +223,11 @@ function resolveQuickstartDefault(
 }
 
 async function maybeConfigureDmPolicies(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   selection: ChannelChoice[];
   prompter: WizardPrompter;
   accountIdsByChannel?: Map<ChannelChoice, string>;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const { selection, prompter, accountIdsByChannel } = params;
   const dmPolicies = selection
     .map((channel) => getChannelOnboardingAdapter(channel)?.dmPolicy)
@@ -291,11 +291,11 @@ async function maybeConfigureDmPolicies(params: {
 // Channel-specific prompts moved into onboarding adapters.
 
 export async function setupChannels(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   runtime: RuntimeEnv,
   prompter: WizardPrompter,
   options?: SetupChannelsOptions,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   let next = cfg;
   const forceAllowFromChannels = new Set(options?.forceAllowFromChannels ?? []);
   const accountOverrides: Partial<Record<ChannelChoice, string>> = {

@@ -1,6 +1,6 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
-export function buildModelAliasLines(cfg?: Must-bConfig) {
+export function buildModelAliasLines(cfg?: MustBonfig) {
   const models = cfg?.agents?.defaults?.models ?? {};
   const entries: Array<{ alias: string; model: string }> = [];
   for (const [keyRaw, entryRaw] of Object.entries(models)) {

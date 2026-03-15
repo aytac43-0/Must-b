@@ -19,7 +19,7 @@ import type {
   ChannelResolveKind,
   ChannelResolveResult,
   ChannelStatusAdapter,
-  Must-bConfig,
+  MustBConfig,
   OutboundDeliveryResult,
   RuntimeEnv,
 } from "must-b/plugin-sdk/twitch";
@@ -137,5 +137,5 @@ import type { z } from "zod";
 import type { TwitchConfigSchema } from "./config-schema.js";
 export type TwitchConfig = z.infer<typeof TwitchConfigSchema>;
 
-export type { Must-bConfig };
+export type { MustBConfig };
 export type { RuntimeEnv };

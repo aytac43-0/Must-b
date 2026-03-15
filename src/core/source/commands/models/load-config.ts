@@ -4,17 +4,17 @@ import {
   loadConfig,
   readConfigFileSnapshotForWrite,
   setRuntimeConfigSnapshot,
-  type Must-bConfig,
+  type MustBonfig,
 } from "../../config/config.js";
 import type { RuntimeEnv } from "../../runtime.js";
 
 export type LoadedModelsConfig = {
-  sourceConfig: Must-bConfig;
-  resolvedConfig: Must-bConfig;
+  sourceConfig: MustBonfig;
+  resolvedConfig: MustBonfig;
   diagnostics: string[];
 };
 
-async function loadSourceConfigSnapshot(fallback: Must-bConfig): Promise<Must-bConfig> {
+async function loadSourceConfigSnapshot(fallback: MustBonfig): Promise<MustBonfig> {
   try {
     const { snapshot } = await readConfigFileSnapshotForWrite();
     if (snapshot.valid) {
@@ -53,6 +53,6 @@ export async function loadModelsConfigWithSource(params: {
 export async function loadModelsConfig(params: {
   commandName: string;
   runtime?: RuntimeEnv;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   return (await loadModelsConfigWithSource(params)).resolvedConfig;
 }

@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runCommandWithTimeout } from "../process/exec.js";
 import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
-import { resolveMust-bPackageRoot, resolveMust-bPackageRootSync } from "./must-b-root.js";
+import { resolveMustBackageRoot, resolveMustBackageRootSync } from "./must-b-root.js";
 
 const CONTROL_UI_DIST_PATH_SEGMENTS = ["dist", "control-ui", "index.html"] as const;
 
@@ -98,7 +98,7 @@ export async function resolveControlUiDistIndexPath(
     }
   }
 
-  const packageRoot = await resolveMust-bPackageRoot({ argv1: normalized, moduleUrl });
+  const packageRoot = await resolveMustBackageRoot({ argv1: normalized, moduleUrl });
   if (packageRoot) {
     return path.join(packageRoot, "dist", "control-ui", "index.html");
   }
@@ -209,7 +209,7 @@ export function resolveControlUiRootSync(opts: ControlUiRootResolveOptions = {})
       return null;
     }
   })();
-  const packageRoot = resolveMust-bPackageRootSync({
+  const packageRoot = resolveMustBackageRootSync({
     argv1,
     moduleUrl: opts.moduleUrl,
     cwd,
@@ -255,7 +255,7 @@ export function isPackageProvenControlUiRootSync(
 ): boolean {
   const argv1 = opts.argv1 ?? process.argv[1];
   const cwd = opts.cwd ?? process.cwd();
-  const packageRoot = resolveMust-bPackageRootSync({
+  const packageRoot = resolveMustBackageRootSync({
     argv1,
     moduleUrl: opts.moduleUrl,
     cwd,

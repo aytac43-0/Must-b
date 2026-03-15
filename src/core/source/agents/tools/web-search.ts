@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import { formatCliCommand } from "../../cli/command-format.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { normalizeResolvedSecretInputString } from "../../config/types.secrets.js";
 import { logVerbose } from "../../globals.js";
 import type { RuntimeWebSearchMetadata } from "../../secrets/runtime-web-tools.js";
@@ -282,7 +282,7 @@ function createWebSearchSchema(params: {
   });
 }
 
-type WebSearchConfig = NonNullable<Must-bConfig["tools"]>["web"] extends infer Web
+type WebSearchConfig = NonNullable<MustBonfig["tools"]>["web"] extends infer Web
   ? Web extends { search?: infer Search }
     ? Search
     : undefined
@@ -530,7 +530,7 @@ type GeminiGroundingResponse = {
 const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 
-function resolveSearchConfig(cfg?: Must-bConfig): WebSearchConfig {
+function resolveSearchConfig(cfg?: MustBonfig): WebSearchConfig {
   const search = cfg?.tools?.web?.search;
   if (!search || typeof search !== "object") {
     return undefined;
@@ -1889,7 +1889,7 @@ async function runWebSearch(params: {
 }
 
 export function createWebSearchTool(options?: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   sandboxed?: boolean;
   runtimeWebSearch?: RuntimeWebSearchMetadata;
 }): AnyAgentTool | null {

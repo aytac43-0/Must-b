@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { withEnvAsync } from "../test-utils/env.js";
 import { runCapability } from "./runner.js";
 import { withVideoFixture } from "./runner.test-utils.js";
@@ -38,7 +38,7 @@ describe("runCapability video provider wiring", () => {
             },
           },
         },
-      } as unknown as Must-bConfig;
+      } as unknown as MustBonfig;
 
       const result = await runCapability({
         capability: "video",
@@ -97,7 +97,7 @@ describe("runCapability video provider wiring", () => {
                 },
               },
             },
-          } as unknown as Must-bConfig;
+          } as unknown as MustBonfig;
 
           const result = await runCapability({
             capability: "video",

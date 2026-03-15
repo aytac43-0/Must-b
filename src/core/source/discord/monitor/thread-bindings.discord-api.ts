@@ -1,5 +1,5 @@
 import { ChannelType, Routes } from "discord-api-types/v10";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { logVerbose } from "../../globals.js";
 import { createDiscordRestClient } from "../client.js";
 import { sendMessageDiscord, sendWebhookMessageDiscord } from "../send.js";
@@ -123,7 +123,7 @@ export function isDiscordThreadGoneError(err: unknown): boolean {
 }
 
 export async function maybeSendBindingMessage(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   record: ThreadBindingRecord;
   text: string;
   preferWebhook?: boolean;
@@ -159,7 +159,7 @@ export async function maybeSendBindingMessage(params: {
 }
 
 export async function createWebhookForChannel(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   accountId: string;
   token?: string;
   channelId: string;
@@ -226,7 +226,7 @@ export function findReusableWebhook(params: { accountId: string; channelId: stri
 }
 
 export async function resolveChannelIdForBinding(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   accountId: string;
   token?: string;
   threadId: string;
@@ -273,7 +273,7 @@ export async function resolveChannelIdForBinding(params: {
 }
 
 export async function createThreadForBinding(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   accountId: string;
   token?: string;
   channelId: string;

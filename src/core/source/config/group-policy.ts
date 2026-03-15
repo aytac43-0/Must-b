@@ -1,7 +1,7 @@
 import type { ChannelId } from "../channels/plugins/types.js";
 import { resolveAccountEntry } from "../routing/account-lookup.js";
 import { normalizeAccountId } from "../routing/session-key.js";
-import type { Must-bConfig } from "./config.js";
+import type { MustBonfig } from "./config.js";
 import {
   parseToolsBySenderTypedKey,
   type GroupToolPolicyBySenderConfig,
@@ -280,7 +280,7 @@ export function resolveToolsBySender(
 }
 
 function resolveChannelGroups(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   channel: GroupPolicyChannel,
   accountId?: string | null,
 ): ChannelGroups | undefined {
@@ -301,7 +301,7 @@ function resolveChannelGroups(
 type ChannelGroupPolicyMode = "open" | "allowlist" | "disabled";
 
 function resolveChannelGroupPolicyMode(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   channel: GroupPolicyChannel,
   accountId?: string | null,
 ): ChannelGroupPolicyMode | undefined {
@@ -323,7 +323,7 @@ function resolveChannelGroupPolicyMode(
 }
 
 export function resolveChannelGroupPolicy(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channel: GroupPolicyChannel;
   groupId?: string | null;
   accountId?: string | null;
@@ -359,7 +359,7 @@ export function resolveChannelGroupPolicy(params: {
 }
 
 export function resolveChannelGroupRequireMention(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channel: GroupPolicyChannel;
   groupId?: string | null;
   accountId?: string | null;
@@ -390,7 +390,7 @@ export function resolveChannelGroupRequireMention(params: {
 
 export function resolveChannelGroupToolsPolicy(
   params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     channel: GroupPolicyChannel;
     groupId?: string | null;
     accountId?: string | null;

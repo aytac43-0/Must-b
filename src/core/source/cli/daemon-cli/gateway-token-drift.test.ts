@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveGatewayTokenForDriftCheck } from "./gateway-token-drift.js";
 
 describe("resolveGatewayTokenForDriftCheck", () => {
@@ -12,7 +12,7 @@ describe("resolveGatewayTokenForDriftCheck", () => {
             token: "config-token",
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       env: {
         MUSTB_GATEWAY_TOKEN: "env-token",
       } as NodeJS.ProcessEnv,
@@ -36,7 +36,7 @@ describe("resolveGatewayTokenForDriftCheck", () => {
               token: { source: "env", provider: "default", id: "MUSTB_GATEWAY_TOKEN" },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         env: {
           MUSTB_GATEWAY_TOKEN: "env-token",
         } as NodeJS.ProcessEnv,
@@ -63,7 +63,7 @@ describe("resolveGatewayTokenForDriftCheck", () => {
               token: "remote-token",
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         env: {} as NodeJS.ProcessEnv,
       }),
     ).toThrow(/gateway\.auth\.token/i);

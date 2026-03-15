@@ -1,7 +1,7 @@
 import type {
   ChannelOnboardingAdapter,
   ChannelOnboardingDmPolicy,
-  Must-bConfig,
+  MustBConfig,
   SecretInput,
   WizardPrompter,
 } from "must-b/plugin-sdk/zalo";
@@ -23,24 +23,24 @@ const channel = "zalo" as const;
 type UpdateMode = "polling" | "webhook";
 
 function setZaloDmPolicy(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   dmPolicy: "pairing" | "allowlist" | "open" | "disabled",
 ) {
   return setTopLevelChannelDmPolicyWithAllowFrom({
     cfg,
     channel: "zalo",
     dmPolicy,
-  }) as Must-bConfig;
+  }) as MustBConfig;
 }
 
 function setZaloUpdateMode(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
   mode: UpdateMode,
   webhookUrl?: string,
   webhookSecret?: SecretInput,
   webhookPath?: string,
-): Must-bConfig {
+): MustBConfig {
   const isDefault = accountId === DEFAULT_ACCOUNT_ID;
   if (mode === "polling") {
     if (isDefault) {
@@ -56,7 +56,7 @@ function setZaloUpdateMode(
           ...cfg.channels,
           zalo: rest,
         },
-      } as Must-bConfig;
+      } as MustBConfig;
     }
     const accounts = { ...cfg.channels?.zalo?.accounts } as Record<string, Record<string, unknown>>;
     const existing = accounts[accountId] ?? {};
@@ -71,7 +71,7 @@ function setZaloUpdateMode(
           accounts,
         },
       },
-    } as Must-bConfig;
+    } as MustBConfig;
   }
 
   if (isDefault) {
@@ -86,7 +86,7 @@ function setZaloUpdateMode(
           webhookPath,
         },
       },
-    } as Must-bConfig;
+    } as MustBConfig;
   }
 
   const accounts = { ...cfg.channels?.zalo?.accounts } as Record<string, Record<string, unknown>>;
@@ -105,7 +105,7 @@ function setZaloUpdateMode(
         accounts,
       },
     },
-  } as Must-bConfig;
+  } as MustBConfig;
 }
 
 async function noteZaloTokenHelp(prompter: WizardPrompter): Promise<void> {
@@ -122,10 +122,10 @@ async function noteZaloTokenHelp(prompter: WizardPrompter): Promise<void> {
 }
 
 async function promptZaloAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   prompter: WizardPrompter;
   accountId: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBConfig> {
   const { cfg, prompter, accountId } = params;
   const resolved = resolveZaloAccount({ cfg, accountId });
   const existingAllowFrom = resolved.config.allowFrom ?? [];
@@ -159,7 +159,7 @@ async function promptZaloAllowFrom(params: {
           allowFrom: unique,
         },
       },
-    } as Must-bConfig;
+    } as MustBConfig;
   }
 
   return {
@@ -180,7 +180,7 @@ async function promptZaloAllowFrom(params: {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBConfig;
 }
 
 const dmPolicy: ChannelOnboardingDmPolicy = {
@@ -281,7 +281,7 @@ export const zaloOnboardingAdapter: ChannelOnboardingAdapter = {
                   enabled: true,
                 },
               },
-            } as Must-bConfig)
+            } as MustBConfig)
           : cfg,
       applySet: async (cfg, value) =>
         zaloAccountId === DEFAULT_ACCOUNT_ID
@@ -295,7 +295,7 @@ export const zaloOnboardingAdapter: ChannelOnboardingAdapter = {
                   botToken: value,
                 },
               },
-            } as Must-bConfig)
+            } as MustBConfig)
           : ({
               ...cfg,
               channels: {
@@ -313,7 +313,7 @@ export const zaloOnboardingAdapter: ChannelOnboardingAdapter = {
                   },
                 },
               },
-            } as Must-bConfig),
+            } as MustBConfig),
     });
     next = tokenStep.cfg;
 

@@ -1,5 +1,5 @@
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   loadSessionStore,
   resolveSessionStoreEntry,
@@ -73,7 +73,7 @@ const isInboundAudioContext = (ctx: FinalizedMsgContext): boolean => {
 
 const resolveSessionStoreLookup = (
   ctx: FinalizedMsgContext,
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ): {
   sessionKey?: string;
   entry?: SessionEntry;
@@ -106,7 +106,7 @@ export type DispatchFromConfigResult = {
 
 export async function dispatchReplyFromConfig(params: {
   ctx: FinalizedMsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   dispatcher: ReplyDispatcher;
   replyOptions?: Omit<GetReplyOptions, "onToolResult" | "onBlockReply">;
   replyResolver?: typeof getReplyFromConfig;

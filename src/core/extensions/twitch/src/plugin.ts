@@ -5,7 +5,7 @@
  * This is the primary entry point for the Twitch channel integration.
  */
 
-import type { Must-bConfig } from "must-b/plugin-sdk/twitch";
+import type { MustBConfig } from "must-b/plugin-sdk/twitch";
 import { buildChannelConfigSchema } from "must-b/plugin-sdk/twitch";
 import { twitchMessageActions } from "./actions.js";
 import { removeClientManager } from "./client-manager-registry.js";
@@ -75,10 +75,10 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
   /** Account configuration management */
   config: {
     /** List all configured account IDs */
-    listAccountIds: (cfg: Must-bConfig): string[] => listAccountIds(cfg),
+    listAccountIds: (cfg: MustBConfig): string[] => listAccountIds(cfg),
 
     /** Resolve an account config by ID */
-    resolveAccount: (cfg: Must-bConfig, accountId?: string | null): TwitchAccountConfig => {
+    resolveAccount: (cfg: MustBConfig, accountId?: string | null): TwitchAccountConfig => {
       const account = getAccountConfig(cfg, accountId ?? DEFAULT_ACCOUNT_ID);
       if (!account) {
         // Return a default/empty account if not configured
@@ -96,7 +96,7 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
     defaultAccountId: (): string => DEFAULT_ACCOUNT_ID,
 
     /** Check if an account is configured */
-    isConfigured: (_account: unknown, cfg: Must-bConfig): boolean => {
+    isConfigured: (_account: unknown, cfg: MustBConfig): boolean => {
       const account = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
       const tokenResolution = resolveTwitchToken(cfg, { accountId: DEFAULT_ACCOUNT_ID });
       return account ? isAccountConfigured(account, tokenResolution.token) : false;
@@ -130,7 +130,7 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
       kind,
       runtime,
     }: {
-      cfg: Must-bConfig;
+      cfg: MustBConfig;
       accountId?: string | null;
       inputs: string[];
       kind: ChannelResolveKind;
@@ -198,7 +198,7 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
       probe,
     }: {
       account: TwitchAccountConfig;
-      cfg: Must-bConfig;
+      cfg: MustBConfig;
       runtime?: ChannelAccountSnapshot;
       probe?: unknown;
     }): ChannelAccountSnapshot => {

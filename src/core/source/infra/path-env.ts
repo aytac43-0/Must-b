@@ -4,7 +4,7 @@ import path from "node:path";
 import { resolveBrewPathDirs } from "./brew.js";
 import { isTruthyEnvValue } from "./env.js";
 
-type EnsureMust-bPathOpts = {
+type EnsureMustBathOpts = {
   execPath?: string;
   cwd?: string;
   homeDir?: string;
@@ -49,7 +49,7 @@ function mergePath(params: { existing: string; prepend?: string[]; append?: stri
   return merged.join(path.delimiter);
 }
 
-function candidateBinDirs(opts: EnsureMust-bPathOpts): { prepend: string[]; append: string[] } {
+function candidateBinDirs(opts: EnsureMustBathOpts): { prepend: string[]; append: string[] } {
   const execPath = opts.execPath ?? process.execPath;
   const cwd = opts.cwd ?? process.cwd();
   const homeDir = opts.homeDir ?? os.homedir();
@@ -109,7 +109,7 @@ function candidateBinDirs(opts: EnsureMust-bPathOpts): { prepend: string[]; appe
  * Best-effort PATH bootstrap so skills that require the `must-b` CLI can run
  * under launchd/minimal environments (and inside the macOS app bundle).
  */
-export function ensureMust-bCliOnPath(opts: EnsureMust-bPathOpts = {}) {
+export function ensureMustBliOnPath(opts: EnsureMustBathOpts = {}) {
   if (isTruthyEnvValue(process.env.MUSTB_PATH_BOOTSTRAPPED)) {
     return;
   }

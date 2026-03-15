@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig, ConfigFileSnapshot } from "../config/types.must-b.js";
+import type { MustBonfig, ConfigFileSnapshot } from "../config/types.must-b.js";
 import type { UpdateRunResult } from "../infra/update-runner.js";
 import { withEnvAsync } from "../test-utils/env.js";
 
@@ -38,7 +38,7 @@ vi.mock("../infra/update-runner.js", () => ({
 }));
 
 vi.mock("../infra/must-b-root.js", () => ({
-  resolveMust-bPackageRoot: vi.fn(),
+  resolveMustBackageRoot: vi.fn(),
 }));
 
 vi.mock("../config/config.js", () => ({
@@ -137,7 +137,7 @@ vi.mock("../runtime.js", () => ({
 }));
 
 const { runGatewayUpdate } = await import("../infra/update-runner.js");
-const { resolveMust-bPackageRoot } = await import("../infra/must-b-root.js");
+const { resolveMustBackageRoot } = await import("../infra/must-b-root.js");
 const { readConfigFileSnapshot, writeConfigFile } = await import("../config/config.js");
 const { checkUpdateStatus, fetchNpmTagVersion, resolveNpmChannelTag } =
   await import("../infra/update-check.js");
@@ -157,7 +157,7 @@ describe("update-cli", () => {
     return dir;
   };
 
-  const baseConfig = {} as Must-bConfig;
+  const baseConfig = {} as MustBonfig;
   const baseSnapshot: ConfigFileSnapshot = {
     path: "/tmp/must-b-config.json",
     exists: true,
@@ -186,7 +186,7 @@ describe("update-cli", () => {
   };
 
   const mockPackageInstallStatus = (root: string) => {
-    vi.mocked(resolveMust-bPackageRoot).mockResolvedValue(root);
+    vi.mocked(resolveMustBackageRoot).mockResolvedValue(root);
     vi.mocked(checkUpdateStatus).mockResolvedValue({
       root,
       installKind: "package",
@@ -259,7 +259,7 @@ describe("update-cli", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(resolveMust-bPackageRoot).mockResolvedValue(process.cwd());
+    vi.mocked(resolveMustBackageRoot).mockResolvedValue(process.cwd());
     vi.mocked(readConfigFileSnapshot).mockResolvedValue(baseSnapshot);
     vi.mocked(fetchNpmTagVersion).mockResolvedValue({
       tag: "latest",
@@ -406,7 +406,7 @@ describe("update-cli", () => {
       prepare: async () => {
         vi.mocked(readConfigFileSnapshot).mockResolvedValue({
           ...baseSnapshot,
-          config: { update: { channel: "beta" } } as Must-bConfig,
+          config: { update: { channel: "beta" } } as MustBonfig,
         });
       },
       expectedChannel: "beta" as const,
@@ -441,7 +441,7 @@ describe("update-cli", () => {
     mockPackageInstallStatus(tempDir);
     vi.mocked(readConfigFileSnapshot).mockResolvedValue({
       ...baseSnapshot,
-      config: { update: { channel: "beta" } } as Must-bConfig,
+      config: { update: { channel: "beta" } } as MustBonfig,
     });
     vi.mocked(resolveNpmChannelTag).mockResolvedValue({
       tag: "latest",

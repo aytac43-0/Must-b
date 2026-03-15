@@ -1,5 +1,5 @@
 import { normalizeChatType } from "../channels/chat-type.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SessionChatType, SessionEntry } from "../config/sessions.js";
 import { deriveSessionChatType } from "./session-key-utils.js";
 
@@ -51,7 +51,7 @@ function deriveChatTypeFromKey(key?: string): SessionChatType | undefined {
 }
 
 export function resolveSendPolicy(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   entry?: SessionEntry;
   sessionKey?: string;
   channel?: string;

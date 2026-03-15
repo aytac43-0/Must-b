@@ -1,9 +1,9 @@
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
 import { getChannelPlugin } from "../../channels/plugins/index.js";
 import type { ChannelPlugin } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { applyPluginAutoEnable } from "../../config/plugin-auto-enable.js";
-import { loadMust-bPlugins } from "../../plugins/loader.js";
+import { loadMustBlugins } from "../../plugins/loader.js";
 import { getActivePluginRegistry, getActivePluginRegistryKey } from "../../plugins/runtime.js";
 import {
   isDeliverableMessageChannel,
@@ -25,7 +25,7 @@ export function normalizeDeliverableOutboundChannel(
 
 function maybeBootstrapChannelPlugin(params: {
   channel: DeliverableMessageChannel;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
 }): void {
   const cfg = params.cfg;
   if (!cfg) {
@@ -48,7 +48,7 @@ function maybeBootstrapChannelPlugin(params: {
   const defaultAgentId = resolveDefaultAgentId(autoEnabled);
   const workspaceDir = resolveAgentWorkspaceDir(autoEnabled, defaultAgentId);
   try {
-    loadMust-bPlugins({
+    loadMustBlugins({
       config: autoEnabled,
       workspaceDir,
     });
@@ -76,7 +76,7 @@ function resolveDirectFromActiveRegistry(
 
 export function resolveOutboundChannelPlugin(params: {
   channel: string;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
 }): ChannelPlugin | undefined {
   const normalized = normalizeDeliverableOutboundChannel(params.channel);
   if (!normalized) {

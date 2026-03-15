@@ -46,7 +46,7 @@ vi.mock("../../plugins/bundled-sources.js", () => ({
 }));
 
 vi.mock("../../plugins/loader.js", () => ({
-  loadMust-bPlugins: vi.fn(),
+  loadMustBlugins: vi.fn(),
 }));
 
 const clearPluginDiscoveryCache = vi.fn();
@@ -56,8 +56,8 @@ vi.mock("../../plugins/discovery.js", () => ({
 
 import fs from "node:fs";
 import type { ChannelPluginCatalogEntry } from "../../channels/plugins/catalog.js";
-import type { Must-bConfig } from "../../config/config.js";
-import { loadMust-bPlugins } from "../../plugins/loader.js";
+import type { MustBonfig } from "../../config/config.js";
+import { loadMustBlugins } from "../../plugins/loader.js";
 import type { WizardPrompter } from "../../wizard/prompts.js";
 import { makePrompter, makeRuntime } from "./__tests__/test-utils.js";
 import {
@@ -97,7 +97,7 @@ async function runInitialValueForChannel(channel: "dev" | "beta") {
   const runtime = makeRuntime();
   const select = vi.fn((async <T extends string>() => "skip" as T) as WizardPrompter["select"]);
   const prompter = makePrompter({ select: select as unknown as WizardPrompter["select"] });
-  const cfg: Must-bConfig = { update: { channel } };
+  const cfg: MustBonfig = { update: { channel } };
   mockRepoLocalPathExists();
 
   await ensureOnboardingPluginInstalled({
@@ -125,7 +125,7 @@ describe("ensureOnboardingPluginInstalled", () => {
     const prompter = makePrompter({
       select: vi.fn(async () => "npm") as WizardPrompter["select"],
     });
-    const cfg: Must-bConfig = { plugins: { allow: ["other"] } };
+    const cfg: MustBonfig = { plugins: { allow: ["other"] } };
     vi.mocked(fs.existsSync).mockReturnValue(false);
     installPluginFromNpmSpec.mockResolvedValue({
       ok: true,
@@ -157,7 +157,7 @@ describe("ensureOnboardingPluginInstalled", () => {
     const prompter = makePrompter({
       select: vi.fn(async () => "local") as WizardPrompter["select"],
     });
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     mockRepoLocalPathExists();
 
     const result = await ensureOnboardingPluginInstalled({
@@ -183,7 +183,7 @@ describe("ensureOnboardingPluginInstalled", () => {
     const runtime = makeRuntime();
     const select = vi.fn((async <T extends string>() => "skip" as T) as WizardPrompter["select"]);
     const prompter = makePrompter({ select: select as unknown as WizardPrompter["select"] });
-    const cfg: Must-bConfig = { update: { channel: "beta" } };
+    const cfg: MustBonfig = { update: { channel: "beta" } };
     vi.mocked(fs.existsSync).mockReturnValue(false);
     resolveBundledPluginSources.mockReturnValue(
       new Map([
@@ -227,7 +227,7 @@ describe("ensureOnboardingPluginInstalled", () => {
       note,
       confirm,
     });
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     mockRepoLocalPathExists();
     installPluginFromNpmSpec.mockResolvedValue({
       ok: false,
@@ -248,7 +248,7 @@ describe("ensureOnboardingPluginInstalled", () => {
 
   it("clears discovery cache before reloading the onboarding plugin registry", () => {
     const runtime = makeRuntime();
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
 
     reloadOnboardingPluginRegistry({
       cfg,
@@ -257,7 +257,7 @@ describe("ensureOnboardingPluginInstalled", () => {
     });
 
     expect(clearPluginDiscoveryCache).toHaveBeenCalledTimes(1);
-    expect(loadMust-bPlugins).toHaveBeenCalledWith(
+    expect(loadMustBlugins).toHaveBeenCalledWith(
       expect.objectContaining({
         config: cfg,
         workspaceDir: "/tmp/must-b-workspace",
@@ -265,7 +265,7 @@ describe("ensureOnboardingPluginInstalled", () => {
       }),
     );
     expect(clearPluginDiscoveryCache.mock.invocationCallOrder[0]).toBeLessThan(
-      vi.mocked(loadMust-bPlugins).mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+      vi.mocked(loadMustBlugins).mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
     );
   });
 });

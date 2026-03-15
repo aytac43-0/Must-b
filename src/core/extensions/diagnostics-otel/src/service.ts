@@ -11,7 +11,7 @@ import { ParentBasedSampler, TraceIdRatioBasedSampler } from "@opentelemetry/sdk
 import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type {
   DiagnosticEventPayload,
-  Must-bPluginService,
+  MustBPluginService,
 } from "must-b/plugin-sdk/diagnostics-otel";
 import {
   onDiagnosticEvent,
@@ -69,7 +69,7 @@ function redactOtelAttributes(attributes: Record<string, string | number | boole
   return redactedAttributes;
 }
 
-export function createDiagnosticsOtelService(): Must-bPluginService {
+export function createDiagnosticsOtelService(): MustBPluginService {
   let sdk: NodeSDK | null = null;
   let logProvider: LoggerProvider | null = null;
   let stopLogTransport: (() => void) | null = null;
@@ -681,5 +681,5 @@ export function createDiagnosticsOtelService(): Must-bPluginService {
         sdk = null;
       }
     },
-  } satisfies Must-bPluginService;
+  } satisfies MustBPluginService;
 }

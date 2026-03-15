@@ -4,7 +4,7 @@ import {
   resolveSandboxToolPolicyForAgent,
 } from "../agents/sandbox.js";
 import { normalizeAnyChannelId } from "../channels/registry.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import {
   loadSessionStore,
@@ -33,7 +33,7 @@ type SandboxExplainOptions = {
 const SANDBOX_DOCS_URL = "https://docs.must-b.ai/sandbox";
 
 function normalizeExplainSessionKey(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   session?: string;
 }): string {
@@ -57,7 +57,7 @@ function normalizeExplainSessionKey(params: {
 }
 
 function inferProviderFromSessionKey(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey: string;
 }): string | undefined {
   const parsed = parseAgentSessionKey(params.sessionKey);
@@ -87,7 +87,7 @@ function inferProviderFromSessionKey(params: {
 }
 
 function resolveActiveChannel(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   sessionKey: string;
 }): string | undefined {

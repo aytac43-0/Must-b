@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { listSlackMessageActions } from "./message-actions.js";
 
 describe("listSlackMessageActions", () => {
@@ -13,7 +13,7 @@ describe("listSlackMessageActions", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     expect(listSlackMessageActions(cfg)).toEqual(
       expect.arrayContaining(["read", "edit", "delete", "download-file"]),

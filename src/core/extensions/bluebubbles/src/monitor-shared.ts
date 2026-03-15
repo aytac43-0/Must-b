@@ -1,4 +1,4 @@
-import { normalizeWebhookPath, type Must-bConfig } from "must-b/plugin-sdk/bluebubbles";
+import { normalizeWebhookPath, type MustBConfig } from "must-b/plugin-sdk/bluebubbles";
 import type { ResolvedBlueBubblesAccount } from "./accounts.js";
 import { getBlueBubblesRuntime } from "./runtime.js";
 import type { BlueBubblesAccountConfig } from "./types.js";
@@ -12,7 +12,7 @@ export type BlueBubblesRuntimeEnv = {
 
 export type BlueBubblesMonitorOptions = {
   account: ResolvedBlueBubblesAccount;
-  config: Must-bConfig;
+  config: MustBConfig;
   runtime: BlueBubblesRuntimeEnv;
   abortSignal: AbortSignal;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
@@ -23,7 +23,7 @@ export type BlueBubblesCoreRuntime = ReturnType<typeof getBlueBubblesRuntime>;
 
 export type WebhookTarget = {
   account: ResolvedBlueBubblesAccount;
-  config: Must-bConfig;
+  config: MustBConfig;
   runtime: BlueBubblesRuntimeEnv;
   core: BlueBubblesCoreRuntime;
   path: string;

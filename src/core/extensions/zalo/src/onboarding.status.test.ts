@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/zalo";
+import type { MustBConfig } from "must-b/plugin-sdk/zalo";
 import { describe, expect, it } from "vitest";
 import { zaloOnboardingAdapter } from "./onboarding.js";
 
@@ -15,7 +15,7 @@ describe("zalo onboarding status", () => {
             },
           },
         },
-      } as Must-bConfig,
+      } as MustBConfig,
       accountOverrides: {},
     });
 

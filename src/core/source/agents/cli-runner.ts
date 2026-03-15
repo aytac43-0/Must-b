@@ -1,7 +1,7 @@
 import type { ImageContent } from "@mariozechner/pi-ai";
 import { resolveHeartbeatPrompt } from "../auto-reply/heartbeat.js";
 import type { ThinkLevel } from "../auto-reply/thinking.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { shouldLogVerbose } from "../globals.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { requestHeartbeatNow } from "../infra/heartbeat-wake.js";
@@ -33,7 +33,7 @@ import {
   resolveSystemPromptUsage,
   writeCliImages,
 } from "./cli-runner/helpers.js";
-import { resolveMust-bDocsPath } from "./docs-path.js";
+import { resolveMustBocsPath } from "./docs-path.js";
 import { FailoverError, resolveFailoverStatus } from "./failover-error.js";
 import {
   classifyFailoverReason,
@@ -54,7 +54,7 @@ export async function runCliAgent(params: {
   agentId?: string;
   sessionFile: string;
   workspaceDir: string;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   prompt: string;
   provider: string;
   model?: string;
@@ -138,7 +138,7 @@ export async function runCliAgent(params: {
     sessionAgentId === defaultAgentId
       ? resolveHeartbeatPrompt(params.config?.agents?.defaults?.heartbeat?.prompt)
       : undefined;
-  const docsPath = await resolveMust-bDocsPath({
+  const docsPath = await resolveMustBocsPath({
     workspaceDir,
     argv1: process.argv[1],
     cwd: process.cwd(),
@@ -477,7 +477,7 @@ export async function runClaudeCliAgent(params: {
   agentId?: string;
   sessionFile: string;
   workspaceDir: string;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   prompt: string;
   provider?: string;
   model?: string;

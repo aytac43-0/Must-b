@@ -1,15 +1,15 @@
 import { normalizeChatChannelId } from "../channels/registry.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 export function setPluginEnabledInConfig(
-  config: Must-bConfig,
+  config: MustBonfig,
   pluginId: string,
   enabled: boolean,
-): Must-bConfig {
+): MustBonfig {
   const builtInChannelId = normalizeChatChannelId(pluginId);
   const resolvedId = builtInChannelId ?? pluginId;
 
-  const next: Must-bConfig = {
+  const next: MustBonfig = {
     ...config,
     plugins: {
       ...config.plugins,

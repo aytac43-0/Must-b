@@ -1,9 +1,9 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { HookInstallRecord } from "../config/types.hooks.js";
 
 export type HookInstallUpdate = HookInstallRecord & { hookId: string };
 
-export function recordHookInstall(cfg: Must-bConfig, update: HookInstallUpdate): Must-bConfig {
+export function recordHookInstall(cfg: MustBonfig, update: HookInstallUpdate): MustBonfig {
   const { hookId, ...record } = update;
   const installs = {
     ...cfg.hooks?.internal?.installs,

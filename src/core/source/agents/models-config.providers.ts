@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { coerceSecretRef, resolveSecretInputRef } from "../config/types.secrets.js";
 import {
   DEFAULT_COPILOT_API_BASE_URL,
@@ -71,7 +71,7 @@ import {
 import { resolveAwsSdkEnvVarName, resolveEnvApiKey } from "./model-auth.js";
 export { resolveOllamaApiBase } from "./models-config.providers.discovery.js";
 
-type ModelsConfig = NonNullable<Must-bConfig["models"]>;
+type ModelsConfig = NonNullable<MustBonfig["models"]>;
 export type ProviderConfig = NonNullable<ModelsConfig["providers"]>[string];
 type SecretDefaults = {
   env?: string;
@@ -587,7 +587,7 @@ export function normalizeProviders(params: {
 
 type ImplicitProviderParams = {
   agentDir: string;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   env?: NodeJS.ProcessEnv;
   workspaceDir?: string;
   explicitProviders?: Record<string, ProviderConfig> | null;
@@ -968,7 +968,7 @@ export async function resolveImplicitCopilotProvider(params: {
 
 export async function resolveImplicitBedrockProvider(params: {
   agentDir: string;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   env?: NodeJS.ProcessEnv;
 }): Promise<ProviderConfig | null> {
   const env = params.env ?? process.env;

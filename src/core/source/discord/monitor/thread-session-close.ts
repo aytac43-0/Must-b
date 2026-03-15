@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveStorePath, updateSessionStore } from "../../config/sessions.js";
 
 /**
@@ -11,7 +11,7 @@ import { resolveStorePath, updateSessionStore } from "../../config/sessions.js";
  * any on-disk transcript history.
  */
 export async function closeDiscordThreadSessions(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   threadId: string;
 }): Promise<number> {

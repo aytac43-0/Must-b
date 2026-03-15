@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolvePluginInstallDir } from "./install.js";
 import {
   removePluginFromConfig,
@@ -17,7 +17,7 @@ async function createInstalledNpmPluginFixture(params: {
   pluginId: string;
   extensionsDir: string;
   pluginDir: string;
-  config: Must-bConfig;
+  config: MustBonfig;
 }> {
   const pluginId = params.pluginId ?? "my-plugin";
   const extensionsDir = path.join(params.baseDir, "extensions");
@@ -70,7 +70,7 @@ function createSinglePluginEntries(pluginId = "my-plugin") {
   };
 }
 
-function createSinglePluginWithEmptySlotsConfig(): Must-bConfig {
+function createSinglePluginWithEmptySlotsConfig(): MustBonfig {
   return {
     plugins: {
       entries: createSinglePluginEntries(),
@@ -79,7 +79,7 @@ function createSinglePluginWithEmptySlotsConfig(): Must-bConfig {
   };
 }
 
-function createSingleNpmInstallConfig(installPath: string): Must-bConfig {
+function createSingleNpmInstallConfig(installPath: string): MustBonfig {
   return {
     plugins: {
       entries: createSinglePluginEntries(),
@@ -103,7 +103,7 @@ async function createPluginDirFixture(baseDir: string, pluginId = "my-plugin") {
 
 describe("removePluginFromConfig", () => {
   it("removes plugin from entries", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         entries: {
           "my-plugin": { enabled: true },
@@ -119,7 +119,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("removes plugin from installs", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         installs: {
           "my-plugin": { source: "npm", spec: "my-plugin@1.0.0" },
@@ -137,7 +137,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("removes plugin from allowlist", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         allow: ["my-plugin", "other-plugin"],
       },
@@ -150,7 +150,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("removes linked path from load.paths", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         installs: {
           "my-plugin": {
@@ -172,7 +172,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("cleans up load when removing the only linked path", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         installs: {
           "my-plugin": {
@@ -194,7 +194,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("clears memory slot when uninstalling active memory plugin", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         entries: {
           "memory-plugin": { enabled: true },
@@ -212,7 +212,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("does not modify memory slot when uninstalling non-memory plugin", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         entries: {
           "my-plugin": { enabled: true },
@@ -246,7 +246,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("handles plugin that only exists in entries", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         entries: {
           "my-plugin": { enabled: true },
@@ -262,7 +262,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("handles plugin that only exists in installs", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         installs: {
           "my-plugin": { source: "npm", spec: "my-plugin@1.0.0" },
@@ -278,7 +278,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("cleans up empty plugins object", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         entries: {
           "my-plugin": { enabled: true },
@@ -293,7 +293,7 @@ describe("removePluginFromConfig", () => {
   });
 
   it("preserves other config values", () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         enabled: true,
         deny: ["denied-plugin"],
@@ -322,7 +322,7 @@ describe("uninstallPlugin", () => {
   });
 
   it("returns error when plugin not found", async () => {
-    const config: Must-bConfig = {};
+    const config: MustBonfig = {};
 
     const result = await uninstallPlugin({
       config,
@@ -336,7 +336,7 @@ describe("uninstallPlugin", () => {
   });
 
   it("removes config entries", async () => {
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         entries: {
           "my-plugin": { enabled: true },
@@ -379,7 +379,7 @@ describe("uninstallPlugin", () => {
   it("preserves directory for linked plugins", async () => {
     const pluginDir = await createPluginDirFixture(tempDir);
 
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         entries: createSinglePluginEntries(),
         installs: {

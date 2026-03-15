@@ -1,4 +1,4 @@
-import type { Must-bConfig, RuntimeEnv } from "must-b/plugin-sdk/zalo";
+import type { MustBConfig, RuntimeEnv } from "must-b/plugin-sdk/zalo";
 import { describe, expect, it } from "vitest";
 import { zaloPlugin } from "./channel.js";
 
@@ -18,7 +18,7 @@ describe("zalo directory", () => {
           allowFrom: ["zalo:123", "zl:234", "345"],
         },
       },
-    } as unknown as Must-bConfig;
+    } as unknown as MustBConfig;
 
     expect(zaloPlugin.directory).toBeTruthy();
     expect(zaloPlugin.directory?.listPeers).toBeTruthy();

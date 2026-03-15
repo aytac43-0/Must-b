@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveHumanDelayConfig } from "./identity.js";
 
 describe("resolveHumanDelayConfig", () => {
   it("returns undefined when no humanDelay config is set", () => {
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     expect(resolveHumanDelayConfig(cfg, "main")).toBeUndefined();
   });
 
   it("merges defaults with per-agent overrides", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           humanDelay: { mode: "natural", minMs: 800, maxMs: 1800 },

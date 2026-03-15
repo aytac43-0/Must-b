@@ -1,7 +1,7 @@
 import type {
   ChannelMessageActionAdapter,
   ChannelMessageActionName,
-  Must-bConfig,
+  MustBConfig,
 } from "must-b/plugin-sdk/googlechat";
 import {
   createActionGate,
@@ -24,13 +24,13 @@ import { resolveGoogleChatOutboundSpace } from "./targets.js";
 
 const providerId = "googlechat";
 
-function listEnabledAccounts(cfg: Must-bConfig) {
+function listEnabledAccounts(cfg: MustBConfig) {
   return listEnabledGoogleChatAccounts(cfg).filter(
     (account) => account.enabled && account.credentialSource !== "none",
   );
 }
 
-function isReactionsEnabled(accounts: ReturnType<typeof listEnabledAccounts>, cfg: Must-bConfig) {
+function isReactionsEnabled(accounts: ReturnType<typeof listEnabledAccounts>, cfg: MustBConfig) {
   for (const account of accounts) {
     const gate = createActionGate(
       (account.config.actions ??

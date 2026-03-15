@@ -6,7 +6,7 @@ import { resolveBrowserConfig, resolveProfile } from "../browser/config.js";
 import { resolveBrowserControlAuth } from "../browser/control-auth.js";
 import { listChannelPlugins } from "../channels/plugins/index.js";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { ConfigFileSnapshot, Must-bConfig } from "../config/config.js";
+import type { ConfigFileSnapshot, MustBonfig } from "../config/config.js";
 import { resolveConfigPath, resolveStateDir } from "../config/paths.js";
 import { hasConfiguredSecretInput } from "../config/types.secrets.js";
 import { resolveGatewayAuth } from "../gateway/auth.js";
@@ -85,8 +85,8 @@ export type SecurityAuditReport = {
 };
 
 export type SecurityAuditOptions = {
-  config: Must-bConfig;
-  sourceConfig?: Must-bConfig;
+  config: MustBonfig;
+  sourceConfig?: MustBonfig;
   env?: NodeJS.ProcessEnv;
   platform?: NodeJS.Platform;
   deep?: boolean;
@@ -113,8 +113,8 @@ export type SecurityAuditOptions = {
 };
 
 type AuditExecutionContext = {
-  cfg: Must-bConfig;
-  sourceConfig: Must-bConfig;
+  cfg: MustBonfig;
+  sourceConfig: MustBonfig;
   env: NodeJS.ProcessEnv;
   platform: NodeJS.Platform;
   includeFilesystem: boolean;
@@ -165,7 +165,7 @@ function hasNonEmptyString(value: unknown): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function isFeishuDocToolEnabled(cfg: Must-bConfig): boolean {
+function isFeishuDocToolEnabled(cfg: MustBonfig): boolean {
   const channels = asRecord(cfg.channels);
   const feishu = asRecord(channels?.feishu);
   if (!feishu || feishu.enabled === false) {
@@ -337,7 +337,7 @@ async function collectFilesystemFindings(params: {
 }
 
 function collectGatewayConfigFindings(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
 ): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
@@ -716,7 +716,7 @@ function isStrictLoopbackTrustedProxyEntry(entry: string): boolean {
 }
 
 function collectBrowserControlFindings(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
 ): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
@@ -796,7 +796,7 @@ function collectBrowserControlFindings(
   return findings;
 }
 
-function collectLoggingFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+function collectLoggingFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const redact = cfg.logging?.redactSensitive;
   if (redact !== "off") {
     return [];
@@ -812,7 +812,7 @@ function collectLoggingFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
   ];
 }
 
-function collectElevatedFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+function collectElevatedFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const enabled = cfg.tools?.elevated?.enabled;
   const allowFrom = cfg.tools?.elevated?.allowFrom ?? {};
@@ -847,7 +847,7 @@ function collectElevatedFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
   return findings;
 }
 
-function collectExecRuntimeFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+function collectExecRuntimeFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const globalExecHost = cfg.tools?.exec?.host;
   const defaultSandboxMode = resolveSandboxConfigForAgent(cfg).mode;
@@ -1039,7 +1039,7 @@ function collectExecRuntimeFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
 }
 
 async function maybeProbeGateway(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env: NodeJS.ProcessEnv;
   timeoutMs: number;
   probe: typeof probeGateway;

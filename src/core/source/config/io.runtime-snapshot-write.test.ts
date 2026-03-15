@@ -12,9 +12,9 @@ import {
   setRuntimeConfigSnapshot,
   writeConfigFile,
 } from "./io.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 
-function createSourceConfig(): Must-bConfig {
+function createSourceConfig(): MustBonfig {
   return {
     models: {
       providers: {
@@ -28,7 +28,7 @@ function createSourceConfig(): Must-bConfig {
   };
 }
 
-function createRuntimeConfig(): Must-bConfig {
+function createRuntimeConfig(): MustBonfig {
   return {
     models: {
       providers: {
@@ -64,7 +64,7 @@ describe("runtime config snapshot writes", () => {
 
   it("skips source projection for non-runtime-derived configs", async () => {
     await withTempHome("must-b-config-runtime-projection-shape-", async () => {
-      const sourceConfig: Must-bConfig = {
+      const sourceConfig: MustBonfig = {
         ...createSourceConfig(),
         gateway: {
           auth: {
@@ -72,7 +72,7 @@ describe("runtime config snapshot writes", () => {
           },
         },
       };
-      const runtimeConfig: Must-bConfig = {
+      const runtimeConfig: MustBonfig = {
         ...createRuntimeConfig(),
         gateway: {
           auth: {
@@ -80,7 +80,7 @@ describe("runtime config snapshot writes", () => {
           },
         },
       };
-      const independentConfig: Must-bConfig = {
+      const independentConfig: MustBonfig = {
         models: {
           providers: {
             openai: {
@@ -143,7 +143,7 @@ describe("runtime config snapshot writes", () => {
   it("refreshes the runtime snapshot after writes so follow-up reads see persisted changes", async () => {
     await withTempHome("must-b-config-runtime-write-refresh-", async (home) => {
       const configPath = path.join(home, ".must-b", "must-b.json");
-      const sourceConfig: Must-bConfig = {
+      const sourceConfig: MustBonfig = {
         models: {
           providers: {
             openai: {
@@ -154,7 +154,7 @@ describe("runtime config snapshot writes", () => {
           },
         },
       };
-      const runtimeConfig: Must-bConfig = {
+      const runtimeConfig: MustBonfig = {
         models: {
           providers: {
             openai: {
@@ -165,7 +165,7 @@ describe("runtime config snapshot writes", () => {
           },
         },
       };
-      const nextRuntimeConfig: Must-bConfig = {
+      const nextRuntimeConfig: MustBonfig = {
         ...runtimeConfig,
         gateway: { auth: { mode: "token" as const } },
       };
@@ -218,7 +218,7 @@ describe("runtime config snapshot writes", () => {
       const configPath = path.join(home, ".must-b", "must-b.json");
       const sourceConfig = createSourceConfig();
       const runtimeConfig = createRuntimeConfig();
-      const nextRuntimeConfig: Must-bConfig = {
+      const nextRuntimeConfig: MustBonfig = {
         ...runtimeConfig,
         gateway: { auth: { mode: "token" as const } },
       };

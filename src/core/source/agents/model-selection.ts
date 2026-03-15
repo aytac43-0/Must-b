@@ -1,5 +1,5 @@
 import { resolveThinkingDefaultForModel } from "../auto-reply/thinking.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveAgentModelFallbackValues,
   resolveAgentModelPrimaryValue,
@@ -133,7 +133,7 @@ export function findNormalizedProviderKey(
   return Object.keys(entries).find((key) => normalizeProviderId(key) === providerKey);
 }
 
-export function isCliProvider(provider: string, cfg?: Must-bConfig): boolean {
+export function isCliProvider(provider: string, cfg?: MustBonfig): boolean {
   const normalized = normalizeProviderId(provider);
   if (normalized === "claude-cli") {
     return true;
@@ -202,7 +202,7 @@ export function parseModelRef(raw: string, defaultProvider: string): ModelRef | 
 }
 
 export function inferUniqueProviderFromConfiguredModels(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   model: string;
 }): string | undefined {
   const model = params.model.trim();
@@ -246,7 +246,7 @@ export function resolveAllowlistModelKey(raw: string, defaultProvider: string): 
 }
 
 export function buildConfiguredAllowlistKeys(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   defaultProvider: string;
 }): Set<string> | null {
   const rawAllowlist = Object.keys(params.cfg?.agents?.defaults?.models ?? {});
@@ -265,7 +265,7 @@ export function buildConfiguredAllowlistKeys(params: {
 }
 
 export function buildModelAliasIndex(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   defaultProvider: string;
 }): ModelAliasIndex {
   const byAlias = new Map<string, { alias: string; ref: ModelRef }>();
@@ -316,7 +316,7 @@ export function resolveModelRefFromString(params: {
 }
 
 export function resolveConfiguredModelRef(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   defaultProvider: string;
   defaultModel: string;
 }): ModelRef {
@@ -382,7 +382,7 @@ export function resolveConfiguredModelRef(params: {
 }
 
 export function resolveDefaultModelForAgent(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId?: string;
 }): ModelRef {
   const agentModelOverride = params.agentId
@@ -411,7 +411,7 @@ export function resolveDefaultModelForAgent(params: {
   });
 }
 
-function resolveAllowedFallbacks(params: { cfg: Must-bConfig; agentId?: string }): string[] {
+function resolveAllowedFallbacks(params: { cfg: MustBonfig; agentId?: string }): string[] {
   if (params.agentId) {
     const override = resolveAgentModelFallbacksOverride(params.cfg, params.agentId);
     if (override !== undefined) {
@@ -422,7 +422,7 @@ function resolveAllowedFallbacks(params: { cfg: Must-bConfig; agentId?: string }
 }
 
 export function resolveSubagentConfiguredModelSelection(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
 }): string | undefined {
   const agentConfig = resolveAgentConfig(params.cfg, params.agentId);
@@ -434,7 +434,7 @@ export function resolveSubagentConfiguredModelSelection(params: {
 }
 
 export function resolveSubagentSpawnModelSelection(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   modelOverride?: unknown;
 }): string {
@@ -454,7 +454,7 @@ export function resolveSubagentSpawnModelSelection(params: {
 }
 
 export function buildAllowedModelSet(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   catalog: ModelCatalogEntry[];
   defaultProvider: string;
   defaultModel?: string;
@@ -559,7 +559,7 @@ export type ModelRefStatus = {
 };
 
 export function getModelRefStatus(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   catalog: ModelCatalogEntry[];
   ref: ModelRef;
   defaultProvider: string;
@@ -581,7 +581,7 @@ export function getModelRefStatus(params: {
 }
 
 export function resolveAllowedModelRef(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   catalog: ModelCatalogEntry[];
   raw: string;
   defaultProvider: string;
@@ -624,7 +624,7 @@ export function resolveAllowedModelRef(params: {
 }
 
 export function resolveThinkingDefault(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   provider: string;
   model: string;
   catalog?: ModelCatalogEntry[];
@@ -679,7 +679,7 @@ export function resolveReasoningDefault(params: {
  * Returns null if hooks.gmail.model is not set.
  */
 export function resolveHooksGmailModel(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   defaultProvider: string;
 }): ModelRef | null {
   const hooksModel = params.cfg.hooks?.gmail?.model;

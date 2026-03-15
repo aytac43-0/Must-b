@@ -56,12 +56,12 @@ export type PluginRuntimeCore = {
     /** Resolve auth for a model. Only provider/model and optional cfg are used. */
     getApiKeyForModel: (params: {
       model: import("@mariozechner/pi-ai").Model<import("@mariozechner/pi-ai").Api>;
-      cfg?: import("../../config/config.js").Must-bConfig;
+      cfg?: import("../../config/config.js").MustBonfig;
     }) => Promise<import("../../agents/model-auth.js").ResolvedProviderAuth>;
     /** Resolve auth for a provider by name. Only provider and optional cfg are used. */
     resolveApiKeyForProvider: (params: {
       provider: string;
-      cfg?: import("../../config/config.js").Must-bConfig;
+      cfg?: import("../../config/config.js").MustBonfig;
     }) => Promise<import("../../agents/model-auth.js").ResolvedProviderAuth>;
   };
 };

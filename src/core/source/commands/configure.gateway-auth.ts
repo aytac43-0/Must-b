@@ -1,6 +1,6 @@
 import { ensureAuthProfileStore } from "../agents/auth-profiles.js";
 import { resolveDefaultAgentWorkspaceDir } from "../agents/workspace.js";
-import type { Must-bConfig, GatewayAuthConfig } from "../config/config.js";
+import type { MustBonfig, GatewayAuthConfig } from "../config/config.js";
 import { isSecretRef, type SecretInput } from "../config/types.secrets.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
@@ -77,10 +77,10 @@ export function buildGatewayAuthConfig(params: {
 }
 
 export async function promptAuthConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   runtime: RuntimeEnv,
   prompter: WizardPrompter,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const authChoice = await promptAuthChoiceGrouped({
     prompter,
     store: ensureAuthProfileStore(undefined, {

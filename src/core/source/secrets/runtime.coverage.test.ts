@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import type { AuthProfileStore } from "../agents/auth-profiles.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { getPath, setPathCreateStrict } from "./path-utils.js";
 import { clearSecretsRuntimeSnapshot, prepareSecretsRuntimeSnapshot } from "./runtime.js";
 import { listSecretTargetRegistryEntries } from "./target-registry.js";
@@ -24,8 +24,8 @@ function toConcretePathSegments(pathPattern: string): string[] {
   return out;
 }
 
-function buildConfigForMust-bTarget(entry: SecretRegistryEntry, envId: string): Must-bConfig {
-  const config = {} as Must-bConfig;
+function buildConfigForMustBarget(entry: SecretRegistryEntry, envId: string): MustBonfig {
+  const config = {} as MustBonfig;
   const refTargetPath =
     entry.secretShape === "sibling_ref" && entry.refPathPattern // pragma: allowlist secret
       ? entry.refPathPattern
@@ -151,7 +151,7 @@ describe("secrets runtime target coverage", () => {
       const envId = `MUSTB_SECRET_TARGET_${index}`;
       const expectedValue = `resolved-${entry.id}`;
       const snapshot = await prepareSecretsRuntimeSnapshot({
-        config: buildConfigForMust-bTarget(entry, envId),
+        config: buildConfigForMustBarget(entry, envId),
         env: { [envId]: expectedValue },
         agentDirs: ["/tmp/must-b-agent-main"],
         loadAuthStore: () => ({ version: 1, profiles: {} }),
@@ -175,7 +175,7 @@ describe("secrets runtime target coverage", () => {
       const envId = `MUSTB_AUTH_SECRET_TARGET_${index}`;
       const expectedValue = `resolved-${entry.id}`;
       const snapshot = await prepareSecretsRuntimeSnapshot({
-        config: {} as Must-bConfig,
+        config: {} as MustBonfig,
         env: { [envId]: expectedValue },
         agentDirs: ["/tmp/must-b-agent-main"],
         loadAuthStore: () => buildAuthStoreForTarget(entry, envId),

@@ -2,7 +2,7 @@
  * Twitch onboarding adapter for CLI setup wizard.
  */
 
-import type { Must-bConfig } from "must-b/plugin-sdk/twitch";
+import type { MustBConfig } from "must-b/plugin-sdk/twitch";
 import {
   formatDocsLink,
   promptChannelAccessConfig,
@@ -20,9 +20,9 @@ const channel = "twitch" as const;
  * Set Twitch account configuration
  */
 function setTwitchAccount(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   account: Partial<TwitchAccountConfig>,
-): Must-bConfig {
+): MustBConfig {
   const existing = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
   const merged: TwitchAccountConfig = {
     username: account.username ?? existing?.username ?? "",
@@ -207,13 +207,13 @@ async function promptRefreshTokenSetup(
  * Configure with env token path (returns early if user chooses env token).
  */
 async function configureWithEnvToken(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   prompter: WizardPrompter,
   account: TwitchAccountConfig | null,
   envToken: string,
   forceAllowFrom: boolean,
   dmPolicy: ChannelOnboardingDmPolicy,
-): Promise<{ cfg: Must-bConfig } | null> {
+): Promise<{ cfg: MustBConfig } | null> {
   const useEnv = await prompter.confirm({
     message: "Twitch env var MUSTB_TWITCH_ACCESS_TOKEN detected. Use env token?",
     initialValue: true,
@@ -243,10 +243,10 @@ async function configureWithEnvToken(
  * Set Twitch access control (role-based)
  */
 function setTwitchAccessControl(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   allowedRoles: TwitchRole[],
   requireMention: boolean,
-): Must-bConfig {
+): MustBConfig {
   const account = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
   if (!account) {
     return cfg;

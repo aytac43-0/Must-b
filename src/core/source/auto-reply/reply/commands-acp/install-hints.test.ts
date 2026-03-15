@@ -2,14 +2,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { resolveAcpInstallCommandHint, resolveConfiguredAcpBackendId } from "./install-hints.js";
 
 const originalCwd = process.cwd();
 const tempDirs: string[] = [];
 
-function withAcpConfig(acp: Must-bConfig["acp"]): Must-bConfig {
-  return { acp } as Must-bConfig;
+function withAcpConfig(acp: MustBonfig["acp"]): MustBonfig {
+  return { acp } as MustBonfig;
 }
 
 afterEach(() => {

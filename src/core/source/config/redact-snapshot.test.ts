@@ -8,10 +8,10 @@ import {
 import { __test__ } from "./schema.hints.js";
 import type { ConfigUiHints } from "./schema.js";
 import type { ConfigFileSnapshot } from "./types.must-b.js";
-import { Must-bSchema } from "./zod-schema.js";
+import { MustBchema } from "./zod-schema.js";
 
 const { mapSensitivePaths } = __test__;
-const mainSchemaHints = mapSensitivePaths(Must-bSchema, "", {});
+const mainSchemaHints = mapSensitivePaths(MustBchema, "", {});
 
 type TestSnapshot<TConfig extends Record<string, unknown>> = ConfigFileSnapshot & {
   parsed: TConfig;
@@ -1098,11 +1098,11 @@ describe("restoreRedactedValues", () => {
 
 describe("realredactConfigSnapshot_real", () => {
   it("main schema redact works (samples)", () => {
-    const schema = Must-bSchema.toJSONSchema({
+    const schema = MustBchema.toJSONSchema({
       target: "draft-07",
       unrepresentable: "any",
     });
-    schema.title = "Must-bConfig";
+    schema.title = "MustBonfig";
     const hints = mainSchemaHints;
 
     const snapshot = makeSnapshot({

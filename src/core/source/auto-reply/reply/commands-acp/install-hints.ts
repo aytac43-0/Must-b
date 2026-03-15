@@ -1,12 +1,12 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 
-export function resolveConfiguredAcpBackendId(cfg: Must-bConfig): string {
+export function resolveConfiguredAcpBackendId(cfg: MustBonfig): string {
   return cfg.acp?.backend?.trim() || "acpx";
 }
 
-export function resolveAcpInstallCommandHint(cfg: Must-bConfig): string {
+export function resolveAcpInstallCommandHint(cfg: MustBonfig): string {
   const configured = cfg.acp?.runtime?.installCommand?.trim();
   if (configured) {
     return configured;

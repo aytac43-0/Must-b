@@ -19,11 +19,11 @@ vi.mock("./trash.js", () => ({
 }));
 
 vi.mock("./chrome.js", () => ({
-  resolveMust-bUserDataDir: vi.fn(() => "/tmp/must-b-test/must-b/user-data"),
+  resolveMustBserDataDir: vi.fn(() => "/tmp/must-b-test/must-b/user-data"),
 }));
 
 import { loadConfig, writeConfigFile } from "../config/config.js";
-import { resolveMust-bUserDataDir } from "./chrome.js";
+import { resolveMustBserDataDir } from "./chrome.js";
 import { movePathToTrash } from "./trash.js";
 
 function createCtx(resolved: BrowserServerState["resolved"]) {
@@ -210,7 +210,7 @@ describe("BrowserProfilesService", () => {
     const tempDir = fs.mkdtempSync(path.join("/tmp", "must-b-profile-"));
     const userDataDir = path.join(tempDir, "work", "user-data");
     fs.mkdirSync(path.dirname(userDataDir), { recursive: true });
-    vi.mocked(resolveMust-bUserDataDir).mockReturnValue(userDataDir);
+    vi.mocked(resolveMustBserDataDir).mockReturnValue(userDataDir);
 
     const service = createBrowserProfilesService(ctx);
     const result = await service.deleteProfile("work");

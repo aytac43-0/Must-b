@@ -14,14 +14,14 @@ import {
 } from "../agents/auth-profiles.js";
 import { updateAuthProfileStoreWithLock } from "../agents/auth-profiles/store.js";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { note } from "../terminal/note.js";
 import type { DoctorPrompter } from "./doctor-prompter.js";
 
 export async function maybeRepairAnthropicOAuthProfileId(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   prompter: DoctorPrompter,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const store = ensureAuthProfileStore();
   const repair = repairOAuthProfileIdMismatch({
     cfg,
@@ -66,9 +66,9 @@ function pruneAuthOrder(
 }
 
 function pruneAuthProfiles(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   profileIds: Set<string>,
-): { next: Must-bConfig; changed: boolean } {
+): { next: MustBonfig; changed: boolean } {
   const profiles = cfg.auth?.profiles;
   const order = cfg.auth?.order;
   const nextProfiles = profiles ? { ...profiles } : undefined;
@@ -111,9 +111,9 @@ function pruneAuthProfiles(
 }
 
 export async function maybeRemoveDeprecatedCliAuthProfiles(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   prompter: DoctorPrompter,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const store = ensureAuthProfileStore(undefined, { allowKeychainPrompt: false });
   const deprecated = new Set<string>();
   if (store.profiles[CLAUDE_CLI_PROFILE_ID] || cfg.auth?.profiles?.[CLAUDE_CLI_PROFILE_ID]) {
@@ -249,7 +249,7 @@ function formatAuthIssueLine(issue: AuthIssue): string {
 }
 
 export async function noteAuthProfileHealth(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: DoctorPrompter;
   allowKeychainPrompt: boolean;
 }): Promise<void> {

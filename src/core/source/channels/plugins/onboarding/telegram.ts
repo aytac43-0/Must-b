@@ -1,5 +1,5 @@
 import { formatCliCommand } from "../../../cli/command-format.js";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { hasConfiguredSecretInput } from "../../../config/types.secrets.js";
 import { DEFAULT_ACCOUNT_ID } from "../../../routing/session-key.js";
 import { inspectTelegramAccount } from "../../../telegram/account-inspect.js";
@@ -66,11 +66,11 @@ export function parseTelegramAllowFromId(raw: string): string | null {
 }
 
 async function promptTelegramAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   accountId: string;
   tokenOverride?: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const { cfg, prompter, accountId } = params;
   const resolved = resolveTelegramAccount({ cfg, accountId });
   const existingAllowFrom = resolved.config.allowFrom ?? [];
@@ -120,10 +120,10 @@ async function promptTelegramAllowFrom(params: {
 }
 
 async function promptTelegramAllowFromForAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const accountId = resolveOnboardingAccountId({
     accountId: params.accountId,
     defaultAccountId: resolveDefaultTelegramAccountId(params.cfg),

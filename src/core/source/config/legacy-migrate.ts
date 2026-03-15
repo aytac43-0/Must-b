@@ -1,9 +1,9 @@
 import { applyLegacyMigrations } from "./legacy.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 import { validateConfigObjectWithPlugins } from "./validation.js";
 
 export function migrateLegacyConfig(raw: unknown): {
-  config: Must-bConfig | null;
+  config: MustBonfig | null;
   changes: string[];
 } {
   const { next, changes } = applyLegacyMigrations(raw);

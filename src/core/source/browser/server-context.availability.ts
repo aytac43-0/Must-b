@@ -6,8 +6,8 @@ import {
 import {
   isChromeCdpReady,
   isChromeReachable,
-  launchMust-bChrome,
-  stopMust-bChrome,
+  launchMustBhrome,
+  stopMustBhrome,
 } from "./chrome.js";
 import type { ResolvedBrowserProfile } from "./config.js";
 import { BrowserConfigurationError, BrowserProfileUnavailableError } from "./errors.js";
@@ -103,7 +103,7 @@ export function createProfileAvailability({
 
     const previousProfile = reconcile.previousProfile;
     if (profileState.running) {
-      await stopMust-bChrome(profileState.running).catch(() => {});
+      await stopMustBhrome(profileState.running).catch(() => {});
       setProfileRunning(null);
     }
     if (previousProfile.driver === "extension") {
@@ -116,7 +116,7 @@ export function createProfileAvailability({
   };
 
   const waitForCdpReadyAfterLaunch = async (): Promise<void> => {
-    // launchMust-bChrome() can return before Chrome is fully ready to serve /json/version + CDP WS.
+    // launchMustBhrome() can return before Chrome is fully ready to serve /json/version + CDP WS.
     // If a follow-up call races ahead, we can hit PortInUseError trying to launch again on the same port.
     const deadlineMs = Date.now() + CDP_READY_AFTER_LAUNCH_WINDOW_MS;
     while (Date.now() < deadlineMs) {
@@ -182,12 +182,12 @@ export function createProfileAvailability({
             : `Browser attachOnly is enabled and profile "${profile.name}" is not running.`,
         );
       }
-      const launched = await launchMust-bChrome(current.resolved, profile);
+      const launched = await launchMustBhrome(current.resolved, profile);
       attachRunning(launched);
       try {
         await waitForCdpReadyAfterLaunch();
       } catch (err) {
-        await stopMust-bChrome(launched).catch(() => {});
+        await stopMustBhrome(launched).catch(() => {});
         setProfileRunning(null);
         throw err;
       }
@@ -223,10 +223,10 @@ export function createProfileAvailability({
       );
     }
 
-    await stopMust-bChrome(profileState.running);
+    await stopMustBhrome(profileState.running);
     setProfileRunning(null);
 
-    const relaunched = await launchMust-bChrome(current.resolved, profile);
+    const relaunched = await launchMustBhrome(current.resolved, profile);
     attachRunning(relaunched);
 
     if (!(await isReachable(PROFILE_POST_RESTART_WS_TIMEOUT_MS))) {
@@ -248,7 +248,7 @@ export function createProfileAvailability({
     if (!profileState.running) {
       return { stopped: false };
     }
-    await stopMust-bChrome(profileState.running);
+    await stopMustBhrome(profileState.running);
     setProfileRunning(null);
     return { stopped: true };
   };

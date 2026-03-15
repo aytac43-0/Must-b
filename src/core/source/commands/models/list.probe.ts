@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
-import { resolveMust-bAgentDir } from "../../agents/agent-paths.js";
+import { resolveMustBgentDir } from "../../agents/agent-paths.js";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../../agents/agent-scope.js";
 import {
   type AuthProfileCredential,
@@ -21,7 +21,7 @@ import {
 } from "../../agents/model-selection.js";
 import { runEmbeddedPiAgent } from "../../agents/pi-embedded.js";
 import { resolveDefaultAgentWorkspaceDir } from "../../agents/workspace.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   resolveSessionTranscriptPath,
   resolveSessionTranscriptsDirForAgent,
@@ -189,7 +189,7 @@ function formatMissingCredentialProbeError(reasonCode: AuthProbeReasonCode): str
   return `${legacyLine}\n↳ Auth reason [ineligible_profile]: profile is incompatible with provider config.`;
 }
 
-function resolveProbeSecretRef(profile: AuthProfileCredential, cfg: Must-bConfig) {
+function resolveProbeSecretRef(profile: AuthProfileCredential, cfg: MustBonfig) {
   const defaults = cfg.secrets?.defaults;
   if (profile.type === "api_key") {
     if (normalizeSecretInputString(profile.key) !== undefined) {
@@ -212,7 +212,7 @@ function formatUnresolvedRefProbeError(refLabel: string): string {
 }
 
 async function maybeResolveUnresolvedRefIssue(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   profile?: AuthProfileCredential;
   cache: SecretRefResolveCache;
 }): Promise<{ reasonCode: "unresolved_ref"; error: string } | null> {
@@ -239,7 +239,7 @@ async function maybeResolveUnresolvedRefIssue(params: {
 }
 
 export async function buildProbeTargets(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   providers: string[];
   modelCandidates: string[];
   options: AuthProbeOptions;
@@ -408,7 +408,7 @@ export async function buildProbeTargets(params: {
 }
 
 async function probeTarget(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   agentDir: string;
   workspaceDir: string;
@@ -485,7 +485,7 @@ async function probeTarget(params: {
 }
 
 async function runTargetsWithConcurrency(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   targets: AuthProbeTarget[];
   timeoutMs: number;
   maxTokens: number;
@@ -496,7 +496,7 @@ async function runTargetsWithConcurrency(params: {
   const concurrency = Math.max(1, Math.min(targets.length || 1, params.concurrency));
 
   const agentId = resolveDefaultAgentId(cfg);
-  const agentDir = resolveMust-bAgentDir();
+  const agentDir = resolveMustBgentDir();
   const workspaceDir = resolveAgentWorkspaceDir(cfg, agentId) ?? resolveDefaultAgentWorkspaceDir();
   const sessionDir = resolveSessionTranscriptsDirForAgent(agentId);
 
@@ -541,7 +541,7 @@ async function runTargetsWithConcurrency(params: {
 }
 
 export async function runAuthProbes(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   providers: string[];
   modelCandidates: string[];
   options: AuthProbeOptions;

@@ -1,16 +1,16 @@
 import type { Command } from "commander";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
-import { loadMust-bPlugins } from "./loader.js";
+import { loadMustBlugins } from "./loader.js";
 import type { PluginLogger } from "./types.js";
 
 const log = createSubsystemLogger("plugins");
 
 export function registerPluginCliCommands(
   program: Command,
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
   env?: NodeJS.ProcessEnv,
 ) {
   const config = cfg ?? loadConfig();
@@ -21,7 +21,7 @@ export function registerPluginCliCommands(
     error: (msg: string) => log.error(msg),
     debug: (msg: string) => log.debug(msg),
   };
-  const registry = loadMust-bPlugins({
+  const registry = loadMustBlugins({
     config,
     workspaceDir,
     env,

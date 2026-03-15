@@ -30,7 +30,7 @@ const mocks = vi.hoisted(() => {
 
   return {
     store,
-    resolveMust-bAgentDir: vi.fn().mockReturnValue("/tmp/must-b-agent"),
+    resolveMustBgentDir: vi.fn().mockReturnValue("/tmp/must-b-agent"),
     resolveAgentDir: vi.fn().mockReturnValue("/tmp/must-b-agent"),
     resolveAgentExplicitModelPrimary: vi.fn().mockReturnValue(undefined),
     resolveAgentEffectiveModelPrimary: vi.fn().mockReturnValue(undefined),
@@ -84,7 +84,7 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock("../../agents/agent-paths.js", () => ({
-  resolveMust-bAgentDir: mocks.resolveMust-bAgentDir,
+  resolveMustBgentDir: mocks.resolveMustBgentDir,
 }));
 
 vi.mock("../../agents/agent-scope.js", () => ({
@@ -206,7 +206,7 @@ describe("modelsStatusCommand auth overview", () => {
     await modelsStatusCommand({ json: true }, runtime as never);
     const payload = JSON.parse(String((runtime.log as Mock).mock.calls[0]?.[0]));
 
-    expect(mocks.resolveMust-bAgentDir).toHaveBeenCalled();
+    expect(mocks.resolveMustBgentDir).toHaveBeenCalled();
     expect(payload.defaultModel).toBe("anthropic/claude-opus-4-5");
     expect(payload.configPath).toBe("/tmp/must-b-dev/must-b.json");
     expect(payload.auth.storePath).toBe("/tmp/must-b-agent/auth-profiles.json");

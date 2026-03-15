@@ -11,11 +11,11 @@ vi.mock("../plugins/tools.js", () => ({
   resolvePluginTools: resolvePluginToolsMock,
 }));
 
-import { createMust-bTools } from "./must-b-tools.js";
+import { createMustBools } from "./must-b-tools.js";
 
-describe("createMust-bTools plugin context", () => {
+describe("createMustBools plugin context", () => {
   it("forwards trusted requester sender identity to plugin tool context", () => {
-    createMust-bTools({
+    createMustBools({
       config: {} as never,
       requesterSenderId: "trusted-sender",
       senderIsOwner: true,
@@ -32,7 +32,7 @@ describe("createMust-bTools plugin context", () => {
   });
 
   it("forwards ephemeral sessionId to plugin tool context", () => {
-    createMust-bTools({
+    createMustBools({
       config: {} as never,
       agentSessionKey: "agent:main:telegram:direct:12345",
       sessionId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",

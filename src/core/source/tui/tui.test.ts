@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { getSlashCommands, parseCommand } from "./commands.js";
 import {
   createBackspaceDeduper,
@@ -110,7 +110,7 @@ describe("resolveTuiSessionKey", () => {
 });
 
 describe("resolveInitialTuiAgentId", () => {
-  const cfg: Must-bConfig = {
+  const cfg: MustBonfig = {
     agents: {
       list: [
         { id: "main", workspace: "/tmp/must-b" },

@@ -7,7 +7,7 @@ import type {
 import type { Client } from "@buape/carbon";
 import type { GatewayPresenceUpdate } from "discord-api-types/v10";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { DiscordAccountConfig } from "../../config/types.discord.js";
 import { buildAgentSessionKey } from "../../routing/resolve-route.js";
 import {
@@ -89,7 +89,7 @@ vi.mock("../../config/sessions.js", async (importOriginal) => {
 });
 
 describe("agent components", () => {
-  const createCfg = (): Must-bConfig => ({}) as Must-bConfig;
+  const createCfg = (): MustBonfig => ({}) as MustBonfig;
 
   const createBaseDmInteraction = (overrides: Record<string, unknown> = {}) => {
     const reply = vi.fn().mockResolvedValue(undefined);
@@ -223,14 +223,14 @@ describe("agent components", () => {
 });
 
 describe("discord component interactions", () => {
-  const createCfg = (): Must-bConfig =>
+  const createCfg = (): MustBonfig =>
     ({
       channels: {
         discord: {
           replyToMode: "first",
         },
       },
-    }) as Must-bConfig;
+    }) as MustBonfig;
 
   const createDiscordConfig = (overrides?: Partial<DiscordAccountConfig>): DiscordAccountConfig =>
     ({
@@ -440,7 +440,7 @@ describe("discord component interactions", () => {
         cfg: {
           commands: { useAccessGroups: true },
           channels: { discord: { replyToMode: "first" } },
-        } as Must-bConfig,
+        } as MustBonfig,
         allowFrom: ["owner-1"],
       }),
     );
@@ -472,7 +472,7 @@ describe("discord component interactions", () => {
         cfg: {
           commands: { useAccessGroups: true },
           channels: { discord: { replyToMode: "first" } },
-        } as Must-bConfig,
+        } as MustBonfig,
         allowFrom: ["123456789"],
       }),
     );

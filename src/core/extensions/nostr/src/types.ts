@@ -3,7 +3,7 @@ import {
   normalizeAccountId,
   normalizeOptionalAccountId,
 } from "must-b/plugin-sdk/account-id";
-import type { Must-bConfig } from "must-b/plugin-sdk/nostr";
+import type { MustBConfig } from "must-b/plugin-sdk/nostr";
 import type { NostrProfile } from "./config-schema.js";
 import { getPublicKeyFromPrivate } from "./nostr-bus.js";
 import { DEFAULT_RELAYS } from "./nostr-bus.js";
@@ -31,7 +31,7 @@ export interface ResolvedNostrAccount {
   config: NostrAccountConfig;
 }
 
-function resolveConfiguredDefaultNostrAccountId(cfg: Must-bConfig): string | undefined {
+function resolveConfiguredDefaultNostrAccountId(cfg: MustBConfig): string | undefined {
   const nostrCfg = (cfg.channels as Record<string, unknown> | undefined)?.nostr as
     | NostrAccountConfig
     | undefined;
@@ -41,7 +41,7 @@ function resolveConfiguredDefaultNostrAccountId(cfg: Must-bConfig): string | und
 /**
  * List all configured Nostr account IDs
  */
-export function listNostrAccountIds(cfg: Must-bConfig): string[] {
+export function listNostrAccountIds(cfg: MustBConfig): string[] {
   const nostrCfg = (cfg.channels as Record<string, unknown> | undefined)?.nostr as
     | NostrAccountConfig
     | undefined;
@@ -57,7 +57,7 @@ export function listNostrAccountIds(cfg: Must-bConfig): string[] {
 /**
  * Get the default account ID
  */
-export function resolveDefaultNostrAccountId(cfg: Must-bConfig): string {
+export function resolveDefaultNostrAccountId(cfg: MustBConfig): string {
   const preferred = resolveConfiguredDefaultNostrAccountId(cfg);
   if (preferred) {
     return preferred;
@@ -73,7 +73,7 @@ export function resolveDefaultNostrAccountId(cfg: Must-bConfig): string {
  * Resolve a Nostr account from config
  */
 export function resolveNostrAccount(opts: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId?: string | null;
 }): ResolvedNostrAccount {
   const accountId = normalizeAccountId(opts.accountId ?? resolveDefaultNostrAccountId(opts.cfg));

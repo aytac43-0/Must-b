@@ -1,8 +1,8 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveGatewayDriftCheckCredentialsFromConfig } from "../../gateway/credentials.js";
 
 export function resolveGatewayTokenForDriftCheck(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env?: NodeJS.ProcessEnv;
 }) {
   void params.env;

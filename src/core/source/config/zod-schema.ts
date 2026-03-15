@@ -203,7 +203,7 @@ const TalkSchema = z
     }
   });
 
-export const Must-bSchema = z
+export const MustBchema = z
   .object({
     $schema: z.string().optional(),
     meta: z

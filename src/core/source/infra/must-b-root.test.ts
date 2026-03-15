@@ -89,12 +89,12 @@ vi.mock("node:fs/promises", async (importOriginal) => {
   return { ...wrapped, default: wrapped };
 });
 
-describe("resolveMust-bPackageRoot", () => {
-  let resolveMust-bPackageRoot: typeof import("./must-b-root.js").resolveMust-bPackageRoot;
-  let resolveMust-bPackageRootSync: typeof import("./must-b-root.js").resolveMust-bPackageRootSync;
+describe("resolveMustBackageRoot", () => {
+  let resolveMustBackageRoot: typeof import("./must-b-root.js").resolveMustBackageRoot;
+  let resolveMustBackageRootSync: typeof import("./must-b-root.js").resolveMustBackageRootSync;
 
   beforeAll(async () => {
-    ({ resolveMust-bPackageRoot, resolveMust-bPackageRootSync } =
+    ({ resolveMustBackageRoot, resolveMustBackageRootSync } =
       await import("./must-b-root.js"));
   });
 
@@ -110,7 +110,7 @@ describe("resolveMust-bPackageRoot", () => {
     const pkgRoot = path.join(project, "node_modules", "must-b");
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "must-b" }));
 
-    expect(resolveMust-bPackageRootSync({ argv1 })).toBe(pkgRoot);
+    expect(resolveMustBackageRootSync({ argv1 })).toBe(pkgRoot);
   });
 
   it("resolves package root via symlinked argv1", async () => {
@@ -120,7 +120,7 @@ describe("resolveMust-bPackageRoot", () => {
     state.realpaths.set(abs(bin), abs(path.join(realPkg, "must-b.mjs")));
     setFile(path.join(realPkg, "package.json"), JSON.stringify({ name: "must-b" }));
 
-    expect(resolveMust-bPackageRootSync({ argv1: bin })).toBe(realPkg);
+    expect(resolveMustBackageRootSync({ argv1: bin })).toBe(realPkg);
   });
 
   it("falls back when argv1 realpath throws", async () => {
@@ -130,7 +130,7 @@ describe("resolveMust-bPackageRoot", () => {
     state.realpathErrors.add(abs(argv1));
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "must-b" }));
 
-    expect(resolveMust-bPackageRootSync({ argv1 })).toBe(pkgRoot);
+    expect(resolveMustBackageRootSync({ argv1 })).toBe(pkgRoot);
   });
 
   it("prefers moduleUrl candidates", async () => {
@@ -138,18 +138,18 @@ describe("resolveMust-bPackageRoot", () => {
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "must-b" }));
     const moduleUrl = pathToFileURL(path.join(pkgRoot, "dist", "index.js")).toString();
 
-    expect(resolveMust-bPackageRootSync({ moduleUrl })).toBe(pkgRoot);
+    expect(resolveMustBackageRootSync({ moduleUrl })).toBe(pkgRoot);
   });
 
   it("ignores invalid moduleUrl values and falls back to cwd", async () => {
     const pkgRoot = fx("invalid-moduleurl");
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "must-b" }));
 
-    expect(resolveMust-bPackageRootSync({ moduleUrl: "not-a-file-url", cwd: pkgRoot })).toBe(
+    expect(resolveMustBackageRootSync({ moduleUrl: "not-a-file-url", cwd: pkgRoot })).toBe(
       pkgRoot,
     );
     await expect(
-      resolveMust-bPackageRoot({ moduleUrl: "not-a-file-url", cwd: pkgRoot }),
+      resolveMustBackageRoot({ moduleUrl: "not-a-file-url", cwd: pkgRoot }),
     ).resolves.toBe(pkgRoot);
   });
 
@@ -157,17 +157,17 @@ describe("resolveMust-bPackageRoot", () => {
     const pkgRoot = fx("not-must-b");
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "not-must-b" }));
 
-    expect(resolveMust-bPackageRootSync({ cwd: pkgRoot })).toBeNull();
+    expect(resolveMustBackageRootSync({ cwd: pkgRoot })).toBeNull();
   });
 
   it("async resolver matches sync behavior", async () => {
     const pkgRoot = fx("async");
     setFile(path.join(pkgRoot, "package.json"), JSON.stringify({ name: "must-b" }));
 
-    await expect(resolveMust-bPackageRoot({ cwd: pkgRoot })).resolves.toBe(pkgRoot);
+    await expect(resolveMustBackageRoot({ cwd: pkgRoot })).resolves.toBe(pkgRoot);
   });
 
   it("async resolver returns null when no package roots exist", async () => {
-    await expect(resolveMust-bPackageRoot({ cwd: fx("missing") })).resolves.toBeNull();
+    await expect(resolveMustBackageRoot({ cwd: fx("missing") })).resolves.toBeNull();
   });
 });

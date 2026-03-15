@@ -26,7 +26,7 @@ import { createReplyReferencePlanner } from "../../auto-reply/reply/reply-refere
 import { resolveCommandAuthorizedFromAuthorizers } from "../../channels/command-gating.js";
 import { createReplyPrefixOptions } from "../../channels/reply-prefix.js";
 import { recordInboundSession } from "../../channels/session.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { isDangerousNameMatchingEnabled } from "../../config/dangerous-name-matching.js";
 import { resolveMarkdownTableMode } from "../../config/markdown-tables.js";
 import { readSessionUpdatedAt, resolveStorePath } from "../../config/sessions.js";
@@ -383,7 +383,7 @@ async function ensureAgentComponentInteractionAllowed(params: {
 }
 
 export type AgentComponentContext = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   discordConfig?: DiscordAccountConfig;
   runtime?: RuntimeEnv;

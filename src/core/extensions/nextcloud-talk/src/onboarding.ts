@@ -11,7 +11,7 @@ import {
   setTopLevelChannelDmPolicyWithAllowFrom,
   type ChannelOnboardingAdapter,
   type ChannelOnboardingDmPolicy,
-  type Must-bConfig,
+  type MustBConfig,
   type WizardPrompter,
 } from "must-b/plugin-sdk/nextcloud-talk";
 import {
@@ -138,10 +138,10 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
   getCurrent: (cfg) => cfg.channels?.["nextcloud-talk"]?.dmPolicy ?? "pairing",
   setPolicy: (cfg, policy) => setNextcloudTalkDmPolicy(cfg as CoreConfig, policy as DmPolicy),
   promptAllowFrom: promptNextcloudTalkAllowFromForAccount as (params: {
-    cfg: Must-bConfig;
+    cfg: MustBConfig;
     prompter: WizardPrompter;
     accountId?: string | undefined;
-  }) => Promise<Must-bConfig>,
+  }) => Promise<MustBConfig>,
 };
 
 export const nextcloudTalkOnboardingAdapter: ChannelOnboardingAdapter = {
@@ -173,7 +173,7 @@ export const nextcloudTalkOnboardingAdapter: ChannelOnboardingAdapter = {
       label: "Nextcloud Talk",
       accountOverride: accountOverrides["nextcloud-talk"],
       shouldPromptAccountIds,
-      listAccountIds: listNextcloudTalkAccountIds as (cfg: Must-bConfig) => string[],
+      listAccountIds: listNextcloudTalkAccountIds as (cfg: MustBConfig) => string[],
       defaultAccountId,
     });
 

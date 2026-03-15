@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { scheduleDetachedLaunchdRestartHandoff } from "../daemon/launchd-restart-handoff.js";
-import { triggerMust-bRestart } from "./restart.js";
+import { triggerMustBestart } from "./restart.js";
 import { detectRespawnSupervisor } from "./supervisor-markers.js";
 
 type RespawnMode = "spawned" | "supervised" | "disabled" | "failed";
@@ -51,7 +51,7 @@ export function restartGatewayProcessWithFreshPid(): GatewayRespawnResult {
       };
     }
     if (supervisor === "schtasks") {
-      const restart = triggerMust-bRestart();
+      const restart = triggerMustBestart();
       if (!restart.ok) {
         return {
           mode: "failed",

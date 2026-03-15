@@ -1,7 +1,7 @@
 import { DEFAULT_PROVIDER } from "../agents/defaults.js";
 import { parseModelRef } from "../agents/model-selection.js";
 import { normalizeProviderId } from "../agents/model-selection.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { resolvePluginProviders } from "./providers.js";
 import type {
@@ -85,7 +85,7 @@ export function buildProviderPluginMethodChoice(providerId: string, methodId: st
 }
 
 export function resolveProviderWizardOptions(params: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;
 }): ProviderWizardOption[] {
@@ -140,7 +140,7 @@ function resolveModelPickerChoiceValue(
 }
 
 export function resolveProviderModelPickerEntries(params: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;
 }): ProviderModelPickerEntry[] {
@@ -209,7 +209,7 @@ export function resolveProviderPluginChoice(params: {
 }
 
 export async function runProviderModelSelectedHook(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   model: string;
   prompter: WizardPrompter;
   agentDir?: string;

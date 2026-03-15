@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { resolveApiKeyForProvider, resolveEnvApiKey } from "../agents/model-auth.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveAgentModelPrimaryValue } from "../config/model-input.js";
 import { captureEnv } from "../test-utils/env.js";
 import {
@@ -20,7 +20,7 @@ import {
   KILOCODE_DEFAULT_COST,
 } from "./onboard-auth.models.js";
 
-const emptyCfg: Must-bConfig = {};
+const emptyCfg: MustBonfig = {};
 const KILOCODE_MODEL_IDS = ["kilo/auto"];
 
 describe("Kilo Gateway provider config", () => {
@@ -104,7 +104,7 @@ describe("Kilo Gateway provider config", () => {
     });
 
     it("preserves existing alias if already set", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         agents: {
           defaults: {
             models: {
@@ -119,7 +119,7 @@ describe("Kilo Gateway provider config", () => {
     });
 
     it("does not change the default model selection", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         agents: {
           defaults: {
             model: { primary: "openai/gpt-5" },

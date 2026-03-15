@@ -1,16 +1,16 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { validateConfigObject } from "../config/validation.js";
-import { resolveMust-bAgentDir } from "./agent-paths.js";
+import { resolveMustBgentDir } from "./agent-paths.js";
 import { NON_ENV_SECRETREF_MARKER } from "./model-auth-markers.js";
 import {
   CUSTOM_PROXY_MODELS_CONFIG,
   installModelsConfigTestHooks,
   withModelsTempHome as withTempHome,
 } from "./models-config.e2e-harness.js";
-import { ensureMust-bModelsJson } from "./models-config.js";
+import { ensureMustBodelsJson } from "./models-config.js";
 import { readGeneratedModelsJson } from "./models-config.test-utils.js";
 
 installModelsConfigTestHooks();
@@ -32,7 +32,7 @@ async function withEnvVar(name: string, value: string, run: () => Promise<void>)
 }
 
 async function writeAgentModelsJson(content: unknown): Promise<void> {
-  const agentDir = resolveMust-bAgentDir();
+  const agentDir = resolveMustBgentDir();
   await fs.mkdir(agentDir, { recursive: true });
   await fs.writeFile(
     path.join(agentDir, MODELS_JSON_NAME),
@@ -73,7 +73,7 @@ async function runCustomProviderMergeTest(params: {
   const existingProviderKey = params.existingProviderKey ?? "custom";
   const configProviderKey = params.configProviderKey ?? "custom";
   await writeAgentModelsJson({ providers: { [existingProviderKey]: params.seedProvider } });
-  await ensureMust-bModelsJson({
+  await ensureMustBodelsJson({
     models: {
       mode: "merge",
       providers: {
@@ -89,7 +89,7 @@ async function runCustomProviderMergeTest(params: {
 function createMoonshotConfig(overrides: {
   contextWindow: number;
   maxTokens: number;
-}): Must-bConfig {
+}): MustBonfig {
   return {
     models: {
       providers: {
@@ -132,7 +132,7 @@ describe("models-config", () => {
         throw new Error("expected config to validate");
       }
 
-      await ensureMust-bModelsJson(validated.config);
+      await ensureMustBodelsJson(validated.config);
 
       const parsed = await readGeneratedModelsJson<{
         providers: Record<string, { api?: string; models?: Array<{ id: string; api?: string }> }>;
@@ -146,7 +146,7 @@ describe("models-config", () => {
   it("fills missing provider.apiKey from env var name when models exist", async () => {
     await withTempHome(async () => {
       await withEnvVar("MINIMAX_API_KEY", "sk-minimax-test", async () => {
-        const cfg: Must-bConfig = {
+        const cfg: MustBonfig = {
           models: {
             providers: {
               minimax: {
@@ -168,7 +168,7 @@ describe("models-config", () => {
           },
         };
 
-        await ensureMust-bModelsJson(cfg);
+        await ensureMustBodelsJson(cfg);
 
         const parsed = await readGeneratedModelsJson<{
           providers: Record<string, { apiKey?: string; models?: Array<{ id: string }> }>;
@@ -203,7 +203,7 @@ describe("models-config", () => {
         },
       });
 
-      await ensureMust-bModelsJson(CUSTOM_PROXY_MODELS_CONFIG);
+      await ensureMustBodelsJson(CUSTOM_PROXY_MODELS_CONFIG);
 
       const parsed = await readGeneratedModelsJson<{
         providers: Record<string, { baseUrl?: string }>;
@@ -295,7 +295,7 @@ describe("models-config", () => {
           },
         },
       });
-      await ensureMust-bModelsJson({
+      await ensureMustBodelsJson({
         models: {
           mode: "merge",
           providers: {
@@ -317,7 +317,7 @@ describe("models-config", () => {
 
   it("replaces stale merged apiKey when provider is SecretRef-managed via auth-profiles", async () => {
     await withTempHome(async () => {
-      const agentDir = resolveMust-bAgentDir();
+      const agentDir = resolveMustBgentDir();
       await fs.mkdir(agentDir, { recursive: true });
       await fs.writeFile(
         path.join(agentDir, "auth-profiles.json"),
@@ -348,7 +348,7 @@ describe("models-config", () => {
         },
       });
 
-      await ensureMust-bModelsJson({
+      await ensureMustBodelsJson({
         models: {
           mode: "merge",
           providers: {},
@@ -375,7 +375,7 @@ describe("models-config", () => {
         },
       });
 
-      await ensureMust-bModelsJson({
+      await ensureMustBodelsJson({
         models: {
           mode: "merge",
           providers: {
@@ -414,7 +414,7 @@ describe("models-config", () => {
       await withEnvVar("MOONSHOT_API_KEY", "sk-moonshot-test", async () => {
         const cfg = createMoonshotConfig({ contextWindow: 1024, maxTokens: 256 });
 
-        await ensureMust-bModelsJson(cfg);
+        await ensureMustBodelsJson(cfg);
 
         const parsed = await readGeneratedModelsJson<{
           providers: Record<
@@ -446,7 +446,7 @@ describe("models-config", () => {
   it("does not persist resolved env var value as plaintext in models.json", async () => {
     await withEnvVar("OPENAI_API_KEY", "sk-plaintext-should-not-appear", async () => {
       await withTempHome(async () => {
-        const cfg: Must-bConfig = {
+        const cfg: MustBonfig = {
           models: {
             providers: {
               openai: {
@@ -468,7 +468,7 @@ describe("models-config", () => {
             },
           },
         };
-        await ensureMust-bModelsJson(cfg);
+        await ensureMustBodelsJson(cfg);
         const result = await readGeneratedModelsJson<{
           providers: Record<string, { apiKey?: string }>;
         }>();
@@ -490,7 +490,7 @@ describe("models-config", () => {
             },
           },
         });
-        const cfg: Must-bConfig = {
+        const cfg: MustBonfig = {
           models: {
             mode: "merge",
             providers: {
@@ -513,7 +513,7 @@ describe("models-config", () => {
             },
           },
         };
-        await ensureMust-bModelsJson(cfg);
+        await ensureMustBodelsJson(cfg);
         const result = await readGeneratedModelsJson<{
           providers: Record<string, { apiKey?: string }>;
         }>();
@@ -527,7 +527,7 @@ describe("models-config", () => {
       await withEnvVar("MOONSHOT_API_KEY", "sk-moonshot-test", async () => {
         const cfg = createMoonshotConfig({ contextWindow: 350000, maxTokens: 16384 });
 
-        await ensureMust-bModelsJson(cfg);
+        await ensureMustBodelsJson(cfg);
         const parsed = await readGeneratedModelsJson<{
           providers: Record<
             string,
@@ -552,7 +552,7 @@ describe("models-config", () => {
       await withEnvVar("MOONSHOT_API_KEY", "sk-moonshot-test", async () => {
         const cfg = createMoonshotConfig({ contextWindow: 0, maxTokens: -1 });
 
-        await ensureMust-bModelsJson(cfg);
+        await ensureMustBodelsJson(cfg);
         const parsed = await readGeneratedModelsJson<{
           providers: Record<
             string,

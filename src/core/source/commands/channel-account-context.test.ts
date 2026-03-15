@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ChannelPlugin } from "../channels/plugins/types.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveDefaultChannelAccountContext } from "./channel-account-context.js";
 
 describe("resolveDefaultChannelAccountContext", () => {
@@ -14,7 +14,7 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    const result = await resolveDefaultChannelAccountContext(plugin, {} as Must-bConfig);
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as MustBonfig);
 
     expect(result.accountIds).toEqual(["acc-1"]);
     expect(result.defaultAccountId).toBe("acc-1");
@@ -37,7 +37,7 @@ describe("resolveDefaultChannelAccountContext", () => {
       },
     } as unknown as ChannelPlugin;
 
-    const result = await resolveDefaultChannelAccountContext(plugin, {} as Must-bConfig);
+    const result = await resolveDefaultChannelAccountContext(plugin, {} as MustBonfig);
 
     expect(isEnabled).toHaveBeenCalledWith(account, {});
     expect(isConfigured).toHaveBeenCalledWith(account, {});

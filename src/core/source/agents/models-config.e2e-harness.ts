@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, vi } from "vitest";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { MockFn } from "../test-utils/vitest-mock-fn.js";
 import { resolveImplicitProviders } from "./models-config.providers.js";
 
@@ -150,7 +150,7 @@ export async function resolveImplicitProvidersForTest(
   });
 }
 
-export const CUSTOM_PROXY_MODELS_CONFIG: Must-bConfig = {
+export const CUSTOM_PROXY_MODELS_CONFIG: MustBonfig = {
   models: {
     providers: {
       "custom-proxy": {

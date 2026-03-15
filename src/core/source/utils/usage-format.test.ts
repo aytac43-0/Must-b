@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   estimateUsageCost,
   formatTokenCount,
@@ -37,7 +37,7 @@ describe("usage-format", () => {
           },
         },
       },
-    } as unknown as Must-bConfig;
+    } as unknown as MustBonfig;
 
     const cost = resolveModelCostConfig({
       provider: "test",

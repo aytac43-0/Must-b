@@ -1,4 +1,4 @@
-import type { ChannelPlugin, Must-bPluginApi } from "must-b/plugin-sdk/telegram";
+import type { ChannelPlugin, MustBPluginApi } from "must-b/plugin-sdk/telegram";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/telegram";
 import { telegramPlugin } from "./src/channel.js";
 import { setTelegramRuntime } from "./src/runtime.js";
@@ -8,7 +8,7 @@ const plugin = {
   name: "Telegram",
   description: "Telegram channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     setTelegramRuntime(api.runtime);
     api.registerChannel({ plugin: telegramPlugin as ChannelPlugin });
   },

@@ -3,7 +3,7 @@ import type { ChannelPlugin } from "../channels/plugins/types.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
 import { createTestRegistry } from "../test-utils/channel-plugins.js";
 import { resolveChannelCapabilities } from "./channel-capabilities.js";
-import type { Must-bConfig } from "./config.js";
+import type { MustBonfig } from "./config.js";
 
 describe("resolveChannelCapabilities", () => {
   beforeEach(() => {
@@ -32,7 +32,7 @@ describe("resolveChannelCapabilities", () => {
           },
         },
       },
-    } satisfies Partial<Must-bConfig>;
+    } satisfies Partial<MustBonfig>;
 
     expect(
       resolveChannelCapabilities({
@@ -53,7 +53,7 @@ describe("resolveChannelCapabilities", () => {
           },
         },
       },
-    } satisfies Partial<Must-bConfig>;
+    } satisfies Partial<MustBonfig>;
 
     expect(
       resolveChannelCapabilities({
@@ -73,7 +73,7 @@ describe("resolveChannelCapabilities", () => {
           },
         },
       },
-    } satisfies Partial<Must-bConfig>;
+    } satisfies Partial<MustBonfig>;
 
     expect(
       resolveChannelCapabilities({
@@ -96,7 +96,7 @@ describe("resolveChannelCapabilities", () => {
     );
     const cfg = {
       channels: { msteams: { capabilities: [" polls ", ""] } },
-    } satisfies Partial<Must-bConfig>;
+    } satisfies Partial<MustBonfig>;
 
     expect(
       resolveChannelCapabilities({
@@ -115,7 +115,7 @@ describe("resolveChannelCapabilities", () => {
           capabilities: { inlineButtons: "dm" },
         },
       },
-    } as unknown as Partial<Must-bConfig>;
+    } as unknown as Partial<MustBonfig>;
 
     // Should return undefined (not crash), allowing channel-specific handlers to process it.
     expect(

@@ -3,7 +3,7 @@ import {
   addSubagentRunForTests,
   resetSubagentRegistryForTests,
 } from "../../agents/subagent-registry.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionBindingRecord } from "../../infra/outbound/session-binding-service.js";
 import { installSubagentsCommandCoreMocks } from "./commands-subagents.test-mocks.js";
 
@@ -75,7 +75,7 @@ const { buildCommandTestParams } = await import("./commands-spawn.test-harness.j
 
 const baseCfg = {
   session: { mainKey: "main", scope: "per-sender" },
-} satisfies Must-bConfig;
+} satisfies MustBonfig;
 
 function createDiscordCommandParams(commandBody: string) {
   const params = buildCommandTestParams(commandBody, baseCfg, {

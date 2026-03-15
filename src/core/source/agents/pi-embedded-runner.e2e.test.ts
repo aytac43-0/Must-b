@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import "./test-helpers/fast-coding-tools.js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 function createMockUsage(input: number, output: number) {
   return {
@@ -133,7 +133,7 @@ const makeOpenAiConfig = (modelIds: string[]) =>
         },
       },
     },
-  }) satisfies Must-bConfig;
+  }) satisfies MustBonfig;
 
 const nextSessionFile = () => {
   sessionCounter += 1;

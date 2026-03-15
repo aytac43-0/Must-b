@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SessionEntry, SessionMaintenanceWarning } from "../config/sessions.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { isDeliverableMessageChannel, normalizeMessageChannel } from "../utils/message-channel.js";
@@ -7,7 +7,7 @@ import { resolveSessionDeliveryTarget } from "./outbound/targets.js";
 import { enqueueSystemEvent } from "./system-events.js";
 
 type WarningParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey: string;
   entry: SessionEntry;
   warning: SessionMaintenanceWarning;

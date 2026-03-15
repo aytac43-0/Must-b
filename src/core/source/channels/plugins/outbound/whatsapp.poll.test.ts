@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 
 const hoisted = vi.hoisted(() => ({
   sendPollWhatsApp: vi.fn(async () => ({ messageId: "poll-1", toJid: "1555@s.whatsapp.net" })),
@@ -17,7 +17,7 @@ import { whatsappOutbound } from "./whatsapp.js";
 
 describe("whatsappOutbound sendPoll", () => {
   it("threads cfg through poll send options", async () => {
-    const cfg = { marker: "resolved-cfg" } as Must-bConfig;
+    const cfg = { marker: "resolved-cfg" } as MustBonfig;
     const poll = {
       question: "Lunch?",
       options: ["Pizza", "Sushi"],

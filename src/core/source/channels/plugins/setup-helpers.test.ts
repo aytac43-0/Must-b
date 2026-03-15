@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { DEFAULT_ACCOUNT_ID } from "../../routing/session-key.js";
 import { applySetupAccountConfigPatch } from "./setup-helpers.js";
 
-function asConfig(value: unknown): Must-bConfig {
-  return value as Must-bConfig;
+function asConfig(value: unknown): MustBonfig {
+  return value as MustBonfig;
 }
 
 describe("applySetupAccountConfigPatch", () => {

@@ -10,7 +10,7 @@ import { formatCliCommand } from "../cli/command-format.js";
 import { resolveCommandSecretRefsViaGateway } from "../cli/command-secret-gateway.js";
 import { getChannelsCommandSecretTargetIds } from "../cli/command-secret-targets.js";
 import { listRouteBindings } from "../config/bindings.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { CONFIG_PATH, migrateLegacyConfig, readConfigFileSnapshot } from "../config/config.js";
 import { collectProviderDangerousNameMatchingScopes } from "../config/dangerous-name-matching.js";
 import { formatConfigIssueLines } from "../config/issue-format.js";
@@ -91,7 +91,7 @@ type ChannelMissingDefaultAccountContext = {
 };
 
 function collectChannelsMissingDefaultAccount(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ): ChannelMissingDefaultAccountContext[] {
   const channels = asObjectRecord(cfg.channels);
   if (!channels) {
@@ -124,7 +124,7 @@ function collectChannelsMissingDefaultAccount(
   return contexts;
 }
 
-export function collectMissingDefaultAccountBindingWarnings(cfg: Must-bConfig): string[] {
+export function collectMissingDefaultAccountBindingWarnings(cfg: MustBonfig): string[] {
   const bindings = listRouteBindings(cfg);
   const warnings: string[] = [];
 
@@ -189,7 +189,7 @@ export function collectMissingDefaultAccountBindingWarnings(cfg: Must-bConfig): 
   return warnings;
 }
 
-export function collectMissingExplicitDefaultAccountWarnings(cfg: Must-bConfig): string[] {
+export function collectMissingExplicitDefaultAccountWarnings(cfg: MustBonfig): string[] {
   const warnings: string[] = [];
   for (const { channelKey, channel, normalizedAccountIds } of collectChannelsMissingDefaultAccount(
     cfg,
@@ -220,7 +220,7 @@ export function collectMissingExplicitDefaultAccountWarnings(cfg: Must-bConfig):
 }
 
 function collectTelegramAccountScopes(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ): Array<{ prefix: string; account: Record<string, unknown> }> {
   const scopes: Array<{ prefix: string; account: Record<string, unknown> }> = [];
   const telegram = asObjectRecord(cfg.channels?.telegram);
@@ -286,7 +286,7 @@ function collectTelegramAllowFromLists(
   return refs;
 }
 
-function scanTelegramAllowFromUsernameEntries(cfg: Must-bConfig): TelegramAllowFromUsernameHit[] {
+function scanTelegramAllowFromUsernameEntries(cfg: MustBonfig): TelegramAllowFromUsernameHit[] {
   const hits: TelegramAllowFromUsernameHit[] = [];
 
   const scanList = (pathLabel: string, list: unknown) => {
@@ -314,8 +314,8 @@ function scanTelegramAllowFromUsernameEntries(cfg: Must-bConfig): TelegramAllowF
   return hits;
 }
 
-async function maybeRepairTelegramAllowFromUsernames(cfg: Must-bConfig): Promise<{
-  config: Must-bConfig;
+async function maybeRepairTelegramAllowFromUsernames(cfg: MustBonfig): Promise<{
+  config: MustBonfig;
   changes: string[];
 }> {
   const hits = scanTelegramAllowFromUsernameEntries(cfg);
@@ -468,7 +468,7 @@ type DiscordIdListRef = {
 };
 
 function collectDiscordAccountScopes(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ): Array<{ prefix: string; account: Record<string, unknown> }> {
   const scopes: Array<{ prefix: string; account: Record<string, unknown> }> = [];
   const discord = asObjectRecord(cfg.channels?.discord);
@@ -548,7 +548,7 @@ function collectDiscordIdLists(
   return refs;
 }
 
-function scanDiscordNumericIdEntries(cfg: Must-bConfig): DiscordNumericIdHit[] {
+function scanDiscordNumericIdEntries(cfg: MustBonfig): DiscordNumericIdHit[] {
   const hits: DiscordNumericIdHit[] = [];
   const scanList = (pathLabel: string, list: unknown) => {
     if (!Array.isArray(list)) {
@@ -571,8 +571,8 @@ function scanDiscordNumericIdEntries(cfg: Must-bConfig): DiscordNumericIdHit[] {
   return hits;
 }
 
-function maybeRepairDiscordNumericIds(cfg: Must-bConfig): {
-  config: Must-bConfig;
+function maybeRepairDiscordNumericIds(cfg: MustBonfig): {
+  config: MustBonfig;
   changes: string[];
 } {
   const hits = scanDiscordNumericIdEntries(cfg);
@@ -652,7 +652,7 @@ function addMutableAllowlistHits(params: {
   }
 }
 
-function scanMutableAllowlistEntries(cfg: Must-bConfig): MutableAllowlistHit[] {
+function scanMutableAllowlistEntries(cfg: MustBonfig): MutableAllowlistHit[] {
   const hits: MutableAllowlistHit[] = [];
 
   for (const scope of collectProviderDangerousNameMatchingScopes(cfg, "discord")) {
@@ -916,8 +916,8 @@ function scanMutableAllowlistEntries(cfg: Must-bConfig): MutableAllowlistHit[] {
  * users (or integrations) set dmPolicy to "open" without realising that an explicit
  * allowFrom wildcard is also required.
  */
-function maybeRepairOpenPolicyAllowFrom(cfg: Must-bConfig): {
-  config: Must-bConfig;
+function maybeRepairOpenPolicyAllowFrom(cfg: MustBonfig): {
+  config: MustBonfig;
   changes: string[];
 } {
   const channels = cfg.channels;
@@ -1045,8 +1045,8 @@ function hasAllowFromEntries(list?: Array<string | number>) {
   return Array.isArray(list) && list.map((v) => String(v).trim()).filter(Boolean).length > 0;
 }
 
-async function maybeRepairAllowlistPolicyAllowFrom(cfg: Must-bConfig): Promise<{
-  config: Must-bConfig;
+async function maybeRepairAllowlistPolicyAllowFrom(cfg: MustBonfig): Promise<{
+  config: MustBonfig;
   changes: string[];
 }> {
   const channels = cfg.channels;
@@ -1204,7 +1204,7 @@ async function maybeRepairAllowlistPolicyAllowFrom(cfg: Must-bConfig): Promise<{
  * allowlist. Common after upgrades that remove external allowlist
  * file support.
  */
-function detectEmptyAllowlistPolicy(cfg: Must-bConfig): string[] {
+function detectEmptyAllowlistPolicy(cfg: MustBonfig): string[] {
   const channels = cfg.channels;
   if (!channels || typeof channels !== "object") {
     return [];
@@ -1372,7 +1372,7 @@ function normalizeConfiguredTrustedSafeBinDirs(entries: unknown): string[] {
   );
 }
 
-function collectExecSafeBinScopes(cfg: Must-bConfig): ExecSafeBinScopeRef[] {
+function collectExecSafeBinScopes(cfg: MustBonfig): ExecSafeBinScopeRef[] {
   const scopes: ExecSafeBinScopeRef[] = [];
   const globalExec = asObjectRecord(cfg.tools?.exec);
   const globalTrustedDirs = normalizeConfiguredTrustedSafeBinDirs(globalExec?.safeBinTrustedDirs);
@@ -1426,7 +1426,7 @@ function collectExecSafeBinScopes(cfg: Must-bConfig): ExecSafeBinScopeRef[] {
   return scopes;
 }
 
-function scanExecSafeBinCoverage(cfg: Must-bConfig): ExecSafeBinCoverageHit[] {
+function scanExecSafeBinCoverage(cfg: MustBonfig): ExecSafeBinCoverageHit[] {
   const hits: ExecSafeBinCoverageHit[] = [];
   for (const scope of collectExecSafeBinScopes(cfg)) {
     const interpreterBins = new Set(listInterpreterLikeSafeBins(scope.safeBins));
@@ -1444,7 +1444,7 @@ function scanExecSafeBinCoverage(cfg: Must-bConfig): ExecSafeBinCoverageHit[] {
   return hits;
 }
 
-function scanExecSafeBinTrustedDirHints(cfg: Must-bConfig): ExecSafeBinTrustedDirHintHit[] {
+function scanExecSafeBinTrustedDirHints(cfg: MustBonfig): ExecSafeBinTrustedDirHintHit[] {
   const hits: ExecSafeBinTrustedDirHintHit[] = [];
   for (const scope of collectExecSafeBinScopes(cfg)) {
     for (const bin of scope.safeBins) {
@@ -1470,8 +1470,8 @@ function scanExecSafeBinTrustedDirHints(cfg: Must-bConfig): ExecSafeBinTrustedDi
   return hits;
 }
 
-function maybeRepairExecSafeBinProfiles(cfg: Must-bConfig): {
-  config: Must-bConfig;
+function maybeRepairExecSafeBinProfiles(cfg: MustBonfig): {
+  config: MustBonfig;
   changes: string[];
   warnings: string[];
 } {
@@ -1559,14 +1559,14 @@ function collectLegacyToolsBySenderKeyHits(
   }
 }
 
-function scanLegacyToolsBySenderKeys(cfg: Must-bConfig): LegacyToolsBySenderKeyHit[] {
+function scanLegacyToolsBySenderKeys(cfg: MustBonfig): LegacyToolsBySenderKeyHit[] {
   const hits: LegacyToolsBySenderKeyHit[] = [];
   collectLegacyToolsBySenderKeyHits(cfg, [], hits);
   return hits;
 }
 
-function maybeRepairLegacyToolsBySenderKeys(cfg: Must-bConfig): {
-  config: Must-bConfig;
+function maybeRepairLegacyToolsBySenderKeys(cfg: MustBonfig): {
+  config: MustBonfig;
   changes: string[];
 } {
   const next = structuredClone(cfg);
@@ -1691,7 +1691,7 @@ export async function loadAndMaybeMigrateDoctorConfig(params: {
 
   let snapshot = await readConfigFileSnapshot();
   const baseCfg = snapshot.config ?? {};
-  let cfg: Must-bConfig = baseCfg;
+  let cfg: MustBonfig = baseCfg;
   let candidate = structuredClone(baseCfg);
   let pendingChanges = false;
   let shouldWriteConfig = false;

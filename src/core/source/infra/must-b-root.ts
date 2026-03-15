@@ -82,7 +82,7 @@ function candidateDirsFromArgv1(argv1: string): string[] {
   return candidates;
 }
 
-export async function resolveMust-bPackageRoot(opts: {
+export async function resolveMustBackageRoot(opts: {
   cwd?: string;
   argv1?: string;
   moduleUrl?: string;
@@ -97,7 +97,7 @@ export async function resolveMust-bPackageRoot(opts: {
   return null;
 }
 
-export function resolveMust-bPackageRootSync(opts: {
+export function resolveMustBackageRootSync(opts: {
   cwd?: string;
   argv1?: string;
   moduleUrl?: string;

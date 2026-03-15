@@ -1,6 +1,6 @@
 import { listChannelPlugins } from "../../channels/plugins/index.js";
 import type { ChannelPlugin } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   listDeliverableMessageChannels,
   type DeliverableMessageChannel,
@@ -42,7 +42,7 @@ function isAccountEnabled(account: unknown): boolean {
   return enabled !== false;
 }
 
-async function isPluginConfigured(plugin: ChannelPlugin, cfg: Must-bConfig): Promise<boolean> {
+async function isPluginConfigured(plugin: ChannelPlugin, cfg: MustBonfig): Promise<boolean> {
   const accountIds = plugin.config.listAccountIds(cfg);
   if (accountIds.length === 0) {
     return false;
@@ -69,7 +69,7 @@ async function isPluginConfigured(plugin: ChannelPlugin, cfg: Must-bConfig): Pro
 }
 
 export async function listConfiguredMessageChannels(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ): Promise<MessageChannelId[]> {
   const channels: MessageChannelId[] = [];
   for (const plugin of listChannelPlugins()) {
@@ -84,7 +84,7 @@ export async function listConfiguredMessageChannels(
 }
 
 export async function resolveMessageChannelSelection(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channel?: string | null;
   fallbackChannel?: string | null;
 }): Promise<{

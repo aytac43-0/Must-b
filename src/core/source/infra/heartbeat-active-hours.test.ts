@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { isWithinActiveHours } from "./heartbeat-active-hours.js";
 
-function cfgWithUserTimezone(userTimezone = "UTC"): Must-bConfig {
+function cfgWithUserTimezone(userTimezone = "UTC"): MustBonfig {
   return {
     agents: {
       defaults: {

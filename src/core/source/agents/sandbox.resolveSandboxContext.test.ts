@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { ensureSandboxWorkspaceForSession, resolveSandboxContext } from "./sandbox/context.js";
 
 describe("resolveSandboxContext", () => {
   it("does not sandbox the agent main session in non-main mode", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: { mode: "non-main", scope: "session" },
@@ -23,7 +23,7 @@ describe("resolveSandboxContext", () => {
   }, 15_000);
 
   it("does not create a sandbox workspace for the agent main session in non-main mode", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: { mode: "non-main", scope: "session" },
@@ -42,7 +42,7 @@ describe("resolveSandboxContext", () => {
   }, 15_000);
 
   it("treats main session aliases as main in non-main mode", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       session: { mainKey: "work" },
       agents: {
         defaults: {

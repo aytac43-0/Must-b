@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/bluebubbles";
+import type { MustBConfig } from "must-b/plugin-sdk/bluebubbles";
 import {
   DM_GROUP_ACCESS_REASON,
   createScopedPairingAccess,
@@ -244,7 +244,7 @@ function logGroupAllowlistHint(params: {
 }
 
 function resolveBlueBubblesAckReaction(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   agentId: string;
   core: BlueBubblesCoreRuntime;
   runtime: BlueBubblesRuntimeEnv;

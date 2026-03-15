@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 const note = vi.hoisted(() => vi.fn());
 const pluginRegistry = vi.hoisted(() => ({ list: [] as unknown[] }));
@@ -43,7 +43,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
   const lastMessage = () => String(note.mock.calls.at(-1)?.[0] ?? "");
 
   it("warns when exposed without auth", async () => {
-    const cfg = { gateway: { bind: "lan" } } as Must-bConfig;
+    const cfg = { gateway: { bind: "lan" } } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain("CRITICAL");
@@ -54,7 +54,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
 
   it("uses env token to avoid critical warning", async () => {
     process.env.MUSTB_GATEWAY_TOKEN = "token-123";
-    const cfg = { gateway: { bind: "lan" } } as Must-bConfig;
+    const cfg = { gateway: { bind: "lan" } } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain("WARNING");
@@ -70,7 +70,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
           token: { source: "env", provider: "default", id: "MUSTB_GATEWAY_TOKEN" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain("WARNING");
@@ -80,14 +80,14 @@ describe("noteSecurityWarnings gateway exposure", () => {
   it("treats whitespace token as missing", async () => {
     const cfg = {
       gateway: { bind: "lan", auth: { mode: "token", token: "   " } },
-    } as Must-bConfig;
+    } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain("CRITICAL");
   });
 
   it("skips warning for loopback bind", async () => {
-    const cfg = { gateway: { bind: "loopback" } } as Must-bConfig;
+    const cfg = { gateway: { bind: "loopback" } } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain("No channel security warnings detected");
@@ -115,7 +115,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
         },
       },
     ];
-    const cfg = { session: { dmScope: "main" } } as Must-bConfig;
+    const cfg = { session: { dmScope: "main" } } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain('config set session.dmScope "per-channel-peer"');
@@ -128,7 +128,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
           enabled: false,
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain("disables approval forwarding only");
@@ -145,7 +145,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain("Heartbeat defaults");
@@ -165,7 +165,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
           },
         ],
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).toContain('Heartbeat agent "ops"');
@@ -191,7 +191,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
           },
         ],
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     await noteSecurityWarnings(cfg);
     const message = lastMessage();
     expect(message).not.toContain("Heartbeat defaults");

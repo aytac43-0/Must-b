@@ -1,9 +1,9 @@
 import { resolveEnvelopeFormatOptions } from "../auto-reply/envelope.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { readSessionUpdatedAt, resolveStorePath } from "../config/sessions.js";
 
 export function resolveInboundSessionEnvelopeContext(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   sessionKey: string;
 }) {

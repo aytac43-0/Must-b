@@ -1,6 +1,6 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
 import type { DiscordActionConfig } from "../../config/config.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { readDiscordComponentSpec } from "../../discord/components.js";
 import {
   createThreadDiscord,
@@ -63,7 +63,7 @@ export async function handleDiscordMessagingAction(
   options?: {
     mediaLocalRoots?: readonly string[];
   },
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
 ): Promise<AgentToolResult<unknown>> {
   const resolveChannelId = () =>
     resolveDiscordChannelId(

@@ -12,7 +12,7 @@ import type { ChannelDock } from "../channels/dock.js";
 import type { ChannelId, ChannelPlugin } from "../channels/plugins/types.js";
 import type { createVpsAwareOAuthHandlers } from "../commands/oauth-flow.js";
 import type { OnboardOptions } from "../commands/onboard-types.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { ModelProviderConfig } from "../config/types.js";
 import type { GatewayRequestHandler } from "../gateway/server-methods/types.js";
 import type { InternalHookHandler } from "../hooks/internal-hooks.js";
@@ -46,7 +46,7 @@ export type PluginConfigValidation =
   | { ok: true; value?: unknown }
   | { ok: false; errors: string[] };
 
-export type Must-bPluginConfigSchema = {
+export type MustBluginConfigSchema = {
   safeParse?: (value: unknown) => {
     success: boolean;
     data?: unknown;
@@ -60,8 +60,8 @@ export type Must-bPluginConfigSchema = {
   jsonSchema?: Record<string, unknown>;
 };
 
-export type Must-bPluginToolContext = {
-  config?: Must-bConfig;
+export type MustBluginToolContext = {
+  config?: MustBonfig;
   workspaceDir?: string;
   agentDir?: string;
   agentId?: string;
@@ -77,17 +77,17 @@ export type Must-bPluginToolContext = {
   sandboxed?: boolean;
 };
 
-export type Must-bPluginToolFactory = (
-  ctx: Must-bPluginToolContext,
+export type MustBluginToolFactory = (
+  ctx: MustBluginToolContext,
 ) => AnyAgentTool | AnyAgentTool[] | null | undefined;
 
-export type Must-bPluginToolOptions = {
+export type MustBluginToolOptions = {
   name?: string;
   names?: string[];
   optional?: boolean;
 };
 
-export type Must-bPluginHookOptions = {
+export type MustBluginHookOptions = {
   entry?: HookEntry;
   name?: string;
   description?: string;
@@ -98,13 +98,13 @@ export type ProviderAuthKind = "oauth" | "api_key" | "token" | "device_code" | "
 
 export type ProviderAuthResult = {
   profiles: Array<{ profileId: string; credential: AuthProfileCredential }>;
-  configPatch?: Partial<Must-bConfig>;
+  configPatch?: Partial<MustBonfig>;
   defaultModel?: string;
   notes?: string[];
 };
 
 export type ProviderAuthContext = {
-  config: Must-bConfig;
+  config: MustBonfig;
   agentDir?: string;
   workspaceDir?: string;
   prompter: WizardPrompter;
@@ -141,8 +141,8 @@ export type ProviderNonInteractiveApiKeyCredentialParams = {
 
 export type ProviderAuthMethodNonInteractiveContext = {
   authChoice: string;
-  config: Must-bConfig;
-  baseConfig: Must-bConfig;
+  config: MustBonfig;
+  baseConfig: MustBonfig;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
   agentDir?: string;
@@ -163,13 +163,13 @@ export type ProviderAuthMethod = {
   run: (ctx: ProviderAuthContext) => Promise<ProviderAuthResult>;
   runNonInteractive?: (
     ctx: ProviderAuthMethodNonInteractiveContext,
-  ) => Promise<Must-bConfig | null>;
+  ) => Promise<MustBonfig | null>;
 };
 
 export type ProviderDiscoveryOrder = "simple" | "profile" | "paired" | "late";
 
 export type ProviderDiscoveryContext = {
-  config: Must-bConfig;
+  config: MustBonfig;
   agentDir?: string;
   workspaceDir?: string;
   env: NodeJS.ProcessEnv;
@@ -212,7 +212,7 @@ export type ProviderPluginWizard = {
 };
 
 export type ProviderModelSelectedContext = {
-  config: Must-bConfig;
+  config: MustBonfig;
   model: string;
   prompter: WizardPrompter;
   agentDir?: string;
@@ -234,7 +234,7 @@ export type ProviderPlugin = {
   onModelSelected?: (ctx: ProviderModelSelectedContext) => Promise<void>;
 };
 
-export type Must-bPluginGatewayMethod = {
+export type MustBluginGatewayMethod = {
   method: string;
   handler: GatewayRequestHandler;
 };
@@ -260,7 +260,7 @@ export type PluginCommandContext = {
   /** The full normalized command body */
   commandBody: string;
   /** Current Must-b configuration */
-  config: Must-bConfig;
+  config: MustBonfig;
   /** Raw "From" value (channel-scoped id) */
   from?: string;
   /** Raw "To" value (channel-scoped id) */
@@ -286,7 +286,7 @@ export type PluginCommandHandler = (
 /**
  * Definition for a plugin-registered command.
  */
-export type Must-bPluginCommandDefinition = {
+export type MustBluginCommandDefinition = {
   /** Command name without leading slash (e.g., "tts") */
   name: string;
   /**
@@ -305,95 +305,95 @@ export type Must-bPluginCommandDefinition = {
   handler: PluginCommandHandler;
 };
 
-export type Must-bPluginHttpRouteAuth = "gateway" | "plugin";
-export type Must-bPluginHttpRouteMatch = "exact" | "prefix";
+export type MustBluginHttpRouteAuth = "gateway" | "plugin";
+export type MustBluginHttpRouteMatch = "exact" | "prefix";
 
-export type Must-bPluginHttpRouteHandler = (
+export type MustBluginHttpRouteHandler = (
   req: IncomingMessage,
   res: ServerResponse,
 ) => Promise<boolean | void> | boolean | void;
 
-export type Must-bPluginHttpRouteParams = {
+export type MustBluginHttpRouteParams = {
   path: string;
-  handler: Must-bPluginHttpRouteHandler;
-  auth: Must-bPluginHttpRouteAuth;
-  match?: Must-bPluginHttpRouteMatch;
+  handler: MustBluginHttpRouteHandler;
+  auth: MustBluginHttpRouteAuth;
+  match?: MustBluginHttpRouteMatch;
   replaceExisting?: boolean;
 };
 
-export type Must-bPluginCliContext = {
+export type MustBluginCliContext = {
   program: Command;
-  config: Must-bConfig;
+  config: MustBonfig;
   workspaceDir?: string;
   logger: PluginLogger;
 };
 
-export type Must-bPluginCliRegistrar = (ctx: Must-bPluginCliContext) => void | Promise<void>;
+export type MustBluginCliRegistrar = (ctx: MustBluginCliContext) => void | Promise<void>;
 
-export type Must-bPluginServiceContext = {
-  config: Must-bConfig;
+export type MustBluginServiceContext = {
+  config: MustBonfig;
   workspaceDir?: string;
   stateDir: string;
   logger: PluginLogger;
 };
 
-export type Must-bPluginService = {
+export type MustBluginService = {
   id: string;
-  start: (ctx: Must-bPluginServiceContext) => void | Promise<void>;
-  stop?: (ctx: Must-bPluginServiceContext) => void | Promise<void>;
+  start: (ctx: MustBluginServiceContext) => void | Promise<void>;
+  stop?: (ctx: MustBluginServiceContext) => void | Promise<void>;
 };
 
-export type Must-bPluginChannelRegistration = {
+export type MustBluginChannelRegistration = {
   plugin: ChannelPlugin;
   dock?: ChannelDock;
 };
 
-export type Must-bPluginDefinition = {
+export type MustBluginDefinition = {
   id?: string;
   name?: string;
   description?: string;
   version?: string;
   kind?: PluginKind;
-  configSchema?: Must-bPluginConfigSchema;
-  register?: (api: Must-bPluginApi) => void | Promise<void>;
-  activate?: (api: Must-bPluginApi) => void | Promise<void>;
+  configSchema?: MustBluginConfigSchema;
+  register?: (api: MustBluginApi) => void | Promise<void>;
+  activate?: (api: MustBluginApi) => void | Promise<void>;
 };
 
-export type Must-bPluginModule =
-  | Must-bPluginDefinition
-  | ((api: Must-bPluginApi) => void | Promise<void>);
+export type MustBluginModule =
+  | MustBluginDefinition
+  | ((api: MustBluginApi) => void | Promise<void>);
 
-export type Must-bPluginApi = {
+export type MustBluginApi = {
   id: string;
   name: string;
   version?: string;
   description?: string;
   source: string;
-  config: Must-bConfig;
+  config: MustBonfig;
   pluginConfig?: Record<string, unknown>;
   runtime: PluginRuntime;
   logger: PluginLogger;
   registerTool: (
-    tool: AnyAgentTool | Must-bPluginToolFactory,
-    opts?: Must-bPluginToolOptions,
+    tool: AnyAgentTool | MustBluginToolFactory,
+    opts?: MustBluginToolOptions,
   ) => void;
   registerHook: (
     events: string | string[],
     handler: InternalHookHandler,
-    opts?: Must-bPluginHookOptions,
+    opts?: MustBluginHookOptions,
   ) => void;
-  registerHttpRoute: (params: Must-bPluginHttpRouteParams) => void;
-  registerChannel: (registration: Must-bPluginChannelRegistration | ChannelPlugin) => void;
+  registerHttpRoute: (params: MustBluginHttpRouteParams) => void;
+  registerChannel: (registration: MustBluginChannelRegistration | ChannelPlugin) => void;
   registerGatewayMethod: (method: string, handler: GatewayRequestHandler) => void;
-  registerCli: (registrar: Must-bPluginCliRegistrar, opts?: { commands?: string[] }) => void;
-  registerService: (service: Must-bPluginService) => void;
+  registerCli: (registrar: MustBluginCliRegistrar, opts?: { commands?: string[] }) => void;
+  registerService: (service: MustBluginService) => void;
   registerProvider: (provider: ProviderPlugin) => void;
   /**
    * Register a custom command that bypasses the LLM agent.
    * Plugin commands are processed before built-in commands and before agent invocation.
    * Use this for simple state-toggling or status commands that don't need AI reasoning.
    */
-  registerCommand: (command: Must-bPluginCommandDefinition) => void;
+  registerCommand: (command: MustBluginCommandDefinition) => void;
   /** Register a context engine implementation (exclusive slot — only one active at a time). */
   registerContextEngine: (
     id: string,

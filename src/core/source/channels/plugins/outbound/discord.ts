@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import {
   getThreadBindingManager,
   type ThreadBindingRecord,
@@ -39,7 +39,7 @@ function resolveDiscordWebhookIdentity(params: {
 }
 
 async function maybeSendDiscordWebhookText(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   text: string;
   threadId?: string | number | null;
   accountId?: string | null;

@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { resolveStateDir } from "../config/paths.js";
 import { sendVoiceMessageDiscord } from "../discord/send.js";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 import { optimizeImageToPng } from "../media/image-ops.js";
 import { mockPinnedHostnameResolution } from "../test-helpers/ssrf.js";
 import { captureEnv } from "../test-utils/env.js";
@@ -68,7 +68,7 @@ function cloneStatWithDev<T extends { dev: number | bigint }>(stat: T, dev: numb
 
 beforeAll(async () => {
   fixtureRoot = await fs.mkdtemp(
-    path.join(resolvePreferredMust-bTmpDir(), "must-b-media-test-"),
+    path.join(resolvePreferredMustBmpDir(), "must-b-media-test-"),
   );
   largeJpegBuffer = await sharp({
     create: {
@@ -385,7 +385,7 @@ describe("local media root guard", () => {
 
   it("allows local paths under an explicit root", async () => {
     const result = await loadWebMedia(tinyPngFile, 1024 * 1024, {
-      localRoots: [resolvePreferredMust-bTmpDir()],
+      localRoots: [resolvePreferredMustBmpDir()],
     });
     expect(result.kind).toBe("image");
   });
@@ -403,7 +403,7 @@ describe("local media root guard", () => {
 
     try {
       const result = await loadWebMedia(tinyPngFile, 1024 * 1024, {
-        localRoots: [resolvePreferredMust-bTmpDir()],
+        localRoots: [resolvePreferredMustBmpDir()],
       });
       expect(result.kind).toBe("image");
       expect(result.buffer.length).toBeGreaterThan(0);

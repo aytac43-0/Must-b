@@ -3,13 +3,13 @@
  */
 
 import { loadConfig } from "../config/config.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveSignalAccount } from "./accounts.js";
 import { signalRpcRequest } from "./client.js";
 import { resolveSignalRpcContext } from "./rpc-context.js";
 
 export type SignalReactionOpts = {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   baseUrl?: string;
   account?: string;
   accountId?: string;

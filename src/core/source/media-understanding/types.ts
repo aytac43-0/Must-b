@@ -98,7 +98,7 @@ export type ImageDescriptionRequest = {
   profile?: string;
   preferredProfile?: string;
   agentDir: string;
-  cfg: import("../config/config.js").Must-bConfig;
+  cfg: import("../config/config.js").MustBonfig;
 };
 
 export type ImageDescriptionResult = {

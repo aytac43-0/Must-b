@@ -24,7 +24,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-function localMust-bProfile(): Parameters<typeof createProfileResetOps>[0]["profile"] {
+function localMustBrofile(): Parameters<typeof createProfileResetOps>[0]["profile"] {
   return {
     name: "must-b",
     cdpUrl: "http://127.0.0.1:18800",
@@ -37,10 +37,10 @@ function localMust-bProfile(): Parameters<typeof createProfileResetOps>[0]["prof
   };
 }
 
-function createLocalMust-bResetOps(
+function createLocalMustBesetOps(
   params: Omit<Parameters<typeof createProfileResetOps>[0], "profile">,
 ) {
-  return createProfileResetOps({ profile: localMust-bProfile(), ...params });
+  return createProfileResetOps({ profile: localMustBrofile(), ...params });
 }
 
 function createStatelessResetOps(profile: Parameters<typeof createProfileResetOps>[0]["profile"]) {
@@ -49,14 +49,14 @@ function createStatelessResetOps(profile: Parameters<typeof createProfileResetOp
     getProfileState: () => ({ profile: {} as never, running: null }),
     stopRunningBrowser: vi.fn(async () => ({ stopped: false })),
     isHttpReachable: vi.fn(async () => false),
-    resolveMust-bUserDataDir: (name: string) => `/tmp/${name}`,
+    resolveMustBserDataDir: (name: string) => `/tmp/${name}`,
   });
 }
 
 describe("createProfileResetOps", () => {
   it("stops extension relay for extension profiles", async () => {
     const ops = createStatelessResetOps({
-      ...localMust-bProfile(),
+      ...localMustBrofile(),
       name: "chrome",
       driver: "extension",
     });
@@ -73,7 +73,7 @@ describe("createProfileResetOps", () => {
 
   it("rejects remote non-extension profiles", async () => {
     const ops = createStatelessResetOps({
-      ...localMust-bProfile(),
+      ...localMustBrofile(),
       name: "remote",
       cdpUrl: "https://browserless.example/chrome",
       cdpHost: "browserless.example",
@@ -97,11 +97,11 @@ describe("createProfileResetOps", () => {
       running: { pid: 1 } as never,
     }));
 
-    const ops = createLocalMust-bResetOps({
+    const ops = createLocalMustBesetOps({
       getProfileState,
       stopRunningBrowser,
       isHttpReachable,
-      resolveMust-bUserDataDir: () => profileDir,
+      resolveMustBserDataDir: () => profileDir,
     });
 
     const result = await ops.resetProfile();
@@ -124,11 +124,11 @@ describe("createProfileResetOps", () => {
     fs.mkdirSync(profileDir, { recursive: true });
 
     const stopRunningBrowser = vi.fn(async () => ({ stopped: false }));
-    const ops = createLocalMust-bResetOps({
+    const ops = createLocalMustBesetOps({
       getProfileState: () => ({ profile: {} as never, running: null }),
       stopRunningBrowser,
       isHttpReachable: vi.fn(async () => true),
-      resolveMust-bUserDataDir: () => profileDir,
+      resolveMustBserDataDir: () => profileDir,
     });
 
     await ops.resetProfile();

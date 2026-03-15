@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { PluginManifestRegistry } from "../../plugins/manifest-registry.js";
 import { createTrackedTempDirs } from "../../test-utils/tracked-temp-dirs.js";
 
@@ -116,7 +116,7 @@ describe("resolvePluginSkillDirs", () => {
       workspaceDir,
       config: {
         acp: { enabled: acpEnabled },
-      } as Must-bConfig,
+      } as MustBonfig,
     });
 
     expect(dirs).toEqual(expectedDirs({ acpxRoot, helperRoot }));
@@ -137,7 +137,7 @@ describe("resolvePluginSkillDirs", () => {
 
     const dirs = resolvePluginSkillDirs({
       workspaceDir,
-      config: {} as Must-bConfig,
+      config: {} as MustBonfig,
     });
 
     expect(dirs).toEqual([path.resolve(pluginRoot, "skills")]);
@@ -162,7 +162,7 @@ describe("resolvePluginSkillDirs", () => {
 
     const dirs = resolvePluginSkillDirs({
       workspaceDir,
-      config: {} as Must-bConfig,
+      config: {} as MustBonfig,
     });
 
     expect(dirs).toEqual([]);

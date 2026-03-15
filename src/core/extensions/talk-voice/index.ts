@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/talk-voice";
+import type { MustBPluginApi } from "must-b/plugin-sdk/talk-voice";
 
 type ElevenLabsVoice = {
   voice_id: string;
@@ -81,7 +81,7 @@ function resolveCommandLabel(channel: string): string {
   return channel === "discord" ? "/talkvoice" : "/voice";
 }
 
-export default function register(api: Must-bPluginApi) {
+export default function register(api: MustBPluginApi) {
   api.registerCommand({
     name: "voice",
     nativeNames: {

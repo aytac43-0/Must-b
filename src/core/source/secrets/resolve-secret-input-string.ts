@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   normalizeSecretInputString,
   resolveSecretInputRef,
@@ -6,10 +6,10 @@ import {
 } from "../config/types.secrets.js";
 import { resolveSecretRefString } from "./resolve.js";
 
-type SecretDefaults = NonNullable<Must-bConfig["secrets"]>["defaults"];
+type SecretDefaults = NonNullable<MustBonfig["secrets"]>["defaults"];
 
 export async function resolveSecretInputString(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   value: unknown;
   env: NodeJS.ProcessEnv;
   defaults?: SecretDefaults;

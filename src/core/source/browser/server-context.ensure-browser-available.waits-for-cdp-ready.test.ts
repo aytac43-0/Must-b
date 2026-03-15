@@ -39,11 +39,11 @@ function makeBrowserState(): BrowserServerState {
 }
 
 function mockLaunchedChrome(
-  launchMust-bChrome: { mockResolvedValue: (value: RunningChrome) => unknown },
+  launchMustBhrome: { mockResolvedValue: (value: RunningChrome) => unknown },
   pid: number,
 ) {
   const proc = new EventEmitter() as unknown as ChildProcessWithoutNullStreams;
-  launchMust-bChrome.mockResolvedValue({
+  launchMustBhrome.mockResolvedValue({
     pid,
     exe: { kind: "chromium", path: "/usr/bin/chromium" },
     userDataDir: "/tmp/must-b-test",
@@ -56,8 +56,8 @@ function mockLaunchedChrome(
 function setupEnsureBrowserAvailableHarness() {
   vi.useFakeTimers();
 
-  const launchMust-bChrome = vi.mocked(chromeModule.launchMust-bChrome);
-  const stopMust-bChrome = vi.mocked(chromeModule.stopMust-bChrome);
+  const launchMustBhrome = vi.mocked(chromeModule.launchMustBhrome);
+  const stopMustBhrome = vi.mocked(chromeModule.stopMustBhrome);
   const isChromeReachable = vi.mocked(chromeModule.isChromeReachable);
   const isChromeCdpReady = vi.mocked(chromeModule.isChromeCdpReady);
   isChromeReachable.mockResolvedValue(false);
@@ -66,7 +66,7 @@ function setupEnsureBrowserAvailableHarness() {
   const ctx = createBrowserRouteContext({ getState: () => state });
   const profile = ctx.forProfile("must-b");
 
-  return { launchMust-bChrome, stopMust-bChrome, isChromeCdpReady, profile };
+  return { launchMustBhrome, stopMustBhrome, isChromeCdpReady, profile };
 }
 
 afterEach(() => {
@@ -77,32 +77,32 @@ afterEach(() => {
 
 describe("browser server-context ensureBrowserAvailable", () => {
   it("waits for CDP readiness after launching to avoid follow-up PortInUseError races (#21149)", async () => {
-    const { launchMust-bChrome, stopMust-bChrome, isChromeCdpReady, profile } =
+    const { launchMustBhrome, stopMustBhrome, isChromeCdpReady, profile } =
       setupEnsureBrowserAvailableHarness();
     isChromeCdpReady.mockResolvedValueOnce(false).mockResolvedValue(true);
-    mockLaunchedChrome(launchMust-bChrome, 123);
+    mockLaunchedChrome(launchMustBhrome, 123);
 
     const promise = profile.ensureBrowserAvailable();
     await vi.advanceTimersByTimeAsync(100);
     await expect(promise).resolves.toBeUndefined();
 
-    expect(launchMust-bChrome).toHaveBeenCalledTimes(1);
+    expect(launchMustBhrome).toHaveBeenCalledTimes(1);
     expect(isChromeCdpReady).toHaveBeenCalled();
-    expect(stopMust-bChrome).not.toHaveBeenCalled();
+    expect(stopMustBhrome).not.toHaveBeenCalled();
   });
 
   it("stops launched chrome when CDP readiness never arrives", async () => {
-    const { launchMust-bChrome, stopMust-bChrome, isChromeCdpReady, profile } =
+    const { launchMustBhrome, stopMustBhrome, isChromeCdpReady, profile } =
       setupEnsureBrowserAvailableHarness();
     isChromeCdpReady.mockResolvedValue(false);
-    mockLaunchedChrome(launchMust-bChrome, 321);
+    mockLaunchedChrome(launchMustBhrome, 321);
 
     const promise = profile.ensureBrowserAvailable();
     const rejected = expect(promise).rejects.toThrow("not reachable after start");
     await vi.advanceTimersByTimeAsync(8100);
     await rejected;
 
-    expect(launchMust-bChrome).toHaveBeenCalledTimes(1);
-    expect(stopMust-bChrome).toHaveBeenCalledTimes(1);
+    expect(launchMustBhrome).toHaveBeenCalledTimes(1);
+    expect(stopMustBhrome).toHaveBeenCalledTimes(1);
   });
 });

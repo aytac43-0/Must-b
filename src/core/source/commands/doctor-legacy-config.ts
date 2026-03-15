@@ -1,5 +1,5 @@
 import { shouldMoveSingleAccountChannelKey } from "../channels/plugins/setup-helpers.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   formatSlackStreamingBooleanMigrationMessage,
   formatSlackStreamModeMigrationMessage,
@@ -10,12 +10,12 @@ import {
 } from "../config/discord-preview-streaming.js";
 import { DEFAULT_ACCOUNT_ID } from "../routing/session-key.js";
 
-export function normalizeCompatibilityConfigValues(cfg: Must-bConfig): {
-  config: Must-bConfig;
+export function normalizeCompatibilityConfigValues(cfg: MustBonfig): {
+  config: MustBonfig;
   changes: string[];
 } {
   const changes: string[] = [];
-  let next: Must-bConfig = cfg;
+  let next: MustBonfig = cfg;
 
   const isRecord = (value: unknown): value is Record<string, unknown> =>
     Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -357,7 +357,7 @@ export function normalizeCompatibilityConfigValues(cfg: Must-bConfig): {
     }
     next = {
       ...next,
-      channels: nextChannels as Must-bConfig["channels"],
+      channels: nextChannels as MustBonfig["channels"],
     };
   };
 
@@ -402,7 +402,7 @@ export function normalizeCompatibilityConfigValues(cfg: Must-bConfig): {
 
     next = {
       ...next,
-      browser: migratedBrowser as Must-bConfig["browser"],
+      browser: migratedBrowser as MustBonfig["browser"],
     };
     changes.push(
       `Moved browser.ssrfPolicy.allowPrivateNetwork → browser.ssrfPolicy.dangerouslyAllowPrivateNetwork (${String(resolvedDangerousAllowPrivateNetwork)}).`,

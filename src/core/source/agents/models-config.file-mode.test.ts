@@ -1,13 +1,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { resolveMust-bAgentDir } from "./agent-paths.js";
+import { resolveMustBgentDir } from "./agent-paths.js";
 import {
   CUSTOM_PROXY_MODELS_CONFIG,
   installModelsConfigTestHooks,
   withModelsTempHome as withTempHome,
 } from "./models-config.e2e-harness.js";
-import { ensureMust-bModelsJson } from "./models-config.js";
+import { ensureMustBodelsJson } from "./models-config.js";
 
 installModelsConfigTestHooks();
 
@@ -17,8 +17,8 @@ describe("models-config file mode", () => {
       return;
     }
     await withTempHome(async () => {
-      await ensureMust-bModelsJson(CUSTOM_PROXY_MODELS_CONFIG);
-      const modelsPath = path.join(resolveMust-bAgentDir(), "models.json");
+      await ensureMustBodelsJson(CUSTOM_PROXY_MODELS_CONFIG);
+      const modelsPath = path.join(resolveMustBgentDir(), "models.json");
       const stat = await fs.stat(modelsPath);
       expect(stat.mode & 0o777).toBe(0o600);
     });
@@ -29,11 +29,11 @@ describe("models-config file mode", () => {
       return;
     }
     await withTempHome(async () => {
-      await ensureMust-bModelsJson(CUSTOM_PROXY_MODELS_CONFIG);
-      const modelsPath = path.join(resolveMust-bAgentDir(), "models.json");
+      await ensureMustBodelsJson(CUSTOM_PROXY_MODELS_CONFIG);
+      const modelsPath = path.join(resolveMustBgentDir(), "models.json");
       await fs.chmod(modelsPath, 0o644);
 
-      const result = await ensureMust-bModelsJson(CUSTOM_PROXY_MODELS_CONFIG);
+      const result = await ensureMustBodelsJson(CUSTOM_PROXY_MODELS_CONFIG);
       expect(result.wrote).toBe(false);
 
       const stat = await fs.stat(modelsPath);

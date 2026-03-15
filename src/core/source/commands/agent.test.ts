@@ -9,7 +9,7 @@ import { loadModelCatalog } from "../agents/model-catalog.js";
 import * as modelSelectionModule from "../agents/model-selection.js";
 import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
 import * as commandSecretGatewayModule from "../cli/command-secret-gateway.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import * as configModule from "../config/config.js";
 import * as sessionsModule from "../config/sessions.js";
 import { emitAgentEvent, onAgentEvent } from "../infra/agent-events.js";
@@ -64,8 +64,8 @@ async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
 function mockConfig(
   home: string,
   storePath: string,
-  agentOverrides?: Partial<NonNullable<NonNullable<Must-bConfig["agents"]>["defaults"]>>,
-  telegramOverrides?: Partial<NonNullable<NonNullable<Must-bConfig["channels"]>["telegram"]>>,
+  agentOverrides?: Partial<NonNullable<NonNullable<MustBonfig["agents"]>["defaults"]>>,
+  telegramOverrides?: Partial<NonNullable<NonNullable<MustBonfig["channels"]>["telegram"]>>,
   agentsList?: Array<{ id: string; default?: boolean }>,
 ) {
   configSpy.mockReturnValue({
@@ -98,8 +98,8 @@ async function runWithDefaultAgentConfig(params: {
 
 async function runEmbeddedWithTempConfig(params: {
   args: Parameters<typeof agentCommand>[0];
-  agentOverrides?: Partial<NonNullable<NonNullable<Must-bConfig["agents"]>["defaults"]>>;
-  telegramOverrides?: Partial<NonNullable<NonNullable<Must-bConfig["channels"]>["telegram"]>>;
+  agentOverrides?: Partial<NonNullable<NonNullable<MustBonfig["agents"]>["defaults"]>>;
+  telegramOverrides?: Partial<NonNullable<NonNullable<MustBonfig["channels"]>["telegram"]>>;
   agentsList?: Array<{ id: string; default?: boolean }>;
 }) {
   return withTempHome(async (home) => {
@@ -202,7 +202,7 @@ async function runAgentWithSessionKey(sessionKey: string): Promise<void> {
 }
 
 async function expectDefaultThinkLevel(params: {
-  agentOverrides?: Partial<NonNullable<NonNullable<Must-bConfig["agents"]>["defaults"]>>;
+  agentOverrides?: Partial<NonNullable<NonNullable<MustBonfig["agents"]>["defaults"]>>;
   catalogEntry: Record<string, unknown>;
   expected: string;
 }) {
@@ -265,7 +265,7 @@ beforeEach(() => {
   vi.mocked(loadModelCatalog).mockResolvedValue([]);
   vi.mocked(modelSelectionModule.isCliProvider).mockImplementation(() => false);
   readConfigFileSnapshotForWriteSpy.mockResolvedValue({
-    snapshot: { valid: false, resolved: {} as Must-bConfig },
+    snapshot: { valid: false, resolved: {} as MustBonfig },
     writeOptions: {},
   } as Awaited<ReturnType<typeof configModule.readConfigFileSnapshotForWrite>>);
 });
@@ -292,7 +292,7 @@ describe("agentCommand", () => {
             },
           },
         },
-      } as unknown as Must-bConfig;
+      } as unknown as MustBonfig;
       const sourceConfig = {
         ...loadedConfig,
         models: {
@@ -304,7 +304,7 @@ describe("agentCommand", () => {
             },
           },
         },
-      } as unknown as Must-bConfig;
+      } as unknown as MustBonfig;
       const resolvedConfig = {
         ...loadedConfig,
         models: {
@@ -316,7 +316,7 @@ describe("agentCommand", () => {
             },
           },
         },
-      } as unknown as Must-bConfig;
+      } as unknown as MustBonfig;
 
       configSpy.mockReturnValue(loadedConfig);
       readConfigFileSnapshotForWriteSpy.mockResolvedValue({

@@ -14,7 +14,7 @@ import {
 import { logVerbose } from "../../globals.js";
 import { getSessionBindingService } from "../../infra/outbound/session-binding-service.js";
 import type { SessionBindingRecord } from "../../infra/outbound/session-binding-service.js";
-import { scheduleGatewaySigusr1Restart, triggerMust-bRestart } from "../../infra/restart.js";
+import { scheduleGatewaySigusr1Restart, triggerMustBestart } from "../../infra/restart.js";
 import { loadCostUsageSummary, loadSessionCostSummary } from "../../infra/session-cost-usage.js";
 import {
   setTelegramThreadBindingIdleTimeoutBySessionKey,
@@ -625,7 +625,7 @@ export const handleRestartCommand: CommandHandler = async (params, allowTextComm
       },
     };
   }
-  const restartMethod = triggerMust-bRestart();
+  const restartMethod = triggerMustBestart();
   if (!restartMethod.ok) {
     const detail = restartMethod.detail ? ` Details: ${restartMethod.detail}` : "";
     return {

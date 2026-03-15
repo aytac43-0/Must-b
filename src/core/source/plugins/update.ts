@@ -1,6 +1,6 @@
 import fsSync from "node:fs";
 import path from "node:path";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { openBoundaryFileSync } from "../infra/boundary-file-read.js";
 import type { UpdateChannel } from "../infra/update-channels.js";
 import { resolveUserPath } from "../utils.js";
@@ -30,7 +30,7 @@ export type PluginUpdateOutcome = {
 };
 
 export type PluginUpdateSummary = {
-  config: Must-bConfig;
+  config: MustBonfig;
   changed: boolean;
   outcomes: PluginUpdateOutcome[];
 };
@@ -53,7 +53,7 @@ export type PluginChannelSyncSummary = {
 };
 
 export type PluginChannelSyncResult = {
-  config: Must-bConfig;
+  config: MustBonfig;
   changed: boolean;
   summary: PluginChannelSyncSummary;
 };
@@ -199,7 +199,7 @@ function createPluginUpdateIntegrityDriftHandler(params: {
 }
 
 export async function updateNpmInstalledPlugins(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   logger?: PluginUpdateLogger;
   pluginIds?: string[];
   skipIds?: Set<string>;
@@ -398,7 +398,7 @@ export async function updateNpmInstalledPlugins(params: {
 }
 
 export async function syncPluginsForUpdateChannel(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   channel: UpdateChannel;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;

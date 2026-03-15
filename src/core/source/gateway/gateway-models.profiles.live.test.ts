@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import type { Api, Model } from "@mariozechner/pi-ai";
 import { describe, it } from "vitest";
-import { resolveMust-bAgentDir } from "../agents/agent-paths.js";
+import { resolveMustBgentDir } from "../agents/agent-paths.js";
 import { resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
 import {
   type AuthProfileStore,
@@ -21,11 +21,11 @@ import {
 import { isModernModelRef } from "../agents/live-model-filter.js";
 import { getApiKeyForModel } from "../agents/model-auth.js";
 import { shouldSuppressBuiltInModel } from "../agents/model-suppression.js";
-import { ensureMust-bModelsJson } from "../agents/models-config.js";
+import { ensureMustBodelsJson } from "../agents/models-config.js";
 import { isRateLimitErrorMessage } from "../agents/pi-embedded-helpers/errors.js";
 import { discoverAuthStorage, discoverModels } from "../agents/pi-model-discovery.js";
 import { loadConfig } from "../config/config.js";
-import type { ModelsConfig, Must-bConfig, ModelProviderConfig } from "../config/types.js";
+import type { ModelsConfig, MustBonfig, ModelProviderConfig } from "../config/types.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { DEFAULT_AGENT_ID } from "../routing/session-key.js";
 import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
@@ -515,7 +515,7 @@ async function connectClient(params: { url: string; token: string }) {
 
 type GatewayModelSuiteParams = {
   label: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   candidates: Array<Model<Api>>;
   extraToolProbes: boolean;
   extraImageProbes: boolean;
@@ -524,10 +524,10 @@ type GatewayModelSuiteParams = {
 };
 
 function buildLiveGatewayConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   candidates: Array<Model<Api>>;
   providerOverrides?: Record<string, ModelProviderConfig>;
-}): Must-bConfig {
+}): MustBonfig {
   const providerOverrides = params.providerOverrides ?? {};
   const lmstudioProvider = params.cfg.models?.providers?.lmstudio;
   const baseProviders = params.cfg.models?.providers ?? {};
@@ -569,9 +569,9 @@ function buildLiveGatewayConfig(params: {
 }
 
 function sanitizeAuthConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir: string;
-}): Must-bConfig["auth"] | undefined {
+}): MustBonfig["auth"] | undefined {
   const auth = params.cfg.auth;
   if (!auth) {
     return auth;
@@ -580,7 +580,7 @@ function sanitizeAuthConfig(params: {
     allowKeychainPrompt: false,
   });
 
-  let profiles: NonNullable<Must-bConfig["auth"]>["profiles"] | undefined;
+  let profiles: NonNullable<MustBonfig["auth"]>["profiles"] | undefined;
   if (auth.profiles) {
     profiles = {};
     for (const [profileId, profile] of Object.entries(auth.profiles)) {
@@ -620,7 +620,7 @@ function sanitizeAuthConfig(params: {
 }
 
 function buildMinimaxProviderOverride(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   api: "openai-completions" | "anthropic-messages";
   baseUrl: string;
 }): ModelProviderConfig | null {
@@ -659,7 +659,7 @@ async function runGatewayModelSuite(params: GatewayModelSuiteParams) {
   process.env.MUSTB_GATEWAY_TOKEN = token;
   const agentId = "dev";
 
-  const hostAgentDir = resolveMust-bAgentDir();
+  const hostAgentDir = resolveMustBgentDir();
   const hostStore = ensureAuthProfileStore(hostAgentDir, {
     allowKeychainPrompt: false,
   });
@@ -690,8 +690,8 @@ async function runGatewayModelSuite(params: GatewayModelSuiteParams) {
   const toolProbePath = path.join(workspaceDir, `.must-b-live-tool-probe.${nonceA}.txt`);
   await fs.writeFile(toolProbePath, `nonceA=${nonceA}\nnonceB=${nonceB}\n`);
 
-  const agentDir = resolveMust-bAgentDir();
-  const sanitizedCfg: Must-bConfig = {
+  const agentDir = resolveMustBgentDir();
+  const sanitizedCfg: MustBonfig = {
     ...params.cfg,
     auth: sanitizeAuthConfig({ cfg: params.cfg, agentDir }),
   };
@@ -1318,9 +1318,9 @@ describeLive("gateway live (dev agent, profile keys)", () => {
     "runs meaningful prompts across models with available keys",
     async () => {
       const cfg = loadConfig();
-      await ensureMust-bModelsJson(cfg);
+      await ensureMustBodelsJson(cfg);
 
-      const agentDir = resolveMust-bAgentDir();
+      const agentDir = resolveMustBgentDir();
       const authStore = ensureAuthProfileStore(agentDir, {
         allowKeychainPrompt: false,
       });
@@ -1440,9 +1440,9 @@ describeLive("gateway live (dev agent, profile keys)", () => {
     process.env.MUSTB_GATEWAY_TOKEN = token;
 
     const cfg = loadConfig();
-    await ensureMust-bModelsJson(cfg);
+    await ensureMustBodelsJson(cfg);
 
-    const agentDir = resolveMust-bAgentDir();
+    const agentDir = resolveMustBgentDir();
     const authStorage = discoverAuthStorage(agentDir);
     const modelRegistry = discoverModels(authStorage, agentDir);
     const anthropic = modelRegistry.find("anthropic", "claude-opus-4-5") as Model<Api> | null;

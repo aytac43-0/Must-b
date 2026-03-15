@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FIELD_HELP } from "./schema.help.js";
 import { FIELD_LABELS } from "./schema.labels.js";
-import { Must-bSchema } from "./zod-schema.js";
+import { MustBchema } from "./zod-schema.js";
 
 function hasLegacyPluginsRuntimeKeys(keys: string[]): boolean {
   return keys.some((key) => key === "plugins.runtime" || key.startsWith("plugins.runtime."));
@@ -14,7 +14,7 @@ describe("plugins runtime boundary config", () => {
   });
 
   it("omits plugins.runtime from the generated config schema", () => {
-    const schema = Must-bSchema.toJSONSchema({
+    const schema = MustBchema.toJSONSchema({
       target: "draft-7",
       io: "input",
       reused: "ref",
@@ -26,7 +26,7 @@ describe("plugins runtime boundary config", () => {
   });
 
   it("rejects legacy plugins.runtime config entries", () => {
-    const result = Must-bSchema.safeParse({
+    const result = MustBchema.safeParse({
       plugins: {
         runtime: {
           allowLegacyExec: true,

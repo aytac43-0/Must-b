@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { resolvePreferredMust-bTmpDir } from "../../../../src/infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBTmpDir } from "../../../../src/infra/tmp-must-b-dir.js";
 import type { ResolvedAcpxPluginConfig } from "../config.js";
 import { ACPX_PINNED_VERSION } from "../config.js";
 import { AcpxRuntime } from "../runtime.js";
@@ -354,7 +354,7 @@ async function ensureMockCliScriptPath(): Promise<string> {
   }
   sharedMockCliScriptPath = (async () => {
     const dir = await mkdtemp(
-      path.join(resolvePreferredMust-bTmpDir(), "must-b-acpx-runtime-test-"),
+      path.join(resolvePreferredMustBTmpDir(), "must-b-acpx-runtime-test-"),
     );
     tempDirs.push(dir);
     const scriptPath = path.join(dir, "mock-acpx.cjs");

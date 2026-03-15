@@ -2,11 +2,11 @@ import type {
   ChannelThreadingContext,
   ChannelThreadingToolContext,
 } from "../channels/plugins/types.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveSlackAccount, resolveSlackReplyToMode } from "./accounts.js";
 
 export function buildSlackThreadingToolContext(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   context: ChannelThreadingContext;
   hasRepliedRef?: { value: boolean };

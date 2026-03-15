@@ -1,7 +1,7 @@
 import path from "node:path";
 import { type Api, getEnvApiKey, type Model } from "@mariozechner/pi-ai";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { ModelProviderAuthMode, ModelProviderConfig } from "../config/types.js";
 import { getShellEnvAppliedKeys } from "../infra/shell-env.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
@@ -35,7 +35,7 @@ const AWS_SECRET_KEY_ENV = "AWS_SECRET_ACCESS_KEY";
 const AWS_PROFILE_ENV = "AWS_PROFILE";
 
 function resolveProviderConfig(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   provider: string,
 ): ModelProviderConfig | undefined {
   const providers = cfg?.models?.providers ?? {};
@@ -57,7 +57,7 @@ function resolveProviderConfig(
 }
 
 export function getCustomProviderApiKey(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   provider: string,
 ): string | undefined {
   const entry = resolveProviderConfig(cfg, provider);
@@ -70,7 +70,7 @@ type ResolvedCustomProviderApiKey = {
 };
 
 export function resolveUsableCustomProviderApiKey(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   provider: string;
   env?: NodeJS.ProcessEnv;
 }): ResolvedCustomProviderApiKey | null {
@@ -100,7 +100,7 @@ export function resolveUsableCustomProviderApiKey(params: {
 }
 
 export function hasUsableCustomProviderApiKey(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   provider: string,
   env?: NodeJS.ProcessEnv,
 ): boolean {
@@ -108,7 +108,7 @@ export function hasUsableCustomProviderApiKey(
 }
 
 function resolveProviderAuthOverride(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   provider: string,
 ): ModelProviderAuthMode | undefined {
   const entry = resolveProviderConfig(cfg, provider);
@@ -120,7 +120,7 @@ function resolveProviderAuthOverride(
 }
 
 function resolveSyntheticLocalProviderAuth(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   provider: string;
 }): ResolvedProviderAuth | null {
   const normalizedProvider = normalizeProviderId(params.provider);
@@ -215,7 +215,7 @@ export type ResolvedProviderAuth = {
 
 export async function resolveApiKeyForProvider(params: {
   provider: string;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   profileId?: string;
   preferredProfile?: string;
   store?: AuthProfileStore;
@@ -360,7 +360,7 @@ export function resolveEnvApiKey(
 
 export function resolveModelAuthMode(
   provider?: string,
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
   store?: AuthProfileStore,
 ): ModelAuthMode | undefined {
   const resolved = provider?.trim();
@@ -416,7 +416,7 @@ export function resolveModelAuthMode(
 
 export async function getApiKeyForModel(params: {
   model: Model<Api>;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   profileId?: string;
   preferredProfile?: string;
   store?: AuthProfileStore;

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { DEFAULT_ACCOUNT_ID } from "../../routing/session-key.js";
 import { handleWhatsAppAction } from "./whatsapp-actions.js";
 
@@ -15,7 +15,7 @@ vi.mock("../../web/outbound.js", () => ({
 
 const enabledConfig = {
   channels: { whatsapp: { actions: { reactions: true } } },
-} as Must-bConfig;
+} as MustBonfig;
 
 describe("handleWhatsAppAction", () => {
   beforeEach(() => {
@@ -101,7 +101,7 @@ describe("handleWhatsAppAction", () => {
   it("respects reaction gating", async () => {
     const cfg = {
       channels: { whatsapp: { actions: { reactions: false } } },
-    } as Must-bConfig;
+    } as MustBonfig;
     await expect(
       handleWhatsAppAction(
         {
@@ -128,7 +128,7 @@ describe("handleWhatsAppAction", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await expect(
       handleWhatsAppAction(
@@ -158,7 +158,7 @@ describe("handleWhatsAppAction", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await handleWhatsAppAction(
       {

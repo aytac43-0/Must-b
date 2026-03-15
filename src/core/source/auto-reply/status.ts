@@ -12,7 +12,7 @@ import type { SkillCommandSpec } from "../agents/skills.js";
 import { derivePromptTokens, normalizeUsage, type UsageLike } from "../agents/usage.js";
 import { resolveChannelModelOverride } from "../channels/model-overrides.js";
 import { isCommandFlagEnabled } from "../config/commands.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveMainSessionKey,
   resolveSessionFilePath,
@@ -50,7 +50,7 @@ import { resolveActiveFallbackState } from "./fallback-state.js";
 import { formatProviderModelRef, resolveSelectedAndActiveModel } from "./model-runtime.js";
 import type { ElevatedLevel, ReasoningLevel, ThinkLevel, VerboseLevel } from "./thinking.js";
 
-type AgentDefaults = NonNullable<NonNullable<Must-bConfig["agents"]>["defaults"]>;
+type AgentDefaults = NonNullable<NonNullable<MustBonfig["agents"]>["defaults"]>;
 type AgentConfig = Partial<AgentDefaults> & {
   model?: AgentDefaults["model"] | string;
 };
@@ -67,7 +67,7 @@ type QueueStatus = {
 };
 
 type StatusArgs = {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   agent: AgentConfig;
   agentId?: string;
   sessionEntry?: SessionEntry;
@@ -387,7 +387,7 @@ const formatMediaUnderstandingLine = (decisions?: ReadonlyArray<MediaUnderstandi
 };
 
 const formatVoiceModeLine = (
-  config?: Must-bConfig,
+  config?: MustBonfig,
   sessionEntry?: SessionEntry,
 ): string | null => {
   if (!config) {
@@ -416,7 +416,7 @@ export function buildStatusMessage(args: StatusArgs): string {
     agents: {
       defaults: args.agent ?? {},
     },
-  } as Must-bConfig;
+  } as MustBonfig;
   const contextConfig = args.config
     ? ({
         ...args.config,
@@ -427,12 +427,12 @@ export function buildStatusMessage(args: StatusArgs): string {
             ...args.agent,
           },
         },
-      } as Must-bConfig)
+      } as MustBonfig)
     : ({
         agents: {
           defaults: args.agent ?? {},
         },
-      } as Must-bConfig);
+      } as MustBonfig);
   const resolved = resolveConfiguredModelRef({
     cfg: selectionConfig,
     defaultProvider: DEFAULT_PROVIDER,
@@ -724,7 +724,7 @@ function groupCommandsByCategory(
   return grouped;
 }
 
-export function buildHelpMessage(cfg?: Must-bConfig): string {
+export function buildHelpMessage(cfg?: MustBonfig): string {
   const lines = ["ℹ️ Help", ""];
 
   lines.push("Session");
@@ -845,7 +845,7 @@ function formatCommandList(items: CommandsListItem[]): string {
 }
 
 export function buildCommandsMessage(
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
   skillCommands?: SkillCommandSpec[],
   options?: CommandsMessageOptions,
 ): string {
@@ -854,7 +854,7 @@ export function buildCommandsMessage(
 }
 
 export function buildCommandsMessagePaginated(
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
   skillCommands?: SkillCommandSpec[],
   options?: CommandsMessageOptions,
 ): CommandsMessageResult {

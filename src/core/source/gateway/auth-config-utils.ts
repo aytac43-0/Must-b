@@ -1,8 +1,8 @@
-import type { GatewayAuthConfig, Must-bConfig } from "../config/config.js";
+import type { GatewayAuthConfig, MustBonfig } from "../config/config.js";
 import { resolveSecretInputRef } from "../config/types.secrets.js";
 import { resolveRequiredConfiguredSecretRefInputString } from "./resolve-configured-secret-input-string.js";
 
-export function withGatewayAuthPassword(cfg: Must-bConfig, password: string): Must-bConfig {
+export function withGatewayAuthPassword(cfg: MustBonfig, password: string): MustBonfig {
   return {
     ...cfg,
     gateway: {
@@ -33,12 +33,12 @@ function shouldResolveGatewayPasswordSecretRef(params: {
 }
 
 export async function resolveGatewayPasswordSecretRef(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env: NodeJS.ProcessEnv;
   mode?: GatewayAuthConfig["mode"];
   hasPasswordCandidate: boolean;
   hasTokenCandidate: boolean;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const authPassword = params.cfg.gateway?.auth?.password;
   const { ref } = resolveSecretInputRef({
     value: authPassword,

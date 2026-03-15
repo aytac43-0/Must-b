@@ -48,12 +48,12 @@ import { normalizeConfigPaths } from "./normalize-paths.js";
 import { resolveConfigPath, resolveDefaultConfigCandidates, resolveStateDir } from "./paths.js";
 import { isBlockedObjectKey } from "./prototype-keys.js";
 import { applyConfigOverrides } from "./runtime-overrides.js";
-import type { Must-bConfig, ConfigFileSnapshot, LegacyConfigIssue } from "./types.js";
+import type { MustBonfig, ConfigFileSnapshot, LegacyConfigIssue } from "./types.js";
 import {
   validateConfigObjectRawWithPlugins,
   validateConfigObjectWithPlugins,
 } from "./validation.js";
-import { compareMust-bVersions } from "./version.js";
+import { compareMustBersions } from "./version.js";
 
 // Re-export for backwards compatibility
 export { CircularIncludeError, ConfigIncludeError } from "./includes.js";
@@ -142,7 +142,7 @@ export type ReadConfigFileSnapshotForWriteResult = {
 };
 
 export type RuntimeConfigSnapshotRefreshParams = {
-  sourceConfig: Must-bConfig;
+  sourceConfig: MustBonfig;
 };
 
 export type RuntimeConfigSnapshotRefreshHandler = {
@@ -300,9 +300,9 @@ function unsetPathForWriteAt(
 }
 
 function unsetPathForWrite(
-  root: Must-bConfig,
+  root: MustBonfig,
   pathSegments: string[],
-): { changed: boolean; next: Must-bConfig } {
+): { changed: boolean; next: MustBonfig } {
   if (pathSegments.length === 0) {
     return { changed: false, next: root };
   }
@@ -335,11 +335,11 @@ export function resolveConfigSnapshotHash(snapshot: {
   return hashConfigRaw(snapshot.raw);
 }
 
-function coerceConfig(value: unknown): Must-bConfig {
+function coerceConfig(value: unknown): MustBonfig {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return {};
   }
-  return value as Must-bConfig;
+  return value as MustBonfig;
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -604,7 +604,7 @@ function warnOnConfigMiskeys(raw: unknown, logger: Pick<typeof console, "warn">)
   }
 }
 
-function stampConfigVersion(cfg: Must-bConfig): Must-bConfig {
+function stampConfigVersion(cfg: MustBonfig): MustBonfig {
   const now = new Date().toISOString();
   return {
     ...cfg,
@@ -616,12 +616,12 @@ function stampConfigVersion(cfg: Must-bConfig): Must-bConfig {
   };
 }
 
-function warnIfConfigFromFuture(cfg: Must-bConfig, logger: Pick<typeof console, "warn">): void {
+function warnIfConfigFromFuture(cfg: MustBonfig, logger: Pick<typeof console, "warn">): void {
   const touched = cfg.meta?.lastTouchedVersion;
   if (!touched) {
     return;
   }
-  const cmp = compareMust-bVersions(VERSION, touched);
+  const cmp = compareMustBersions(VERSION, touched);
   if (cmp === null) {
     return;
   }
@@ -701,7 +701,7 @@ function resolveConfigForRead(
 ): ConfigReadResolution {
   // Apply config.env to process.env BEFORE substitution so ${VAR} can reference config-defined vars.
   if (resolvedIncludes && typeof resolvedIncludes === "object" && "env" in resolvedIncludes) {
-    applyConfigEnvVars(resolvedIncludes as Must-bConfig, env);
+    applyConfigEnvVars(resolvedIncludes as MustBonfig, env);
   }
 
   // Collect missing env var references as warnings instead of throwing,
@@ -731,7 +731,7 @@ export function createConfigIO(overrides: ConfigIoDeps = {}) {
   const configPath =
     candidatePaths.find((candidate) => deps.fs.existsSync(candidate)) ?? requestedConfigPath;
 
-  function loadConfig(): Must-bConfig {
+  function loadConfig(): MustBonfig {
     try {
       maybeLoadDotEnvForConfig(deps.env);
       if (!deps.fs.existsSync(configPath)) {
@@ -762,7 +762,7 @@ export function createConfigIO(overrides: ConfigIoDeps = {}) {
       if (typeof resolvedConfig !== "object" || resolvedConfig === null) {
         return {};
       }
-      const preValidationDuplicates = findDuplicateAgentDirs(resolvedConfig as Must-bConfig, {
+      const preValidationDuplicates = findDuplicateAgentDirs(resolvedConfig as MustBonfig, {
         env: deps.env,
         homedir: deps.homedir,
       });
@@ -1083,7 +1083,7 @@ export function createConfigIO(overrides: ConfigIoDeps = {}) {
     };
   }
 
-  async function writeConfigFile(cfg: Must-bConfig, options: ConfigWriteOptions = {}) {
+  async function writeConfigFile(cfg: MustBonfig, options: ConfigWriteOptions = {}) {
     clearConfigCache();
     let persistCandidate: unknown = cfg;
     const { snapshot } = await readConfigFileSnapshotInternal();
@@ -1153,7 +1153,7 @@ export function createConfigIO(overrides: ConfigIoDeps = {}) {
             cfgToWrite,
             parsedRes.parsed,
             envForRestore,
-          ) as Must-bConfig;
+          ) as MustBonfig;
         }
       }
     } catch {
@@ -1170,7 +1170,7 @@ export function createConfigIO(overrides: ConfigIoDeps = {}) {
     });
     const outputConfigBase =
       envRefMap && changedPaths
-        ? (restoreEnvRefsFromMap(cfgToWrite, "", envRefMap, changedPaths) as Must-bConfig)
+        ? (restoreEnvRefsFromMap(cfgToWrite, "", envRefMap, changedPaths) as MustBonfig)
         : cfgToWrite;
     let outputConfig = outputConfigBase;
     if (options.unsetPaths?.length) {
@@ -1351,10 +1351,10 @@ const AUTO_OWNER_DISPLAY_SECRET_PERSIST_WARNED = new Set<string>();
 let configCache: {
   configPath: string;
   expiresAt: number;
-  config: Must-bConfig;
+  config: MustBonfig;
 } | null = null;
-let runtimeConfigSnapshot: Must-bConfig | null = null;
-let runtimeConfigSourceSnapshot: Must-bConfig | null = null;
+let runtimeConfigSnapshot: MustBonfig | null = null;
+let runtimeConfigSourceSnapshot: MustBonfig | null = null;
 let runtimeConfigSnapshotRefreshHandler: RuntimeConfigSnapshotRefreshHandler | null = null;
 
 function resolveConfigCacheMs(env: NodeJS.ProcessEnv): number {
@@ -1384,8 +1384,8 @@ export function clearConfigCache(): void {
 }
 
 export function setRuntimeConfigSnapshot(
-  config: Must-bConfig,
-  sourceConfig?: Must-bConfig,
+  config: MustBonfig,
+  sourceConfig?: MustBonfig,
 ): void {
   runtimeConfigSnapshot = config;
   runtimeConfigSourceSnapshot = sourceConfig ?? null;
@@ -1398,17 +1398,17 @@ export function clearRuntimeConfigSnapshot(): void {
   clearConfigCache();
 }
 
-export function getRuntimeConfigSnapshot(): Must-bConfig | null {
+export function getRuntimeConfigSnapshot(): MustBonfig | null {
   return runtimeConfigSnapshot;
 }
 
-export function getRuntimeConfigSourceSnapshot(): Must-bConfig | null {
+export function getRuntimeConfigSourceSnapshot(): MustBonfig | null {
   return runtimeConfigSourceSnapshot;
 }
 
 function isCompatibleTopLevelRuntimeProjectionShape(params: {
-  runtimeSnapshot: Must-bConfig;
-  candidate: Must-bConfig;
+  runtimeSnapshot: MustBonfig;
+  candidate: MustBonfig;
 }): boolean {
   const runtime = params.runtimeSnapshot as Record<string, unknown>;
   const candidate = params.candidate as Record<string, unknown>;
@@ -1435,7 +1435,7 @@ function isCompatibleTopLevelRuntimeProjectionShape(params: {
   return true;
 }
 
-export function projectConfigOntoRuntimeSourceSnapshot(config: Must-bConfig): Must-bConfig {
+export function projectConfigOntoRuntimeSourceSnapshot(config: MustBonfig): MustBonfig {
   if (!runtimeConfigSnapshot || !runtimeConfigSourceSnapshot) {
     return config;
   }
@@ -1464,7 +1464,7 @@ export function setRuntimeConfigSnapshotRefreshHandler(
   runtimeConfigSnapshotRefreshHandler = refreshHandler;
 }
 
-export function loadConfig(): Must-bConfig {
+export function loadConfig(): MustBonfig {
   if (runtimeConfigSnapshot) {
     return runtimeConfigSnapshot;
   }
@@ -1491,7 +1491,7 @@ export function loadConfig(): Must-bConfig {
   return config;
 }
 
-export async function readBestEffortConfig(): Promise<Must-bConfig> {
+export async function readBestEffortConfig(): Promise<MustBonfig> {
   const snapshot = await readConfigFileSnapshot();
   return snapshot.valid ? loadConfig() : snapshot.config;
 }
@@ -1505,7 +1505,7 @@ export async function readConfigFileSnapshotForWrite(): Promise<ReadConfigFileSn
 }
 
 export async function writeConfigFile(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   options: ConfigWriteOptions = {},
 ): Promise<void> {
   const io = createConfigIO();

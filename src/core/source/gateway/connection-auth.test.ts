@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveGatewayConnectionAuth,
   resolveGatewayConnectionAuthFromConfig,
@@ -10,14 +10,14 @@ type ResolvedAuth = { token?: string; password?: string };
 
 type ConnectionAuthCase = {
   name: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env: NodeJS.ProcessEnv;
   options?: Partial<Omit<GatewayConnectionAuthOptions, "config" | "env">>;
   expected: ResolvedAuth;
 };
 
-function cfg(input: Partial<Must-bConfig>): Must-bConfig {
-  return input as Must-bConfig;
+function cfg(input: Partial<MustBonfig>): MustBonfig {
+  return input as MustBonfig;
 }
 
 const DEFAULT_ENV = {

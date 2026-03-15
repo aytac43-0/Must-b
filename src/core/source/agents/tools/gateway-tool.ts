@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox";
 import { isRestartEnabled } from "../../config/commands.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveConfigSnapshotHash } from "../../config/io.js";
 import { extractDeliveryInfo } from "../../config/sessions.js";
 import {
@@ -69,7 +69,7 @@ const GatewayToolSchema = Type.Object({
 
 export function createGatewayTool(opts?: {
   agentSessionKey?: string;
-  config?: Must-bConfig;
+  config?: MustBonfig;
 }): AnyAgentTool {
   return {
     label: "Gateway",

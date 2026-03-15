@@ -83,10 +83,10 @@ function createBasePreflightParams(overrides?: Record<string, unknown>) {
         mainKey: "main",
         scope: "per-sender",
       },
-    } as import("../../config/config.js").Must-bConfig,
+    } as import("../../config/config.js").MustBonfig,
     discordConfig: {
       allowBots: true,
-    } as NonNullable<import("../../config/config.js").Must-bConfig["channels"]>["discord"],
+    } as NonNullable<import("../../config/config.js").MustBonfig["channels"]>["discord"],
     accountId: "default",
     token: "token",
     runtime: {} as import("../../runtime.js").RuntimeEnv,

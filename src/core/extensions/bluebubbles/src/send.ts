@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import type { Must-bConfig } from "must-b/plugin-sdk/bluebubbles";
+import type { MustBConfig } from "must-b/plugin-sdk/bluebubbles";
 import { stripMarkdown } from "must-b/plugin-sdk/bluebubbles";
 import { resolveBlueBubblesAccount } from "./accounts.js";
 import {
@@ -21,7 +21,7 @@ export type BlueBubblesSendOpts = {
   password?: string;
   accountId?: string;
   timeoutMs?: number;
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   /** Message GUID to reply to (reply threading) */
   replyToMessageGuid?: string;
   /** Part index for reply (default: 0) */

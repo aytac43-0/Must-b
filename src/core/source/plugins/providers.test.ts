@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { resolvePluginProviders } from "./providers.js";
 
-const loadMust-bPluginsMock = vi.fn();
+const loadMustBluginsMock = vi.fn();
 
 vi.mock("./loader.js", () => ({
-  loadMust-bPlugins: (...args: unknown[]) => loadMust-bPluginsMock(...args),
+  loadMustBlugins: (...args: unknown[]) => loadMustBluginsMock(...args),
 }));
 
 describe("resolvePluginProviders", () => {
   beforeEach(() => {
-    loadMust-bPluginsMock.mockReset();
-    loadMust-bPluginsMock.mockReturnValue({
+    loadMustBluginsMock.mockReset();
+    loadMustBluginsMock.mockReturnValue({
       providers: [{ provider: { id: "demo-provider" } }],
     });
   });
@@ -24,7 +24,7 @@ describe("resolvePluginProviders", () => {
     });
 
     expect(providers).toEqual([{ id: "demo-provider" }]);
-    expect(loadMust-bPluginsMock).toHaveBeenCalledWith(
+    expect(loadMustBluginsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceDir: "/workspace/explicit",
         env,

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as replyModule from "../auto-reply/reply.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { runHeartbeatOnce } from "./heartbeat-runner.js";
 import {
   seedMainSessionStore,
@@ -38,8 +38,8 @@ describe("Ghost reminder bug (issue #13317)", () => {
     tmpDir: string;
     storePath: string;
     target?: "telegram" | "none";
-  }): Promise<{ cfg: Must-bConfig; sessionKey: string }> => {
-    const cfg: Must-bConfig = {
+  }): Promise<{ cfg: MustBonfig; sessionKey: string }> => {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           workspace: params.tmpDir,

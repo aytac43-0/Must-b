@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import type { OAuthCredentials } from "@mariozechner/pi-ai";
 import { afterEach, describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveAgentModelFallbackValues,
   resolveAgentModelPrimaryValue,
@@ -53,7 +53,7 @@ function createLegacyProviderConfig(params: {
   modelName?: string;
   baseUrl?: string;
   apiKey?: string;
-}): Must-bConfig {
+}): MustBonfig {
   return {
     models: {
       providers: {
@@ -75,7 +75,7 @@ function createLegacyProviderConfig(params: {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 const EXPECTED_FALLBACKS = ["anthropic/claude-opus-4-5"] as const;

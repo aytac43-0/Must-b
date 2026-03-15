@@ -6,7 +6,7 @@ import {
   DEFAULT_PLUGIN_ENTRY_CANDIDATES,
   getPackageManifestMetadata,
   resolvePackageExtensionEntries,
-  type Must-bPackageManifest,
+  type MustBackageManifest,
   type PackageManifest,
 } from "./manifest.js";
 import { formatPosixMode, isPathInside, safeRealpathSync, safeStatSync } from "./path-safety.js";
@@ -25,7 +25,7 @@ export type PluginCandidate = {
   packageVersion?: string;
   packageDescription?: string;
   packageDir?: string;
-  packageManifest?: Must-bPackageManifest;
+  packageManifest?: MustBackageManifest;
 };
 
 export type PluginDiscoveryResult = {
@@ -643,7 +643,7 @@ function discoverFromPath(params: {
   }
 }
 
-export function discoverMust-bPlugins(params: {
+export function discoverMustBlugins(params: {
   workspaceDir?: string;
   extraPaths?: string[];
   ownershipUid?: number | null;

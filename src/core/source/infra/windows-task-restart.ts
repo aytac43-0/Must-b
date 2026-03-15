@@ -5,7 +5,7 @@ import path from "node:path";
 import { quoteCmdScriptArg } from "../daemon/cmd-argv.js";
 import { resolveGatewayWindowsTaskName } from "../daemon/constants.js";
 import type { RestartAttempt } from "./restart.js";
-import { resolvePreferredMust-bTmpDir } from "./tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "./tmp-must-b-dir.js";
 
 const TASK_RESTART_RETRY_LIMIT = 12;
 const TASK_RESTART_RETRY_DELAY_SEC = 1;
@@ -39,7 +39,7 @@ function buildScheduledTaskRestartScript(taskName: string): string {
 export function relaunchGatewayScheduledTask(env: NodeJS.ProcessEnv = process.env): RestartAttempt {
   const taskName = resolveWindowsTaskName(env);
   const scriptPath = path.join(
-    resolvePreferredMust-bTmpDir(),
+    resolvePreferredMustBmpDir(),
     `must-b-schtasks-restart-${randomUUID()}.cmd`,
   );
   const quotedScriptPath = quoteCmdScriptArg(scriptPath);

@@ -1,7 +1,7 @@
 import {
   buildOauthProviderAuthResult,
   emptyPluginConfigSchema,
-  type Must-bPluginApi,
+  type MustBPluginApi,
   type ProviderAuthContext,
 } from "must-b/plugin-sdk/google-gemini-cli-auth";
 import { loginGeminiCliOAuth } from "./oauth.js";
@@ -21,7 +21,7 @@ const geminiCliPlugin = {
   name: "Google Gemini CLI Auth",
   description: "OAuth flow for Gemini CLI (Google Code Assist)",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: PROVIDER_LABEL,

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { MsgContext, TemplateContext } from "./templating.js";
 
 export async function withSandboxMediaTempHome<T>(
@@ -27,7 +27,7 @@ export function createSandboxMediaContexts(mediaPath: string): {
   return { ctx, sessionCtx: { ...ctx } };
 }
 
-export function createSandboxMediaStageConfig(home: string): Must-bConfig {
+export function createSandboxMediaStageConfig(home: string): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -41,5 +41,5 @@ export function createSandboxMediaStageConfig(home: string): Must-bConfig {
     },
     channels: { whatsapp: { allowFrom: ["*"] } },
     session: { store: join(home, "sessions.json") },
-  } as Must-bConfig;
+  } as MustBonfig;
 }

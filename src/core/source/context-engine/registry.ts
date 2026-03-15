@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { defaultSlotIdForKey } from "../plugins/slots.js";
 import type { ContextEngine } from "./types.js";
 
@@ -66,7 +66,7 @@ export function listContextEngineIds(): string[] {
  *
  * Throws if the resolved engine id has no registered factory.
  */
-export async function resolveContextEngine(config?: Must-bConfig): Promise<ContextEngine> {
+export async function resolveContextEngine(config?: MustBonfig): Promise<ContextEngine> {
   const slotValue = config?.plugins?.slots?.contextEngine;
   const engineId =
     typeof slotValue === "string" && slotValue.trim()

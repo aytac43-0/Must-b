@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/feishu";
+import type { MustBConfig } from "must-b/plugin-sdk/feishu";
 import { describe, expect, it } from "vitest";
 import { feishuOnboardingAdapter } from "./onboarding.js";
 
@@ -16,7 +16,7 @@ describe("feishu onboarding status", () => {
             },
           },
         },
-      } as Must-bConfig,
+      } as MustBConfig,
       accountOverrides: {},
     });
 

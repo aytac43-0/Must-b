@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { DmScope } from "../config/types.base.js";
 import type { ToolProfileId } from "../config/types.tools.js";
 
@@ -6,9 +6,9 @@ export const ONBOARDING_DEFAULT_DM_SCOPE: DmScope = "per-channel-peer";
 export const ONBOARDING_DEFAULT_TOOLS_PROFILE: ToolProfileId = "coding";
 
 export function applyOnboardingLocalWorkspaceConfig(
-  baseConfig: Must-bConfig,
+  baseConfig: MustBonfig,
   workspaceDir: string,
-): Must-bConfig {
+): MustBonfig {
   return {
     ...baseConfig,
     agents: {

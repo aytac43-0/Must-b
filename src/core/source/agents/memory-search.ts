@@ -1,6 +1,6 @@
 import os from "node:os";
 import path from "node:path";
-import type { Must-bConfig, MemorySearchConfig } from "../config/config.js";
+import type { MustBonfig, MemorySearchConfig } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
 import type { SecretInput } from "../config/types.secrets.js";
 import {
@@ -376,7 +376,7 @@ function mergeConfig(
 }
 
 export function resolveMemorySearchConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId: string,
 ): ResolvedMemorySearchConfig | null {
   const defaults = cfg.agents?.defaults?.memorySearch;

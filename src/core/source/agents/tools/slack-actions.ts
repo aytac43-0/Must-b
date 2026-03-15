@@ -1,5 +1,5 @@
 import type { AgentToolResult } from "@mariozechner/pi-agent-core";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveSlackAccount } from "../../slack/accounts.js";
 import {
   deleteSlackMessage,
@@ -104,7 +104,7 @@ function readSlackBlocksParam(params: Record<string, unknown>) {
 
 export async function handleSlackAction(
   params: Record<string, unknown>,
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   context?: SlackActionContext,
 ): Promise<AgentToolResult<unknown>> {
   const resolveChannelId = () =>

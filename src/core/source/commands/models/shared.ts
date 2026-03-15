@@ -9,7 +9,7 @@ import {
 } from "../../agents/model-selection.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import {
-  type Must-bConfig,
+  type MustBonfig,
   readConfigFileSnapshot,
   writeConfigFile,
 } from "../../config/config.js";
@@ -64,7 +64,7 @@ export const isLocalBaseUrl = (baseUrl: string) => {
   }
 };
 
-export async function loadValidConfigOrThrow(): Promise<Must-bConfig> {
+export async function loadValidConfigOrThrow(): Promise<MustBonfig> {
   const snapshot = await readConfigFileSnapshot();
   if (!snapshot.valid) {
     const issues = formatConfigIssueLines(snapshot.issues, "-").join("\n");
@@ -74,15 +74,15 @@ export async function loadValidConfigOrThrow(): Promise<Must-bConfig> {
 }
 
 export async function updateConfig(
-  mutator: (cfg: Must-bConfig) => Must-bConfig,
-): Promise<Must-bConfig> {
+  mutator: (cfg: MustBonfig) => MustBonfig,
+): Promise<MustBonfig> {
   const config = await loadValidConfigOrThrow();
   const next = mutator(config);
   await writeConfigFile(next);
   return next;
 }
 
-export function resolveModelTarget(params: { raw: string; cfg: Must-bConfig }): {
+export function resolveModelTarget(params: { raw: string; cfg: MustBonfig }): {
   provider: string;
   model: string;
 } {
@@ -102,7 +102,7 @@ export function resolveModelTarget(params: { raw: string; cfg: Must-bConfig }): 
 }
 
 export function resolveModelKeysFromEntries(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   entries: readonly string[];
 }): string[] {
   const aliasIndex = buildModelAliasIndex({
@@ -121,7 +121,7 @@ export function resolveModelKeysFromEntries(params: {
     .map((entry) => modelKey(entry.ref.provider, entry.ref.model));
 }
 
-export function buildAllowlistSet(cfg: Must-bConfig): Set<string> {
+export function buildAllowlistSet(cfg: MustBonfig): Set<string> {
   const allowed = new Set<string>();
   const models = cfg.agents?.defaults?.models ?? {};
   for (const raw of Object.keys(models)) {
@@ -146,7 +146,7 @@ export function normalizeAlias(alias: string): string {
 }
 
 export function resolveKnownAgentId(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   rawAgentId?: string | null;
 }): string | undefined {
   const raw = params.rawAgentId?.trim();
@@ -200,10 +200,10 @@ export function mergePrimaryFallbackConfig(
 }
 
 export function applyDefaultModelPrimaryUpdate(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   modelRaw: string;
   field: "model" | "imageModel";
-}): Must-bConfig {
+}): MustBonfig {
   const resolved = resolveModelTarget({ raw: params.modelRaw, cfg: params.cfg });
   const nextModels = {
     ...params.cfg.agents?.defaults?.models,

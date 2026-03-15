@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { clearInternalHooks, registerInternalHook } from "../../hooks/internal-hooks.js";
 import type { FinalizedMsgContext } from "../templating.js";
 import { emitPreAgentMessageHooks } from "./message-preprocess-hooks.js";
@@ -37,7 +37,7 @@ describe("emitPreAgentMessageHooks", () => {
 
     emitPreAgentMessageHooks({
       ctx: makeCtx(),
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       isFastTestEnv: false,
     });
     await Promise.resolve();
@@ -54,7 +54,7 @@ describe("emitPreAgentMessageHooks", () => {
 
     emitPreAgentMessageHooks({
       ctx: makeCtx({ Transcript: undefined }),
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       isFastTestEnv: false,
     });
     await Promise.resolve();
@@ -69,7 +69,7 @@ describe("emitPreAgentMessageHooks", () => {
 
     emitPreAgentMessageHooks({
       ctx: makeCtx(),
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       isFastTestEnv: true,
     });
     await Promise.resolve();
@@ -83,7 +83,7 @@ describe("emitPreAgentMessageHooks", () => {
 
     emitPreAgentMessageHooks({
       ctx: makeCtx({ SessionKey: " " }),
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       isFastTestEnv: false,
     });
     await Promise.resolve();

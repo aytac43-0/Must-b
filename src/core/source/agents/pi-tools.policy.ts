@@ -1,6 +1,6 @@
 import { getChannelDock } from "../channels/dock.js";
 import { DEFAULT_SUBAGENT_MAX_SPAWN_DEPTH } from "../config/agent-limits.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveChannelGroupToolsPolicy } from "../config/group-policy.js";
 import type { AgentToolsConfig } from "../config/types.tools.js";
 import { normalizeAgentId } from "../routing/session-key.js";
@@ -100,7 +100,7 @@ function resolveSubagentDenyListForRole(role: SubagentSessionRole): string[] {
   return [...SUBAGENT_TOOL_DENY_ALWAYS];
 }
 
-export function resolveSubagentToolPolicy(cfg?: Must-bConfig, depth?: number): SandboxToolPolicy {
+export function resolveSubagentToolPolicy(cfg?: MustBonfig, depth?: number): SandboxToolPolicy {
   const configured = cfg?.tools?.subagents?.tools;
   const maxSpawnDepth =
     cfg?.agents?.defaults?.subagents?.maxSpawnDepth ?? DEFAULT_SUBAGENT_MAX_SPAWN_DEPTH;
@@ -120,7 +120,7 @@ export function resolveSubagentToolPolicy(cfg?: Must-bConfig, depth?: number): S
 }
 
 export function resolveSubagentToolPolicyForSession(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   sessionKey: string,
 ): SandboxToolPolicy {
   const configured = cfg?.tools?.subagents?.tools;
@@ -234,7 +234,7 @@ function resolveProviderToolPolicy(params: {
   return undefined;
 }
 
-function resolveExplicitProfileAlsoAllow(tools?: Must-bConfig["tools"]): string[] | undefined {
+function resolveExplicitProfileAlsoAllow(tools?: MustBonfig["tools"]): string[] | undefined {
   return Array.isArray(tools?.alsoAllow) ? tools.alsoAllow : undefined;
 }
 
@@ -243,7 +243,7 @@ function hasExplicitToolSection(section: unknown): boolean {
 }
 
 function resolveImplicitProfileAlsoAllow(params: {
-  globalTools?: Must-bConfig["tools"];
+  globalTools?: MustBonfig["tools"];
   agentTools?: AgentToolsConfig;
 }): string[] | undefined {
   const implicit = new Set<string>();
@@ -266,7 +266,7 @@ function resolveImplicitProfileAlsoAllow(params: {
 }
 
 export function resolveEffectiveToolPolicy(params: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   sessionKey?: string;
   agentId?: string;
   modelProvider?: string;
@@ -323,7 +323,7 @@ export function resolveEffectiveToolPolicy(params: {
 }
 
 export function resolveGroupToolPolicy(params: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   sessionKey?: string;
   spawnedBy?: string | null;
   messageProvider?: string;

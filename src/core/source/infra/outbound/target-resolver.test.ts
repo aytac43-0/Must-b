@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ChannelDirectoryEntry } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resetDirectoryCache, resolveMessagingTarget } from "./target-resolver.js";
 
 const mocks = vi.hoisted(() => ({
@@ -16,7 +16,7 @@ vi.mock("../../channels/plugins/index.js", () => ({
 }));
 
 describe("resolveMessagingTarget (directory fallback)", () => {
-  const cfg = {} as Must-bConfig;
+  const cfg = {} as MustBonfig;
 
   beforeEach(() => {
     mocks.listGroups.mockClear();

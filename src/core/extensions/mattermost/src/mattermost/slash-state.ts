@@ -10,7 +10,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { Must-bPluginApi } from "must-b/plugin-sdk/mattermost";
+import type { MustBPluginApi } from "must-b/plugin-sdk/mattermost";
 import type { ResolvedMattermostAccount } from "./accounts.js";
 import { resolveSlashCommandConfig, type MattermostRegisteredCommand } from "./slash-commands.js";
 import { createSlashCommandHttpHandler } from "./slash-http.js";
@@ -86,7 +86,7 @@ export function activateSlashCommands(params: {
   registeredCommands: MattermostRegisteredCommand[];
   triggerMap?: Map<string, string>;
   api: {
-    cfg: import("must-b/plugin-sdk/mattermost").Must-bConfig;
+    cfg: import("must-b/plugin-sdk/mattermost").MustBConfig;
     runtime: import("must-b/plugin-sdk/mattermost").RuntimeEnv;
   };
   log?: (msg: string) => void;
@@ -148,7 +148,7 @@ export function deactivateSlashCommands(accountId?: string) {
  * The single HTTP route dispatches to the correct per-account handler
  * by matching the inbound token against each account's registered tokens.
  */
-export function registerSlashCommandRoute(api: Must-bPluginApi) {
+export function registerSlashCommandRoute(api: MustBPluginApi) {
   const mmConfig = api.config.channels?.mattermost as Record<string, unknown> | undefined;
 
   // Collect callback paths from both top-level and per-account config.

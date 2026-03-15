@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import { buildNpmResolutionFields, type NpmSpecResolution } from "../infra/install-source-utils.js";
 
@@ -14,9 +14,9 @@ export function buildNpmResolutionInstallFields(
 }
 
 export function recordPluginInstall(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   update: PluginInstallUpdate,
-): Must-bConfig {
+): MustBonfig {
   const { pluginId, ...record } = update;
   const installs = {
     ...cfg.plugins?.installs,

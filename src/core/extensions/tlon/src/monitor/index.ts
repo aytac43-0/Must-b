@@ -1,4 +1,4 @@
-import type { RuntimeEnv, ReplyPayload, Must-bConfig } from "must-b/plugin-sdk/tlon";
+import type { RuntimeEnv, ReplyPayload, MustBConfig } from "must-b/plugin-sdk/tlon";
 import { createLoggerBackedRuntime, createReplyPrefixOptions } from "must-b/plugin-sdk/tlon";
 import { getTlonRuntime } from "../runtime.js";
 import { createSettingsManager, type TlonSettingsStore } from "../settings.js";
@@ -55,7 +55,7 @@ type ChannelAuthorization = {
  * Settings store takes precedence for fields it defines.
  */
 function resolveChannelAuthorization(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   channelNest: string,
   settings?: TlonSettingsStore,
 ): { mode: "restricted" | "open"; allowedShips: string[] } {
@@ -81,7 +81,7 @@ function resolveChannelAuthorization(
 
 export async function monitorTlonProvider(opts: MonitorTlonOpts = {}): Promise<void> {
   const core = getTlonRuntime();
-  const cfg = core.config.loadConfig() as Must-bConfig;
+  const cfg = core.config.loadConfig() as MustBConfig;
   if (cfg.channels?.tlon?.enabled === false) {
     return;
   }

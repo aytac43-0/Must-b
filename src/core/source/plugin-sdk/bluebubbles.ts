@@ -58,7 +58,7 @@ export type {
 } from "../channels/plugins/types.js";
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export { createReplyPrefixOptions } from "../channels/reply-prefix.js";
-export type { Must-bConfig } from "../config/config.js";
+export type { MustBonfig } from "../config/config.js";
 export type { DmPolicy, GroupPolicy } from "../config/types.js";
 export {
   hasConfiguredSecretInput,
@@ -79,7 +79,7 @@ export { stripMarkdown } from "../line/markdown-to-line.js";
 export { parseFiniteNumber } from "../infra/parse-finite-number.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { Must-bPluginApi } from "../plugins/types.js";
+export type { MustBluginApi } from "../plugins/types.js";
 export { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 export {
   DM_GROUP_ACCESS_REASON,

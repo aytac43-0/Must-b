@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { buildSecretRefCredentialMatrix } from "./credential-matrix.js";
 import { discoverConfigSecretTargetsByIds } from "./target-registry.js";
 
@@ -88,7 +88,7 @@ describe("secret target registry", () => {
             token: { source: "env", provider: "default", id: "REMOTE_TOKEN" },
           },
         },
-      } as unknown as Must-bConfig,
+      } as unknown as MustBonfig,
       new Set(["talk.apiKey"]),
     );
 

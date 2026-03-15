@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { resolveMust-bAgentDir } from "./agent-paths.js";
+import { resolveMustBgentDir } from "./agent-paths.js";
 
 export async function readGeneratedModelsJson<T>(): Promise<T> {
-  const modelPath = path.join(resolveMust-bAgentDir(), "models.json");
+  const modelPath = path.join(resolveMustBgentDir(), "models.json");
   const raw = await fs.readFile(modelPath, "utf8");
   return JSON.parse(raw) as T;
 }

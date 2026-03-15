@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "./config.js";
+import type { MustBonfig } from "./config.js";
 import { DEFAULT_GATEWAY_PORT } from "./paths.js";
 
 export type GatewayNonLoopbackBindMode = "lan" | "tailnet" | "custom";
@@ -44,10 +44,10 @@ export function buildDefaultControlUiAllowedOrigins(params: {
 }
 
 export function ensureControlUiAllowedOriginsForNonLoopbackBind(
-  config: Must-bConfig,
+  config: MustBonfig,
   opts?: { defaultPort?: number; requireControlUiEnabled?: boolean },
 ): {
-  config: Must-bConfig;
+  config: MustBonfig;
   seededOrigins: string[] | null;
   bind: GatewayNonLoopbackBindMode | null;
 } {

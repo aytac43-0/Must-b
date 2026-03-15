@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   applyModelAllowlist,
   applyModelFallbacksFromSelection,
@@ -120,7 +120,7 @@ describe("promptDefaultModel", () => {
       return (vllm?.value ?? "") as never;
     });
     const prompter = makePrompter({ select });
-    const config = { agents: { defaults: {} } } as Must-bConfig;
+    const config = { agents: { defaults: {} } } as MustBonfig;
 
     const result = await promptDefaultModel({
       config,
@@ -168,7 +168,7 @@ describe("promptModelAllowlist", () => {
 
     const multiselect = createSelectAllMultiselect();
     const prompter = makePrompter({ multiselect });
-    const config = { agents: { defaults: {} } } as Must-bConfig;
+    const config = { agents: { defaults: {} } } as MustBonfig;
 
     await promptModelAllowlist({
       config,
@@ -194,7 +194,7 @@ describe("router model filtering", () => {
     const multiselect = createSelectAllMultiselect();
     const defaultPrompter = makePrompter({ select });
     const allowlistPrompter = makePrompter({ multiselect });
-    const config = { agents: { defaults: {} } } as Must-bConfig;
+    const config = { agents: { defaults: {} } } as MustBonfig;
 
     await promptDefaultModel({
       config,
@@ -225,7 +225,7 @@ describe("applyModelAllowlist", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const next = applyModelAllowlist(config, ["openai/gpt-5.2"]);
     expect(next.agents?.defaults?.models).toEqual({
@@ -242,7 +242,7 @@ describe("applyModelAllowlist", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const next = applyModelAllowlist(config, []);
     expect(next.agents?.defaults?.models).toBeUndefined();
@@ -257,7 +257,7 @@ describe("applyModelFallbacksFromSelection", () => {
           model: { primary: "anthropic/claude-opus-4-5" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const next = applyModelFallbacksFromSelection(config, [
       "anthropic/claude-opus-4-5",
@@ -276,7 +276,7 @@ describe("applyModelFallbacksFromSelection", () => {
           model: { primary: "anthropic/claude-opus-4-5", fallbacks: ["openai/gpt-5.2"] },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const next = applyModelFallbacksFromSelection(config, ["openai/gpt-5.2"]);
     expect(next.agents?.defaults?.model).toEqual({

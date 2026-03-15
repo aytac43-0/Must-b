@@ -1,7 +1,7 @@
 import type {
   ChannelOnboardingAdapter,
   ChannelOnboardingDmPolicy,
-  Must-bConfig,
+  MustBConfig,
   DmPolicy,
   WizardPrompter,
 } from "must-b/plugin-sdk/bluebubbles";
@@ -26,7 +26,7 @@ import { normalizeBlueBubblesServerUrl } from "./types.js";
 
 const channel = "bluebubbles" as const;
 
-function setBlueBubblesDmPolicy(cfg: Must-bConfig, dmPolicy: DmPolicy): Must-bConfig {
+function setBlueBubblesDmPolicy(cfg: MustBConfig, dmPolicy: DmPolicy): MustBConfig {
   return setTopLevelChannelDmPolicyWithAllowFrom({
     cfg,
     channel: "bluebubbles",
@@ -35,10 +35,10 @@ function setBlueBubblesDmPolicy(cfg: Must-bConfig, dmPolicy: DmPolicy): Must-bCo
 }
 
 function setBlueBubblesAllowFrom(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
   allowFrom: string[],
-): Must-bConfig {
+): MustBConfig {
   return patchScopedAccountConfig({
     cfg,
     channelKey: channel,
@@ -57,10 +57,10 @@ function parseBlueBubblesAllowFromInput(raw: string): string[] {
 }
 
 async function promptBlueBubblesAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBConfig> {
   const accountId =
     params.accountId && normalizeAccountId(params.accountId)
       ? (normalizeAccountId(params.accountId) ?? DEFAULT_ACCOUNT_ID)

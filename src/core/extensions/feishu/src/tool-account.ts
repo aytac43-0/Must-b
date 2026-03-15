@@ -1,5 +1,5 @@
 import type * as Lark from "@larksuiteoapi/node-sdk";
-import type { Must-bPluginApi } from "must-b/plugin-sdk/feishu";
+import type { MustBPluginApi } from "must-b/plugin-sdk/feishu";
 import { resolveFeishuAccount } from "./accounts.js";
 import { createFeishuClient } from "./client.js";
 import { resolveToolsConfig } from "./tools-config.js";
@@ -12,7 +12,7 @@ function normalizeOptionalAccountId(value: string | undefined): string | undefin
   return trimmed ? trimmed : undefined;
 }
 
-function readConfiguredDefaultAccountId(config: Must-bPluginApi["config"]): string | undefined {
+function readConfiguredDefaultAccountId(config: MustBPluginApi["config"]): string | undefined {
   const value = (config?.channels?.feishu as { defaultAccount?: unknown } | undefined)
     ?.defaultAccount;
   if (typeof value !== "string") {
@@ -22,7 +22,7 @@ function readConfiguredDefaultAccountId(config: Must-bPluginApi["config"]): stri
 }
 
 export function resolveFeishuToolAccount(params: {
-  api: Pick<Must-bPluginApi, "config">;
+  api: Pick<MustBPluginApi, "config">;
   executeParams?: AccountAwareParams;
   defaultAccountId?: string;
 }): ResolvedFeishuAccount {
@@ -39,7 +39,7 @@ export function resolveFeishuToolAccount(params: {
 }
 
 export function createFeishuToolClient(params: {
-  api: Pick<Must-bPluginApi, "config">;
+  api: Pick<MustBPluginApi, "config">;
   executeParams?: AccountAwareParams;
   defaultAccountId?: string;
 }): Lark.Client {

@@ -1,6 +1,6 @@
 import { messagingApi } from "@line/bot-sdk";
 import { loadConfig } from "../config/config.js";
-import type { Must-bConfig } from "../config/types.must-b.js";
+import type { MustBonfig } from "../config/types.must-b.js";
 import { logVerbose } from "../globals.js";
 import { recordChannelActivity } from "../infra/channel-activity.js";
 import { resolveLineAccount } from "./accounts.js";
@@ -26,7 +26,7 @@ const userProfileCache = new Map<
 const PROFILE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 interface LineSendOpts {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   channelAccessToken?: string;
   accountId?: string;
   verbose?: boolean;

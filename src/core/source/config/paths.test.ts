@@ -46,7 +46,7 @@ describe("state + config path candidates", () => {
     }
   }
 
-  function expectMust-bHomeDefaults(env: NodeJS.ProcessEnv): void {
+  function expectMustBomeDefaults(env: NodeJS.ProcessEnv): void {
     const configuredHome = env.MUSTB_HOME;
     if (!configuredHome) {
       throw new Error("MUSTB_HOME must be set for this assertion helper");
@@ -70,7 +70,7 @@ describe("state + config path candidates", () => {
     const env = {
       MUSTB_HOME: "/srv/must-b-home",
     } as NodeJS.ProcessEnv;
-    expectMust-bHomeDefaults(env);
+    expectMustBomeDefaults(env);
   });
 
   it("prefers MUSTB_HOME over HOME for default state/config locations", () => {
@@ -78,7 +78,7 @@ describe("state + config path candidates", () => {
       MUSTB_HOME: "/srv/must-b-home",
       HOME: "/home/other",
     } as NodeJS.ProcessEnv;
-    expectMust-bHomeDefaults(env);
+    expectMustBomeDefaults(env);
   });
 
   it("orders default config candidates in a stable order", () => {

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { loadConfig } from "../../config/config.js";
 import { callGatewayLeastPrivilege, randomIdempotencyKey } from "../../gateway/call.js";
 import type { PollInput } from "../../polls.js";
@@ -45,7 +45,7 @@ type MessageSendParams = {
   dryRun?: boolean;
   bestEffort?: boolean;
   deps?: OutboundSendDeps;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   gateway?: MessageGatewayOptions;
   idempotencyKey?: string;
   mirror?: OutboundMirror;
@@ -76,7 +76,7 @@ type MessagePollParams = {
   silent?: boolean;
   isAnonymous?: boolean;
   dryRun?: boolean;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   gateway?: MessageGatewayOptions;
   idempotencyKey?: string;
 };
@@ -101,7 +101,7 @@ export type MessagePollResult = {
 };
 
 async function resolveRequiredChannel(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channel?: string;
 }): Promise<string> {
   return (
@@ -112,7 +112,7 @@ async function resolveRequiredChannel(params: {
   ).channel;
 }
 
-function resolveRequiredPlugin(channel: string, cfg: Must-bConfig) {
+function resolveRequiredPlugin(channel: string, cfg: MustBonfig) {
   const plugin = resolveOutboundChannelPlugin({ channel, cfg });
   if (!plugin) {
     throw new Error(`Unknown channel: ${channel}`);

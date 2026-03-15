@@ -1,4 +1,4 @@
-export type { Must-bConfig } from "../config/config.js";
+export type { MustBonfig } from "../config/config.js";
 export type { InspectedSlackAccount } from "../slack/account-inspect.js";
 export type { ResolvedSlackAccount } from "../slack/accounts.js";
 export * from "./channel-plugin-common.js";

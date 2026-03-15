@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { buildProviderRegistry, runCapability } from "./runner.js";
 import { withAudioFixture } from "./runner.test-utils.js";
 
@@ -74,7 +74,7 @@ describe("runCapability deepgram provider options", () => {
             },
           },
         },
-      } as unknown as Must-bConfig;
+      } as unknown as MustBonfig;
 
       const result = await runCapability({
         capability: "audio",

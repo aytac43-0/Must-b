@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   isTelegramExecApprovalApprover,
   isTelegramExecApprovalClientEnabled,
@@ -9,8 +9,8 @@ import {
 } from "./exec-approvals.js";
 
 function buildConfig(
-  execApprovals?: NonNullable<NonNullable<Must-bConfig["channels"]>["telegram"]>["execApprovals"],
-): Must-bConfig {
+  execApprovals?: NonNullable<NonNullable<MustBonfig["channels"]>["telegram"]>["execApprovals"],
+): MustBonfig {
   return {
     channels: {
       telegram: {
@@ -18,7 +18,7 @@ function buildConfig(
         execApprovals,
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 describe("telegram exec approvals", () => {
@@ -71,7 +71,7 @@ describe("telegram exec approvals", () => {
           execApprovals: { enabled: true, approvers: ["123"], target: "dm" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     expect(shouldEnableTelegramExecApprovalButtons({ cfg, to: "123" })).toBe(true);
   });
@@ -85,7 +85,7 @@ describe("telegram exec approvals", () => {
           execApprovals: { enabled: true, approvers: ["123"], target: "dm" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     expect(shouldEnableTelegramExecApprovalButtons({ cfg, to: "123" })).toBe(false);
   });

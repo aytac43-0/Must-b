@@ -5,14 +5,14 @@ import type { AgentTool, AgentToolResult } from "@mariozechner/pi-agent-core";
 import { Type } from "@sinclair/typebox";
 import { describe, expect, it, vi } from "vitest";
 import "./test-helpers/fast-coding-tools.js";
-import { createMust-bTools } from "./must-b-tools.js";
+import { createMustBools } from "./must-b-tools.js";
 import { findUnsupportedSchemaKeywords } from "./pi-embedded-runner/google.js";
-import { __testing, createMust-bCodingTools } from "./pi-tools.js";
-import { createMust-bReadTool, createSandboxedReadTool } from "./pi-tools.read.js";
+import { __testing, createMustBodingTools } from "./pi-tools.js";
+import { createMustBeadTool, createSandboxedReadTool } from "./pi-tools.read.js";
 import { createHostSandboxFsBridge } from "./test-helpers/host-sandbox-fs-bridge.js";
 import { createBrowserTool } from "./tools/browser-tool.js";
 
-const defaultTools = createMust-bCodingTools();
+const defaultTools = createMustBodingTools();
 
 function findUnionKeywordOffenders(
   tools: Array<{ name: string; parameters: unknown }>,
@@ -78,7 +78,7 @@ function extractToolText(result: unknown): string {
   return textBlock?.text ?? "";
 }
 
-describe("createMust-bCodingTools", () => {
+describe("createMustBodingTools", () => {
   describe("Claude/Gemini alias support", () => {
     it("adds Claude-style aliases to schemas without dropping metadata", () => {
       const base: AgentTool = {
@@ -177,7 +177,7 @@ describe("createMust-bCodingTools", () => {
     expect(parameters.required ?? []).toContain("action");
   });
   it("exposes raw for gateway config.apply tool calls", () => {
-    const gateway = createMust-bCodingTools({ senderIsOwner: true }).find(
+    const gateway = createMustBodingTools({ senderIsOwner: true }).find(
       (tool) => tool.name === "gateway",
     );
     expect(gateway).toBeDefined();
@@ -293,7 +293,7 @@ describe("createMust-bCodingTools", () => {
     expect(findUnionKeywordOffenders(defaultTools)).toEqual([]);
   });
   it("keeps raw core tool schemas union-free", () => {
-    const tools = createMust-bTools();
+    const tools = createMustBools();
     const coreTools = new Set([
       "browser",
       "canvas",
@@ -313,7 +313,7 @@ describe("createMust-bCodingTools", () => {
     expect(findUnionKeywordOffenders(tools, { onlyNames: coreTools })).toEqual([]);
   });
   it("does not expose provider-specific message tools", () => {
-    const tools = createMust-bCodingTools({ messageProvider: "discord" });
+    const tools = createMustBodingTools({ messageProvider: "discord" });
     const names = new Set(tools.map((tool) => tool.name));
     expect(names.has("discord")).toBe(false);
     expect(names.has("slack")).toBe(false);
@@ -321,7 +321,7 @@ describe("createMust-bCodingTools", () => {
     expect(names.has("whatsapp")).toBe(false);
   });
   it("filters session tools for sub-agent sessions by default", () => {
-    const tools = createMust-bCodingTools({
+    const tools = createMustBodingTools({
       sessionKey: "agent:main:subagent:test",
     });
     const names = new Set(tools.map((tool) => tool.name));
@@ -358,7 +358,7 @@ describe("createMust-bCodingTools", () => {
       "utf-8",
     );
 
-    const tools = createMust-bCodingTools({
+    const tools = createMustBodingTools({
       sessionKey: "agent:main:subagent:flat",
       config: {
         session: {
@@ -380,7 +380,7 @@ describe("createMust-bCodingTools", () => {
     expect(names.has("subagents")).toBe(true);
   });
   it("supports allow-only sub-agent tool policy", () => {
-    const tools = createMust-bCodingTools({
+    const tools = createMustBodingTools({
       sessionKey: "agent:main:subagent:test",
       // Intentionally partial config; only fields used by pi-tools are provided.
       config: {
@@ -398,7 +398,7 @@ describe("createMust-bCodingTools", () => {
   });
 
   it("applies tool profiles before allow/deny policies", () => {
-    const tools = createMust-bCodingTools({
+    const tools = createMustBodingTools({
       config: { tools: { profile: "messaging" } },
     });
     const names = new Set(tools.map((tool) => tool.name));
@@ -409,7 +409,7 @@ describe("createMust-bCodingTools", () => {
     expect(names.has("browser")).toBe(false);
   });
   it("expands group shorthands in global tool policy", () => {
-    const tools = createMust-bCodingTools({
+    const tools = createMustBodingTools({
       config: { tools: { allow: ["group:fs"] } },
     });
     const names = new Set(tools.map((tool) => tool.name));
@@ -420,7 +420,7 @@ describe("createMust-bCodingTools", () => {
     expect(names.has("browser")).toBe(false);
   });
   it("expands group shorthands in global tool deny policy", () => {
-    const tools = createMust-bCodingTools({
+    const tools = createMustBodingTools({
       config: { tools: { deny: ["group:fs"] } },
     });
     const names = new Set(tools.map((tool) => tool.name));
@@ -430,7 +430,7 @@ describe("createMust-bCodingTools", () => {
     expect(names.has("exec")).toBe(true);
   });
   it("lets agent profiles override global profiles", () => {
-    const tools = createMust-bCodingTools({
+    const tools = createMustBodingTools({
       sessionKey: "agent:work:main",
       config: {
         tools: { profile: "coding" },
@@ -445,7 +445,7 @@ describe("createMust-bCodingTools", () => {
     expect(names.has("read")).toBe(false);
   });
   it("removes unsupported JSON Schema keywords for Cloud Code Assist API compatibility", () => {
-    const googleTools = createMust-bCodingTools({
+    const googleTools = createMustBodingTools({
       modelProvider: "google",
       senderIsOwner: true,
     });
@@ -544,8 +544,8 @@ describe("createMust-bCodingTools", () => {
       execute: vi.fn(async () => readResult),
     };
 
-    const wrapped = createMust-bReadTool(
-      baseRead as unknown as Parameters<typeof createMust-bReadTool>[0],
+    const wrapped = createMustBeadTool(
+      baseRead as unknown as Parameters<typeof createMustBeadTool>[0],
     );
     const result = await wrapped.execute("read-strip-1", { path: "demo.txt", limit: 1 });
 

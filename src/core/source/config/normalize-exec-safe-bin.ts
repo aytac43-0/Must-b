@@ -1,8 +1,8 @@
 import { normalizeSafeBinProfileFixtures } from "../infra/exec-safe-bin-policy.js";
 import { normalizeTrustedSafeBinDirs } from "../infra/exec-safe-bin-trust.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 
-export function normalizeExecSafeBinProfilesInConfig(cfg: Must-bConfig): void {
+export function normalizeExecSafeBinProfilesInConfig(cfg: MustBonfig): void {
   const normalizeExec = (exec: unknown) => {
     if (!exec || typeof exec !== "object" || Array.isArray(exec)) {
       return;

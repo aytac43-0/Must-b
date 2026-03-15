@@ -3,5 +3,5 @@
 
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export { buildOauthProviderAuthResult } from "./provider-auth-result.js";
-export type { Must-bPluginApi, ProviderAuthContext } from "../plugins/types.js";
+export type { MustBluginApi, ProviderAuthContext } from "../plugins/types.js";
 export { generatePkceVerifierChallenge, toFormUrlEncoded } from "./oauth-utils.js";

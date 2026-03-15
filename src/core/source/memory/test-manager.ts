@@ -1,8 +1,8 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { getMemorySearchManager, type MemoryIndexManager } from "./index.js";
 
 export async function createMemoryManagerOrThrow(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId = "main",
 ): Promise<MemoryIndexManager> {
   const result = await getMemorySearchManager({ cfg, agentId });

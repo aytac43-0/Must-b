@@ -6,7 +6,7 @@ export async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise
   return withTempHomeBase(fn, { prefix: "must-b-config-" });
 }
 
-export async function writeMust-bConfig(home: string, config: unknown): Promise<string> {
+export async function writeMustBonfig(home: string, config: unknown): Promise<string> {
   const configPath = path.join(home, ".must-b", "must-b.json");
   await fs.mkdir(path.dirname(configPath), { recursive: true });
   await fs.writeFile(configPath, JSON.stringify(config, null, 2), "utf-8");
@@ -18,7 +18,7 @@ export async function withTempHomeConfig<T>(
   fn: (params: { home: string; configPath: string }) => Promise<T>,
 ): Promise<T> {
   return withTempHome(async (home) => {
-    const configPath = await writeMust-bConfig(home, config);
+    const configPath = await writeMustBonfig(home, config);
     return fn({ home, configPath });
   });
 }

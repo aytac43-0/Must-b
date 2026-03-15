@@ -1,4 +1,4 @@
-import type { Must-bPluginConfigSchema } from "./types.js";
+import type { MustBluginConfigSchema } from "./types.js";
 
 type Issue = { path: Array<string | number>; message: string };
 
@@ -10,7 +10,7 @@ function error(message: string): SafeParseResult {
   return { success: false, error: { issues: [{ path: [], message }] } };
 }
 
-export function emptyPluginConfigSchema(): Must-bPluginConfigSchema {
+export function emptyPluginConfigSchema(): MustBluginConfigSchema {
   return {
     safeParse(value: unknown): SafeParseResult {
       if (value === undefined) {

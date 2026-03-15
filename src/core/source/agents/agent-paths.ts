@@ -3,7 +3,7 @@ import { resolveStateDir } from "../config/paths.js";
 import { DEFAULT_AGENT_ID } from "../routing/session-key.js";
 import { resolveUserPath } from "../utils.js";
 
-export function resolveMust-bAgentDir(): string {
+export function resolveMustBAgentDir(): string {
   const override =
     process.env.MUSTB_AGENT_DIR?.trim() || process.env.PI_CODING_AGENT_DIR?.trim();
   if (override) {
@@ -13,8 +13,8 @@ export function resolveMust-bAgentDir(): string {
   return resolveUserPath(defaultAgentDir);
 }
 
-export function ensureMust-bAgentEnv(): string {
-  const dir = resolveMust-bAgentDir();
+export function ensureMustBAgentEnv(): string {
+  const dir = resolveMustBAgentDir();
   if (!process.env.MUSTB_AGENT_DIR) {
     process.env.MUSTB_AGENT_DIR = dir;
   }

@@ -1,10 +1,10 @@
 import { expect } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 export function expectGeneratedTokenPersistedToGatewayAuth(params: {
   generatedToken?: string;
   authToken?: string;
-  persistedConfig?: Must-bConfig;
+  persistedConfig?: MustBonfig;
 }) {
   expect(params.generatedToken).toMatch(/^[0-9a-f]{48}$/);
   expect(params.authToken).toBe(params.generatedToken);

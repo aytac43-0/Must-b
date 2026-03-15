@@ -108,7 +108,7 @@ vi.mock("must-b/plugin-sdk/diagnostics-otel", async () => {
   };
 });
 
-import type { Must-bPluginServiceContext } from "must-b/plugin-sdk/diagnostics-otel";
+import type { MustBPluginServiceContext } from "must-b/plugin-sdk/diagnostics-otel";
 import { emitDiagnosticEvent } from "must-b/plugin-sdk/diagnostics-otel";
 import { createDiagnosticsOtelService } from "./service.js";
 
@@ -133,7 +133,7 @@ type OtelContextFlags = {
 function createOtelContext(
   endpoint: string,
   { traces = false, metrics = false, logs = false }: OtelContextFlags = {},
-): Must-bPluginServiceContext {
+): MustBPluginServiceContext {
   return {
     config: {
       diagnostics: {
@@ -153,7 +153,7 @@ function createOtelContext(
   };
 }
 
-function createTraceOnlyContext(endpoint: string): Must-bPluginServiceContext {
+function createTraceOnlyContext(endpoint: string): MustBPluginServiceContext {
   return createOtelContext(endpoint, { traces: true });
 }
 

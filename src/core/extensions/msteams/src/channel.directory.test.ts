@@ -1,4 +1,4 @@
-import type { Must-bConfig, RuntimeEnv } from "must-b/plugin-sdk/msteams";
+import type { MustBConfig, RuntimeEnv } from "must-b/plugin-sdk/msteams";
 import { describe, expect, it } from "vitest";
 import { msteamsPlugin } from "./channel.js";
 
@@ -27,7 +27,7 @@ describe("msteams directory", () => {
           },
         },
       },
-    } as unknown as Must-bConfig;
+    } as unknown as MustBConfig;
 
     expect(msteamsPlugin.directory).toBeTruthy();
     expect(msteamsPlugin.directory?.listPeers).toBeTruthy();

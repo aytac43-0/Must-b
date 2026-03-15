@@ -1,7 +1,7 @@
 import { resolveDefaultAgentId } from "../agents/agent-scope.js";
 import type { ChatType } from "../channels/chat-type.js";
 import { normalizeChatType } from "../channels/chat-type.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { shouldLogVerbose } from "../globals.js";
 import { logDebug } from "../logger.js";
 import { listBindings } from "./bindings.js";
@@ -24,7 +24,7 @@ export type RoutePeer = {
 };
 
 export type ResolveAgentRouteInput = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channel: string;
   accountId?: string | null;
   peer?: RoutePeer | null;
@@ -111,20 +111,20 @@ export function buildAgentSessionKey(params: {
   });
 }
 
-function listAgents(cfg: Must-bConfig) {
+function listAgents(cfg: MustBonfig) {
   const agents = cfg.agents?.list;
   return Array.isArray(agents) ? agents : [];
 }
 
 type AgentLookupCache = {
-  agentsRef: Must-bConfig["agents"] | undefined;
+  agentsRef: MustBonfig["agents"] | undefined;
   byNormalizedId: Map<string, string>;
   fallbackDefaultAgentId: string;
 };
 
-const agentLookupCacheByCfg = new WeakMap<Must-bConfig, AgentLookupCache>();
+const agentLookupCacheByCfg = new WeakMap<MustBonfig, AgentLookupCache>();
 
-function resolveAgentLookupCache(cfg: Must-bConfig): AgentLookupCache {
+function resolveAgentLookupCache(cfg: MustBonfig): AgentLookupCache {
   const agentsRef = cfg.agents;
   const existing = agentLookupCacheByCfg.get(cfg);
   if (existing && existing.agentsRef === agentsRef) {
@@ -148,7 +148,7 @@ function resolveAgentLookupCache(cfg: Must-bConfig): AgentLookupCache {
   return next;
 }
 
-export function pickFirstExistingAgentId(cfg: Must-bConfig, agentId: string): string {
+export function pickFirstExistingAgentId(cfg: MustBonfig, agentId: string): string {
   const lookup = resolveAgentLookupCache(cfg);
   const trimmed = (agentId ?? "").trim();
   if (!trimmed) {
@@ -192,20 +192,20 @@ type BindingScope = {
 };
 
 type EvaluatedBindingsCache = {
-  bindingsRef: Must-bConfig["bindings"];
+  bindingsRef: MustBonfig["bindings"];
   byChannel: Map<string, EvaluatedBindingsByChannel>;
   byChannelAccount: Map<string, EvaluatedBinding[]>;
   byChannelAccountIndex: Map<string, EvaluatedBindingsIndex>;
 };
 
-const evaluatedBindingsCacheByCfg = new WeakMap<Must-bConfig, EvaluatedBindingsCache>();
+const evaluatedBindingsCacheByCfg = new WeakMap<MustBonfig, EvaluatedBindingsCache>();
 const MAX_EVALUATED_BINDINGS_CACHE_KEYS = 2000;
 const resolvedRouteCacheByCfg = new WeakMap<
-  Must-bConfig,
+  MustBonfig,
   {
-    bindingsRef: Must-bConfig["bindings"];
-    agentsRef: Must-bConfig["agents"];
-    sessionRef: Must-bConfig["session"];
+    bindingsRef: MustBonfig["bindings"];
+    agentsRef: MustBonfig["agents"];
+    sessionRef: MustBonfig["session"];
     byKey: Map<string, ResolvedAgentRoute>;
   }
 >();
@@ -233,7 +233,7 @@ function resolveAccountPatternKey(accountPattern: string): string {
 }
 
 function buildEvaluatedBindingsByChannel(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ): Map<string, EvaluatedBindingsByChannel> {
   const byChannel = new Map<string, EvaluatedBindingsByChannel>();
   let order = 0;
@@ -411,7 +411,7 @@ function buildEvaluatedBindingsIndex(bindings: EvaluatedBinding[]): EvaluatedBin
 }
 
 function getEvaluatedBindingsForChannelAccount(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   channel: string,
   accountId: string,
 ): EvaluatedBinding[] {
@@ -454,7 +454,7 @@ function getEvaluatedBindingsForChannelAccount(
 }
 
 function getEvaluatedBindingIndexForChannelAccount(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   channel: string,
   accountId: string,
 ): EvaluatedBindingsIndex {
@@ -505,7 +505,7 @@ function normalizeBindingMatch(
   };
 }
 
-function resolveRouteCacheForConfig(cfg: Must-bConfig): Map<string, ResolvedAgentRoute> {
+function resolveRouteCacheForConfig(cfg: MustBonfig): Map<string, ResolvedAgentRoute> {
   const existing = resolvedRouteCacheByCfg.get(cfg);
   if (
     existing &&

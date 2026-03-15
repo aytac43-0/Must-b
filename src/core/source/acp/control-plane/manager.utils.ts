@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBConfig } from "../../config/config.js";
 import {
   canonicalizeMainSessionAlias,
   resolveMainSessionKey,
@@ -51,7 +51,7 @@ export function normalizeSessionKey(sessionKey: string): string {
 }
 
 export function canonicalizeAcpSessionKey(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   sessionKey: string;
 }): string {
   const normalized = normalizeSessionKey(params.sessionKey);
@@ -104,7 +104,7 @@ export function createUnsupportedControlError(params: {
   );
 }
 
-export function resolveRuntimeIdleTtlMs(cfg: Must-bConfig): number {
+export function resolveRuntimeIdleTtlMs(cfg: MustBConfig): number {
   const ttlMinutes = cfg.acp?.runtime?.ttlMinutes;
   if (typeof ttlMinutes !== "number" || !Number.isFinite(ttlMinutes) || ttlMinutes <= 0) {
     return 0;

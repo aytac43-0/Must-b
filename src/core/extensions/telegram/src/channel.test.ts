@@ -1,7 +1,7 @@
 import type {
   ChannelAccountSnapshot,
   ChannelGatewayContext,
-  Must-bConfig,
+  MustBConfig,
   PluginRuntime,
   ResolvedTelegramAccount,
 } from "must-b/plugin-sdk/telegram";
@@ -10,7 +10,7 @@ import { createRuntimeEnv } from "../../test-utils/runtime-env.js";
 import { telegramPlugin } from "./channel.js";
 import { setTelegramRuntime } from "./runtime.js";
 
-function createCfg(): Must-bConfig {
+function createCfg(): MustBConfig {
   return {
     channels: {
       telegram: {
@@ -22,11 +22,11 @@ function createCfg(): Must-bConfig {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBConfig;
 }
 
 function createStartAccountCtx(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId: string;
   runtime: ReturnType<typeof createRuntimeEnv>;
 }): ChannelGatewayContext<ResolvedTelegramAccount> {

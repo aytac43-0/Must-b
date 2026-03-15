@@ -15,7 +15,7 @@ vi.mock("../config/config.js", async (importOriginal) => {
 });
 
 import "./test-helpers/fast-core-tools.js";
-import { createMust-bTools } from "./must-b-tools.js";
+import { createMustBools } from "./must-b-tools.js";
 
 describe("agents_list", () => {
   type AgentConfig = NonNullable<NonNullable<typeof configOverride.agents>["list"]>[number];
@@ -30,7 +30,7 @@ describe("agents_list", () => {
   }
 
   function requireAgentsListTool() {
-    const tool = createMust-bTools({
+    const tool = createMustBools({
       agentSessionKey: "main",
     }).find((candidate) => candidate.name === "agents_list");
     if (!tool) {

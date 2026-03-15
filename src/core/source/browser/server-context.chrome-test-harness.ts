@@ -7,9 +7,9 @@ installChromeUserDataDirHooks(chromeUserDataDir);
 vi.mock("./chrome.js", () => ({
   isChromeCdpReady: vi.fn(async () => true),
   isChromeReachable: vi.fn(async () => true),
-  launchMust-bChrome: vi.fn(async () => {
+  launchMustBhrome: vi.fn(async () => {
     throw new Error("unexpected launch");
   }),
-  resolveMust-bUserDataDir: vi.fn(() => chromeUserDataDir.dir),
-  stopMust-bChrome: vi.fn(async () => {}),
+  resolveMustBserDataDir: vi.fn(() => chromeUserDataDir.dir),
+  stopMustBhrome: vi.fn(async () => {}),
 }));

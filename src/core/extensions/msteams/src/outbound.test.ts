@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/msteams";
+import type { MustBonfig } from "must-b/plugin-sdk/msteams";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -54,7 +54,7 @@ describe("msteamsOutbound cfg threading", () => {
           appId: "resolved-app-id",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await msteamsOutbound.sendText!({
       cfg,
@@ -76,7 +76,7 @@ describe("msteamsOutbound cfg threading", () => {
           appId: "resolved-app-id",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await msteamsOutbound.sendMedia!({
       cfg,
@@ -102,7 +102,7 @@ describe("msteamsOutbound cfg threading", () => {
           appId: "resolved-app-id",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await msteamsOutbound.sendPoll!({
       cfg,

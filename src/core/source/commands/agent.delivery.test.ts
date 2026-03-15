@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CliDeps } from "../cli/deps.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import type { RuntimeEnv } from "../runtime.js";
 
@@ -53,7 +53,7 @@ describe("deliverAgentCommandResult", () => {
     runtime?: RuntimeEnv;
     resultText?: string;
   }) {
-    const cfg = {} as Must-bConfig;
+    const cfg = {} as MustBonfig;
     const deps = {} as CliDeps;
     const runtime = params.runtime ?? createRuntime();
     const result = createResult(params.resultText);

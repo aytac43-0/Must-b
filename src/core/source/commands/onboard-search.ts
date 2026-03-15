@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   DEFAULT_SECRET_PROVIDER_ALIAS,
   type SecretInput,
@@ -68,7 +68,7 @@ export function hasKeyInEnv(entry: SearchProviderEntry): boolean {
   return entry.envKeys.some((k) => Boolean(process.env[k]?.trim()));
 }
 
-function rawKeyValue(config: Must-bConfig, provider: SearchProvider): unknown {
+function rawKeyValue(config: MustBonfig, provider: SearchProvider): unknown {
   const search = config.tools?.web?.search;
   switch (provider) {
     case "brave":
@@ -86,14 +86,14 @@ function rawKeyValue(config: Must-bConfig, provider: SearchProvider): unknown {
 
 /** Returns the plaintext key string, or undefined for SecretRefs/missing. */
 export function resolveExistingKey(
-  config: Must-bConfig,
+  config: MustBonfig,
   provider: SearchProvider,
 ): string | undefined {
   return normalizeSecretInputString(rawKeyValue(config, provider));
 }
 
 /** Returns true if a key is configured (plaintext string or SecretRef). */
-export function hasExistingKey(config: Must-bConfig, provider: SearchProvider): boolean {
+export function hasExistingKey(config: MustBonfig, provider: SearchProvider): boolean {
   return hasConfiguredSecretInput(rawKeyValue(config, provider));
 }
 
@@ -123,10 +123,10 @@ function resolveSearchSecretInput(
 }
 
 export function applySearchKey(
-  config: Must-bConfig,
+  config: MustBonfig,
   provider: SearchProvider,
   key: SecretInput,
-): Must-bConfig {
+): MustBonfig {
   const search = { ...config.tools?.web?.search, provider, enabled: true };
   switch (provider) {
     case "brave":
@@ -154,7 +154,7 @@ export function applySearchKey(
   };
 }
 
-function applyProviderOnly(config: Must-bConfig, provider: SearchProvider): Must-bConfig {
+function applyProviderOnly(config: MustBonfig, provider: SearchProvider): MustBonfig {
   return {
     ...config,
     tools: {
@@ -171,7 +171,7 @@ function applyProviderOnly(config: Must-bConfig, provider: SearchProvider): Must
   };
 }
 
-function preserveDisabledState(original: Must-bConfig, result: Must-bConfig): Must-bConfig {
+function preserveDisabledState(original: MustBonfig, result: MustBonfig): MustBonfig {
   if (original.tools?.web?.search?.enabled !== false) {
     return result;
   }
@@ -190,11 +190,11 @@ export type SetupSearchOptions = {
 };
 
 export async function setupSearch(
-  config: Must-bConfig,
+  config: MustBonfig,
   _runtime: RuntimeEnv,
   prompter: WizardPrompter,
   opts?: SetupSearchOptions,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   await prompter.note(
     [
       "Web search lets your agent look things up online.",

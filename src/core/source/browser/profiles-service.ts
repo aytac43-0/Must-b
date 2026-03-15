@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { BrowserProfileConfig, Must-bConfig } from "../config/config.js";
+import type { BrowserProfileConfig, MustBonfig } from "../config/config.js";
 import { loadConfig, writeConfigFile } from "../config/config.js";
 import { deriveDefaultBrowserCdpPortRange } from "../config/port-defaults.js";
 import { isLoopbackHost } from "../gateway/net.js";
-import { resolveMust-bUserDataDir } from "./chrome.js";
+import { resolveMustBserDataDir } from "./chrome.js";
 import { parseHttpUrl, resolveProfile } from "./config.js";
 import { DEFAULT_BROWSER_DEFAULT_PROFILE_NAME } from "./constants.js";
 import {
@@ -140,7 +140,7 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
       };
     }
 
-    const nextConfig: Must-bConfig = {
+    const nextConfig: MustBonfig = {
       ...cfg,
       browser: {
         ...cfg.browser,
@@ -202,7 +202,7 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
         // ignore
       }
 
-      const userDataDir = resolveMust-bUserDataDir(name);
+      const userDataDir = resolveMustBserDataDir(name);
       const profileDir = path.dirname(userDataDir);
       if (fs.existsSync(profileDir)) {
         await movePathToTrash(profileDir);
@@ -211,7 +211,7 @@ export function createBrowserProfilesService(ctx: BrowserRouteContext) {
     }
 
     const { [name]: _removed, ...remainingProfiles } = profiles;
-    const nextConfig: Must-bConfig = {
+    const nextConfig: MustBonfig = {
       ...cfg,
       browser: {
         ...cfg.browser,

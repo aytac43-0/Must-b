@@ -4,7 +4,7 @@ import {
   normalizeChannelId as normalizePluginChannelId,
 } from "../../channels/plugins/index.js";
 import type { ChannelId } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveChannelGroupRequireMention } from "../../config/group-policy.js";
 import type { GroupKeyResolution, SessionEntry } from "../../config/sessions.js";
 import { isInternalMessageChannel } from "../../utils/message-channel.js";
@@ -53,7 +53,7 @@ function resolveDockChannelId(raw?: string | null): ChannelId | null {
 }
 
 export function resolveGroupRequireMention(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   ctx: TemplateContext;
   groupResolution?: GroupKeyResolution;
 }): boolean {
@@ -139,7 +139,7 @@ export function buildGroupChatContext(params: { sessionCtx: TemplateContext }): 
 }
 
 export function buildGroupIntro(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionCtx: TemplateContext;
   sessionEntry?: SessionEntry;
   defaultActivation: "always" | "mention";

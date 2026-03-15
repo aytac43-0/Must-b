@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveGatewayProbeAuth as resolveStatusGatewayProbeAuth } from "../commands/status.gateway-probe.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveGatewayAuth } from "./auth.js";
 import { resolveGatewayCredentialsFromConfig } from "./credentials.js";
 import { resolveGatewayProbeAuth } from "./probe-auth.js";
@@ -14,7 +14,7 @@ type ExpectedCredentialSet = {
 
 type TestCase = {
   name: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env: NodeJS.ProcessEnv;
   expected: ExpectedCredentialSet;
 };
@@ -24,7 +24,7 @@ const gatewayEnv = {
   MUSTB_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
 } as NodeJS.ProcessEnv;
 
-function makeRemoteGatewayConfig(remote: { token?: string; password?: string }): Must-bConfig {
+function makeRemoteGatewayConfig(remote: { token?: string; password?: string }): MustBonfig {
   return {
     gateway: {
       mode: "remote",
@@ -34,7 +34,7 @@ function makeRemoteGatewayConfig(remote: { token?: string; password?: string }):
         password: "local-password", // pragma: allowlist secret
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 function withGatewayAuthEnv<T>(env: NodeJS.ProcessEnv, fn: () => T): T {
@@ -81,7 +81,7 @@ describe("gateway credential precedence parity", () => {
             password: "config-password", // pragma: allowlist secret
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       env: {
         MUSTB_GATEWAY_TOKEN: "env-token", // pragma: allowlist secret
         MUSTB_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret
@@ -127,7 +127,7 @@ describe("gateway credential precedence parity", () => {
           mode: "local",
           auth: {},
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       env: {
         CLAWDBOT_GATEWAY_TOKEN: "legacy-token", // pragma: allowlist secret
         CLAWDBOT_GATEWAY_PASSWORD: "legacy-password", // pragma: allowlist secret
@@ -149,7 +149,7 @@ describe("gateway credential precedence parity", () => {
             password: "config-password", // pragma: allowlist secret
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       env: {
         MUSTB_GATEWAY_TOKEN: "env-token",
         MUSTB_GATEWAY_PASSWORD: "env-password", // pragma: allowlist secret

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import {
   ensureAuthProfileStore,
@@ -10,7 +10,7 @@ import { normalizeProviderId } from "./model-selection.js";
 
 export function resolveModelAuthLabel(params: {
   provider?: string;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   sessionEntry?: SessionEntry;
   agentDir?: string;
 }): string | undefined {

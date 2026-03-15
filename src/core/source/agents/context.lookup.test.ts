@@ -5,10 +5,10 @@ function mockContextModuleDeps(loadConfigImpl: () => unknown) {
     loadConfig: loadConfigImpl,
   }));
   vi.doMock("./models-config.js", () => ({
-    ensureMust-bModelsJson: vi.fn(async () => {}),
+    ensureMustBodelsJson: vi.fn(async () => {}),
   }));
   vi.doMock("./agent-paths.js", () => ({
-    resolveMust-bAgentDir: () => "/tmp/must-b-agent",
+    resolveMustBgentDir: () => "/tmp/must-b-agent",
   }));
   vi.doMock("./pi-model-discovery.js", () => ({
     discoverAuthStorage: vi.fn(() => ({})),
@@ -27,10 +27,10 @@ function mockDiscoveryDeps(
     loadConfig: () => ({ models: configModels ? { providers: configModels } : {} }),
   }));
   vi.doMock("./models-config.js", () => ({
-    ensureMust-bModelsJson: vi.fn(async () => {}),
+    ensureMustBodelsJson: vi.fn(async () => {}),
   }));
   vi.doMock("./agent-paths.js", () => ({
-    resolveMust-bAgentDir: () => "/tmp/must-b-agent",
+    resolveMustBgentDir: () => "/tmp/must-b-agent",
   }));
   vi.doMock("./pi-model-discovery.js", () => ({
     discoverAuthStorage: vi.fn(() => ({})),

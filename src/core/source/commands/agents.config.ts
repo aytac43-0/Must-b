@@ -11,7 +11,7 @@ import {
   parseIdentityMarkdown as parseIdentityMarkdownFile,
 } from "../agents/identity-file.js";
 import { listRouteBindings } from "../config/bindings.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 
 export type AgentSummary = {
@@ -30,7 +30,7 @@ export type AgentSummary = {
   isDefault: boolean;
 };
 
-type AgentEntry = NonNullable<NonNullable<Must-bConfig["agents"]>["list"]>[number];
+type AgentEntry = NonNullable<NonNullable<MustBonfig["agents"]>["list"]>[number];
 
 export type AgentIdentity = AgentIdentityFile;
 export { listAgentEntries };
@@ -40,14 +40,14 @@ export function findAgentEntryIndex(list: AgentEntry[], agentId: string): number
   return list.findIndex((entry) => normalizeAgentId(entry.id) === id);
 }
 
-function resolveAgentName(cfg: Must-bConfig, agentId: string) {
+function resolveAgentName(cfg: MustBonfig, agentId: string) {
   const entry = listAgentEntries(cfg).find(
     (agent) => normalizeAgentId(agent.id) === normalizeAgentId(agentId),
   );
   return entry?.name?.trim() || undefined;
 }
 
-function resolveAgentModel(cfg: Must-bConfig, agentId: string) {
+function resolveAgentModel(cfg: MustBonfig, agentId: string) {
   const entry = listAgentEntries(cfg).find(
     (agent) => normalizeAgentId(agent.id) === normalizeAgentId(agentId),
   );
@@ -81,7 +81,7 @@ export function loadAgentIdentity(workspace: string): AgentIdentity | null {
   return identityHasValues(parsed) ? parsed : null;
 }
 
-export function buildAgentSummaries(cfg: Must-bConfig): AgentSummary[] {
+export function buildAgentSummaries(cfg: MustBonfig): AgentSummary[] {
   const defaultAgentId = normalizeAgentId(resolveDefaultAgentId(cfg));
   const configuredAgents = listAgentEntries(cfg);
   const orderedIds =
@@ -125,7 +125,7 @@ export function buildAgentSummaries(cfg: Must-bConfig): AgentSummary[] {
 }
 
 export function applyAgentConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params: {
     agentId: string;
     name?: string;
@@ -133,7 +133,7 @@ export function applyAgentConfig(
     agentDir?: string;
     model?: string;
   },
-): Must-bConfig {
+): MustBonfig {
   const agentId = normalizeAgentId(params.agentId);
   const name = params.name?.trim();
   const list = listAgentEntries(cfg);
@@ -165,10 +165,10 @@ export function applyAgentConfig(
 }
 
 export function pruneAgentConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId: string,
 ): {
-  config: Must-bConfig;
+  config: MustBonfig;
   removedBindings: number;
   removedAllow: number;
 } {

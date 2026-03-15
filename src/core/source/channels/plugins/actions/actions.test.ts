@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 
 const handleDiscordAction = vi.fn(async (..._args: unknown[]) => ({ details: { ok: true } }));
 const handleTelegramAction = vi.fn(async (..._args: unknown[]) => ({ ok: true }));
@@ -30,8 +30,8 @@ const { telegramMessageActions } = await import("./telegram.js");
 const { signalMessageActions } = await import("./signal.js");
 const { createSlackActions } = await import("../slack.actions.js");
 
-function telegramCfg(): Must-bConfig {
-  return { channels: { telegram: { botToken: "tok" } } } as Must-bConfig;
+function telegramCfg(): MustBonfig {
+  return { channels: { telegram: { botToken: "tok" } } } as MustBonfig;
 }
 
 type TelegramActionInput = Parameters<NonNullable<typeof telegramMessageActions.handleAction>>[0];
@@ -39,7 +39,7 @@ type TelegramActionInput = Parameters<NonNullable<typeof telegramMessageActions.
 async function runTelegramAction(
   action: TelegramActionInput["action"],
   params: TelegramActionInput["params"],
-  options?: { cfg?: Must-bConfig; accountId?: string },
+  options?: { cfg?: MustBonfig; accountId?: string },
 ) {
   const cfg = options?.cfg ?? telegramCfg();
   const handleAction = telegramMessageActions.handleAction;
@@ -62,13 +62,13 @@ async function runSignalAction(
   action: SignalActionInput["action"],
   params: SignalActionInput["params"],
   options?: {
-    cfg?: Must-bConfig;
+    cfg?: MustBonfig;
     accountId?: string;
     toolContext?: SignalActionInput["toolContext"];
   },
 ) {
   const cfg =
-    options?.cfg ?? ({ channels: { signal: { account: "+15550001111" } } } as Must-bConfig);
+    options?.cfg ?? ({ channels: { signal: { account: "+15550001111" } } } as MustBonfig);
   const handleAction = signalMessageActions.handleAction;
   if (!handleAction) {
     throw new Error("signal handleAction unavailable");
@@ -85,7 +85,7 @@ async function runSignalAction(
 }
 
 function slackHarness() {
-  const cfg = { channels: { slack: { botToken: "tok" } } } as Must-bConfig;
+  const cfg = { channels: { slack: { botToken: "tok" } } } as MustBonfig;
   const actions = createSlackActions("slack");
   return { cfg, actions };
 }
@@ -127,7 +127,7 @@ function expectChannelCreateAction(actions: string[], expected: boolean) {
   expect(actions).not.toContain("channel-create");
 }
 
-function createSignalAccountOverrideCfg(): Must-bConfig {
+function createSignalAccountOverrideCfg(): MustBonfig {
   return {
     channels: {
       signal: {
@@ -137,12 +137,12 @@ function createSignalAccountOverrideCfg(): Must-bConfig {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 function createDiscordModerationOverrideCfg(params?: {
   channelsEnabled?: boolean;
-}): Must-bConfig {
+}): MustBonfig {
   const accountActions = params?.channelsEnabled
     ? { moderation: true, channels: true }
     : { moderation: true };
@@ -155,13 +155,13 @@ function createDiscordModerationOverrideCfg(params?: {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 async function expectSignalActionRejected(
   params: Record<string, unknown>,
   error: RegExp,
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ) {
   const handleAction = signalMessageActions.handleAction;
   if (!handleAction) {
@@ -197,7 +197,7 @@ beforeEach(() => {
 
 describe("discord message actions", () => {
   it("lists channel and upload actions by default", async () => {
-    const cfg = { channels: { discord: { token: "d0" } } } as Must-bConfig;
+    const cfg = { channels: { discord: { token: "d0" } } } as MustBonfig;
     const actions = discordMessageActions.listActions?.({ cfg }) ?? [];
 
     expect(actions).toContain("emoji-upload");
@@ -208,7 +208,7 @@ describe("discord message actions", () => {
   it("respects disabled channel actions", async () => {
     const cfg = {
       channels: { discord: { token: "d0", actions: { channels: false } } },
-    } as Must-bConfig;
+    } as MustBonfig;
     const actions = discordMessageActions.listActions?.({ cfg }) ?? [];
 
     expect(actions).not.toContain("channel-create");
@@ -238,7 +238,7 @@ describe("discord message actions", () => {
     ] as const;
 
     for (const channelConfig of cases) {
-      const cfg = channelConfig as unknown as Must-bConfig;
+      const cfg = channelConfig as unknown as MustBonfig;
       const actions = discordMessageActions.listActions?.({ cfg }) ?? [];
       expectModerationActions(actions);
     }
@@ -254,7 +254,7 @@ describe("discord message actions", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const actions = discordMessageActions.listActions?.({ cfg }) ?? [];
 
     // moderation defaults to false, so without explicit true it stays hidden
@@ -441,7 +441,7 @@ describe("handleDiscordMessageAction", () => {
     it(testCase.name, async () => {
       await handleDiscordMessageAction({
         ...testCase.input,
-        cfg: {} as Must-bConfig,
+        cfg: {} as MustBonfig,
       });
 
       const call = handleDiscordAction.mock.calls.at(-1);
@@ -459,7 +459,7 @@ describe("handleDiscordMessageAction", () => {
         durationMin: 5,
         senderUserId: "spoofed-admin-id",
       },
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       requesterSenderId: "trusted-sender-id",
       toolContext: { currentChannelProvider: "discord" },
     });
@@ -481,7 +481,7 @@ describe("handleDiscordMessageAction", () => {
     await handleDiscordMessageAction({
       action: "send",
       params: { to: "channel:123", message: "hi", media: "/tmp/file.png" },
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       mediaLocalRoots: ["/tmp/agent-root"],
     });
 
@@ -502,7 +502,7 @@ describe("handleDiscordMessageAction", () => {
         channelId: "123",
         emoji: "ok",
       },
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       toolContext: { currentMessageId: "9001" },
     });
 
@@ -525,7 +525,7 @@ describe("handleDiscordMessageAction", () => {
           channelId: "123",
           emoji: "ok",
         },
-        cfg: {} as Must-bConfig,
+        cfg: {} as MustBonfig,
       }),
     ).rejects.toThrow(/messageId required/i);
 
@@ -548,7 +548,7 @@ describe("telegramMessageActions", () => {
           actions: { sendMessage: false },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
 
@@ -563,7 +563,7 @@ describe("telegramMessageActions", () => {
           actions: { poll: false },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
 
@@ -592,7 +592,7 @@ describe("telegramMessageActions", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
 
@@ -616,7 +616,7 @@ describe("telegramMessageActions", () => {
               },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         expectSticker: true,
       },
       {
@@ -630,7 +630,7 @@ describe("telegramMessageActions", () => {
               },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         expectSticker: false,
       },
     ] as const;
@@ -863,7 +863,7 @@ describe("telegramMessageActions", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const actions = telegramMessageActions.listActions?.({ cfg }) ?? [];
 
     expect(actions).toContain("sticker");
@@ -981,14 +981,14 @@ describe("signalMessageActions", () => {
     const cases = [
       {
         name: "no configured accounts",
-        cfg: {} as Must-bConfig,
+        cfg: {} as MustBonfig,
         expected: [],
       },
       {
         name: "reactions disabled",
         cfg: {
           channels: { signal: { account: "+15550001111", actions: { reactions: false } } },
-        } as Must-bConfig,
+        } as MustBonfig,
         expected: ["send"],
       },
       {
@@ -1014,7 +1014,7 @@ describe("signalMessageActions", () => {
   it("blocks reactions when action gate is disabled", async () => {
     const cfg = {
       channels: { signal: { account: "+15550001111", actions: { reactions: false } } },
-    } as Must-bConfig;
+    } as MustBonfig;
     await expectSignalActionRejected(
       { to: "+15550001111", messageId: "123", emoji: "✅" },
       /actions\.reactions/,
@@ -1036,7 +1036,7 @@ describe("signalMessageActions", () => {
       },
       {
         name: "normalizes uuid recipients",
-        cfg: { channels: { signal: { account: "+15550001111" } } } as Must-bConfig,
+        cfg: { channels: { signal: { account: "+15550001111" } } } as MustBonfig,
         accountId: undefined,
         params: {
           recipient: "uuid:123e4567-e89b-12d3-a456-426614174000",
@@ -1050,7 +1050,7 @@ describe("signalMessageActions", () => {
       },
       {
         name: "passes groupId and targetAuthor for group reactions",
-        cfg: { channels: { signal: { account: "+15550001111" } } } as Must-bConfig,
+        cfg: { channels: { signal: { account: "+15550001111" } } } as MustBonfig,
         accountId: undefined,
         params: {
           to: "signal:group:group-id",
@@ -1105,7 +1105,7 @@ describe("signalMessageActions", () => {
   it("rejects reaction when neither messageId nor toolContext.currentMessageId is provided", async () => {
     const cfg = {
       channels: { signal: { account: "+15550001111" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     await expectSignalActionRejected(
       { to: "+15559999999", emoji: "✅" },
       /messageId.*required/,
@@ -1116,7 +1116,7 @@ describe("signalMessageActions", () => {
   it("requires targetAuthor for group reactions", async () => {
     const cfg = {
       channels: { signal: { account: "+15550001111" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     await expectSignalActionRejected(
       { to: "signal:group:group-id", messageId: "123", emoji: "✅" },
       /targetAuthor/,

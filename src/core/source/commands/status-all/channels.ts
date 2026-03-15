@@ -17,7 +17,7 @@ import type {
   ChannelPlugin,
 } from "../../channels/plugins/types.js";
 import { inspectReadOnlyChannelAccount } from "../../channels/read-only-account-inspect.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { sha256HexPrefix } from "../../logging/redact-identifier.js";
 import { formatTimeAgo } from "./format.js";
 
@@ -39,8 +39,8 @@ type ChannelAccountRow = {
 
 type ResolvedChannelAccountRowParams = {
   plugin: ChannelPlugin;
-  cfg: Must-bConfig;
-  sourceConfig: Must-bConfig;
+  cfg: MustBonfig;
+  sourceConfig: MustBonfig;
   accountId: string;
 };
 
@@ -91,7 +91,7 @@ function formatTokenHint(token: string, opts: { showSecrets: boolean }): string 
   return `${head}…${tail} · len ${t.length}`;
 }
 
-function inspectChannelAccount(plugin: ChannelPlugin, cfg: Must-bConfig, accountId: string) {
+function inspectChannelAccount(plugin: ChannelPlugin, cfg: MustBonfig, accountId: string) {
   return (
     plugin.config.inspectAccount?.(cfg, accountId) ??
     inspectReadOnlyChannelAccount({
@@ -156,7 +156,7 @@ const formatAccountLabel = (params: { accountId: string; name?: string }) => {
 
 const buildAccountNotes = (params: {
   plugin: ChannelPlugin;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   entry: ChannelAccountRow;
 }) => {
   const { plugin, cfg, entry } = params;
@@ -255,7 +255,7 @@ function collectMissingPaths(accounts: ChannelAccountRow[]): string[] {
 
 function summarizeTokenConfig(params: {
   plugin: ChannelPlugin;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accounts: ChannelAccountRow[];
   showSecrets: boolean;
 }): { state: "ok" | "setup" | "warn" | null; detail: string | null } {
@@ -466,8 +466,8 @@ function summarizeTokenConfig(params: {
 // `status --all` channels table.
 // Keep this generic: channel-specific rules belong in the channel plugin.
 export async function buildChannelsTable(
-  cfg: Must-bConfig,
-  opts?: { showSecrets?: boolean; sourceConfig?: Must-bConfig },
+  cfg: MustBonfig,
+  opts?: { showSecrets?: boolean; sourceConfig?: MustBonfig },
 ): Promise<{
   rows: ChannelRow[];
   details: Array<{

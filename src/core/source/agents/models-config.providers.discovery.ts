@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { ModelDefinitionConfig } from "../config/types.models.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { KILOCODE_BASE_URL } from "../providers/kilocode-shared.js";
@@ -23,7 +23,7 @@ import { discoverVercelAiGatewayModels, VERCEL_AI_GATEWAY_BASE_URL } from "./ver
 
 export { resolveOllamaApiBase } from "./ollama-models.js";
 
-type ModelsConfig = NonNullable<Must-bConfig["models"]>;
+type ModelsConfig = NonNullable<MustBonfig["models"]>;
 type ProviderConfig = NonNullable<ModelsConfig["providers"]>[string];
 
 const log = createSubsystemLogger("agents/model-providers");

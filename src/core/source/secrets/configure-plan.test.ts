@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   buildConfigureCandidates,
   buildConfigureCandidatesForScope,
@@ -19,7 +19,7 @@ describe("secrets configure plan helpers", () => {
           botToken: "token", // pragma: allowlist secret
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const candidates = buildConfigureCandidates(config);
     const paths = candidates.map((entry) => entry.path);
@@ -35,7 +35,7 @@ describe("secrets configure plan helpers", () => {
           legacy: { source: "env" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const next = {
       secrets: {
         providers: {
@@ -43,7 +43,7 @@ describe("secrets configure plan helpers", () => {
           modern: { source: "env" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const changes = collectConfigureProviderChanges({ original, next });
     expect(Object.keys(changes.upserts).toSorted()).toEqual(["default", "modern"]);
@@ -52,7 +52,7 @@ describe("secrets configure plan helpers", () => {
 
   it("discovers auth-profiles candidates for the selected agent scope", () => {
     const candidates = buildConfigureCandidatesForScope({
-      config: {} as Must-bConfig,
+      config: {} as MustBonfig,
       authProfiles: {
         agentId: "main",
         store: {
@@ -90,7 +90,7 @@ describe("secrets configure plan helpers", () => {
             id: "TALK_API_KEY",
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       authProfiles: {
         agentId: "main",
         store: {
@@ -144,12 +144,12 @@ describe("secrets configure plan helpers", () => {
           },
           apiKey: "demo-talk-key", // pragma: allowlist secret
         },
-      } as Must-bConfig,
-      authoredMust-bConfig: {
+      } as MustBonfig,
+      authoredMustBonfig: {
         talk: {
           apiKey: "demo-talk-key", // pragma: allowlist secret
         },
-      } as Must-bConfig,
+      } as MustBonfig,
     });
 
     const legacy = candidates.find((entry) => entry.path === "talk.apiKey");

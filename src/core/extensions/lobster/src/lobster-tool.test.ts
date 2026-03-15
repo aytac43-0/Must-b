@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { PassThrough } from "node:stream";
-import type { Must-bPluginApi, Must-bPluginToolContext } from "must-b/plugin-sdk/lobster";
+import type { MustBPluginApi, MustBPluginToolContext } from "must-b/plugin-sdk/lobster";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createWindowsCmdShimFixture,
@@ -27,7 +27,7 @@ vi.mock("node:child_process", async (importOriginal) => {
 
 let createLobsterTool: typeof import("./lobster-tool.js").createLobsterTool;
 
-function fakeApi(overrides: Partial<Must-bPluginApi> = {}): Must-bPluginApi {
+function fakeApi(overrides: Partial<MustBPluginApi> = {}): MustBPluginApi {
   return {
     id: "lobster",
     name: "lobster",
@@ -53,7 +53,7 @@ function fakeApi(overrides: Partial<Must-bPluginApi> = {}): Must-bPluginApi {
   };
 }
 
-function fakeCtx(overrides: Partial<Must-bPluginToolContext> = {}): Must-bPluginToolContext {
+function fakeCtx(overrides: Partial<MustBPluginToolContext> = {}): MustBPluginToolContext {
   return {
     config: {},
     workspaceDir: "/tmp",
@@ -298,7 +298,7 @@ describe("lobster plugin tool", () => {
 
   it("can be gated off in sandboxed contexts", async () => {
     const api = fakeApi();
-    const factoryTool = (ctx: Must-bPluginToolContext) => {
+    const factoryTool = (ctx: MustBPluginToolContext) => {
       if (ctx.sandboxed) {
         return null;
       }

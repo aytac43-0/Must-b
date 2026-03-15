@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBConfig } from "../config/config.js";
 import type { AgentBootstrapHookContext } from "../hooks/internal-hooks.js";
 import { createInternalHookEvent, triggerInternalHook } from "../hooks/internal-hooks.js";
 import { resolveAgentIdFromSessionKey } from "../routing/session-key.js";
@@ -7,7 +7,7 @@ import type { WorkspaceBootstrapFile } from "./workspace.js";
 export async function applyBootstrapHookOverrides(params: {
   files: WorkspaceBootstrapFile[];
   workspaceDir: string;
-  config?: Must-bConfig;
+  config?: MustBConfig;
   sessionKey?: string;
   sessionId?: string;
   agentId?: string;

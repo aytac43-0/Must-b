@@ -1,8 +1,8 @@
 import path from "node:path";
 import type { ZodIssue } from "zod";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { CONFIG_PATH } from "../config/config.js";
-import { Must-bSchema } from "../config/zod-schema.js";
+import { MustBchema } from "../config/zod-schema.js";
 import { note } from "../terminal/note.js";
 import { isRecord } from "../utils.js";
 
@@ -59,11 +59,11 @@ export function resolveConfigPathTarget(root: unknown, path: Array<string | numb
   return current;
 }
 
-export function stripUnknownConfigKeys(config: Must-bConfig): {
-  config: Must-bConfig;
+export function stripUnknownConfigKeys(config: MustBonfig): {
+  config: MustBonfig;
   removed: string[];
 } {
-  const parsed = Must-bSchema.safeParse(config);
+  const parsed = MustBchema.safeParse(config);
   if (parsed.success) {
     return { config, removed: [] };
   }
@@ -92,7 +92,7 @@ export function stripUnknownConfigKeys(config: Must-bConfig): {
   return { config: next, removed };
 }
 
-export function noteOpencodeProviderOverrides(cfg: Must-bConfig): void {
+export function noteOpencodeProviderOverrides(cfg: MustBonfig): void {
   const providers = cfg.models?.providers;
   if (!providers) {
     return;

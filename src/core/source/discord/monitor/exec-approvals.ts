@@ -10,7 +10,7 @@ import {
   type TopLevelComponents,
 } from "@buape/carbon";
 import { ButtonStyle, Routes } from "discord-api-types/v10";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { loadSessionStore, resolveStorePath } from "../../config/sessions.js";
 import type { DiscordExecApprovalConfig } from "../../config/types.discord.js";
 import { GatewayClient } from "../../gateway/client.js";
@@ -101,7 +101,7 @@ export function parseExecApprovalData(
 }
 
 type ExecApprovalContainerParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   title: string;
   description?: string;
@@ -191,7 +191,7 @@ class ExecApprovalActionRow extends Row<Button> {
 }
 
 function resolveExecApprovalAccountId(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   request: ExecApprovalRequest;
 }): string | null {
   const sessionKey = params.request.request.sessionKey?.trim();
@@ -254,7 +254,7 @@ function formatOptionalCommandPreview(
 
 function createExecApprovalRequestContainer(params: {
   request: ExecApprovalRequest;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   actionRow?: Row<Button>;
 }): ExecApprovalContainer {
@@ -283,7 +283,7 @@ function createResolvedContainer(params: {
   request: ExecApprovalRequest;
   decision: ExecApprovalDecision;
   resolvedBy?: string | null;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
 }): ExecApprovalContainer {
   const { commandText, commandPreview: secondaryPreview } = resolveExecApprovalCommandDisplay(
@@ -320,7 +320,7 @@ function createResolvedContainer(params: {
 
 function createExpiredContainer(params: {
   request: ExecApprovalRequest;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
 }): ExecApprovalContainer {
   const { commandText, commandPreview: secondaryPreview } = resolveExecApprovalCommandDisplay(
@@ -346,7 +346,7 @@ export type DiscordExecApprovalHandlerOpts = {
   accountId: string;
   config: DiscordExecApprovalConfig;
   gatewayUrl?: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   runtime?: RuntimeEnv;
   onResolve?: (id: string, decision: ExecApprovalDecision) => Promise<void>;
 };

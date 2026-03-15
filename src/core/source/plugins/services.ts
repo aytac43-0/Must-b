@@ -1,8 +1,8 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { STATE_DIR } from "../config/paths.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import type { PluginRegistry } from "./registry.js";
-import type { Must-bPluginServiceContext, PluginLogger } from "./types.js";
+import type { MustBluginServiceContext, PluginLogger } from "./types.js";
 
 const log = createSubsystemLogger("plugins");
 
@@ -16,9 +16,9 @@ function createPluginLogger(): PluginLogger {
 }
 
 function createServiceContext(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   workspaceDir?: string;
-}): Must-bPluginServiceContext {
+}): MustBluginServiceContext {
   return {
     config: params.config,
     workspaceDir: params.workspaceDir,
@@ -33,7 +33,7 @@ export type PluginServicesHandle = {
 
 export async function startPluginServices(params: {
   registry: PluginRegistry;
-  config: Must-bConfig;
+  config: MustBonfig;
   workspaceDir?: string;
 }): Promise<PluginServicesHandle> {
   const running: Array<{

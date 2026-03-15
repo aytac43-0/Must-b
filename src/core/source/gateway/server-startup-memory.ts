@@ -1,11 +1,11 @@
 import { listAgentIds } from "../agents/agent-scope.js";
 import { resolveMemorySearchConfig } from "../agents/memory-search.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveMemoryBackendConfig } from "../memory/backend-config.js";
 import { getMemorySearchManager } from "../memory/index.js";
 
 export async function startGatewayMemoryBackend(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   log: { info?: (msg: string) => void; warn: (msg: string) => void };
 }): Promise<void> {
   const agentIds = listAgentIds(params.cfg);

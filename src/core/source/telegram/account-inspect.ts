@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   coerceSecretRef,
   hasConfiguredSecretInput,
@@ -48,7 +48,7 @@ function inspectTokenFile(pathValue: unknown): {
 }
 
 function canResolveEnvSecretRefInReadOnlyPath(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   provider: string;
   id: string;
 }): boolean {
@@ -63,7 +63,7 @@ function canResolveEnvSecretRefInReadOnlyPath(params: {
   return !allowlist || allowlist.includes(params.id);
 }
 
-function inspectTokenValue(params: { cfg: Must-bConfig; value: unknown }): {
+function inspectTokenValue(params: { cfg: MustBonfig; value: unknown }): {
   token: string;
   tokenSource: "config" | "env" | "none";
   tokenStatus: TelegramCredentialStatus;
@@ -117,7 +117,7 @@ function inspectTokenValue(params: { cfg: Must-bConfig; value: unknown }): {
 }
 
 function inspectTelegramAccountPrimary(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   envToken?: string | null;
 }): InspectedTelegramAccount {
@@ -213,7 +213,7 @@ function inspectTelegramAccountPrimary(params: {
 }
 
 export function inspectTelegramAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   envToken?: string | null;
 }): InspectedTelegramAccount {

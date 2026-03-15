@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Must-bSchema } from "./zod-schema.js";
+import { MustBchema } from "./zod-schema.js";
 
 describe("ACP binding cutover schema", () => {
   it("accepts top-level typed ACP bindings with per-agent runtime defaults", () => {
-    const parsed = Must-bSchema.safeParse({
+    const parsed = MustBchema.safeParse({
       agents: {
         list: [
           { id: "main", default: true, runtime: { type: "embedded" } },
@@ -47,7 +47,7 @@ describe("ACP binding cutover schema", () => {
   });
 
   it("rejects legacy Discord channel-local ACP binding fields", () => {
-    const parsed = Must-bSchema.safeParse({
+    const parsed = MustBchema.safeParse({
       channels: {
         discord: {
           guilds: {
@@ -72,7 +72,7 @@ describe("ACP binding cutover schema", () => {
   });
 
   it("rejects legacy Telegram topic-local ACP binding fields", () => {
-    const parsed = Must-bSchema.safeParse({
+    const parsed = MustBchema.safeParse({
       channels: {
         telegram: {
           groups: {
@@ -96,7 +96,7 @@ describe("ACP binding cutover schema", () => {
   });
 
   it("rejects ACP bindings without a peer conversation target", () => {
-    const parsed = Must-bSchema.safeParse({
+    const parsed = MustBchema.safeParse({
       bindings: [
         {
           type: "acp",
@@ -110,7 +110,7 @@ describe("ACP binding cutover schema", () => {
   });
 
   it("rejects ACP bindings on unsupported channels", () => {
-    const parsed = Must-bSchema.safeParse({
+    const parsed = MustBchema.safeParse({
       bindings: [
         {
           type: "acp",
@@ -128,7 +128,7 @@ describe("ACP binding cutover schema", () => {
   });
 
   it("rejects non-canonical Telegram ACP topic peer IDs", () => {
-    const parsed = Must-bSchema.safeParse({
+    const parsed = MustBchema.safeParse({
       bindings: [
         {
           type: "acp",

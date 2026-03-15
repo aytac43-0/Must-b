@@ -1,15 +1,15 @@
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { buildWorkspaceHookStatus } from "../hooks/hooks-status.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 
 export async function setupInternalHooks(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   runtime: RuntimeEnv,
   prompter: WizardPrompter,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   await prompter.note(
     [
       "Hooks let you automate actions when agent commands are issued.",
@@ -58,7 +58,7 @@ export async function setupInternalHooks(
     entries[name] = { enabled: true };
   }
 
-  const next: Must-bConfig = {
+  const next: MustBonfig = {
     ...cfg,
     hooks: {
       ...cfg.hooks,

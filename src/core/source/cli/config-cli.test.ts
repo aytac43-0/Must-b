@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ConfigFileSnapshot, Must-bConfig } from "../config/types.js";
+import type { ConfigFileSnapshot, MustBonfig } from "../config/types.js";
 
 /**
  * Test for issue #6070:
@@ -10,12 +10,12 @@ import type { ConfigFileSnapshot, Must-bConfig } from "../config/types.js";
 
 const mockReadConfigFileSnapshot = vi.fn<() => Promise<ConfigFileSnapshot>>();
 const mockWriteConfigFile = vi.fn<
-  (cfg: Must-bConfig, options?: { unsetPaths?: string[][] }) => Promise<void>
+  (cfg: MustBonfig, options?: { unsetPaths?: string[][] }) => Promise<void>
 >(async () => {});
 
 vi.mock("../config/config.js", () => ({
   readConfigFileSnapshot: () => mockReadConfigFileSnapshot(),
-  writeConfigFile: (cfg: Must-bConfig, options?: { unsetPaths?: string[][] }) =>
+  writeConfigFile: (cfg: MustBonfig, options?: { unsetPaths?: string[][] }) =>
     mockWriteConfigFile(cfg, options),
 }));
 
@@ -35,8 +35,8 @@ vi.mock("../runtime.js", () => ({
 }));
 
 function buildSnapshot(params: {
-  resolved: Must-bConfig;
-  config: Must-bConfig;
+  resolved: MustBonfig;
+  config: MustBonfig;
 }): ConfigFileSnapshot {
   return {
     path: "/tmp/must-b.json",
@@ -52,7 +52,7 @@ function buildSnapshot(params: {
   };
 }
 
-function setSnapshot(resolved: Must-bConfig, config: Must-bConfig) {
+function setSnapshot(resolved: MustBonfig, config: MustBonfig) {
   mockReadConfigFileSnapshot.mockResolvedValueOnce(buildSnapshot({ resolved, config }));
 }
 
@@ -60,7 +60,7 @@ function setSnapshotOnce(snapshot: ConfigFileSnapshot) {
   mockReadConfigFileSnapshot.mockResolvedValueOnce(snapshot);
 }
 
-function withRuntimeDefaults(resolved: Must-bConfig): Must-bConfig {
+function withRuntimeDefaults(resolved: MustBonfig): MustBonfig {
   return {
     ...resolved,
     agents: {
@@ -127,7 +127,7 @@ describe("config cli", () => {
 
   describe("config set - issue #6070", () => {
     it("preserves existing config keys when setting a new value", async () => {
-      const resolved: Must-bConfig = {
+      const resolved: MustBonfig = {
         agents: {
           list: [{ id: "main" }, { id: "oracle", workspace: "~/oracle-workspace" }],
         },
@@ -135,7 +135,7 @@ describe("config cli", () => {
         tools: { allow: ["group:fs"] },
         logging: { level: "debug" },
       };
-      const runtimeMerged: Must-bConfig = {
+      const runtimeMerged: MustBonfig = {
         ...withRuntimeDefaults(resolved),
       };
       setSnapshot(resolved, runtimeMerged);
@@ -153,7 +153,7 @@ describe("config cli", () => {
     });
 
     it("does not inject runtime defaults into the written config", async () => {
-      const resolved: Must-bConfig = {
+      const resolved: MustBonfig = {
         gateway: { port: 18789 },
       };
       const runtimeMerged = {
@@ -167,7 +167,7 @@ describe("config cli", () => {
         } as never,
         messages: { ackReaction: "✅" } as never,
         sessions: { persistence: { enabled: true } } as never,
-      } as unknown as Must-bConfig;
+      } as unknown as MustBonfig;
       setSnapshot(resolved, runtimeMerged);
 
       await runConfigCommand(["config", "set", "gateway.auth.mode", "token"]);
@@ -184,7 +184,7 @@ describe("config cli", () => {
     });
 
     it("auto-seeds a valid Ollama provider when setting only models.providers.ollama.apiKey", async () => {
-      const resolved: Must-bConfig = {
+      const resolved: MustBonfig = {
         gateway: { port: 18789 },
       };
       setSnapshot(resolved, resolved);
@@ -204,7 +204,7 @@ describe("config cli", () => {
 
   describe("config get", () => {
     it("redacts sensitive values", async () => {
-      const resolved: Must-bConfig = {
+      const resolved: MustBonfig = {
         gateway: {
           auth: {
             token: "super-secret-token",
@@ -221,7 +221,7 @@ describe("config cli", () => {
 
   describe("config validate", () => {
     it("prints success and exits 0 when config is valid", async () => {
-      const resolved: Must-bConfig = {
+      const resolved: MustBonfig = {
         gateway: { port: 18789 },
       };
       setSnapshot(resolved, resolved);
@@ -317,7 +317,7 @@ describe("config cli", () => {
 
   describe("config set parsing flags", () => {
     it("falls back to raw string when parsing fails and strict mode is off", async () => {
-      const resolved: Must-bConfig = { gateway: { port: 18789 } };
+      const resolved: MustBonfig = { gateway: { port: 18789 } };
       setSnapshot(resolved, resolved);
 
       await runConfigCommand(["config", "set", "gateway.auth.mode", "{bad"]);
@@ -390,7 +390,7 @@ describe("config cli", () => {
 
   describe("config unset - issue #6070", () => {
     it("preserves existing config keys when unsetting a value", async () => {
-      const resolved: Must-bConfig = {
+      const resolved: MustBonfig = {
         agents: { list: [{ id: "main" }] },
         gateway: { port: 18789 },
         tools: {
@@ -399,7 +399,7 @@ describe("config cli", () => {
         },
         logging: { level: "debug" },
       };
-      const runtimeMerged: Must-bConfig = {
+      const runtimeMerged: MustBonfig = {
         ...withRuntimeDefaults(resolved),
       };
       setSnapshot(resolved, runtimeMerged);
@@ -422,7 +422,7 @@ describe("config cli", () => {
 
   describe("config file", () => {
     it("prints the active config file path", async () => {
-      const resolved: Must-bConfig = { gateway: { port: 18789 } };
+      const resolved: MustBonfig = { gateway: { port: 18789 } };
       setSnapshot(resolved, resolved);
 
       await runConfigCommand(["config", "file"]);
@@ -432,7 +432,7 @@ describe("config cli", () => {
     });
 
     it("handles config file path with home directory", async () => {
-      const resolved: Must-bConfig = { gateway: { port: 18789 } };
+      const resolved: MustBonfig = { gateway: { port: 18789 } };
       const snapshot = buildSnapshot({ resolved, config: resolved });
       snapshot.path = "/home/user/.must-b/must-b.json";
       mockReadConfigFileSnapshot.mockResolvedValueOnce(snapshot);

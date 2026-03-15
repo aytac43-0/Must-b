@@ -1,11 +1,11 @@
 import { formatCliCommand } from "../cli/command-format.js";
-import { type Must-bConfig, readConfigFileSnapshot } from "../config/config.js";
+import { type MustBonfig, readConfigFileSnapshot } from "../config/config.js";
 import { formatConfigIssueLines } from "../config/issue-format.js";
 import type { RuntimeEnv } from "../runtime.js";
 
 export async function requireValidConfigSnapshot(
   runtime: RuntimeEnv,
-): Promise<Must-bConfig | null> {
+): Promise<MustBonfig | null> {
   const snapshot = await readConfigFileSnapshot();
   if (snapshot.exists && !snapshot.valid) {
     const issues =

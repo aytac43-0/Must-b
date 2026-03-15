@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildPluginStatusReport } from "./status.js";
 
 const loadConfigMock = vi.fn();
-const loadMust-bPluginsMock = vi.fn();
+const loadMustBluginsMock = vi.fn();
 
 vi.mock("../config/config.js", () => ({
   loadConfig: () => loadConfigMock(),
 }));
 
 vi.mock("./loader.js", () => ({
-  loadMust-bPlugins: (...args: unknown[]) => loadMust-bPluginsMock(...args),
+  loadMustBlugins: (...args: unknown[]) => loadMustBluginsMock(...args),
 }));
 
 vi.mock("../agents/agent-scope.js", () => ({
@@ -24,9 +24,9 @@ vi.mock("../agents/workspace.js", () => ({
 describe("buildPluginStatusReport", () => {
   beforeEach(() => {
     loadConfigMock.mockReset();
-    loadMust-bPluginsMock.mockReset();
+    loadMustBluginsMock.mockReset();
     loadConfigMock.mockReturnValue({});
-    loadMust-bPluginsMock.mockReturnValue({
+    loadMustBluginsMock.mockReturnValue({
       plugins: [],
       diagnostics: [],
       channels: [],
@@ -49,7 +49,7 @@ describe("buildPluginStatusReport", () => {
       env,
     });
 
-    expect(loadMust-bPluginsMock).toHaveBeenCalledWith(
+    expect(loadMustBluginsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         config: {},
         workspaceDir: "/workspace",

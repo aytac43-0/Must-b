@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 import { buildRandomTempFilePath, withTempDownloadPath } from "./temp-path.js";
 
 describe("buildRandomTempFilePath", () => {
@@ -17,7 +17,7 @@ describe("buildRandomTempFilePath", () => {
   });
 
   it("sanitizes prefix and extension to avoid path traversal segments", () => {
-    const tmpRoot = path.resolve(resolvePreferredMust-bTmpDir());
+    const tmpRoot = path.resolve(resolvePreferredMustBmpDir());
     const result = buildRandomTempFilePath({
       prefix: "../../line/../media",
       extension: "/../.jpg",
@@ -45,12 +45,12 @@ describe("withTempDownloadPath", () => {
       },
     );
 
-    expect(capturedPath).toContain(path.join(resolvePreferredMust-bTmpDir(), "line-media-"));
+    expect(capturedPath).toContain(path.join(resolvePreferredMustBmpDir(), "line-media-"));
     await expect(fs.stat(capturedPath)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("sanitizes prefix and fileName", async () => {
-    const tmpRoot = path.resolve(resolvePreferredMust-bTmpDir());
+    const tmpRoot = path.resolve(resolvePreferredMustBmpDir());
     let capturedPath = "";
     await withTempDownloadPath(
       {

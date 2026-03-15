@@ -1,9 +1,9 @@
 import type { MsgContext } from "../auto-reply/templating.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { recordSessionMetaFromInbound, resolveStorePath } from "../config/sessions.js";
 
 export async function recordInboundSessionMetaSafe(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   sessionKey: string;
   ctx: MsgContext;

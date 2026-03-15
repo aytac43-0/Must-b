@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBConfig } from "../config/config.js";
 import type { ResolvedAgentRoute } from "../routing/resolve-route.js";
 import { deriveLastRoutePolicy } from "../routing/resolve-route.js";
 import { resolveAgentIdFromSessionKey } from "../routing/session-key.js";
@@ -10,7 +10,7 @@ import {
 } from "./persistent-bindings.js";
 
 export function resolveConfiguredAcpRoute(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   route: ResolvedAgentRoute;
   channel: ConfiguredAcpBindingChannel;
   accountId: string;
@@ -61,7 +61,7 @@ export function resolveConfiguredAcpRoute(params: {
 }
 
 export async function ensureConfiguredAcpRouteReady(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   configuredBinding: ResolvedConfiguredAcpBinding | null;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!params.configuredBinding) {

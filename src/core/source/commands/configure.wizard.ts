@@ -1,7 +1,7 @@
 import fsPromises from "node:fs/promises";
 import nodePath from "node:path";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { readConfigFileSnapshot, resolveGatewayPort, writeConfigFile } from "../config/config.js";
 import { logConfigUpdated } from "../config/logging.js";
 import { ensureControlUiAssetsBuilt } from "../infra/control-ui-assets.js";
@@ -49,7 +49,7 @@ import { setupSkills } from "./onboard-skills.js";
 type ConfigureSectionChoice = WizardSection | "__continue";
 
 async function resolveGatewaySecretInputForWizard(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   value: unknown;
   path: string;
 }): Promise<string | undefined> {
@@ -66,7 +66,7 @@ async function resolveGatewaySecretInputForWizard(params: {
 }
 
 async function runGatewayHealthCheck(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   runtime: RuntimeEnv;
   port: number;
 }): Promise<void> {
@@ -161,9 +161,9 @@ async function promptChannelMode(runtime: RuntimeEnv): Promise<ChannelsWizardMod
 }
 
 async function promptWebToolsConfig(
-  nextConfig: Must-bConfig,
+  nextConfig: MustBonfig,
   runtime: RuntimeEnv,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const existingSearch = nextConfig.tools?.web?.search;
   const existingFetch = nextConfig.tools?.web?.fetch;
   const {
@@ -313,7 +313,7 @@ export async function runConfigureWizard(
     const prompter = createClackPrompter();
 
     const snapshot = await readConfigFileSnapshot();
-    const baseConfig: Must-bConfig = snapshot.valid ? snapshot.config : {};
+    const baseConfig: MustBonfig = snapshot.valid ? snapshot.config : {};
 
     if (snapshot.exists) {
       const title = snapshot.valid ? "Existing config detected" : "Invalid config";

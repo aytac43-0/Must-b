@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import json5 from "json5";
 import { resolveConfigPath } from "../config/paths.js";
-import type { Must-bConfig } from "../config/types.js";
+import type { MustBonfig } from "../config/types.js";
 
-type LoggingConfig = Must-bConfig["logging"];
+type LoggingConfig = MustBonfig["logging"];
 
 export function readLoggingConfig(): LoggingConfig | undefined {
   const configPath = resolveConfigPath();

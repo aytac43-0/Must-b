@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { clearBootstrapSnapshotOnSessionRollover } from "../../agents/bootstrap-cache.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   evaluateSessionFreshness,
   loadSessionStore,
@@ -10,7 +10,7 @@ import {
 } from "../../config/sessions.js";
 
 export function resolveCronSession(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey: string;
   nowMs: number;
   agentId: string;

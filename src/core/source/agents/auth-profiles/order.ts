@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBConfig } from "../../config/config.js";
 import {
   findNormalizedProviderValue,
   normalizeProviderId,
@@ -28,7 +28,7 @@ export type AuthProfileEligibility = {
 };
 
 export function resolveAuthProfileEligibility(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   store: AuthProfileStore;
   provider: string;
   profileId: string;
@@ -65,7 +65,7 @@ export function resolveAuthProfileEligibility(params: {
 }
 
 export function resolveAuthProfileOrder(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   store: AuthProfileStore;
   provider: string;
   preferredProfile?: string;

@@ -1,4 +1,4 @@
-import { stopMust-bChrome } from "./chrome.js";
+import { stopMustBhrome } from "./chrome.js";
 import type { ResolvedBrowserConfig } from "./config.js";
 import { resolveProfile } from "./config.js";
 import {
@@ -46,7 +46,7 @@ export async function stopKnownBrowserProfiles(params: {
       try {
         const runtime = current.profiles.get(name);
         if (runtime?.running) {
-          await stopMust-bChrome(runtime.running);
+          await stopMustBhrome(runtime.running);
           runtime.running = null;
           continue;
         }

@@ -1,4 +1,4 @@
-import { loadConfig, type Must-bConfig } from "../config/config.js";
+import { loadConfig, type MustBonfig } from "../config/config.js";
 import { resolveMarkdownTableMode } from "../config/markdown-tables.js";
 import { generateSecureUuid } from "../infra/secure-random.js";
 import { getChildLogger } from "../logging/logger.js";
@@ -19,7 +19,7 @@ export async function sendMessageWhatsApp(
   body: string,
   options: {
     verbose: boolean;
-    cfg?: Must-bConfig;
+    cfg?: MustBonfig;
     mediaUrl?: string;
     mediaLocalRoots?: readonly string[];
     gifPlayback?: boolean;
@@ -160,7 +160,7 @@ export async function sendReactionWhatsApp(
 export async function sendPollWhatsApp(
   to: string,
   poll: PollInput,
-  options: { verbose: boolean; accountId?: string; cfg?: Must-bConfig },
+  options: { verbose: boolean; accountId?: string; cfg?: MustBonfig },
 ): Promise<{ messageId: string; toJid: string }> {
   const correlationId = generateSecureUuid();
   const startedAt = Date.now();

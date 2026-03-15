@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import type { Must-bConfig, RuntimeEnv } from "must-b/plugin-sdk/msteams";
+import type { MustBonfig, RuntimeEnv } from "must-b/plugin-sdk/msteams";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { MSTeamsConversationStore } from "./conversation-store.js";
 import type { MSTeamsPollStore } from "./polls.js";
@@ -134,7 +134,7 @@ vi.mock("./runtime.js", () => ({
 
 import { monitorMSTeamsProvider } from "./monitor.js";
 
-function createConfig(port: number): Must-bConfig {
+function createConfig(port: number): MustBonfig {
   return {
     channels: {
       msteams: {
@@ -148,7 +148,7 @@ function createConfig(port: number): Must-bConfig {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 function createRuntime(): RuntimeEnv {

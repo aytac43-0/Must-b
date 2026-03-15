@@ -3,12 +3,12 @@ import path from "node:path";
 import {
   getRuntimeConfigSourceSnapshot,
   projectConfigOntoRuntimeSourceSnapshot,
-  type Must-bConfig,
+  type MustBonfig,
   loadConfig,
 } from "../config/config.js";
 import { createConfigRuntimeEnv } from "../config/env-vars.js";
-import { resolveMust-bAgentDir } from "./agent-paths.js";
-import { planMust-bModelsJson } from "./models-config.plan.js";
+import { resolveMustBgentDir } from "./agent-paths.js";
+import { planMustBodelsJson } from "./models-config.plan.js";
 
 const MODELS_JSON_WRITE_LOCKS = new Map<string, Promise<void>>();
 
@@ -42,9 +42,9 @@ async function writeModelsFileAtomic(targetPath: string, contents: string): Prom
   await fs.rename(tempPath, targetPath);
 }
 
-function resolveModelsConfigInput(config?: Must-bConfig): {
-  config: Must-bConfig;
-  sourceConfigForSecrets: Must-bConfig;
+function resolveModelsConfigInput(config?: MustBonfig): {
+  config: MustBonfig;
+  sourceConfigForSecrets: MustBonfig;
 } {
   const runtimeSource = getRuntimeConfigSourceSnapshot();
   if (!config) {
@@ -88,13 +88,13 @@ async function withModelsJsonWriteLock<T>(targetPath: string, run: () => Promise
   }
 }
 
-export async function ensureMust-bModelsJson(
-  config?: Must-bConfig,
+export async function ensureMustBodelsJson(
+  config?: MustBonfig,
   agentDirOverride?: string,
 ): Promise<{ agentDir: string; wrote: boolean }> {
   const resolved = resolveModelsConfigInput(config);
   const cfg = resolved.config;
-  const agentDir = agentDirOverride?.trim() ? agentDirOverride.trim() : resolveMust-bAgentDir();
+  const agentDir = agentDirOverride?.trim() ? agentDirOverride.trim() : resolveMustBgentDir();
   const targetPath = path.join(agentDir, "models.json");
 
   return await withModelsJsonWriteLock(targetPath, async () => {
@@ -102,7 +102,7 @@ export async function ensureMust-bModelsJson(
     // are available to provider discovery without mutating process.env.
     const env = createConfigRuntimeEnv(cfg);
     const existingModelsFile = await readExistingModelsFile(targetPath);
-    const plan = await planMust-bModelsJson({
+    const plan = await planMustBodelsJson({
       cfg,
       sourceConfigForSecrets: resolved.sourceConfigForSecrets,
       agentDir,

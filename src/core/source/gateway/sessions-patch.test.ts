@@ -1,19 +1,19 @@
 import { describe, expect, test } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import { applySessionsPatchToStore } from "./sessions-patch.js";
 
 const SUBAGENT_MODEL = "synthetic/hf:moonshotai/Kimi-K2.5";
 const KIMI_SUBAGENT_KEY = "agent:kimi:subagent:child";
 const MAIN_SESSION_KEY = "agent:main:main";
-const EMPTY_CFG = {} as Must-bConfig;
+const EMPTY_CFG = {} as MustBonfig;
 
 type ApplySessionsPatchArgs = Parameters<typeof applySessionsPatchToStore>[0];
 
 async function runPatch(params: {
   patch: ApplySessionsPatchArgs["patch"];
   store?: Record<string, SessionEntry>;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   storeKey?: string;
   loadGatewayModelCatalog?: ApplySessionsPatchArgs["loadGatewayModelCatalog"];
 }) {
@@ -47,7 +47,7 @@ function expectPatchError(
   expect(result.error.message).toContain(message);
 }
 
-async function applySubagentModelPatch(cfg: Must-bConfig) {
+async function applySubagentModelPatch(cfg: MustBonfig) {
   return expectPatchOk(
     await runPatch({
       cfg,
@@ -68,7 +68,7 @@ function makeKimiSubagentCfg(params: {
   agentPrimaryModel: string;
   agentSubagentModel?: string;
   defaultsSubagentModel?: string;
-}): Must-bConfig {
+}): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -88,10 +88,10 @@ function makeKimiSubagentCfg(params: {
         },
       ],
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
-function createAllowlistedAnthropicModelCfg(): Must-bConfig {
+function createAllowlistedAnthropicModelCfg(): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -101,7 +101,7 @@ function createAllowlistedAnthropicModelCfg(): Must-bConfig {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 describe("gateway sessions patch", () => {

@@ -1,8 +1,8 @@
 import path from "node:path";
 import { resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 
 type BuildMediaLocalRootsOptions = {
   preferredTmpDir?: string;
@@ -12,7 +12,7 @@ let cachedPreferredTmpDir: string | undefined;
 
 function resolveCachedPreferredTmpDir(): string {
   if (!cachedPreferredTmpDir) {
-    cachedPreferredTmpDir = resolvePreferredMust-bTmpDir();
+    cachedPreferredTmpDir = resolvePreferredMustBmpDir();
   }
   return cachedPreferredTmpDir;
 }
@@ -37,7 +37,7 @@ export function getDefaultMediaLocalRoots(): readonly string[] {
 }
 
 export function getAgentScopedMediaLocalRoots(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId?: string,
 ): readonly string[] {
   const roots = buildMediaLocalRoots(resolveStateDir());

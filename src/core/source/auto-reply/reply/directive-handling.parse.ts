@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { ExecAsk, ExecHost, ExecSecurity } from "../../infra/exec-approvals.js";
 import { extractModelDirective } from "../model.js";
 import type { MsgContext } from "../templating.js";
@@ -206,7 +206,7 @@ export function isDirectiveOnly(params: {
   directives: InlineDirectives;
   cleanedBody: string;
   ctx: MsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId?: string;
   isGroup: boolean;
 }): boolean {

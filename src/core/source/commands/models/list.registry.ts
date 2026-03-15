@@ -1,6 +1,6 @@
 import type { Api, Model } from "@mariozechner/pi-ai";
 import type { ModelRegistry } from "@mariozechner/pi-coding-agent";
-import { resolveMust-bAgentDir } from "../../agents/agent-paths.js";
+import { resolveMustBgentDir } from "../../agents/agent-paths.js";
 import type { AuthProfileStore } from "../../agents/auth-profiles.js";
 import { listProfilesForProvider } from "../../agents/auth-profiles.js";
 import {
@@ -10,7 +10,7 @@ import {
 } from "../../agents/model-auth.js";
 import { shouldSuppressBuiltInModel } from "../../agents/model-suppression.js";
 import { discoverAuthStorage, discoverModels } from "../../agents/pi-model-discovery.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   formatErrorWithStack,
   MODEL_AVAILABILITY_UNAVAILABLE_CODE,
@@ -21,7 +21,7 @@ import { isLocalBaseUrl, modelKey } from "./shared.js";
 
 const hasAuthForProvider = (
   provider: string,
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
   authStore?: AuthProfileStore,
 ) => {
   if (!cfg || !authStore) {
@@ -97,10 +97,10 @@ function loadAvailableModels(registry: ModelRegistry): Model<Api>[] {
 }
 
 export async function loadModelRegistry(
-  _cfg: Must-bConfig,
-  _opts?: { sourceConfig?: Must-bConfig },
+  _cfg: MustBonfig,
+  _opts?: { sourceConfig?: MustBonfig },
 ) {
-  const agentDir = resolveMust-bAgentDir();
+  const agentDir = resolveMustBgentDir();
   const authStorage = discoverAuthStorage(agentDir);
   const registry = discoverModels(authStorage, agentDir);
   const models = registry
@@ -133,7 +133,7 @@ export function toModelRow(params: {
   tags: string[];
   aliases?: string[];
   availableKeys?: Set<string>;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   authStore?: AuthProfileStore;
   allowProviderAvailabilityFallback?: boolean;
 }): ModelRow {

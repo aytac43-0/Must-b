@@ -12,7 +12,7 @@ import {
   resolveEnvApiKey,
   resolveUsableCustomProviderApiKey,
 } from "../../agents/model-auth.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { shortenHomePath } from "../../utils.js";
 import { maskApiKey } from "./list.format.js";
 import type { ProviderAuthOverview } from "./list.types.js";
@@ -42,7 +42,7 @@ function formatProfileSecretLabel(params: {
 
 export function resolveProviderAuthOverview(params: {
   provider: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   store: AuthProfileStore;
   modelsPath: string;
 }): ProviderAuthOverview {

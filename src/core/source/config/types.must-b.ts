@@ -28,7 +28,7 @@ import type { SecretsConfig } from "./types.secrets.js";
 import type { SkillsConfig } from "./types.skills.js";
 import type { ToolsConfig } from "./types.tools.js";
 
-export type Must-bConfig = {
+export type MustBonfig = {
   meta?: {
     /** Last Must-b version that wrote this config. */
     lastTouchedVersion?: string;
@@ -144,9 +144,9 @@ export type ConfigFileSnapshot = {
    * defaults are applied. Use this for config set/unset operations to avoid
    * leaking runtime defaults into the written config file.
    */
-  resolved: Must-bConfig;
+  resolved: MustBonfig;
   valid: boolean;
-  config: Must-bConfig;
+  config: MustBonfig;
   hash?: string;
   issues: ConfigValidationIssue[];
   warnings: ConfigValidationIssue[];

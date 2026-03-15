@@ -18,7 +18,7 @@ import { resolveCommandAuthorizedFromAuthorizers } from "../channels/command-gat
 import { resolveNativeCommandSessionTargets } from "../channels/native-command-session-targets.js";
 import { createReplyPrefixOptions } from "../channels/reply-prefix.js";
 import { recordInboundSessionMetaSafe } from "../channels/session-meta.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { ChannelGroupPolicy } from "../config/group-policy.js";
 import { resolveMarkdownTableMode } from "../config/markdown-tables.js";
 import {
@@ -90,7 +90,7 @@ type TelegramCommandAuthResult = {
 };
 
 export type RegisterTelegramHandlerParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   bot: Bot;
   mediaMaxBytes: number;
@@ -121,7 +121,7 @@ export type RegisterTelegramHandlerParams = {
 
 type RegisterTelegramNativeCommandsParams = {
   bot: Bot;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   runtime: RuntimeEnv;
   accountId: string;
   telegramCfg: TelegramAccountConfig;
@@ -145,7 +145,7 @@ type RegisterTelegramNativeCommandsParams = {
 async function resolveTelegramCommandAuth(params: {
   msg: NonNullable<TelegramNativeCommandContext["message"]>;
   bot: Bot;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   telegramCfg: TelegramAccountConfig;
   allowFrom?: Array<string | number>;

@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/whatsapp";
+import type { MustBPluginApi } from "must-b/plugin-sdk/whatsapp";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/whatsapp";
 import { whatsappPlugin } from "./src/channel.js";
 import { setWhatsAppRuntime } from "./src/runtime.js";
@@ -8,7 +8,7 @@ const plugin = {
   name: "WhatsApp",
   description: "WhatsApp channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     setWhatsAppRuntime(api.runtime);
     api.registerChannel({ plugin: whatsappPlugin });
   },

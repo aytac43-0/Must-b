@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { inspectDiscordAccount, type InspectedDiscordAccount } from "../discord/account-inspect.js";
 import { inspectSlackAccount, type InspectedSlackAccount } from "../slack/account-inspect.js";
 import {
@@ -14,7 +14,7 @@ export type ReadOnlyInspectedAccount =
 
 export function inspectReadOnlyChannelAccount(params: {
   channelId: ChannelId;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): ReadOnlyInspectedAccount | null {
   if (params.channelId === "discord") {

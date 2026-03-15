@@ -1,5 +1,5 @@
 import type { ChannelOutboundTargetMode } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { normalizeAccountId } from "../../utils/account-id.js";
 import {
@@ -137,7 +137,7 @@ export function resolveAgentDeliveryPlan(params: {
 }
 
 export function resolveAgentOutboundTarget(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   plan: AgentDeliveryPlan;
   targetMode?: ChannelOutboundTargetMode;
   validateExplicitTarget?: boolean;

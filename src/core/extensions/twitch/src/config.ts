@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/twitch";
+import type { MustBConfig } from "must-b/plugin-sdk/twitch";
 import type { TwitchAccountConfig } from "./types.js";
 
 /**
@@ -24,7 +24,7 @@ export function getAccountConfig(
     return null;
   }
 
-  const cfg = coreConfig as Must-bConfig;
+  const cfg = coreConfig as MustBConfig;
   const twitch = cfg.channels?.twitch;
   // Access accounts via unknown to handle union type (single-account vs multi-account)
   const twitchRaw = twitch as Record<string, unknown> | undefined;
@@ -88,7 +88,7 @@ export function getAccountConfig(
  *
  * Includes both explicit accounts and implicit "default" from base-level config
  */
-export function listAccountIds(cfg: Must-bConfig): string[] {
+export function listAccountIds(cfg: MustBConfig): string[] {
   const twitch = cfg.channels?.twitch;
   // Access accounts via unknown to handle union type (single-account vs multi-account)
   const twitchRaw = twitch as Record<string, unknown> | undefined;

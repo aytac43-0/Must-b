@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { resolveStateDir } from "../../config/paths.js";
-import { resolveMust-bPackageRoot } from "../../infra/must-b-root.js";
+import { resolveMustBackageRoot } from "../../infra/must-b-root.js";
 import { readPackageName, readPackageVersion } from "../../infra/package-json.js";
 import { normalizePackageTagInput } from "../../infra/package-tag.js";
 import { trimLogTail } from "../../infra/restart-sentinel.js";
@@ -130,7 +130,7 @@ export function resolveNodeRunner(): string {
 
 export async function resolveUpdateRoot(): Promise<string> {
   return (
-    (await resolveMust-bPackageRoot({
+    (await resolveMustBackageRoot({
       moduleUrl: import.meta.url,
       argv1: process.argv[1],
       cwd: process.cwd(),

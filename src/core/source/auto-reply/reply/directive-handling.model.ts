@@ -6,7 +6,7 @@ import {
   resolveConfiguredModelRef,
   resolveModelRefFromString,
 } from "../../agents/model-selection.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { buildBrowseProvidersButton } from "../../telegram/model-buttons.js";
 import { shortenHomePath } from "../../utils.js";
@@ -52,7 +52,7 @@ function pushUniqueCatalogEntry(params: {
 }
 
 function buildModelPickerCatalog(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   defaultProvider: string;
   defaultModel: string;
   aliasIndex: ModelAliasIndex;
@@ -189,7 +189,7 @@ function buildModelPickerCatalog(params: {
 
 export async function maybeHandleModelDirectiveInfo(params: {
   directives: InlineDirectives;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir: string;
   activeAgentId: string;
   provider: string;
@@ -355,7 +355,7 @@ export async function maybeHandleModelDirectiveInfo(params: {
 
 export function resolveModelSelectionFromDirective(params: {
   directives: InlineDirectives;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir: string;
   defaultProvider: string;
   defaultModel: string;

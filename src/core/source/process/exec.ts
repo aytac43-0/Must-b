@@ -4,7 +4,7 @@ import path from "node:path";
 import process from "node:process";
 import { promisify } from "node:util";
 import { danger, shouldLogVerbose } from "../globals.js";
-import { markMust-bExecEnv } from "../infra/must-b-exec-env.js";
+import { markMustBxecEnv } from "../infra/must-b-exec-env.js";
 import { logDebug, logError } from "../logger.js";
 import { resolveCommandStdio } from "./spawn-utils.js";
 import { resolveWindowsCommandShim } from "./windows-command.js";
@@ -206,7 +206,7 @@ export function resolveCommandEnv(params: {
       resolvedEnv.npm_config_fund = "false";
     }
   }
-  return markMust-bExecEnv(resolvedEnv);
+  return markMustBxecEnv(resolvedEnv);
 }
 
 export async function runCommandWithTimeout(

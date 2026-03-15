@@ -78,7 +78,7 @@ vi.mock("node:child_process", async (importOriginal) => {
 });
 
 vi.mock("../infra/tmp-must-b-dir.js", () => ({
-  resolvePreferredMust-bTmpDir: () => "/tmp",
+  resolvePreferredMustBmpDir: () => "/tmp",
 }));
 
 const { ensureOggOpus } = await import("./voice-message.js");

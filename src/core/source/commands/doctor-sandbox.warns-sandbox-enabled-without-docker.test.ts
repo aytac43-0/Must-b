@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type { DoctorPrompter } from "./doctor-prompter.js";
 
@@ -39,7 +39,7 @@ describe("maybeRepairSandboxImages", () => {
     vi.clearAllMocks();
   });
 
-  function createSandboxConfig(mode: "off" | "all" | "non-main"): Must-bConfig {
+  function createSandboxConfig(mode: "off" | "all" | "non-main"): MustBonfig {
     return {
       agents: {
         defaults: {

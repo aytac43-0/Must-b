@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { DEFAULT_ACCOUNT_ID } from "../../../routing/session-key.js";
 
 const promptAccountIdSdkMock = vi.hoisted(() => vi.fn(async () => "default"));
@@ -138,7 +138,7 @@ describe("buildSingleChannelSecretPromptState", () => {
 });
 
 async function runPromptLegacyAllowFrom(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   channel: "discord" | "slack";
   prompter: ReturnType<typeof createPrompter>;
   existing: string[];
@@ -239,7 +239,7 @@ describe("promptLegacyChannelAllowFrom", () => {
     const resolveEntries = vi.fn();
 
     const next = await runPromptLegacyAllowFrom({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       channel: "discord",
       existing: ["999"],
       prompter,
@@ -260,7 +260,7 @@ describe("promptLegacyChannelAllowFrom", () => {
     const resolveEntries = vi.fn(async () => [{ input: "alice", resolved: true, id: "U1" }]);
 
     const next = await runPromptLegacyAllowFrom({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       channel: "slack",
       prompter,
       existing: [],
@@ -445,7 +445,7 @@ describe("applySingleTokenPromptResult", () => {
 
 describe("promptParsedAllowFromForScopedChannel", () => {
   it("writes parsed allowFrom values to default account channel config", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         imessage: {
           allowFrom: ["old"],
@@ -473,7 +473,7 @@ describe("promptParsedAllowFromForScopedChannel", () => {
   });
 
   it("writes parsed values to non-default account allowFrom", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         signal: {
           accounts: {
@@ -581,7 +581,7 @@ describe("channel lookup note helpers", () => {
 
 describe("setAccountAllowFromForChannel", () => {
   it("writes allowFrom on default account channel config", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         imessage: {
           enabled: true,
@@ -605,7 +605,7 @@ describe("setAccountAllowFromForChannel", () => {
   });
 
   it("writes allowFrom on nested non-default account config", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         signal: {
           enabled: true,
@@ -632,7 +632,7 @@ describe("setAccountAllowFromForChannel", () => {
 
 describe("patchChannelConfigForAccount", () => {
   it("patches root channel config for default account", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           enabled: false,
@@ -654,7 +654,7 @@ describe("patchChannelConfigForAccount", () => {
   });
 
   it("patches nested account config and preserves existing enabled flag", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         slack: {
           enabled: true,
@@ -682,7 +682,7 @@ describe("patchChannelConfigForAccount", () => {
   });
 
   it("moves single-account config into default account when patching non-default", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           enabled: true,
@@ -715,7 +715,7 @@ describe("patchChannelConfigForAccount", () => {
   });
 
   it("supports imessage/signal account-scoped channel patches", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         signal: {
           enabled: false,
@@ -750,7 +750,7 @@ describe("patchChannelConfigForAccount", () => {
 
 describe("setOnboardingChannelEnabled", () => {
   it("updates enabled and keeps existing channel fields", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         discord: {
           enabled: true,
@@ -772,7 +772,7 @@ describe("setOnboardingChannelEnabled", () => {
 
 describe("patchLegacyDmChannelConfig", () => {
   it("patches discord root config and defaults dm.enabled to true", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         discord: {
           dmPolicy: "pairing",
@@ -790,7 +790,7 @@ describe("patchLegacyDmChannelConfig", () => {
   });
 
   it("preserves explicit dm.enabled=false for slack", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         slack: {
           dm: {
@@ -812,7 +812,7 @@ describe("patchLegacyDmChannelConfig", () => {
 
 describe("setLegacyChannelDmPolicyWithAllowFrom", () => {
   it("adds wildcard allowFrom for open policy using legacy dm allowFrom fallback", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         discord: {
           dm: {
@@ -834,7 +834,7 @@ describe("setLegacyChannelDmPolicyWithAllowFrom", () => {
   });
 
   it("sets policy without changing allowFrom when not open", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         slack: {
           allowFrom: ["U1"],
@@ -890,7 +890,7 @@ describe("setAccountGroupPolicyForChannel", () => {
 
 describe("setChannelDmPolicyWithAllowFrom", () => {
   it("adds wildcard allowFrom when setting dmPolicy=open", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         signal: {
           dmPolicy: "pairing",
@@ -910,7 +910,7 @@ describe("setChannelDmPolicyWithAllowFrom", () => {
   });
 
   it("sets dmPolicy without changing allowFrom for non-open policies", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         imessage: {
           dmPolicy: "open",
@@ -930,7 +930,7 @@ describe("setChannelDmPolicyWithAllowFrom", () => {
   });
 
   it("supports telegram channel dmPolicy updates", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           dmPolicy: "pairing",
@@ -951,7 +951,7 @@ describe("setChannelDmPolicyWithAllowFrom", () => {
 
 describe("setTopLevelChannelDmPolicyWithAllowFrom", () => {
   it("adds wildcard allowFrom for open policy", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         zalo: {
           dmPolicy: "pairing",
@@ -970,7 +970,7 @@ describe("setTopLevelChannelDmPolicyWithAllowFrom", () => {
   });
 
   it("supports custom allowFrom lookup callback", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         "nextcloud-talk": {
           dmPolicy: "pairing",

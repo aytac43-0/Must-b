@@ -2,13 +2,13 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   hydrateAttachmentParamsForAction,
   normalizeSandboxMediaParams,
 } from "./message-action-params.js";
 
-const cfg = {} as Must-bConfig;
+const cfg = {} as MustBonfig;
 const maybeIt = process.platform === "win32" ? it.skip : it;
 
 describe("message action sandbox media hydration", () => {

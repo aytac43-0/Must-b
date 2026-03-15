@@ -6,7 +6,7 @@ import {
   DEFAULT_SANDBOX_IMAGE,
   resolveSandboxScope,
 } from "../agents/sandbox.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { runCommandWithTimeout, runExec } from "../process/exec.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { note } from "../terminal/note.js";
@@ -89,17 +89,17 @@ async function dockerImageExists(image: string): Promise<boolean> {
   }
 }
 
-function resolveSandboxDockerImage(cfg: Must-bConfig): string {
+function resolveSandboxDockerImage(cfg: MustBonfig): string {
   const image = cfg.agents?.defaults?.sandbox?.docker?.image?.trim();
   return image ? image : DEFAULT_SANDBOX_IMAGE;
 }
 
-function resolveSandboxBrowserImage(cfg: Must-bConfig): string {
+function resolveSandboxBrowserImage(cfg: MustBonfig): string {
   const image = cfg.agents?.defaults?.sandbox?.browser?.image?.trim();
   return image ? image : DEFAULT_SANDBOX_BROWSER_IMAGE;
 }
 
-function updateSandboxDockerImage(cfg: Must-bConfig, image: string): Must-bConfig {
+function updateSandboxDockerImage(cfg: MustBonfig, image: string): MustBonfig {
   return {
     ...cfg,
     agents: {
@@ -118,7 +118,7 @@ function updateSandboxDockerImage(cfg: Must-bConfig, image: string): Must-bConfi
   };
 }
 
-function updateSandboxBrowserImage(cfg: Must-bConfig, image: string): Must-bConfig {
+function updateSandboxBrowserImage(cfg: MustBonfig, image: string): MustBonfig {
   return {
     ...cfg,
     agents: {
@@ -176,10 +176,10 @@ async function handleMissingSandboxImage(
 }
 
 export async function maybeRepairSandboxImages(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   runtime: RuntimeEnv,
   prompter: DoctorPrompter,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const sandbox = cfg.agents?.defaults?.sandbox;
   const mode = sandbox?.mode ?? "off";
   if (!sandbox || mode === "off") {
@@ -247,7 +247,7 @@ export async function maybeRepairSandboxImages(
   return next;
 }
 
-export function noteSandboxScopeWarnings(cfg: Must-bConfig) {
+export function noteSandboxScopeWarnings(cfg: MustBonfig) {
   const globalSandbox = cfg.agents?.defaults?.sandbox;
   const agents = Array.isArray(cfg.agents?.list) ? cfg.agents.list : [];
   const warnings: string[] = [];

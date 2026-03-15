@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { slackPlugin } from "../../../extensions/slack/src/channel.js";
 import { telegramPlugin } from "../../../extensions/telegram/src/channel.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import { createTestRegistry } from "../../test-utils/channel-plugins.js";
 
@@ -39,7 +39,7 @@ const slackConfig = {
       appToken: "xapp-test",
     },
   },
-} as Must-bConfig;
+} as MustBonfig;
 
 const telegramConfig = {
   channels: {
@@ -47,10 +47,10 @@ const telegramConfig = {
       botToken: "telegram-test",
     },
   },
-} as Must-bConfig;
+} as MustBonfig;
 
 async function runThreadingAction(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   actionParams: Record<string, unknown>;
   toolContext?: Record<string, unknown>;
 }) {

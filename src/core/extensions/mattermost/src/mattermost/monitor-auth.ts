@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/mattermost";
+import type { MustBConfig } from "must-b/plugin-sdk/mattermost";
 import {
   evaluateSenderGroupAccessForPolicy,
   isDangerousNameMatchingEnabled,
@@ -108,7 +108,7 @@ export type MattermostCommandAuthDecision =
 
 export function authorizeMattermostCommandInvocation(params: {
   account: ResolvedMattermostAccount;
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   senderId: string;
   senderName: string;
   channelId: string;

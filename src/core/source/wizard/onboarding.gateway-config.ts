@@ -8,7 +8,7 @@ import {
   validateGatewayPasswordInput,
 } from "../commands/onboard-helpers.js";
 import type { GatewayAuthChoice, SecretInputMode } from "../commands/onboard-types.js";
-import type { GatewayBindMode, GatewayTailscaleMode, Must-bConfig } from "../config/config.js";
+import type { GatewayBindMode, GatewayTailscaleMode, MustBonfig } from "../config/config.js";
 import { ensureControlUiAllowedOriginsForNonLoopbackBind } from "../config/gateway-control-ui-origins.js";
 import {
   normalizeSecretInputString,
@@ -35,8 +35,8 @@ import type { WizardPrompter } from "./prompts.js";
 
 type ConfigureGatewayOptions = {
   flow: WizardFlow;
-  baseConfig: Must-bConfig;
-  nextConfig: Must-bConfig;
+  baseConfig: MustBonfig;
+  nextConfig: MustBonfig;
   localPort: number;
   quickstartGateway: QuickstartGatewayDefaults;
   secretInputMode?: SecretInputMode;
@@ -45,7 +45,7 @@ type ConfigureGatewayOptions = {
 };
 
 type ConfigureGatewayResult = {
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   settings: GatewayWizardSettings;
 };
 

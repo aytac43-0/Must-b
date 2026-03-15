@@ -12,7 +12,7 @@
 import {
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,
-  type Must-bConfig,
+  type MustBConfig,
 } from "must-b/plugin-sdk/twitch";
 
 export type TwitchTokenSource = "env" | "config" | "none";
@@ -52,7 +52,7 @@ function normalizeTwitchToken(raw?: string | null): string | undefined {
  * @returns Token resolution with source
  */
 export function resolveTwitchToken(
-  cfg?: Must-bConfig,
+  cfg?: MustBConfig,
   opts: { accountId?: string | null; envToken?: string | null } = {},
 ): TwitchTokenResolution {
   const accountId = normalizeAccountId(opts.accountId);

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Must-bSchema } from "./zod-schema.js";
+import { MustBchema } from "./zod-schema.js";
 
 describe("telegram disableAudioPreflight schema", () => {
   it("accepts disableAudioPreflight for groups and topics", () => {
-    const res = Must-bSchema.safeParse({
+    const res = MustBchema.safeParse({
       channels: {
         telegram: {
           groups: {
@@ -32,7 +32,7 @@ describe("telegram disableAudioPreflight schema", () => {
   });
 
   it("rejects non-boolean disableAudioPreflight values", () => {
-    const res = Must-bSchema.safeParse({
+    const res = MustBchema.safeParse({
       channels: {
         telegram: {
           groups: {

@@ -1,5 +1,5 @@
 import { createAccountListHelpers } from "../channels/plugins/account-helpers.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { IMessageAccountConfig } from "../config/types.js";
 import { resolveAccountEntry } from "../routing/account-lookup.js";
 import { normalizeAccountId } from "../routing/session-key.js";
@@ -17,13 +17,13 @@ export const listIMessageAccountIds = listAccountIds;
 export const resolveDefaultIMessageAccountId = resolveDefaultAccountId;
 
 function resolveAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
 ): IMessageAccountConfig | undefined {
   return resolveAccountEntry(cfg.channels?.imessage?.accounts, accountId);
 }
 
-function mergeIMessageAccountConfig(cfg: Must-bConfig, accountId: string): IMessageAccountConfig {
+function mergeIMessageAccountConfig(cfg: MustBonfig, accountId: string): IMessageAccountConfig {
   const { accounts: _ignored, ...base } = (cfg.channels?.imessage ??
     {}) as IMessageAccountConfig & { accounts?: unknown };
   const account = resolveAccountConfig(cfg, accountId) ?? {};
@@ -31,7 +31,7 @@ function mergeIMessageAccountConfig(cfg: Must-bConfig, accountId: string): IMess
 }
 
 export function resolveIMessageAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): ResolvedIMessageAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -63,7 +63,7 @@ export function resolveIMessageAccount(params: {
   };
 }
 
-export function listEnabledIMessageAccounts(cfg: Must-bConfig): ResolvedIMessageAccount[] {
+export function listEnabledIMessageAccounts(cfg: MustBonfig): ResolvedIMessageAccount[] {
   return listIMessageAccountIds(cfg)
     .map((accountId) => resolveIMessageAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

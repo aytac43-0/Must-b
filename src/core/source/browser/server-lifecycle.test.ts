@@ -5,8 +5,8 @@ const { resolveProfileMock, ensureChromeExtensionRelayServerMock } = vi.hoisted(
   ensureChromeExtensionRelayServerMock: vi.fn(),
 }));
 
-const { stopMust-bChromeMock, stopChromeExtensionRelayServerMock } = vi.hoisted(() => ({
-  stopMust-bChromeMock: vi.fn(async () => {}),
+const { stopMustBhromeMock, stopChromeExtensionRelayServerMock } = vi.hoisted(() => ({
+  stopMustBhromeMock: vi.fn(async () => {}),
   stopChromeExtensionRelayServerMock: vi.fn(async () => true),
 }));
 
@@ -16,7 +16,7 @@ const { createBrowserRouteContextMock, listKnownProfileNamesMock } = vi.hoisted(
 }));
 
 vi.mock("./chrome.js", () => ({
-  stopMust-bChrome: stopMust-bChromeMock,
+  stopMustBhrome: stopMustBhromeMock,
 }));
 
 vi.mock("./config.js", () => ({
@@ -86,7 +86,7 @@ describe("stopKnownBrowserProfiles", () => {
   beforeEach(() => {
     createBrowserRouteContextMock.mockClear();
     listKnownProfileNamesMock.mockClear();
-    stopMust-bChromeMock.mockClear();
+    stopMustBhromeMock.mockClear();
     stopChromeExtensionRelayServerMock.mockClear();
   });
 
@@ -156,7 +156,7 @@ describe("stopKnownBrowserProfiles", () => {
       onWarn: vi.fn(),
     });
 
-    expect(stopMust-bChromeMock).toHaveBeenCalledWith(launchedBrowser);
+    expect(stopMustBhromeMock).toHaveBeenCalledWith(launchedBrowser);
     expect(localRuntime.running).toBeNull();
     expect(stopChromeExtensionRelayServerMock).toHaveBeenCalledWith({
       cdpUrl: "http://127.0.0.1:19999",

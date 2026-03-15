@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { hasConfiguredSecretInput } from "../../../config/types.secrets.js";
 import { DEFAULT_ACCOUNT_ID } from "../../../routing/session-key.js";
 import { inspectSlackAccount } from "../../../slack/account-inspect.js";
@@ -118,10 +118,10 @@ async function noteSlackTokenHelp(prompter: WizardPrompter, botName: string): Pr
 }
 
 function setSlackChannelAllowlist(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
   channelKeys: string[],
-): Must-bConfig {
+): MustBonfig {
   const channels = Object.fromEntries(channelKeys.map((key) => [key, { allow: true }]));
   return patchChannelConfigForAccount({
     cfg,
@@ -132,10 +132,10 @@ function setSlackChannelAllowlist(
 }
 
 async function promptSlackAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const accountId = resolveOnboardingAccountId({
     accountId: params.accountId,
     defaultAccountId: resolveDefaultSlackAccountId(params.cfg),

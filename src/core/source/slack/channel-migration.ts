@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SlackChannelConfig } from "../config/types.slack.js";
 import { normalizeAccountId } from "../routing/session-key.js";
 
@@ -13,7 +13,7 @@ export type SlackChannelMigrationResult = {
 };
 
 function resolveAccountChannels(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId?: string | null,
 ): { channels?: SlackChannels } {
   if (!accountId) {
@@ -57,7 +57,7 @@ export function migrateSlackChannelsInPlace(
 }
 
 export function migrateSlackChannelConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   oldChannelId: string;
   newChannelId: string;

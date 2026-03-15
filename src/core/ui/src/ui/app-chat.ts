@@ -2,7 +2,7 @@ import { parseAgentSessionKey } from "../../../src/sessions/session-key-utils.js
 import { scheduleChatScroll } from "./app-scroll.ts";
 import { setLastActiveSessionKey } from "./app-settings.ts";
 import { resetToolStream } from "./app-tool-stream.ts";
-import type { Must-bApp } from "./app.ts";
+import type { MustBpp } from "./app.ts";
 import { executeSlashCommand } from "./chat/slash-command-executor.ts";
 import { parseSlashCommand } from "./chat/slash-commands.ts";
 import { abortChatRun, loadChatHistory, sendChatMessage } from "./controllers/chat.ts";
@@ -73,7 +73,7 @@ export async function handleAbortChat(host: ChatHost) {
     return;
   }
   host.chatMessage = "";
-  await abortChatRun(host as unknown as Must-bApp);
+  await abortChatRun(host as unknown as MustBpp);
 }
 
 function enqueueChatMessage(
@@ -115,7 +115,7 @@ async function sendChatMessageNow(
   },
 ) {
   resetToolStream(host as unknown as Parameters<typeof resetToolStream>[0]);
-  const runId = await sendChatMessage(host as unknown as Must-bApp, message, opts?.attachments);
+  const runId = await sendChatMessage(host as unknown as MustBpp, message, opts?.attachments);
   const ok = Boolean(runId);
   if (!ok && opts?.previousDraft != null) {
     host.chatMessage = opts.previousDraft;
@@ -317,7 +317,7 @@ async function clearChatHistory(host: ChatHost) {
     host.chatMessages = [];
     host.chatStream = null;
     host.chatRunId = null;
-    await loadChatHistory(host as unknown as Must-bApp);
+    await loadChatHistory(host as unknown as MustBpp);
   } catch (err) {
     host.lastError = String(err);
   }
@@ -337,8 +337,8 @@ function injectCommandResult(host: ChatHost, content: string) {
 
 export async function refreshChat(host: ChatHost, opts?: { scheduleScroll?: boolean }) {
   await Promise.all([
-    loadChatHistory(host as unknown as Must-bApp),
-    loadSessions(host as unknown as Must-bApp, {
+    loadChatHistory(host as unknown as MustBpp),
+    loadSessions(host as unknown as MustBpp, {
       activeMinutes: 0,
       limit: 0,
       includeGlobal: false,

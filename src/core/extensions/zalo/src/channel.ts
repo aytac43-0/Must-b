@@ -10,7 +10,7 @@ import type {
   ChannelAccountSnapshot,
   ChannelDock,
   ChannelPlugin,
-  Must-bConfig,
+  MustBConfig,
 } from "must-b/plugin-sdk/zalo";
 import {
   applyAccountNameToChannelSection,

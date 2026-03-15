@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AcpRuntimeError } from "../../acp/runtime/errors.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionBindingRecord } from "../../infra/outbound/session-binding-service.js";
 
 const hoisted = vi.hoisted(() => {
@@ -169,9 +169,9 @@ const baseCfg = {
       },
     },
   },
-} satisfies Must-bConfig;
+} satisfies MustBonfig;
 
-function createDiscordParams(commandBody: string, cfg: Must-bConfig = baseCfg) {
+function createDiscordParams(commandBody: string, cfg: MustBonfig = baseCfg) {
   const params = buildCommandTestParams(commandBody, cfg, {
     Provider: "discord",
     Surface: "discord",
@@ -303,13 +303,13 @@ function mockBoundThreadSession(options?: {
   );
 }
 
-function createThreadParams(commandBody: string, cfg: Must-bConfig = baseCfg) {
+function createThreadParams(commandBody: string, cfg: MustBonfig = baseCfg) {
   const params = createDiscordParams(commandBody, cfg);
   params.ctx.MessageThreadId = defaultThreadId;
   return params;
 }
 
-function createTelegramTopicParams(commandBody: string, cfg: Must-bConfig = baseCfg) {
+function createTelegramTopicParams(commandBody: string, cfg: MustBonfig = baseCfg) {
   const params = buildCommandTestParams(commandBody, cfg, {
     Provider: "telegram",
     Surface: "telegram",
@@ -322,7 +322,7 @@ function createTelegramTopicParams(commandBody: string, cfg: Must-bConfig = base
   return params;
 }
 
-function createTelegramDmParams(commandBody: string, cfg: Must-bConfig = baseCfg) {
+function createTelegramDmParams(commandBody: string, cfg: MustBonfig = baseCfg) {
   const params = buildCommandTestParams(commandBody, cfg, {
     Provider: "telegram",
     Surface: "telegram",
@@ -334,19 +334,19 @@ function createTelegramDmParams(commandBody: string, cfg: Must-bConfig = baseCfg
   return params;
 }
 
-async function runDiscordAcpCommand(commandBody: string, cfg: Must-bConfig = baseCfg) {
+async function runDiscordAcpCommand(commandBody: string, cfg: MustBonfig = baseCfg) {
   return handleAcpCommand(createDiscordParams(commandBody, cfg), true);
 }
 
-async function runThreadAcpCommand(commandBody: string, cfg: Must-bConfig = baseCfg) {
+async function runThreadAcpCommand(commandBody: string, cfg: MustBonfig = baseCfg) {
   return handleAcpCommand(createThreadParams(commandBody, cfg), true);
 }
 
-async function runTelegramAcpCommand(commandBody: string, cfg: Must-bConfig = baseCfg) {
+async function runTelegramAcpCommand(commandBody: string, cfg: MustBonfig = baseCfg) {
   return handleAcpCommand(createTelegramTopicParams(commandBody, cfg), true);
 }
 
-async function runTelegramDmAcpCommand(commandBody: string, cfg: Must-bConfig = baseCfg) {
+async function runTelegramDmAcpCommand(commandBody: string, cfg: MustBonfig = baseCfg) {
   return handleAcpCommand(createTelegramDmParams(commandBody, cfg), true);
 }
 
@@ -571,7 +571,7 @@ describe("/acp command", () => {
           },
         },
       },
-    } satisfies Must-bConfig;
+    } satisfies MustBonfig;
 
     const result = await runDiscordAcpCommand("/acp spawn codex", cfg);
 
@@ -600,7 +600,7 @@ describe("/acp command", () => {
           sandbox: { mode: "all" },
         },
       },
-    } satisfies Must-bConfig;
+    } satisfies MustBonfig;
 
     const result = await runDiscordAcpCommand("/acp spawn codex", cfg);
 
@@ -695,7 +695,7 @@ describe("/acp command", () => {
         ...baseCfg.acp,
         dispatch: { enabled: false },
       },
-    } satisfies Must-bConfig;
+    } satisfies MustBonfig;
     const result = await runDiscordAcpCommand("/acp steer tighten logging", cfg);
     expect(result?.reply?.text).toContain("ACP dispatch is disabled by policy");
     expect(hoisted.runTurnMock).not.toHaveBeenCalled();

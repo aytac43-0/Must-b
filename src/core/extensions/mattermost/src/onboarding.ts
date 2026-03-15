@@ -4,7 +4,7 @@ import {
   hasConfiguredSecretInput,
   promptSingleChannelSecretInput,
   type ChannelOnboardingAdapter,
-  type Must-bConfig,
+  type MustBConfig,
   type SecretInput,
   type WizardPrompter,
 } from "must-b/plugin-sdk/mattermost";
@@ -180,7 +180,7 @@ export const mattermostOnboardingAdapter: ChannelOnboardingAdapter = {
 
     return { cfg: next, accountId };
   },
-  disable: (cfg: Must-bConfig) => ({
+  disable: (cfg: MustBConfig) => ({
     ...cfg,
     channels: {
       ...cfg.channels,

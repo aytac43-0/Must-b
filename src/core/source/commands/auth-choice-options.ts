@@ -1,5 +1,5 @@
 import type { AuthProfileStore } from "../agents/auth-profiles.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveProviderWizardOptions } from "../plugins/provider-wizard.js";
 import { AUTH_CHOICE_LEGACY_ALIASES_FOR_CLI } from "./auth-choice-legacy.js";
 import { ONBOARD_PROVIDER_AUTH_FLAGS } from "./onboard-provider-auth-flags.js";
@@ -317,7 +317,7 @@ const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
 ];
 
 function resolveDynamicProviderCliChoices(params?: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;
 }): string[] {
@@ -327,7 +327,7 @@ function resolveDynamicProviderCliChoices(params?: {
 export function formatAuthChoiceChoicesForCli(params?: {
   includeSkip?: boolean;
   includeLegacyAliases?: boolean;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;
 }): string {
@@ -351,7 +351,7 @@ export function formatAuthChoiceChoicesForCli(params?: {
 export function buildAuthChoiceOptions(params: {
   store: AuthProfileStore;
   includeSkip: boolean;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;
 }): AuthChoiceOption[] {
@@ -385,7 +385,7 @@ export function buildAuthChoiceOptions(params: {
 export function buildAuthChoiceGroups(params: {
   store: AuthProfileStore;
   includeSkip: boolean;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;
 }): {

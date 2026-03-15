@@ -5,7 +5,7 @@ import {
 import type {
   ChannelMessageActionName,
   ChannelPlugin,
-  Must-bConfig,
+  MustBConfig,
 } from "must-b/plugin-sdk/msteams";
 import {
   buildProbeChannelStatusSummary,
@@ -110,7 +110,7 @@ export const msteamsPlugin: ChannelPlugin<ResolvedMSTeamsAccount> = {
       },
     }),
     deleteAccount: ({ cfg }) => {
-      const next = { ...cfg } as Must-bConfig;
+      const next = { ...cfg } as MustBConfig;
       const nextChannels = { ...cfg.channels };
       delete nextChannels.msteams;
       if (Object.keys(nextChannels).length > 0) {

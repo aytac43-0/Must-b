@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { dispatchInboundMessage, withReplyDispatcher } from "./dispatch.js";
 import type { ReplyDispatcher } from "./reply/reply-dispatcher.js";
 import { buildTestCtx } from "./reply/test-ctx.js";
@@ -81,7 +81,7 @@ describe("withReplyDispatcher", () => {
 
     await dispatchInboundMessage({
       ctx: buildTestCtx(),
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       dispatcher,
       replyResolver: async () => ({ text: "ok" }),
     });

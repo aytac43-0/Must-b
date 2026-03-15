@@ -4,11 +4,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { assertSandboxPath } from "../../agents/sandbox-paths.js";
 import { ensureSandboxWorkspaceForSession } from "../../agents/sandbox.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { logVerbose } from "../../globals.js";
 import { copyFileWithinRoot, SafeOpenError } from "../../infra/fs-safe.js";
 import { normalizeScpRemoteHost } from "../../infra/scp-host.js";
-import { resolvePreferredMust-bTmpDir } from "../../infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../../infra/tmp-must-b-dir.js";
 import {
   isInboundPathAllowed,
   resolveIMessageRemoteAttachmentRoots,
@@ -22,7 +22,7 @@ const STAGED_MEDIA_MAX_BYTES = MEDIA_MAX_BYTES;
 export async function stageSandboxMedia(params: {
   ctx: MsgContext;
   sessionCtx: TemplateContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey?: string;
   workspaceDir: string;
 }) {
@@ -140,7 +140,7 @@ async function stageRemoteFileIntoRoot(params: {
   relativeDestPath: string;
   maxBytes?: number;
 }): Promise<void> {
-  const tmpRoot = resolvePreferredMust-bTmpDir();
+  const tmpRoot = resolvePreferredMustBmpDir();
   await fs.mkdir(tmpRoot, { recursive: true });
   const tmpDir = await fs.mkdtemp(path.join(tmpRoot, "stage-sandbox-media-"));
   const tmpPath = path.join(tmpDir, "download");

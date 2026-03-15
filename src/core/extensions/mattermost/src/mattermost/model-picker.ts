@@ -5,7 +5,7 @@ import {
   resolveStorePath,
   resolveStoredModelOverride,
   type ModelsProviderData,
-  type Must-bConfig,
+  type MustBConfig,
 } from "must-b/plugin-sdk/mattermost";
 import type { MattermostInteractiveButtonInput } from "./interactions.js";
 
@@ -215,7 +215,7 @@ export function buildMattermostAllowedModelRefs(data: ModelsProviderData): Set<s
 }
 
 export function resolveMattermostModelPickerCurrentModel(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   route: { agentId: string; sessionKey: string };
   data: ModelsProviderData;
   skipCache?: boolean;

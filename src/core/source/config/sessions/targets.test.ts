@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { withTempHome } from "../../../test/helpers/temp-home.js";
-import type { Must-bConfig } from "../config.js";
+import type { MustBonfig } from "../config.js";
 import {
   resolveAllAgentSessionStoreTargets,
   resolveAllAgentSessionStoreTargetsSync,
@@ -17,7 +17,7 @@ async function resolveRealStorePath(sessionsDir: string): Promise<string> {
 
 describe("resolveSessionStoreTargets", () => {
   it("resolves all configured agent stores", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       session: {
         store: "~/.must-b/agents/{agentId}/sessions/sessions.json",
       },
@@ -45,7 +45,7 @@ describe("resolveSessionStoreTargets", () => {
   });
 
   it("dedupes shared store paths for --all-agents", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       session: {
         store: "/tmp/shared-sessions.json",
       },
@@ -60,7 +60,7 @@ describe("resolveSessionStoreTargets", () => {
   });
 
   it("rejects unknown agent ids", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         list: [{ id: "main", default: true }, { id: "work" }],
       },
@@ -90,7 +90,7 @@ describe("resolveAllAgentSessionStoreTargets", () => {
       await fs.writeFile(path.join(opsSessionsDir, "sessions.json"), "{}", "utf8");
       await fs.writeFile(path.join(retiredSessionsDir, "sessions.json"), "{}", "utf8");
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         agents: {
           list: [{ id: "ops", default: true }],
         },
@@ -126,7 +126,7 @@ describe("resolveAllAgentSessionStoreTargets", () => {
       await fs.writeFile(path.join(opsSessionsDir, "sessions.json"), "{}", "utf8");
       await fs.writeFile(path.join(retiredSessionsDir, "sessions.json"), "{}", "utf8");
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         session: {
           store: path.join(customRoot, "agents", "{agentId}", "sessions", "sessions.json"),
         },
@@ -165,7 +165,7 @@ describe("resolveAllAgentSessionStoreTargets", () => {
       await fs.writeFile(path.join(opsSessionsDir, "sessions.json"), "{}", "utf8");
       await fs.writeFile(path.join(retiredSessionsDir, "sessions.json"), "{}", "utf8");
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         session: {
           store: path.join(customRoot, "agents", "{agentId}", "sessions", "sessions.json"),
         },
@@ -202,7 +202,7 @@ describe("resolveAllAgentSessionStoreTargets", () => {
         ...process.env,
         MUSTB_STATE_DIR: envStateDir,
       };
-      const cfg: Must-bConfig = {};
+      const cfg: MustBonfig = {};
       const mainStorePath = await resolveRealStorePath(mainSessionsDir);
       const retiredStorePath = await resolveRealStorePath(retiredSessionsDir);
 
@@ -237,7 +237,7 @@ describe("resolveAllAgentSessionStoreTargets", () => {
       await fs.writeFile(path.join(mainSessionsDir, "sessions.json"), "{}", "utf8");
       await fs.writeFile(path.join(retiredSessionsDir, "sessions.json"), "{}", "utf8");
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         session: {
           store: path.join(customRoot, "agents", "{agentId}", "sessions", "sessions.json"),
         },
@@ -274,7 +274,7 @@ describe("resolveAllAgentSessionStoreTargets", () => {
       await fs.writeFile(leakedFile, JSON.stringify({ leak: { secret: "x" } }), "utf8");
       await fs.symlink(leakedFile, path.join(opsSessionsDir, "sessions.json"));
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         session: {
           store: path.join(customRoot, "agents", "{agentId}", "sessions", "sessions.json"),
         },
@@ -301,7 +301,7 @@ describe("resolveAllAgentSessionStoreTargets", () => {
       await fs.writeFile(path.join(mainSessionsDir, "sessions.json"), "{}", "utf8");
       await fs.writeFile(path.join(junkSessionsDir, "sessions.json"), "{}", "utf8");
 
-      const cfg: Must-bConfig = {};
+      const cfg: MustBonfig = {};
       const mainStorePath = await resolveRealStorePath(mainSessionsDir);
       const targets = await resolveAllAgentSessionStoreTargets(cfg, { env: process.env });
 
@@ -331,7 +331,7 @@ describe("resolveAllAgentSessionStoreTargetsSync", () => {
       await fs.writeFile(path.join(mainSessionsDir, "sessions.json"), "{}", "utf8");
       await fs.writeFile(path.join(retiredSessionsDir, "sessions.json"), "{}", "utf8");
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         session: {
           store: path.join(customRoot, "agents", "{agentId}", "sessions", "sessions.json"),
         },
@@ -368,7 +368,7 @@ describe("resolveAllAgentSessionStoreTargetsSync", () => {
       await fs.writeFile(leakedFile, JSON.stringify({ leak: { secret: "x" } }), "utf8");
       await fs.symlink(leakedFile, path.join(opsSessionsDir, "sessions.json"));
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         session: {
           store: path.join(customRoot, "agents", "{agentId}", "sessions", "sessions.json"),
         },

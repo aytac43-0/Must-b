@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   buildIMessageInboundContext,
   resolveIMessageInboundDecision,
@@ -7,7 +7,7 @@ import {
 import { parseIMessageNotification } from "./monitor/parse-notification.js";
 import type { IMessagePayload } from "./monitor/types.js";
 
-function baseCfg(): Must-bConfig {
+function baseCfg(): MustBonfig {
   return {
     channels: {
       imessage: {
@@ -21,11 +21,11 @@ function baseCfg(): Must-bConfig {
     messages: {
       groupChat: { mentionPatterns: ["@must-b"] },
     },
-  } as unknown as Must-bConfig;
+  } as unknown as MustBonfig;
 }
 
 function resolve(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   message: IMessagePayload;
   storeAllowFrom?: string[];
 }) {
@@ -49,7 +49,7 @@ function resolve(params: {
 }
 
 function resolveDispatchDecision(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   message: IMessagePayload;
   groupHistories?: Parameters<typeof resolveIMessageInboundDecision>[0]["groupHistories"];
 }) {
@@ -76,7 +76,7 @@ function resolveDispatchDecision(params: {
   return { decision, groupHistories };
 }
 
-function buildDispatchContextPayload(params: { cfg: Must-bConfig; message: IMessagePayload }) {
+function buildDispatchContextPayload(params: { cfg: MustBonfig; message: IMessagePayload }) {
   const { cfg, message } = params;
   const { decision, groupHistories } = resolveDispatchDecision({ cfg, message });
 
@@ -127,7 +127,7 @@ describe("imessage monitor gating + envelope builders", () => {
       is_from_me: false,
       text: "@must-b ping",
       is_group: true,
-      chat_name: "Lobster Squad",
+      chat_name: "Must-b Squad",
       participants: ["+1555", "+1556"],
     };
     const ctxPayload = buildDispatchContextPayload({ cfg, message });

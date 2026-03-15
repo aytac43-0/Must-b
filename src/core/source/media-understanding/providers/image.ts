@@ -3,7 +3,7 @@ import { complete } from "@mariozechner/pi-ai";
 import { isMinimaxVlmModel, minimaxUnderstandImage } from "../../agents/minimax-vlm.js";
 import { getApiKeyForModel, requireApiKey } from "../../agents/model-auth.js";
 import { normalizeModelRef } from "../../agents/model-selection.js";
-import { ensureMust-bModelsJson } from "../../agents/models-config.js";
+import { ensureMustBodelsJson } from "../../agents/models-config.js";
 import { coerceImageAssistantText } from "../../agents/tools/image-tool.helpers.js";
 import type { ImageDescriptionRequest, ImageDescriptionResult } from "../types.js";
 
@@ -19,7 +19,7 @@ function loadPiModelDiscoveryRuntime() {
 export async function describeImageWithModel(
   params: ImageDescriptionRequest,
 ): Promise<ImageDescriptionResult> {
-  await ensureMust-bModelsJson(params.cfg, params.agentDir);
+  await ensureMustBodelsJson(params.cfg, params.agentDir);
   const { discoverAuthStorage, discoverModels } = await loadPiModelDiscoveryRuntime();
   const authStorage = discoverAuthStorage(params.agentDir);
   const modelRegistry = discoverModels(authStorage, params.agentDir);

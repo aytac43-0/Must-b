@@ -1,9 +1,36 @@
 import { EventEmitter } from 'events';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import winston from 'winston';
 import { Planner, type PlanStep } from './planner.js';
 import { Executor } from './executor.js';
 
 export { PlanStep };
+
+/** Classify an error message for self-healing decisions */
+function classifyError(msg: string): 'auth' | 'network' | 'ratelimit' | 'unknown' {
+  const m = msg.toLowerCase();
+  if (m.includes('401') || m.includes('unauthorized') || m.includes('api key') || m.includes('invalid key')) return 'auth';
+  if (m.includes('429') || m.includes('rate limit') || m.includes('too many requests')) return 'ratelimit';
+  if (m.includes('econnrefused') || m.includes('enotfound') || m.includes('fetch failed') || m.includes('network')) return 'network';
+  return 'unknown';
+}
+
+/** Reload .env into process.env so keys written by onboard are picked up */
+async function reloadEnv(): Promise<void> {
+  try {
+    const require = createRequire(import.meta.url);
+    const dotenv = require('dotenv');
+    const envPath = path.join(process.cwd(), '.env');
+    dotenv.config({ path: envPath, override: true });
+  } catch { /* best-effort */ }
+}
+
+/** Exponential back-off: 1s, 2s, 4s … capped at 30s */
+function backoffMs(attempt: number): number {
+  return Math.min(1000 * Math.pow(2, attempt - 1), 30_000);
+}
 
 export class Orchestrator extends EventEmitter {
   private logger: winston.Logger;
@@ -54,7 +81,6 @@ export class Orchestrator extends EventEmitter {
         const answer = await this.planner.synthesize(goal, stepResults);
         this.emit('finalAnswer', { goal, answer, timestamp: Date.now() });
 
-        // All steps passed
         this.logger.info(`Orchestrator: Goal completed — "${goal}"`);
         this.emit('planFinish', { goal, status: 'completed', timestamp: Date.now() });
         break;
@@ -62,8 +88,9 @@ export class Orchestrator extends EventEmitter {
       } catch (err: any) {
         revision++;
         const msg = err?.message ?? String(err);
-        this.logger.warn(`Orchestrator: Step failed (revision ${revision}/${this.MAX_REVISIONS}) — ${msg}`);
-        this.emit('stepFinish', { status: 'error', error: msg, timestamp: Date.now() });
+        const kind = classifyError(msg);
+        this.logger.warn(`Orchestrator: Step failed [${kind}] (revision ${revision}/${this.MAX_REVISIONS}) — ${msg}`);
+        this.emit('stepFinish', { status: 'error', error: msg, errorKind: kind, timestamp: Date.now() });
 
         if (revision > this.MAX_REVISIONS) {
           this.logger.error(`Orchestrator: Max revisions hit. Aborting goal "${goal}".`);
@@ -71,7 +98,31 @@ export class Orchestrator extends EventEmitter {
           break;
         }
 
-        // Re-plan with error context
+        // Self-healing: take remediation action based on error type
+        if (kind === 'auth') {
+          this.logger.info('Orchestrator: Auth error detected — reloading .env and retrying.');
+          this.emit('agentRepair', { action: 'reload_env', reason: msg, timestamp: Date.now() });
+          await reloadEnv();
+          // Retry same goal (don't mutate currentGoal for auth errors)
+          continue;
+        }
+
+        if (kind === 'ratelimit') {
+          const wait = backoffMs(revision);
+          this.logger.info(`Orchestrator: Rate-limit — waiting ${wait}ms before retry.`);
+          this.emit('agentRepair', { action: 'backoff', waitMs: wait, reason: msg, timestamp: Date.now() });
+          await new Promise(r => setTimeout(r, wait));
+          continue;
+        }
+
+        if (kind === 'network') {
+          const wait = backoffMs(revision);
+          this.logger.info(`Orchestrator: Network error — waiting ${wait}ms then re-planning.`);
+          this.emit('agentRepair', { action: 'backoff', waitMs: wait, reason: msg, timestamp: Date.now() });
+          await new Promise(r => setTimeout(r, wait));
+        }
+
+        // Re-plan with error context for unknown / network errors
         currentGoal = `Revised: "${goal}" — previous attempt failed: ${msg}`;
       }
     }

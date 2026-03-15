@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/twitch";
+import type { MustBPluginApi } from "must-b/plugin-sdk/twitch";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/twitch";
 import { twitchPlugin } from "./src/plugin.js";
 import { setTwitchRuntime } from "./src/runtime.js";
@@ -10,7 +10,7 @@ const plugin = {
   name: "Twitch",
   description: "Twitch channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     setTwitchRuntime(api.runtime);
     // oxlint-disable-next-line typescript/no-explicit-any
     api.registerChannel({ plugin: twitchPlugin as any });

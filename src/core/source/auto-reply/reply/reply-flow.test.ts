@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { importFreshModule } from "../../../test/helpers/import-fresh.js";
 import { expectInboundContextContract } from "../../../test/helpers/inbound-contract.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { defaultRuntime } from "../../runtime.js";
 import type { MsgContext } from "../templating.js";
 import { HEARTBEAT_TOKEN, SILENT_REPLY_TOKEN } from "../tokens.js";
@@ -622,7 +622,7 @@ function createRun(params: {
       sessionId: "sess",
       sessionFile: "/tmp/session.json",
       workspaceDir: "/tmp",
-      config: {} as Must-bConfig,
+      config: {} as MustBonfig,
       provider: "openai",
       model: "gpt-test",
       timeoutMs: 10_000,
@@ -1448,7 +1448,7 @@ describe("followup queue drain restart after idle window", () => {
   });
 });
 
-const emptyCfg = {} as Must-bConfig;
+const emptyCfg = {} as MustBonfig;
 
 describe("createReplyDispatcher", () => {
   it("drops empty payloads and exact silent tokens without media", async () => {
@@ -1612,7 +1612,7 @@ describe("resolveReplyToMode", () => {
         discord: { replyToMode: "first" },
         slack: { replyToMode: "all" },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const chatTypeCfg = {
       channels: {
         slack: {
@@ -1620,14 +1620,14 @@ describe("resolveReplyToMode", () => {
           replyToModeByChatType: { direct: "all", group: "first" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const topLevelFallbackCfg = {
       channels: {
         slack: {
           replyToMode: "first",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const legacyDmCfg = {
       channels: {
         slack: {
@@ -1635,10 +1635,10 @@ describe("resolveReplyToMode", () => {
           dm: { replyToMode: "all" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const cases: Array<{
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       channel?: "telegram" | "discord" | "slack";
       chatType?: "direct" | "group" | "channel";
       expected: "off" | "all" | "first";

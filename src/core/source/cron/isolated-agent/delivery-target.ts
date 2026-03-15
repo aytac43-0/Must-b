@@ -1,5 +1,5 @@
 import type { ChannelId } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   loadSessionStore,
   resolveAgentMainSessionKey,
@@ -38,7 +38,7 @@ export type DeliveryTargetResolution =
     };
 
 export async function resolveDeliveryTarget(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId: string,
   jobPayload: {
     channel?: "last" | ChannelId;

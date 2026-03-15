@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveAgentModelFallbackValues,
   resolveAgentModelPrimaryValue,
@@ -198,7 +198,7 @@ function throwFallbackFailureSummary(params: {
 }
 
 function resolveImageFallbackCandidates(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   defaultProvider: string;
   modelOverride?: string;
 }): ModelCandidate[] {
@@ -250,7 +250,7 @@ function resolveImageFallbackCandidates(params: {
 }
 
 function resolveFallbackCandidates(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   provider: string;
   model: string;
   /** Optional explicit fallbacks list; when provided (even empty), replaces agents.defaults.model.fallbacks. */
@@ -503,7 +503,7 @@ function resolveCooldownDecision(params: {
 }
 
 export async function runWithModelFallback<T>(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   provider: string;
   model: string;
   runId?: string;
@@ -769,7 +769,7 @@ export async function runWithModelFallback<T>(params: {
 }
 
 export async function runWithImageModelFallback<T>(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   modelOverride?: string;
   run: (provider: string, model: string) => Promise<T>;
   onError?: ModelFallbackErrorHandler;

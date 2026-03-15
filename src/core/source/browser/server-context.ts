@@ -1,5 +1,5 @@
 import { SsrFBlockedError } from "../infra/net/ssrf.js";
-import { isChromeReachable, resolveMust-bUserDataDir } from "./chrome.js";
+import { isChromeReachable, resolveMustBserDataDir } from "./chrome.js";
 import type { ResolvedBrowserProfile } from "./config.js";
 import { resolveProfile } from "./config.js";
 import { BrowserProfileNotFoundError, toBrowserErrorResponse } from "./errors.js";
@@ -97,7 +97,7 @@ function createProfileContext(
     getProfileState,
     stopRunningBrowser,
     isHttpReachable,
-    resolveMust-bUserDataDir,
+    resolveMustBserDataDir,
   });
 
   return {

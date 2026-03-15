@@ -1,15 +1,15 @@
 export type {
   AnyAgentTool,
-  Must-bPluginApi,
+  MustBluginApi,
   ProviderDiscoveryContext,
-  Must-bPluginService,
+  MustBluginService,
   ProviderAuthContext,
   ProviderAuthMethodNonInteractiveContext,
   ProviderAuthResult,
 } from "../plugins/types.js";
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { Must-bConfig } from "../config/config.js";
+export type { MustBonfig } from "../config/config.js";
 export type { GatewayRequestHandlerOptions } from "../gateway/server-methods/types.js";
 
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
@@ -60,7 +60,7 @@ export {
   type PluginCommandRunOptions,
   type PluginCommandRunResult,
 } from "./run-command.js";
-export { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+export { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 
 export { resolveGatewayBindUrl } from "../shared/gateway-bind-url.js";
 export type { GatewayBindUrlResult } from "../shared/gateway-bind-url.js";

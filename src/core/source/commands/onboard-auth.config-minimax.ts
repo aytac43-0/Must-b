@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { ModelProviderConfig } from "../config/types.models.js";
 import {
   applyAgentDefaultModelPrimary,
@@ -17,9 +17,9 @@ type MinimaxApiProviderConfigParams = {
 };
 
 function applyMinimaxApiProviderConfigWithBaseUrl(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params: MinimaxApiProviderConfigParams,
-): Must-bConfig {
+): MustBonfig {
   const providers = { ...cfg.models?.providers } as Record<string, ModelProviderConfig>;
   const existingProvider = providers[params.providerId];
   const existingModels = existingProvider?.models ?? [];
@@ -52,18 +52,18 @@ function applyMinimaxApiProviderConfigWithBaseUrl(
 }
 
 function applyMinimaxApiConfigWithBaseUrl(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params: MinimaxApiProviderConfigParams,
-): Must-bConfig {
+): MustBonfig {
   const next = applyMinimaxApiProviderConfigWithBaseUrl(cfg, params);
   return applyAgentDefaultModelPrimary(next, `${params.providerId}/${params.modelId}`);
 }
 
 // MiniMax Global API (platform.minimax.io/anthropic)
 export function applyMinimaxApiProviderConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   modelId: string = "MiniMax-M2.5",
-): Must-bConfig {
+): MustBonfig {
   return applyMinimaxApiProviderConfigWithBaseUrl(cfg, {
     providerId: "minimax",
     modelId,
@@ -72,9 +72,9 @@ export function applyMinimaxApiProviderConfig(
 }
 
 export function applyMinimaxApiConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   modelId: string = "MiniMax-M2.5",
-): Must-bConfig {
+): MustBonfig {
   return applyMinimaxApiConfigWithBaseUrl(cfg, {
     providerId: "minimax",
     modelId,
@@ -84,9 +84,9 @@ export function applyMinimaxApiConfig(
 
 // MiniMax CN API (api.minimaxi.com/anthropic) — same provider id, different baseUrl
 export function applyMinimaxApiProviderConfigCn(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   modelId: string = "MiniMax-M2.5",
-): Must-bConfig {
+): MustBonfig {
   return applyMinimaxApiProviderConfigWithBaseUrl(cfg, {
     providerId: "minimax",
     modelId,
@@ -95,9 +95,9 @@ export function applyMinimaxApiProviderConfigCn(
 }
 
 export function applyMinimaxApiConfigCn(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   modelId: string = "MiniMax-M2.5",
-): Must-bConfig {
+): MustBonfig {
   return applyMinimaxApiConfigWithBaseUrl(cfg, {
     providerId: "minimax",
     modelId,

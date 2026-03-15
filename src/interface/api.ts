@@ -12,6 +12,14 @@ import { SessionHistory } from '../memory/history.js';
 /** One-time random local auth token — valid for this process lifetime */
 const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
 
+/** In-memory local chat store (replaces Supabase dependency) */
+interface LocalChat {
+  id: string;
+  title: string;
+  created_at: string;
+}
+const localChats: LocalChat[] = [];
+
 export class ApiServer {
   private app: express.Application;
   private server: http.Server;
@@ -22,8 +30,8 @@ export class ApiServer {
   private port: number;
 
   constructor(
-    logger: winston.Logger, 
-    orchestrator: Orchestrator, 
+    logger: winston.Logger,
+    orchestrator: Orchestrator,
     history: SessionHistory,
     port: number = 4309
   ) {
@@ -43,9 +51,9 @@ export class ApiServer {
 
   private setupMiddleware() {
     this.app.use(express.json());
-    const frontendOut = path.join(process.cwd(), 'public', 'Luma', 'out');
+    const frontendOut = path.join(process.cwd(), 'public', 'must-b-ui', 'out');
     this.app.use(express.static(frontendOut));
-    // SPA fallback — serve index.html for all non-API routes
+    // SPA fallback
     this.app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next();
       res.sendFile(path.join(frontendOut, 'index.html'), (err) => {
@@ -55,31 +63,58 @@ export class ApiServer {
   }
 
   private setupRoutes() {
-    this.app.get('/api/status', async (req, res) => {
+    // ── Health ────────────────────────────────────────────────────────────
+    this.app.get('/api/status', (_req, res) => {
       res.json({ status: 'online', gateway: 'Must-b', port: this.port, timestamp: Date.now() });
     });
 
-    // Local-Auth handshake — only available from localhost
-    // Frontend calls this once on init to get a bearer token
+    // ── Local-Auth handshake (localhost only) ─────────────────────────────
     this.app.get('/api/auth/local', (req, res) => {
       const ip = req.socket.remoteAddress ?? '';
-      const isLocal = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+      const isLocal = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip);
       if (!isLocal) return res.status(403).json({ error: 'local access only' });
       res.json({ token: LOCAL_TOKEN, mode: 'local' });
     });
 
-    // Token validation middleware for sensitive endpoints
+    // ── Auth middleware: localhost always passes, others need Bearer token ─
     const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
       const ip = req.socket.remoteAddress ?? '';
-      const isLocal = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
-      if (isLocal) return next(); // localhost always trusted
-      const auth = req.headers.authorization ?? '';
-      if (auth === `Bearer ${LOCAL_TOKEN}`) return next();
-      res.status(401).json({ error: 'Unauthorized — get token from /api/auth/local' });
+      if (['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(ip)) return next();
+      if (req.headers.authorization === `Bearer ${LOCAL_TOKEN}`) return next();
+      res.status(401).json({ error: 'Unauthorized — call /api/auth/local first' });
     };
 
-    this.app.post('/api/goal', requireAuth, async (req, res) => {
-      const { goal } = req.body;
+    // ── Chats (local store — no Supabase needed) ──────────────────────────
+    this.app.get('/api/chats', requireAuth, (_req, res) => {
+      res.json([...localChats].sort((a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ).slice(0, 20));
+    });
+
+    this.app.post('/api/chats', requireAuth, (req, res) => {
+      const title = String(req.body.title || 'New Chat');
+      const chat: LocalChat = { id: crypto.randomUUID(), title, created_at: new Date().toISOString() };
+      localChats.push(chat);
+      res.json(chat);
+    });
+
+    this.app.patch('/api/chats/:id', requireAuth, (req, res) => {
+      const chat = localChats.find(c => c.id === req.params.id);
+      if (!chat) return res.status(404).json({ error: 'not found' });
+      chat.title = String(req.body.title || chat.title);
+      res.json(chat);
+    });
+
+    this.app.delete('/api/chats/:id', requireAuth, (req, res) => {
+      const idx = localChats.findIndex(c => c.id === req.params.id);
+      if (idx < 0) return res.status(404).json({ error: 'not found' });
+      localChats.splice(idx, 1);
+      res.json({ ok: true });
+    });
+
+    // ── Goal execution ────────────────────────────────────────────────────
+    this.app.post('/api/goal', requireAuth, (req, res) => {
+      const { goal, chatId } = req.body;
       if (!goal) return res.status(400).json({ error: 'goal required' });
       this.orchestrator.run(goal).catch(err => {
         this.logger.error(`Gateway: failed to run goal: ${err?.message}`);
@@ -87,7 +122,8 @@ export class ApiServer {
       res.json({ ok: true, goal });
     });
 
-    this.app.get('/api/logs', async (req, res) => {
+    // ── Logs ──────────────────────────────────────────────────────────────
+    this.app.get('/api/logs', (_req, res) => {
       res.json({ logs: [] });
     });
   }
@@ -100,7 +136,6 @@ export class ApiServer {
   }
 
   private setupOrchestratorListeners() {
-    // Forward orchestration events to dashboard
     this.orchestrator.on('planStart',    (d) => this.io.emit('agentUpdate', { type: 'planStart',    ...d }));
     this.orchestrator.on('planGenerated',(d) => this.io.emit('agentUpdate', { type: 'planGenerated',...d }));
     this.orchestrator.on('stepStart',    (d) => this.io.emit('agentUpdate', { type: 'stepStart',    ...d }));
@@ -111,7 +146,7 @@ export class ApiServer {
 
   start() {
     this.server.listen(this.port, () => {
-      this.logger.info(`[Gateway] Must-b live at http://localhost:${this.port} — UI + API on single port`);
+      this.logger.info(`[Gateway] Must-b live at http://localhost:${this.port}`);
     });
   }
 }

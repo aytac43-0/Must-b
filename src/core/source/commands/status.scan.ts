@@ -1,7 +1,7 @@
 import { resolveCommandSecretRefsViaGateway } from "../cli/command-secret-gateway.js";
 import { getStatusCommandSecretTargetIds } from "../cli/command-secret-targets.js";
 import { withProgress } from "../cli/progress.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { readBestEffortConfig } from "../config/config.js";
 import { buildGatewayConnectionDetails, callGateway } from "../gateway/call.js";
 import { normalizeControlUiBasePath } from "../gateway/control-ui-shared.js";
@@ -60,7 +60,7 @@ function unwrapDeferredResult<T>(result: DeferredResult<T>): T {
   return result.value;
 }
 
-function resolveMemoryPluginStatus(cfg: Must-bConfig): MemoryPluginStatus {
+function resolveMemoryPluginStatus(cfg: MustBonfig): MemoryPluginStatus {
   const pluginsEnabled = cfg.plugins?.enabled !== false;
   if (!pluginsEnabled) {
     return { enabled: false, slot: null, reason: "plugins disabled" };
@@ -73,7 +73,7 @@ function resolveMemoryPluginStatus(cfg: Must-bConfig): MemoryPluginStatus {
 }
 
 async function resolveGatewayProbeSnapshot(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   opts: { timeoutMs?: number; all?: boolean };
 }): Promise<GatewayProbeSnapshot> {
   const gatewayConnection = buildGatewayConnectionDetails({ config: params.cfg });
@@ -108,7 +108,7 @@ async function resolveGatewayProbeSnapshot(params: {
 }
 
 async function resolveChannelsStatus(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   gatewayReachable: boolean;
   opts: { timeoutMs?: number; all?: boolean };
 }) {
@@ -127,8 +127,8 @@ async function resolveChannelsStatus(params: {
 }
 
 export type StatusScanResult = {
-  cfg: Must-bConfig;
-  sourceConfig: Must-bConfig;
+  cfg: MustBonfig;
+  sourceConfig: MustBonfig;
   secretDiagnostics: string[];
   osSummary: ReturnType<typeof resolveOsSummary>;
   tailscaleMode: string;
@@ -155,7 +155,7 @@ export type StatusScanResult = {
 };
 
 async function resolveMemoryStatusSnapshot(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentStatus: Awaited<ReturnType<typeof getAgentLocalStatuses>>;
   memoryPlugin: MemoryPluginStatus;
 }): Promise<MemoryStatusSnapshot | null> {

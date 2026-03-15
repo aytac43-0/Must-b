@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/discord";
+import type { MustBPluginApi } from "must-b/plugin-sdk/discord";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { registerDiscordSubagentHooks } from "./subagent-hooks.js";
 
@@ -59,7 +59,7 @@ function registerHandlersForTest(
     on: (hookName: string, handler: (event: unknown, ctx: unknown) => unknown) => {
       handlers.set(hookName, handler);
     },
-  } as unknown as Must-bPluginApi;
+  } as unknown as MustBPluginApi;
   registerDiscordSubagentHooks(api);
   return handlers;
 }

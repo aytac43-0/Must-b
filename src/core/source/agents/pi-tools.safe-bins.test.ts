@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { ExecApprovalsResolved } from "../infra/exec-approvals.js";
 import type { SafeBinProfileFixture } from "../infra/exec-safe-bin-policy.js";
 import { captureEnv } from "../test-utils/env.js";
@@ -68,7 +68,7 @@ vi.mock("../infra/exec-approvals.js", async (importOriginal) => {
   return { ...mod, resolveExecApprovals: () => approvals };
 });
 
-const { createMust-bCodingTools } = await import("./pi-tools.js");
+const { createMustBodingTools } = await import("./pi-tools.js");
 
 type ExecToolResult = {
   content: Array<{ type: string; text?: string }>;
@@ -97,7 +97,7 @@ async function createSafeBinsExecTool(params: {
     fs.writeFileSync(path.join(tmpDir, file.name), file.contents, "utf8");
   }
 
-  const cfg: Must-bConfig = {
+  const cfg: MustBonfig = {
     tools: {
       exec: {
         host: "gateway",
@@ -109,7 +109,7 @@ async function createSafeBinsExecTool(params: {
     },
   };
 
-  const tools = createMust-bCodingTools({
+  const tools = createMustBodingTools({
     config: cfg,
     sessionKey: "agent:main:main",
     workspaceDir: tmpDir,
@@ -137,7 +137,7 @@ async function withSafeBinsExecTool(
   }
 }
 
-describe("createMust-bCodingTools safeBins", () => {
+describe("createMustBodingTools safeBins", () => {
   it("threads tools.exec.safeBins into exec allowlist checks", async () => {
     await withSafeBinsExecTool(
       {

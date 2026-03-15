@@ -1,9 +1,9 @@
 import { canonicalizePathVariant } from "../gateway/security-path.js";
-import type { Must-bPluginHttpRouteMatch } from "./types.js";
+import type { MustBluginHttpRouteMatch } from "./types.js";
 
 type PluginHttpRouteLike = {
   path: string;
-  match: Must-bPluginHttpRouteMatch;
+  match: MustBluginHttpRouteMatch;
 };
 
 function prefixMatchPath(pathname: string, prefix: string): boolean {
@@ -37,7 +37,7 @@ export function doPluginHttpRoutesOverlap(
 export function findOverlappingPluginHttpRoute<
   T extends {
     path: string;
-    match: Must-bPluginHttpRouteMatch;
+    match: MustBluginHttpRouteMatch;
   },
 >(routes: readonly T[], candidate: PluginHttpRouteLike): T | undefined {
   return routes.find((route) => doPluginHttpRoutesOverlap(route, candidate));

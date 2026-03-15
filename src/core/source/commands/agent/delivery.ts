@@ -1,7 +1,7 @@
 import { AGENT_LANE_NESTED } from "../../agents/lanes.js";
 import { getChannelPlugin, normalizeChannelId } from "../../channels/plugins/index.js";
 import { createOutboundSendDeps, type CliDeps } from "../../cli/outbound-send-deps.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import {
   resolveAgentDeliveryPlan,
@@ -65,7 +65,7 @@ function logNestedOutput(
 }
 
 export async function deliverAgentCommandResult(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   deps: CliDeps;
   runtime: RuntimeEnv;
   opts: AgentCommandOpts;

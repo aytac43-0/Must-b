@@ -5,15 +5,15 @@
  * These commands are processed before built-in commands and before agent invocation.
  */
 
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { logVerbose } from "../globals.js";
 import type {
-  Must-bPluginCommandDefinition,
+  MustBluginCommandDefinition,
   PluginCommandContext,
   PluginCommandResult,
 } from "./types.js";
 
-type RegisteredPluginCommand = Must-bPluginCommandDefinition & {
+type RegisteredPluginCommand = MustBluginCommandDefinition & {
   pluginId: string;
 };
 
@@ -107,7 +107,7 @@ export type CommandRegistrationResult = {
  */
 export function registerPluginCommand(
   pluginId: string,
-  command: Must-bPluginCommandDefinition,
+  command: MustBluginCommandDefinition,
 ): CommandRegistrationResult {
   // Prevent registration while commands are being processed
   if (registryLocked) {
@@ -248,7 +248,7 @@ export async function executePluginCommand(params: {
   channelId?: PluginCommandContext["channelId"];
   isAuthorizedSender: boolean;
   commandBody: string;
-  config: Must-bConfig;
+  config: MustBonfig;
   from?: PluginCommandContext["from"];
   to?: PluginCommandContext["to"];
   accountId?: PluginCommandContext["accountId"];
@@ -317,7 +317,7 @@ export function listPluginCommands(): Array<{
 }
 
 function resolvePluginNativeName(
-  command: Must-bPluginCommandDefinition,
+  command: MustBluginCommandDefinition,
   provider?: string,
 ): string {
   const providerName = provider?.trim().toLowerCase();

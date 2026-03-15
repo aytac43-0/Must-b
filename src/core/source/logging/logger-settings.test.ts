@@ -16,7 +16,7 @@ vi.mock("./node-require.js", () => ({
 }));
 
 let originalTestFileLog: string | undefined;
-let originalMust-bLogLevel: string | undefined;
+let originalMustBogLevel: string | undefined;
 let logging: typeof import("../logging.js");
 
 beforeAll(async () => {
@@ -25,7 +25,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   originalTestFileLog = process.env.MUSTB_TEST_FILE_LOG;
-  originalMust-bLogLevel = process.env.MUSTB_LOG_LEVEL;
+  originalMustBogLevel = process.env.MUSTB_LOG_LEVEL;
   delete process.env.MUSTB_TEST_FILE_LOG;
   delete process.env.MUSTB_LOG_LEVEL;
   readLoggingConfigMock.mockClear();
@@ -40,10 +40,10 @@ afterEach(() => {
   } else {
     process.env.MUSTB_TEST_FILE_LOG = originalTestFileLog;
   }
-  if (originalMust-bLogLevel === undefined) {
+  if (originalMustBogLevel === undefined) {
     delete process.env.MUSTB_LOG_LEVEL;
   } else {
-    process.env.MUSTB_LOG_LEVEL = originalMust-bLogLevel;
+    process.env.MUSTB_LOG_LEVEL = originalMustBogLevel;
   }
   logging.resetLogger();
   logging.setLoggerOverride(null);

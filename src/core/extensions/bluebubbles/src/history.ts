@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/bluebubbles";
+import type { MustBConfig } from "must-b/plugin-sdk/bluebubbles";
 import { resolveBlueBubblesServerAccount } from "./account-resolve.js";
 import { blueBubblesFetchWithTimeout, buildBlueBubblesApiUrl } from "./types.js";
 
@@ -37,7 +37,7 @@ export type BlueBubblesChatOpts = {
   password?: string;
   accountId?: string;
   timeoutMs?: number;
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
 };
 
 function resolveAccount(params: BlueBubblesChatOpts) {

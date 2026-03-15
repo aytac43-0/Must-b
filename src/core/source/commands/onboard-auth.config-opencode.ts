@@ -1,8 +1,8 @@
 import { OPENCODE_ZEN_DEFAULT_MODEL_REF } from "../agents/opencode-zen-models.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { applyAgentDefaultModelPrimary } from "./onboard-auth.config-shared.js";
 
-export function applyOpencodeZenProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyOpencodeZenProviderConfig(cfg: MustBonfig): MustBonfig {
   // Use the built-in opencode provider from pi-ai; only seed the allowlist alias.
   const models = { ...cfg.agents?.defaults?.models };
   models[OPENCODE_ZEN_DEFAULT_MODEL_REF] = {
@@ -22,7 +22,7 @@ export function applyOpencodeZenProviderConfig(cfg: Must-bConfig): Must-bConfig 
   };
 }
 
-export function applyOpencodeZenConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyOpencodeZenConfig(cfg: MustBonfig): MustBonfig {
   const next = applyOpencodeZenProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, OPENCODE_ZEN_DEFAULT_MODEL_REF);
 }

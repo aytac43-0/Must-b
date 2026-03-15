@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import type { AuthProfileStore } from "../agents/auth-profiles.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveSecretInputRef,
   type SecretProviderConfig,
@@ -37,14 +37,14 @@ export type ConfigureProviderChanges = {
   deletes: string[];
 };
 
-function getSecretProviders(config: Must-bConfig): Record<string, SecretProviderConfig> {
+function getSecretProviders(config: MustBonfig): Record<string, SecretProviderConfig> {
   if (!isRecord(config.secrets?.providers)) {
     return {};
   }
   return config.secrets.providers;
 }
 
-export function buildConfigureCandidates(config: Must-bConfig): ConfigureCandidate[] {
+export function buildConfigureCandidates(config: MustBonfig): ConfigureCandidate[] {
   return buildConfigureCandidatesForScope({ config });
 }
 
@@ -73,14 +73,14 @@ function resolveAuthProfileProvider(
 }
 
 export function buildConfigureCandidatesForScope(params: {
-  config: Must-bConfig;
-  authoredMust-bConfig?: Must-bConfig;
+  config: MustBonfig;
+  authoredMustBonfig?: MustBonfig;
   authProfiles?: {
     agentId: string;
     store: AuthProfileStore;
   };
 }): ConfigureCandidate[] {
-  const authoredConfig = params.authoredMust-bConfig ?? params.config;
+  const authoredConfig = params.authoredMustBonfig ?? params.config;
 
   const hasPathInAuthoredConfig = (pathSegments: string[]): boolean =>
     hasPath(authoredConfig, pathSegments);
@@ -184,8 +184,8 @@ function hasPath(root: unknown, segments: string[]): boolean {
 }
 
 export function collectConfigureProviderChanges(params: {
-  original: Must-bConfig;
-  next: Must-bConfig;
+  original: MustBonfig;
+  next: MustBonfig;
 }): ConfigureProviderChanges {
   const originalProviders = getSecretProviders(params.original);
   const nextProviders = getSecretProviders(params.next);

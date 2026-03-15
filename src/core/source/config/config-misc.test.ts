@@ -6,12 +6,12 @@ import {
   unsetConfigValueAtPath,
 } from "./config-paths.js";
 import { readConfigFileSnapshot, validateConfigObject } from "./config.js";
-import { buildWebSearchProviderConfig, withTempHome, writeMust-bConfig } from "./test-helpers.js";
-import { Must-bSchema } from "./zod-schema.js";
+import { buildWebSearchProviderConfig, withTempHome, writeMustBonfig } from "./test-helpers.js";
+import { MustBchema } from "./zod-schema.js";
 
 describe("$schema key in config (#14998)", () => {
   it("accepts config with $schema string", () => {
-    const result = Must-bSchema.safeParse({
+    const result = MustBchema.safeParse({
       $schema: "https://must-b.ai/config.json",
     });
     expect(result.success).toBe(true);
@@ -21,19 +21,19 @@ describe("$schema key in config (#14998)", () => {
   });
 
   it("accepts config without $schema", () => {
-    const result = Must-bSchema.safeParse({});
+    const result = MustBchema.safeParse({});
     expect(result.success).toBe(true);
   });
 
   it("rejects non-string $schema", () => {
-    const result = Must-bSchema.safeParse({ $schema: 123 });
+    const result = MustBchema.safeParse({ $schema: 123 });
     expect(result.success).toBe(false);
   });
 });
 
 describe("plugins.slots.contextEngine", () => {
   it("accepts a contextEngine slot id", () => {
-    const result = Must-bSchema.safeParse({
+    const result = MustBchema.safeParse({
       plugins: {
         slots: {
           contextEngine: "my-context-engine",
@@ -51,7 +51,7 @@ describe("ui.seamColor", () => {
   });
 
   it("rejects non-hex colors", () => {
-    const res = validateConfigObject({ ui: { seamColor: "lobster" } });
+    const res = validateConfigObject({ ui: { seamColor: "orange" } });
     expect(res.ok).toBe(false);
   });
 
@@ -63,7 +63,7 @@ describe("ui.seamColor", () => {
 
 describe("plugins.entries.*.hooks.allowPromptInjection", () => {
   it("accepts boolean values", () => {
-    const result = Must-bSchema.safeParse({
+    const result = MustBchema.safeParse({
       plugins: {
         entries: {
           "voice-call": {
@@ -78,7 +78,7 @@ describe("plugins.entries.*.hooks.allowPromptInjection", () => {
   });
 
   it("rejects non-boolean values", () => {
-    const result = Must-bSchema.safeParse({
+    const result = MustBchema.safeParse({
       plugins: {
         entries: {
           "voice-call": {
@@ -216,7 +216,7 @@ describe("gateway.channelHealthCheckMinutes", () => {
 
 describe("cron webhook schema", () => {
   it("accepts cron.webhookToken and legacy cron.webhook", () => {
-    const res = Must-bSchema.safeParse({
+    const res = MustBchema.safeParse({
       cron: {
         enabled: true,
         webhook: "https://example.invalid/legacy-cron-webhook",
@@ -228,7 +228,7 @@ describe("cron webhook schema", () => {
   });
 
   it("accepts cron.webhookToken SecretRef values", () => {
-    const res = Must-bSchema.safeParse({
+    const res = MustBchema.safeParse({
       cron: {
         webhook: "https://example.invalid/legacy-cron-webhook",
         webhookToken: {
@@ -243,7 +243,7 @@ describe("cron webhook schema", () => {
   });
 
   it("rejects non-http cron.webhook URLs", () => {
-    const res = Must-bSchema.safeParse({
+    const res = MustBchema.safeParse({
       cron: {
         webhook: "ftp://example.invalid/legacy-cron-webhook",
       },
@@ -253,7 +253,7 @@ describe("cron webhook schema", () => {
   });
 
   it("accepts cron.retry config", () => {
-    const res = Must-bSchema.safeParse({
+    const res = MustBchema.safeParse({
       cron: {
         retry: {
           maxAttempts: 5,
@@ -362,7 +362,7 @@ describe("config strict validation", () => {
 
   it("flags legacy config entries without auto-migrating", async () => {
     await withTempHome(async (home) => {
-      await writeMust-bConfig(home, {
+      await writeMustBonfig(home, {
         agents: { list: [{ id: "pi" }] },
         routing: { allowFrom: ["+15555550123"] },
       });
@@ -376,7 +376,7 @@ describe("config strict validation", () => {
 
   it("does not mark resolved-only gateway.bind aliases as auto-migratable legacy", async () => {
     await withTempHome(async (home) => {
-      await writeMust-bConfig(home, {
+      await writeMustBonfig(home, {
         gateway: { bind: "${MUSTB_BIND}" },
       });
 
@@ -399,7 +399,7 @@ describe("config strict validation", () => {
 
   it("still marks literal gateway.bind host aliases as legacy", async () => {
     await withTempHome(async (home) => {
-      await writeMust-bConfig(home, {
+      await writeMustBonfig(home, {
         gateway: { bind: "0.0.0.0" },
       });
 

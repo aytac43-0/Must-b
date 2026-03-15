@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/types.js";
+import type { MustBonfig } from "../../config/types.js";
 import { inspectDiscordAccount } from "../../discord/account-inspect.js";
 import { mapAllowFromEntries } from "../../plugin-sdk/channel-config-helpers.js";
 import { inspectSlackAccount } from "../../slack/account-inspect.js";
@@ -9,7 +9,7 @@ import { normalizeSlackMessagingTarget } from "./normalize/slack.js";
 import type { ChannelDirectoryEntry } from "./types.js";
 
 export type DirectoryConfigParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;

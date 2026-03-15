@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { startHeartbeatRunner } from "./heartbeat-runner.js";
 import { requestHeartbeatNow, resetHeartbeatWakeStateForTests } from "./heartbeat-wake.js";
 
@@ -8,7 +8,7 @@ describe("startHeartbeatRunner", () => {
     return startHeartbeatRunner({
       cfg: {
         agents: { defaults: { heartbeat: { every: "30m" } } },
-      } as Must-bConfig,
+      } as MustBonfig,
       runOnce,
     });
   }
@@ -42,7 +42,7 @@ describe("startHeartbeatRunner", () => {
           { id: "ops", heartbeat: { every: "15m" } },
         ],
       },
-    } as Must-bConfig);
+    } as MustBonfig);
 
     await vi.advanceTimersByTimeAsync(10 * 60_000 + 1_000);
 
@@ -97,7 +97,7 @@ describe("startHeartbeatRunner", () => {
 
     const cfg = {
       agents: { defaults: { heartbeat: { every: "30m" } } },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     // Start runner A
     const runnerA = startHeartbeatRunner({ cfg, runOnce: runSpy1 });
@@ -150,7 +150,7 @@ describe("startHeartbeatRunner", () => {
     const runner = startHeartbeatRunner({
       cfg: {
         agents: { defaults: { heartbeat: { every: "30m" } } },
-      } as Must-bConfig,
+      } as MustBonfig,
       runOnce: runSpy,
     });
 
@@ -184,7 +184,7 @@ describe("startHeartbeatRunner", () => {
     const runner = startHeartbeatRunner({
       cfg: {
         agents: { defaults: { heartbeat: { every: "30m" } } },
-      } as Must-bConfig,
+      } as MustBonfig,
       runOnce: runSpy,
     });
 
@@ -221,7 +221,7 @@ describe("startHeartbeatRunner", () => {
             { id: "ops", heartbeat: { every: "15m" } },
           ],
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       runOnce: runSpy,
     });
 
@@ -259,7 +259,7 @@ describe("startHeartbeatRunner", () => {
             { id: "finance", heartbeat: { every: "30m" } },
           ],
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       runOnce: runSpy,
     });
 

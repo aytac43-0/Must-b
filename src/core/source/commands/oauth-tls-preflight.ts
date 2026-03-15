@@ -1,6 +1,6 @@
 import path from "node:path";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { note } from "../terminal/note.js";
 
 const TLS_CERT_ERROR_CODES = new Set([
@@ -79,7 +79,7 @@ function resolveCertBundlePath(): string | null {
   return path.join(prefix, "etc", "openssl@3", "cert.pem");
 }
 
-function hasOpenAICodexOAuthProfile(cfg: Must-bConfig): boolean {
+function hasOpenAICodexOAuthProfile(cfg: MustBonfig): boolean {
   const profiles = cfg.auth?.profiles;
   if (!profiles) {
     return false;
@@ -90,7 +90,7 @@ function hasOpenAICodexOAuthProfile(cfg: Must-bConfig): boolean {
 }
 
 function shouldRunOpenAIOAuthTlsPrerequisites(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   deep?: boolean;
 }): boolean {
   if (params.deep === true) {
@@ -150,7 +150,7 @@ export function formatOpenAIOAuthTlsPreflightFix(
 }
 
 export async function noteOpenAIOAuthTlsPrerequisites(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   deep?: boolean;
 }): Promise<void> {
   if (!shouldRunOpenAIOAuthTlsPrerequisites(params)) {

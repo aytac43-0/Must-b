@@ -7,7 +7,7 @@ import {
   stopDebugPolling,
 } from "./app-polling.ts";
 import { scheduleChatScroll, scheduleLogsScroll } from "./app-scroll.ts";
-import type { Must-bApp } from "./app.ts";
+import type { MustBpp } from "./app.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
 import { loadAgents } from "./controllers/agents.ts";
@@ -205,33 +205,33 @@ export async function refreshActiveTab(host: SettingsHost) {
     await loadChannelsTab(host);
   }
   if (host.tab === "instances") {
-    await loadPresence(host as unknown as Must-bApp);
+    await loadPresence(host as unknown as MustBpp);
   }
   if (host.tab === "sessions") {
-    await loadSessions(host as unknown as Must-bApp);
+    await loadSessions(host as unknown as MustBpp);
   }
   if (host.tab === "cron") {
     await loadCron(host);
   }
   if (host.tab === "skills") {
-    await loadSkills(host as unknown as Must-bApp);
+    await loadSkills(host as unknown as MustBpp);
   }
   if (host.tab === "agents") {
-    await loadAgents(host as unknown as Must-bApp);
-    await loadConfig(host as unknown as Must-bApp);
+    await loadAgents(host as unknown as MustBpp);
+    await loadConfig(host as unknown as MustBpp);
     const agentIds = host.agentsList?.agents?.map((entry) => entry.id) ?? [];
     if (agentIds.length > 0) {
-      void loadAgentIdentities(host as unknown as Must-bApp, agentIds);
+      void loadAgentIdentities(host as unknown as MustBpp, agentIds);
     }
     const agentId =
       host.agentsSelectedId ?? host.agentsList?.defaultId ?? host.agentsList?.agents?.[0]?.id;
     if (agentId) {
-      void loadAgentIdentity(host as unknown as Must-bApp, agentId);
+      void loadAgentIdentity(host as unknown as MustBpp, agentId);
       if (host.agentsPanel === "skills") {
-        void loadAgentSkills(host as unknown as Must-bApp, agentId);
+        void loadAgentSkills(host as unknown as MustBpp, agentId);
       }
       if (host.agentsPanel === "channels") {
-        void loadChannels(host as unknown as Must-bApp, false);
+        void loadChannels(host as unknown as MustBpp, false);
       }
       if (host.agentsPanel === "cron") {
         void loadCron(host);
@@ -239,10 +239,10 @@ export async function refreshActiveTab(host: SettingsHost) {
     }
   }
   if (host.tab === "nodes") {
-    await loadNodes(host as unknown as Must-bApp);
-    await loadDevices(host as unknown as Must-bApp);
-    await loadConfig(host as unknown as Must-bApp);
-    await loadExecApprovals(host as unknown as Must-bApp);
+    await loadNodes(host as unknown as MustBpp);
+    await loadDevices(host as unknown as MustBpp);
+    await loadConfig(host as unknown as MustBpp);
+    await loadExecApprovals(host as unknown as MustBpp);
   }
   if (host.tab === "chat") {
     await refreshChat(host as unknown as Parameters<typeof refreshChat>[0]);
@@ -259,16 +259,16 @@ export async function refreshActiveTab(host: SettingsHost) {
     host.tab === "infrastructure" ||
     host.tab === "aiAgents"
   ) {
-    await loadConfigSchema(host as unknown as Must-bApp);
-    await loadConfig(host as unknown as Must-bApp);
+    await loadConfigSchema(host as unknown as MustBpp);
+    await loadConfig(host as unknown as MustBpp);
   }
   if (host.tab === "debug") {
-    await loadDebug(host as unknown as Must-bApp);
+    await loadDebug(host as unknown as MustBpp);
     host.eventLog = host.eventLogBuffer;
   }
   if (host.tab === "logs") {
     host.logsAtBottom = true;
-    await loadLogs(host as unknown as Must-bApp, { reset: true });
+    await loadLogs(host as unknown as MustBpp, { reset: true });
     scheduleLogsScroll(host as unknown as Parameters<typeof scheduleLogsScroll>[0], true);
   }
 }
@@ -460,7 +460,7 @@ export function syncUrlWithSessionKey(host: SettingsHost, sessionKey: string, re
 }
 
 export async function loadOverview(host: SettingsHost) {
-  const app = host as unknown as Must-bApp;
+  const app = host as unknown as MustBpp;
   await Promise.allSettled([
     loadChannels(app, false),
     loadPresence(app),
@@ -497,7 +497,7 @@ export function hasMissingSkillDependencies(
   return Object.values(missing).some((value) => Array.isArray(value) && value.length > 0);
 }
 
-async function loadOverviewLogs(host: Must-bApp) {
+async function loadOverviewLogs(host: MustBpp) {
   if (!host.client || !host.connected) {
     return;
   }
@@ -523,7 +523,7 @@ async function loadOverviewLogs(host: Must-bApp) {
   }
 }
 
-function buildAttentionItems(host: Must-bApp) {
+function buildAttentionItems(host: MustBpp) {
   const items: AttentionItem[] = [];
 
   if (host.lastError) {
@@ -601,14 +601,14 @@ function buildAttentionItems(host: Must-bApp) {
 
 export async function loadChannelsTab(host: SettingsHost) {
   await Promise.all([
-    loadChannels(host as unknown as Must-bApp, true),
-    loadConfigSchema(host as unknown as Must-bApp),
-    loadConfig(host as unknown as Must-bApp),
+    loadChannels(host as unknown as MustBpp, true),
+    loadConfigSchema(host as unknown as MustBpp),
+    loadConfig(host as unknown as MustBpp),
   ]);
 }
 
 export async function loadCron(host: SettingsHost) {
-  const app = host as unknown as Must-bApp;
+  const app = host as unknown as MustBpp;
   const activeCronJobId = app.cronRunsScope === "job" ? app.cronRunsJobId : null;
   await Promise.all([
     loadChannels(app, false),

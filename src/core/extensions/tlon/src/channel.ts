@@ -4,7 +4,7 @@ import type {
   ChannelOutboundAdapter,
   ChannelPlugin,
   ChannelSetupInput,
-  Must-bConfig,
+  MustBConfig,
 } from "must-b/plugin-sdk/tlon";
 import {
   applyAccountNameToChannelSection,
@@ -101,10 +101,10 @@ type TlonSetupInput = ChannelSetupInput & {
 };
 
 function applyTlonSetupConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId: string;
   input: TlonSetupInput;
-}): Must-bConfig {
+}): MustBConfig {
   const { cfg, accountId, input } = params;
   const useDefault = accountId === DEFAULT_ACCOUNT_ID;
   const namedConfig = applyAccountNameToChannelSection({
@@ -311,7 +311,7 @@ export const tlonPlugin: ChannelPlugin = {
               enabled,
             },
           },
-        } as Must-bConfig;
+        } as MustBConfig;
       }
       return {
         ...cfg,
@@ -328,7 +328,7 @@ export const tlonPlugin: ChannelPlugin = {
             },
           },
         },
-      } as Must-bConfig;
+      } as MustBConfig;
     },
     deleteAccount: ({ cfg, accountId }) => {
       const useDefault = !accountId || accountId === "default";
@@ -346,7 +346,7 @@ export const tlonPlugin: ChannelPlugin = {
             ...cfg.channels,
             tlon: rest,
           },
-        } as Must-bConfig;
+        } as MustBConfig;
       }
       const { [accountId]: _removed, ...remainingAccounts } = cfg.channels?.tlon?.accounts ?? {};
       return {
@@ -358,7 +358,7 @@ export const tlonPlugin: ChannelPlugin = {
             accounts: remainingAccounts,
           },
         },
-      } as Must-bConfig;
+      } as MustBConfig;
     },
     isConfigured: (account) => account.configured,
     describeAccount: (account) => ({

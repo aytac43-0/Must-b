@@ -12,7 +12,7 @@ import {
   resolveDefaultModelForAgent,
   resolveModelRefFromString,
 } from "../../agents/model-selection.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
 import { enqueueSystemEvent } from "../../infra/system-events.js";
 import { applyVerboseOverride } from "../../sessions/level-overrides.js";
@@ -25,7 +25,7 @@ import type { ElevatedLevel, ReasoningLevel } from "./directives.js";
 export async function persistInlineDirectives(params: {
   directives: InlineDirectives;
   effectiveModelDirective?: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir?: string;
   sessionEntry?: SessionEntry;
   sessionStore?: Record<string, SessionEntry>;
@@ -41,7 +41,7 @@ export async function persistInlineDirectives(params: {
   model: string;
   initialModelLabel: string;
   formatModelSwitchEvent: (label: string, alias?: string) => string;
-  agentCfg: NonNullable<Must-bConfig["agents"]>["defaults"] | undefined;
+  agentCfg: NonNullable<MustBonfig["agents"]>["defaults"] | undefined;
 }): Promise<{ provider: string; model: string; contextTokens: number }> {
   const {
     directives,
@@ -217,7 +217,7 @@ export async function persistInlineDirectives(params: {
   };
 }
 
-export function resolveDefaultModel(params: { cfg: Must-bConfig; agentId?: string }): {
+export function resolveDefaultModel(params: { cfg: MustBonfig; agentId?: string }): {
   defaultProvider: string;
   defaultModel: string;
   aliasIndex: ModelAliasIndex;

@@ -8,7 +8,7 @@ export {
 } from "./windows-spawn.js";
 export type {
   AnyAgentTool,
-  Must-bPluginApi,
-  Must-bPluginToolContext,
-  Must-bPluginToolFactory,
+  MustBluginApi,
+  MustBluginToolContext,
+  MustBluginToolFactory,
 } from "../plugins/types.js";

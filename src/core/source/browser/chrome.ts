@@ -24,7 +24,7 @@ import {
   resolveBrowserExecutableForPlatform,
 } from "./chrome.executables.js";
 import {
-  decorateMust-bProfile,
+  decorateMustBrofile,
   ensureProfileCleanExit,
   isProfileDecorated,
 } from "./chrome.profile-decoration.js";
@@ -44,7 +44,7 @@ export {
   resolveBrowserExecutableForPlatform,
 } from "./chrome.executables.js";
 export {
-  decorateMust-bProfile,
+  decorateMustBrofile,
   ensureProfileCleanExit,
   isProfileDecorated,
 } from "./chrome.profile-decoration.js";
@@ -70,7 +70,7 @@ function resolveBrowserExecutable(resolved: ResolvedBrowserConfig): BrowserExecu
   return resolveBrowserExecutableForPlatform(resolved, process.platform);
 }
 
-export function resolveMust-bUserDataDir(profileName = DEFAULT_MUSTB_BROWSER_PROFILE_NAME) {
+export function resolveMustBserDataDir(profileName = DEFAULT_MUSTB_BROWSER_PROFILE_NAME) {
   return path.join(CONFIG_DIR, "browser", profileName, "user-data");
 }
 
@@ -235,7 +235,7 @@ export async function isChromeCdpReady(
   return await canRunCdpHealthCommand(wsUrl, handshakeTimeoutMs);
 }
 
-export async function launchMust-bChrome(
+export async function launchMustBhrome(
   resolved: ResolvedBrowserConfig,
   profile: ResolvedBrowserProfile,
 ): Promise<RunningChrome> {
@@ -251,7 +251,7 @@ export async function launchMust-bChrome(
     );
   }
 
-  const userDataDir = resolveMust-bUserDataDir(profile.name);
+  const userDataDir = resolveMustBserDataDir(profile.name);
   fs.mkdirSync(userDataDir, { recursive: true });
 
   const needsDecorate = !isProfileDecorated(
@@ -340,7 +340,7 @@ export async function launchMust-bChrome(
 
   if (needsDecorate) {
     try {
-      decorateMust-bProfile(userDataDir, {
+      decorateMustBrofile(userDataDir, {
         name: profile.name,
         color: profile.color,
       });
@@ -414,7 +414,7 @@ export async function launchMust-bChrome(
   };
 }
 
-export async function stopMust-bChrome(
+export async function stopMustBhrome(
   running: RunningChrome,
   timeoutMs = CHROME_STOP_TIMEOUT_MS,
 ) {

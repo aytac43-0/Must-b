@@ -1,4 +1,4 @@
-import { resolveMust-bAgentDir } from "../agents/agent-paths.js";
+import { resolveMustBgentDir } from "../agents/agent-paths.js";
 import { listAgentIds, resolveAgentDir } from "../agents/agent-scope.js";
 import type { AuthProfileStore } from "../agents/auth-profiles.js";
 import {
@@ -10,7 +10,7 @@ import {
   clearRuntimeConfigSnapshot,
   setRuntimeConfigSnapshotRefreshHandler,
   setRuntimeConfigSnapshot,
-  type Must-bConfig,
+  type MustBonfig,
 } from "../config/config.js";
 import { resolveUserPath } from "../utils.js";
 import {
@@ -30,8 +30,8 @@ import { resolveRuntimeWebTools, type RuntimeWebToolsMetadata } from "./runtime-
 export type { SecretResolverWarning } from "./runtime-shared.js";
 
 export type PreparedSecretsRuntimeSnapshot = {
-  sourceConfig: Must-bConfig;
-  config: Must-bConfig;
+  sourceConfig: MustBonfig;
+  config: MustBonfig;
   authStores: Array<{ agentDir: string; store: AuthProfileStore }>;
   warnings: SecretResolverWarning[];
   webTools: RuntimeWebToolsMetadata;
@@ -79,9 +79,9 @@ function clearActiveSecretsRuntimeState(): void {
   clearRuntimeAuthProfileStoreSnapshots();
 }
 
-function collectCandidateAgentDirs(config: Must-bConfig): string[] {
+function collectCandidateAgentDirs(config: MustBonfig): string[] {
   const dirs = new Set<string>();
-  dirs.add(resolveUserPath(resolveMust-bAgentDir()));
+  dirs.add(resolveUserPath(resolveMustBgentDir()));
   for (const agentId of listAgentIds(config)) {
     dirs.add(resolveUserPath(resolveAgentDir(config, agentId)));
   }
@@ -89,7 +89,7 @@ function collectCandidateAgentDirs(config: Must-bConfig): string[] {
 }
 
 function resolveRefreshAgentDirs(
-  config: Must-bConfig,
+  config: MustBonfig,
   context: SecretsRuntimeRefreshContext,
 ): string[] {
   const configDerived = collectCandidateAgentDirs(config);
@@ -100,7 +100,7 @@ function resolveRefreshAgentDirs(
 }
 
 export async function prepareSecretsRuntimeSnapshot(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   env?: NodeJS.ProcessEnv;
   agentDirs?: string[];
   loadAuthStore?: (agentDir?: string) => AuthProfileStore;

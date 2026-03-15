@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/diagnostics-otel";
+import type { MustBPluginApi } from "must-b/plugin-sdk/diagnostics-otel";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/diagnostics-otel";
 import { createDiagnosticsOtelService } from "./src/service.js";
 
@@ -7,7 +7,7 @@ const plugin = {
   name: "Diagnostics OpenTelemetry",
   description: "Export diagnostics events to OpenTelemetry",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     api.registerService(createDiagnosticsOtelService());
   },
 };

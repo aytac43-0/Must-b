@@ -1,5 +1,7 @@
 # Must-b — Personal AI Assistant
 
+> **Must-b is a proprietary AI platform developed by Mustafa Aytaç ÖZTAN under the Auto Step brand.**
+
 <p align="center">
     <picture>
         <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/must-b/must-b/main/docs/assets/must-b-logo-text-dark.png">
@@ -483,7 +485,7 @@ Use these when you’re past the onboarding flow and want the deeper reference.
 ## Molty
 
 Must-b was built for **Molty**, a space lobster AI assistant. 
-by Peter Steinberger and the community.
+by Mustafa Aytaç ÖZTAN and the community.
 
 - [must-b.ai](https://must-b.ai)
 - [soul.md](https://soul.md)

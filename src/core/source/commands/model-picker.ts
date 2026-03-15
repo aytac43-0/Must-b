@@ -9,7 +9,7 @@ import {
   normalizeProviderId,
   resolveConfiguredModelRef,
 } from "../agents/model-selection.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveAgentModelPrimaryValue } from "../config/model-input.js";
 import {
   resolveProviderPluginChoice,
@@ -32,7 +32,7 @@ const PROVIDER_FILTER_THRESHOLD = 30;
 const HIDDEN_ROUTER_MODELS = new Set(["openrouter/auto"]);
 
 type PromptDefaultModelParams = {
-  config: Must-bConfig;
+  config: MustBonfig;
   prompter: WizardPrompter;
   allowKeep?: boolean;
   includeManual?: boolean;
@@ -46,12 +46,12 @@ type PromptDefaultModelParams = {
   message?: string;
 };
 
-type PromptDefaultModelResult = { model?: string; config?: Must-bConfig };
+type PromptDefaultModelResult = { model?: string; config?: MustBonfig };
 type PromptModelAllowlistResult = { models?: string[] };
 
 function hasAuthForProvider(
   provider: string,
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   store: ReturnType<typeof ensureAuthProfileStore>,
 ) {
   if (listProfilesForProvider(store, provider).length > 0) {
@@ -67,7 +67,7 @@ function hasAuthForProvider(
 }
 
 function createProviderAuthChecker(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir?: string;
 }): (provider: string) => boolean {
   const authStore = ensureAuthProfileStore(params.agentDir, {
@@ -85,11 +85,11 @@ function createProviderAuthChecker(params: {
   };
 }
 
-function resolveConfiguredModelRaw(cfg: Must-bConfig): string {
+function resolveConfiguredModelRaw(cfg: MustBonfig): string {
   return resolveAgentModelPrimaryValue(cfg.agents?.defaults?.model) ?? "";
 }
 
-function resolveConfiguredModelKeys(cfg: Must-bConfig): string[] {
+function resolveConfiguredModelKeys(cfg: MustBonfig): string[] {
   const models = cfg.agents?.defaults?.models ?? {};
   return Object.keys(models)
     .map((key) => String(key ?? "").trim())
@@ -409,7 +409,7 @@ export async function promptDefaultModel(
 }
 
 export async function promptModelAllowlist(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   prompter: WizardPrompter;
   message?: string;
   agentDir?: string;
@@ -511,7 +511,7 @@ export async function promptModelAllowlist(params: {
   return { models: [] };
 }
 
-export function applyPrimaryModel(cfg: Must-bConfig, model: string): Must-bConfig {
+export function applyPrimaryModel(cfg: MustBonfig, model: string): MustBonfig {
   const defaults = cfg.agents?.defaults;
   const existingModel = defaults?.model;
   const existingModels = defaults?.models;
@@ -538,7 +538,7 @@ export function applyPrimaryModel(cfg: Must-bConfig, model: string): Must-bConfi
   };
 }
 
-export function applyModelAllowlist(cfg: Must-bConfig, models: string[]): Must-bConfig {
+export function applyModelAllowlist(cfg: MustBonfig, models: string[]): MustBonfig {
   const defaults = cfg.agents?.defaults;
   const normalized = normalizeModelKeys(models);
   if (normalized.length === 0) {
@@ -574,9 +574,9 @@ export function applyModelAllowlist(cfg: Must-bConfig, models: string[]): Must-b
 }
 
 export function applyModelFallbacksFromSelection(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   selection: string[],
-): Must-bConfig {
+): MustBonfig {
   const normalized = normalizeModelKeys(selection);
   if (normalized.length <= 1) {
     return cfg;

@@ -111,7 +111,7 @@ vi.mock("../skills-runtime.js", () => ({
 }));
 
 vi.mock("../../docs-path.js", () => ({
-  resolveMust-bDocsPath: async () => undefined,
+  resolveMustBocsPath: async () => undefined,
 }));
 
 vi.mock("../../pi-project-settings.js", () => ({

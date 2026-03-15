@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveMust-bMetadata, resolveSkillInvocationPolicy } from "./frontmatter.js";
+import { resolveMustBetadata, resolveSkillInvocationPolicy } from "./frontmatter.js";
 
 describe("resolveSkillInvocationPolicy", () => {
   it("defaults to enabled behaviors", () => {
@@ -18,9 +18,9 @@ describe("resolveSkillInvocationPolicy", () => {
   });
 });
 
-describe("resolveMust-bMetadata install validation", () => {
+describe("resolveMustBetadata install validation", () => {
   function resolveInstall(frontmatter: Record<string, string>) {
-    return resolveMust-bMetadata(frontmatter)?.install;
+    return resolveMustBetadata(frontmatter)?.install;
   }
 
   it("accepts safe install specs", () => {

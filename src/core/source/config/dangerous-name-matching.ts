@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "./config.js";
+import type { MustBonfig } from "./config.js";
 
 export type DangerousNameMatchingConfig = {
   dangerouslyAllowNameMatching?: boolean;
@@ -29,7 +29,7 @@ export function isDangerousNameMatchingEnabled(
 }
 
 export function collectProviderDangerousNameMatchingScopes(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   provider: string,
 ): ProviderDangerousNameMatchingScope[] {
   const scopes: ProviderDangerousNameMatchingScope[] = [];

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { Must-bConfig } from "must-b/plugin-sdk/mattermost";
+import type { MustBConfig } from "must-b/plugin-sdk/mattermost";
 import { describe, expect, it, vi } from "vitest";
 import { deliverMattermostReplyPayload } from "./reply-delivery.js";
 
@@ -25,7 +25,7 @@ describe("deliverMattermostReplyPayload", () => {
 
       const agentId = "agent-1";
       const mediaUrl = `file://${path.join(stateDir, `workspace-${agentId}`, "photo.png")}`;
-      const cfg = {} satisfies Must-bConfig;
+      const cfg = {} satisfies MustBConfig;
 
       await deliverMattermostReplyPayload({
         core,
@@ -75,7 +75,7 @@ describe("deliverMattermostReplyPayload", () => {
 
     await deliverMattermostReplyPayload({
       core,
-      cfg: {} satisfies Must-bConfig,
+      cfg: {} satisfies MustBConfig,
       payload: { text: "hello" },
       to: "channel:town-square",
       accountId: "default",

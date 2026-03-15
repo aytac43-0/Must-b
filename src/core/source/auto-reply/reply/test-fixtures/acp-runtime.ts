@@ -1,7 +1,7 @@
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import type { SessionAcpMeta } from "../../../config/sessions/types.js";
 
-export function createAcpTestConfig(overrides?: Partial<Must-bConfig>): Must-bConfig {
+export function createAcpTestConfig(overrides?: Partial<MustBonfig>): MustBonfig {
   return {
     acp: {
       enabled: true,
@@ -11,7 +11,7 @@ export function createAcpTestConfig(overrides?: Partial<Must-bConfig>): Must-bCo
       },
     },
     ...overrides,
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 export function createAcpSessionMeta(overrides?: Partial<SessionAcpMeta>): SessionAcpMeta {

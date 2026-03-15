@@ -10,8 +10,8 @@ const readConfigFileSnapshotForWrite = vi.fn().mockResolvedValue({
   writeOptions: {},
 });
 const setRuntimeConfigSnapshot = vi.fn();
-const ensureMust-bModelsJson = vi.fn().mockResolvedValue(undefined);
-const resolveMust-bAgentDir = vi.fn().mockReturnValue("/tmp/must-b-agent");
+const ensureMustBodelsJson = vi.fn().mockResolvedValue(undefined);
+const resolveMustBgentDir = vi.fn().mockReturnValue("/tmp/must-b-agent");
 const ensureAuthProfileStore = vi.fn().mockReturnValue({ version: 1, profiles: {} });
 const listProfilesForProvider = vi.fn().mockReturnValue([]);
 const resolveAuthProfileDisplayLabel = vi.fn(({ profileId }: { profileId: string }) => profileId);
@@ -41,11 +41,11 @@ vi.mock("../config/config.js", () => ({
 }));
 
 vi.mock("../agents/models-config.js", () => ({
-  ensureMust-bModelsJson,
+  ensureMustBodelsJson,
 }));
 
 vi.mock("../agents/agent-paths.js", () => ({
-  resolveMust-bAgentDir,
+  resolveMustBgentDir,
 }));
 
 vi.mock("../agents/auth-profiles.js", () => ({
@@ -133,7 +133,7 @@ beforeEach(() => {
   modelRegistryState.getAllError = undefined;
   modelRegistryState.getAvailableError = undefined;
   listProfilesForProvider.mockReturnValue([]);
-  ensureMust-bModelsJson.mockClear();
+  ensureMustBodelsJson.mockClear();
   readConfigFileSnapshotForWrite.mockClear();
   readConfigFileSnapshotForWrite.mockResolvedValue({
     snapshot: { valid: false, resolved: {} },
@@ -384,7 +384,7 @@ describe("models list/status", () => {
 
     await loadModelRegistry(resolvedConfig as never);
 
-    expect(ensureMust-bModelsJson).not.toHaveBeenCalled();
+    expect(ensureMustBodelsJson).not.toHaveBeenCalled();
   });
 
   it("filters stale direct OpenAI spark rows from models list and registry views", async () => {
@@ -433,8 +433,8 @@ describe("models list/status", () => {
 
     await modelsListCommand({ all: true, json: true }, runtime);
 
-    expect(ensureMust-bModelsJson).toHaveBeenCalled();
-    expect(ensureMust-bModelsJson.mock.calls[0]?.[0]).toEqual(resolvedConfig);
+    expect(ensureMustBodelsJson).toHaveBeenCalled();
+    expect(ensureMustBodelsJson.mock.calls[0]?.[0]).toEqual(resolvedConfig);
   });
 
   it("toModelRow does not crash without cfg/authStore when availability is undefined", async () => {

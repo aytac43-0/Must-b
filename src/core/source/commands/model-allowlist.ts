@@ -1,12 +1,12 @@
 import { DEFAULT_PROVIDER } from "../agents/defaults.js";
 import { resolveAllowlistModelKey } from "../agents/model-selection.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 export function ensureModelAllowlistEntry(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   modelRef: string;
   defaultProvider?: string;
-}): Must-bConfig {
+}): MustBonfig {
   const rawModelRef = params.modelRef.trim();
   if (!rawModelRef) {
     return params.cfg;

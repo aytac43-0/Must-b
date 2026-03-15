@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { buildGatewayConnectionDetails, callGateway } from "../gateway/call.js";
 import type { DoctorMemoryStatusPayload } from "../gateway/server-methods/doctor.js";
 import { collectChannelStatusIssues } from "../infra/channels-status-issues.js";
@@ -15,7 +15,7 @@ export type GatewayMemoryProbe = {
 
 export async function checkGatewayHealth(params: {
   runtime: RuntimeEnv;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   timeoutMs?: number;
 }) {
   const gatewayDetails = buildGatewayConnectionDetails({ config: params.cfg });
@@ -65,7 +65,7 @@ export async function checkGatewayHealth(params: {
 }
 
 export async function probeGatewayMemoryStatus(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   timeoutMs?: number;
 }): Promise<GatewayMemoryProbe> {
   const timeoutMs =

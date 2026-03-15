@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { GroupKeyResolution } from "../config/sessions.js";
 import { createInboundDebouncer } from "./inbound-debounce.js";
 import { resolveGroupRequireMention } from "./reply/groups.js";
@@ -352,7 +352,7 @@ describe("initSessionState BodyStripped", () => {
   it("prefers BodyForAgent over Body for group chats", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "must-b-sender-meta-"));
     const storePath = path.join(root, "sessions.json");
-    const cfg = { session: { store: storePath } } as Must-bConfig;
+    const cfg = { session: { store: storePath } } as MustBonfig;
 
     const result = await initSessionState({
       ctx: {
@@ -374,7 +374,7 @@ describe("initSessionState BodyStripped", () => {
   it("prefers BodyForAgent over Body for direct chats", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "must-b-sender-meta-direct-"));
     const storePath = path.join(root, "sessions.json");
-    const cfg = { session: { store: storePath } } as Must-bConfig;
+    const cfg = { session: { store: storePath } } as MustBonfig;
 
     const result = await initSessionState({
       ctx: {
@@ -439,7 +439,7 @@ describe("mention helpers", () => {
 
 describe("resolveGroupRequireMention", () => {
   it("respects Discord guild/channel requireMention settings", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         discord: {
           guilds: {
@@ -470,7 +470,7 @@ describe("resolveGroupRequireMention", () => {
   });
 
   it("respects Slack channel requireMention settings", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         slack: {
           channels: {
@@ -495,7 +495,7 @@ describe("resolveGroupRequireMention", () => {
   });
 
   it("respects LINE prefixed group keys in reply-stage requireMention resolution", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         line: {
           groups: {
@@ -519,7 +519,7 @@ describe("resolveGroupRequireMention", () => {
   });
 
   it("preserves plugin-backed channel requireMention resolution", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         bluebubbles: {
           groups: {

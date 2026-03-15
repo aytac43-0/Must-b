@@ -1,7 +1,7 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 export function resolveChannelAccountConfigBasePath(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channelKey: string;
   accountId: string;
 }): string {

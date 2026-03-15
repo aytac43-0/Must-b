@@ -48,7 +48,7 @@ vi.mock("../agents/must-b-tools.js", () => {
     },
   ];
   return {
-    createMust-bTools: () => tools,
+    createMustBools: () => tools,
   };
 });
 

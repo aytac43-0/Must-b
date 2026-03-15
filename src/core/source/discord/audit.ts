@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { DiscordGuildChannelConfig, DiscordGuildEntry } from "../config/types.js";
 import { isRecord } from "../utils.js";
 import { inspectDiscordAccount } from "./account-inspect.js";
@@ -71,7 +71,7 @@ function listConfiguredGuildChannelKeys(
 }
 
 export function collectDiscordAuditChannelIds(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }) {
   const account = inspectDiscordAccount({

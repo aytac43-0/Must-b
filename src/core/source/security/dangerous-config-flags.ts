@@ -1,6 +1,6 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
-export function collectEnabledInsecureOrDangerousFlags(cfg: Must-bConfig): string[] {
+export function collectEnabledInsecureOrDangerousFlags(cfg: MustBonfig): string[] {
   const enabledFlags: string[] = [];
   if (cfg.gateway?.controlUi?.allowInsecureAuth === true) {
     enabledFlags.push("gateway.controlUi.allowInsecureAuth=true");

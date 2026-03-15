@@ -7,7 +7,7 @@ export type HookInstallSpec = {
   bins?: string[];
 };
 
-export type Must-bHookMetadata = {
+export type MustBookMetadata = {
   always?: boolean;
   hookKey?: string;
   emoji?: string;
@@ -47,7 +47,7 @@ export type HookSource = Hook["source"];
 export type HookEntry = {
   hook: Hook;
   frontmatter: ParsedHookFrontmatter;
-  metadata?: Must-bHookMetadata;
+  metadata?: MustBookMetadata;
   invocation?: HookInvocationPolicy;
 };
 

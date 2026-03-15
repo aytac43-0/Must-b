@@ -1,7 +1,7 @@
 import type {
   ChannelOnboardingAdapter,
   ChannelOnboardingDmPolicy,
-  Must-bConfig,
+  MustBonfig,
   DmPolicy,
   WizardPrompter,
   MSTeamsTeamConfig,
@@ -26,7 +26,7 @@ import { hasConfiguredMSTeamsCredentials, resolveMSTeamsCredentials } from "./to
 
 const channel = "msteams" as const;
 
-function setMSTeamsDmPolicy(cfg: Must-bConfig, dmPolicy: DmPolicy) {
+function setMSTeamsDmPolicy(cfg: MustBonfig, dmPolicy: DmPolicy) {
   return setTopLevelChannelDmPolicyWithAllowFrom({
     cfg,
     channel: "msteams",
@@ -34,7 +34,7 @@ function setMSTeamsDmPolicy(cfg: Must-bConfig, dmPolicy: DmPolicy) {
   });
 }
 
-function setMSTeamsAllowFrom(cfg: Must-bConfig, allowFrom: string[]): Must-bConfig {
+function setMSTeamsAllowFrom(cfg: MustBonfig, allowFrom: string[]): MustBonfig {
   return setTopLevelChannelAllowFrom({
     cfg,
     channel: "msteams",
@@ -73,9 +73,9 @@ async function promptMSTeamsCredentials(prompter: WizardPrompter): Promise<{
 }
 
 async function promptMSTeamsAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const existing = params.cfg.channels?.msteams?.allowFrom ?? [];
   await params.prompter.note(
     [
@@ -149,9 +149,9 @@ async function noteMSTeamsCredentialHelp(prompter: WizardPrompter): Promise<void
 }
 
 function setMSTeamsGroupPolicy(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   groupPolicy: "open" | "allowlist" | "disabled",
-): Must-bConfig {
+): MustBonfig {
   return setTopLevelChannelGroupPolicy({
     cfg,
     channel: "msteams",
@@ -161,9 +161,9 @@ function setMSTeamsGroupPolicy(
 }
 
 function setMSTeamsTeamsAllowlist(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   entries: Array<{ teamKey: string; channelKey?: string }>,
-): Must-bConfig {
+): MustBonfig {
   const baseTeams = cfg.channels?.msteams?.teams ?? {};
   const teams: Record<string, { channels?: Record<string, unknown> }> = { ...baseTeams };
   for (const entry of entries) {

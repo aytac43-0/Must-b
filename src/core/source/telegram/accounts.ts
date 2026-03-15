@@ -1,6 +1,6 @@
 import util from "node:util";
 import { createAccountActionGate } from "../channels/plugins/account-action-gate.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { TelegramAccountConfig, TelegramActionConfig } from "../config/types.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
@@ -46,14 +46,14 @@ export type ResolvedTelegramAccount = {
   config: TelegramAccountConfig;
 };
 
-function listConfiguredAccountIds(cfg: Must-bConfig): string[] {
+function listConfiguredAccountIds(cfg: MustBonfig): string[] {
   return listConfiguredAccountIdsFromSection({
     accounts: cfg.channels?.telegram?.accounts,
     normalizeAccountId,
   });
 }
 
-export function listTelegramAccountIds(cfg: Must-bConfig): string[] {
+export function listTelegramAccountIds(cfg: MustBonfig): string[] {
   const ids = Array.from(
     new Set([...listConfiguredAccountIds(cfg), ...listBoundAccountIds(cfg, "telegram")]),
   );
@@ -71,7 +71,7 @@ export function resetMissingDefaultWarnFlag(): void {
   emittedMissingDefaultWarn = false;
 }
 
-export function resolveDefaultTelegramAccountId(cfg: Must-bConfig): string {
+export function resolveDefaultTelegramAccountId(cfg: MustBonfig): string {
   const boundDefault = resolveDefaultAgentBoundAccountId(cfg, "telegram");
   if (boundDefault) {
     return boundDefault;
@@ -98,7 +98,7 @@ export function resolveDefaultTelegramAccountId(cfg: Must-bConfig): string {
 }
 
 export function resolveTelegramAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
 ): TelegramAccountConfig | undefined {
   const normalized = normalizeAccountId(accountId);
@@ -106,7 +106,7 @@ export function resolveTelegramAccountConfig(
 }
 
 export function mergeTelegramAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
 ): TelegramAccountConfig {
   const {
@@ -135,7 +135,7 @@ export function mergeTelegramAccountConfig(
 }
 
 export function createTelegramActionGate(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): (key: keyof TelegramActionConfig, defaultValue?: boolean) => boolean {
   const accountId = normalizeAccountId(params.accountId);
@@ -164,7 +164,7 @@ export function resolveTelegramPollActionGateState(
 }
 
 export function resolveTelegramAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): ResolvedTelegramAccount {
   const baseEnabled = params.cfg.channels?.telegram?.enabled !== false;
@@ -201,7 +201,7 @@ export function resolveTelegramAccount(params: {
   });
 }
 
-export function listEnabledTelegramAccounts(cfg: Must-bConfig): ResolvedTelegramAccount[] {
+export function listEnabledTelegramAccounts(cfg: MustBonfig): ResolvedTelegramAccount[] {
   return listTelegramAccountIds(cfg)
     .map((accountId) => resolveTelegramAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

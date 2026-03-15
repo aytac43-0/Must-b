@@ -1,4 +1,4 @@
-import type { Must-bConfig, RuntimeEnv } from "must-b/plugin-sdk/msteams";
+import type { MustBonfig, RuntimeEnv } from "must-b/plugin-sdk/msteams";
 import type { MSTeamsConversationStore } from "./conversation-store.js";
 import { buildFileInfoCard, parseFileConsentInvoke, uploadToConsentUrl } from "./file-consent.js";
 import { normalizeMSTeamsConversationId } from "./inbound.js";
@@ -25,7 +25,7 @@ export type MSTeamsActivityHandler = {
 };
 
 export type MSTeamsMessageHandlerDeps = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   runtime: RuntimeEnv;
   appId: string;
   adapter: MSTeamsAdapter;

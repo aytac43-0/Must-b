@@ -22,7 +22,7 @@ import type { ReplyPayload } from "../auto-reply/types.js";
 import { getChannelPlugin } from "../channels/plugins/index.js";
 import type { ChannelHeartbeatDeps } from "../channels/plugins/types.js";
 import { parseDurationMs } from "../cli/parse-duration.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import {
   canonicalizeMainSessionAlias,
@@ -113,15 +113,15 @@ type HeartbeatAgentState = {
 
 export type HeartbeatRunner = {
   stop: () => void;
-  updateConfig: (cfg: Must-bConfig) => void;
+  updateConfig: (cfg: MustBonfig) => void;
 };
 
-function hasExplicitHeartbeatAgents(cfg: Must-bConfig) {
+function hasExplicitHeartbeatAgents(cfg: MustBonfig) {
   const list = cfg.agents?.list ?? [];
   return list.some((entry) => Boolean(entry?.heartbeat));
 }
 
-export function isHeartbeatEnabledForAgent(cfg: Must-bConfig, agentId?: string): boolean {
+export function isHeartbeatEnabledForAgent(cfg: MustBonfig, agentId?: string): boolean {
   const resolvedAgentId = normalizeAgentId(agentId ?? resolveDefaultAgentId(cfg));
   const list = cfg.agents?.list ?? [];
   const hasExplicit = hasExplicitHeartbeatAgents(cfg);
@@ -134,7 +134,7 @@ export function isHeartbeatEnabledForAgent(cfg: Must-bConfig, agentId?: string):
 }
 
 function resolveHeartbeatConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId?: string,
 ): HeartbeatConfig | undefined {
   const defaults = cfg.agents?.defaults?.heartbeat;
@@ -149,7 +149,7 @@ function resolveHeartbeatConfig(
 }
 
 export function resolveHeartbeatSummaryForAgent(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId?: string,
 ): HeartbeatSummary {
   const defaults = cfg.agents?.defaults?.heartbeat;
@@ -196,7 +196,7 @@ export function resolveHeartbeatSummaryForAgent(
   };
 }
 
-function resolveHeartbeatAgents(cfg: Must-bConfig): HeartbeatAgent[] {
+function resolveHeartbeatAgents(cfg: MustBonfig): HeartbeatAgent[] {
   const list = cfg.agents?.list ?? [];
   if (hasExplicitHeartbeatAgents(cfg)) {
     return list
@@ -212,7 +212,7 @@ function resolveHeartbeatAgents(cfg: Must-bConfig): HeartbeatAgent[] {
 }
 
 export function resolveHeartbeatIntervalMs(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   overrideEvery?: string,
   heartbeat?: HeartbeatConfig,
 ) {
@@ -240,11 +240,11 @@ export function resolveHeartbeatIntervalMs(
   return ms;
 }
 
-export function resolveHeartbeatPrompt(cfg: Must-bConfig, heartbeat?: HeartbeatConfig) {
+export function resolveHeartbeatPrompt(cfg: MustBonfig, heartbeat?: HeartbeatConfig) {
   return resolveHeartbeatPromptText(heartbeat?.prompt ?? cfg.agents?.defaults?.heartbeat?.prompt);
 }
 
-function resolveHeartbeatAckMaxChars(cfg: Must-bConfig, heartbeat?: HeartbeatConfig) {
+function resolveHeartbeatAckMaxChars(cfg: MustBonfig, heartbeat?: HeartbeatConfig) {
   return Math.max(
     0,
     heartbeat?.ackMaxChars ??
@@ -254,7 +254,7 @@ function resolveHeartbeatAckMaxChars(cfg: Must-bConfig, heartbeat?: HeartbeatCon
 }
 
 function resolveHeartbeatSession(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId?: string,
   heartbeat?: HeartbeatConfig,
   forcedSessionKey?: string,
@@ -498,7 +498,7 @@ function resolveHeartbeatReasonFlags(reason?: string): HeartbeatReasonFlags {
 }
 
 async function resolveHeartbeatPreflight(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   heartbeat?: HeartbeatConfig;
   forcedSessionKey?: string;
@@ -576,7 +576,7 @@ function appendHeartbeatWorkspacePathHint(prompt: string, workspaceDir: string):
 }
 
 function resolveHeartbeatRunPrompt(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   heartbeat?: HeartbeatConfig;
   preflight: HeartbeatPreflight;
   canRelayToUser: boolean;
@@ -606,7 +606,7 @@ function resolveHeartbeatRunPrompt(params: {
 }
 
 export async function runHeartbeatOnce(opts: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   agentId?: string;
   sessionKey?: string;
   heartbeat?: HeartbeatConfig;
@@ -1008,7 +1008,7 @@ export async function runHeartbeatOnce(opts: {
 }
 
 export function startHeartbeatRunner(opts: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   runOnce?: typeof runHeartbeatOnce;
@@ -1068,7 +1068,7 @@ export function startHeartbeatRunner(opts: {
     state.timer.unref?.();
   };
 
-  const updateConfig = (cfg: Must-bConfig) => {
+  const updateConfig = (cfg: MustBonfig) => {
     if (state.stopped) {
       return;
     }

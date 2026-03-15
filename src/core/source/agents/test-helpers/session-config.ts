@@ -1,8 +1,8 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
 export function createPerSenderSessionConfig(
-  overrides: Partial<NonNullable<Must-bConfig["session"]>> = {},
-): NonNullable<Must-bConfig["session"]> {
+  overrides: Partial<NonNullable<MustBonfig["session"]>> = {},
+): NonNullable<MustBonfig["session"]> {
   return {
     mainKey: "main",
     scope: "per-sender",

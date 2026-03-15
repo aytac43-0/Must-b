@@ -1,9 +1,9 @@
 import { createActionGate } from "../agents/tools/common.js";
 import type { ChannelMessageActionName, ChannelToolSend } from "../channels/plugins/types.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { listEnabledSlackAccounts } from "./accounts.js";
 
-export function listSlackMessageActions(cfg: Must-bConfig): ChannelMessageActionName[] {
+export function listSlackMessageActions(cfg: MustBonfig): ChannelMessageActionName[] {
   const accounts = listEnabledSlackAccounts(cfg).filter(
     (account) => account.botTokenSource !== "none",
   );

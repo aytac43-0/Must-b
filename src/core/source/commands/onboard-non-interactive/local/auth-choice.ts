@@ -2,7 +2,7 @@ import { upsertAuthProfile } from "../../../agents/auth-profiles.js";
 import type { ApiKeyCredential } from "../../../agents/auth-profiles/types.js";
 import { normalizeProviderId } from "../../../agents/model-selection.js";
 import { parseDurationMs } from "../../../cli/parse-duration.js";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import type { SecretInput } from "../../../config/types.secrets.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import { resolveDefaultSecretProviderAlias } from "../../../secrets/ref-contract.js";
@@ -36,12 +36,12 @@ type ResolvedNonInteractiveApiKey = NonNullable<
 >;
 
 export async function applyNonInteractiveAuthChoice(params: {
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   authChoice: AuthChoice;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
-  baseConfig: Must-bConfig;
-}): Promise<Must-bConfig | null> {
+  baseConfig: MustBonfig;
+}): Promise<MustBonfig | null> {
   const { authChoice, opts, runtime, baseConfig } = params;
   let nextConfig = params.nextConfig;
   const requestedSecretInputMode = normalizeSecretInputModeInput(opts.secretInputMode);

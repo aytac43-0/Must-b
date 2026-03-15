@@ -1,7 +1,7 @@
 import { resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { normalizeChatChannelId } from "../channels/registry.js";
 import { listRouteBindings } from "../config/bindings.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { AgentRouteBinding } from "../config/types.agents.js";
 import { normalizeAccountId, normalizeAgentId } from "./session-key.js";
 
@@ -14,7 +14,7 @@ function normalizeBindingChannelId(raw?: string | null): string | null {
   return fallback || null;
 }
 
-export function listBindings(cfg: Must-bConfig): AgentRouteBinding[] {
+export function listBindings(cfg: MustBonfig): AgentRouteBinding[] {
   return listRouteBindings(cfg);
 }
 
@@ -45,7 +45,7 @@ function resolveNormalizedBindingMatch(binding: AgentRouteBinding): {
   };
 }
 
-export function listBoundAccountIds(cfg: Must-bConfig, channelId: string): string[] {
+export function listBoundAccountIds(cfg: MustBonfig, channelId: string): string[] {
   const normalizedChannel = normalizeBindingChannelId(channelId);
   if (!normalizedChannel) {
     return [];
@@ -62,7 +62,7 @@ export function listBoundAccountIds(cfg: Must-bConfig, channelId: string): strin
 }
 
 export function resolveDefaultAgentBoundAccountId(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   channelId: string,
 ): string | null {
   const normalizedChannel = normalizeBindingChannelId(channelId);
@@ -84,7 +84,7 @@ export function resolveDefaultAgentBoundAccountId(
   return null;
 }
 
-export function buildChannelAccountBindings(cfg: Must-bConfig) {
+export function buildChannelAccountBindings(cfg: MustBonfig) {
   const map = new Map<string, Map<string, string[]>>();
   for (const binding of listBindings(cfg)) {
     const resolved = resolveNormalizedBindingMatch(binding);

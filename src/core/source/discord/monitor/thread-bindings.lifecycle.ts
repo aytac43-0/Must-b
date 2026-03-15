@@ -1,5 +1,5 @@
 import { readAcpSessionEntry, type AcpSessionStoreEntry } from "../../acp/runtime/session-meta.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { normalizeAccountId } from "../../routing/session-key.js";
 import { parseDiscordTarget } from "../targets.js";
 import { resolveChannelIdForBinding } from "./thread-bindings.discord-api.js";
@@ -32,7 +32,7 @@ export type AcpThreadBindingReconciliationResult = {
 export type AcpThreadBindingHealthStatus = "healthy" | "stale" | "uncertain";
 
 export type AcpThreadBindingHealthProbe = (params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string;
   sessionKey: string;
   binding: ThreadBindingRecord;
@@ -118,7 +118,7 @@ export function listThreadBindingsBySessionKey(params: {
 }
 
 export async function autoBindSpawnedDiscordSubagent(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   accountId?: string;
   channel?: string;
   to?: string;
@@ -316,7 +316,7 @@ function resolveStoredAcpBindingHealth(params: {
 }
 
 export async function reconcileAcpThreadBindingsOnStartup(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string;
   sendFarewell?: boolean;
   healthProbe?: AcpThreadBindingHealthProbe;

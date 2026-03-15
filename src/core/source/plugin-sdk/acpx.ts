@@ -16,10 +16,10 @@ export type {
   AcpSessionUpdateTag,
 } from "../acp/runtime/types.js";
 export type {
-  Must-bPluginApi,
-  Must-bPluginConfigSchema,
-  Must-bPluginService,
-  Must-bPluginServiceContext,
+  MustBluginApi,
+  MustBluginConfigSchema,
+  MustBluginService,
+  MustBluginServiceContext,
   PluginLogger,
 } from "../plugins/types.js";
 export type {

@@ -65,7 +65,7 @@ describe("detectChangedScope", () => {
       runWindows: false,
       runSkillsPython: false,
     });
-    expect(detectChangedScope(["apps/shared/Must-bKit/Sources/Foo.swift"])).toEqual({
+    expect(detectChangedScope(["apps/shared/MustBit/Sources/Foo.swift"])).toEqual({
       runNode: false,
       runMacos: true,
       runAndroid: true,
@@ -75,7 +75,7 @@ describe("detectChangedScope", () => {
   });
 
   it("does not force macOS for generated protocol model-only changes", () => {
-    expect(detectChangedScope(["apps/macos/Sources/Must-bProtocol/GatewayModels.swift"])).toEqual(
+    expect(detectChangedScope(["apps/macos/Sources/MustBrotocol/GatewayModels.swift"])).toEqual(
       {
         runNode: false,
         runMacos: false,

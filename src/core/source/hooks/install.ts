@@ -112,7 +112,7 @@ export function resolveHookInstallDir(hookId: string, hooksDir?: string): string
   return targetDirResult.path;
 }
 
-async function ensureMust-bHooks(manifest: HookPackageManifest) {
+async function ensureMustBooks(manifest: HookPackageManifest) {
   const hooks = manifest[MANIFEST_KEY]?.hooks;
   if (!Array.isArray(hooks)) {
     throw new Error("package.json missing must-b.hooks");
@@ -230,7 +230,7 @@ async function installHookPackageFromDir(
 
   let hookEntries: string[];
   try {
-    hookEntries = await ensureMust-bHooks(manifest);
+    hookEntries = await ensureMustBooks(manifest);
   } catch (err) {
     return { ok: false, error: String(err) };
   }

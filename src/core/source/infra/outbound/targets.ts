@@ -1,7 +1,7 @@
 import { normalizeChatType, type ChatType } from "../../channels/chat-type.js";
 import type { ChannelOutboundTargetMode } from "../../channels/plugins/types.js";
 import { formatCliCommand } from "../../cli/command-format.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import type { AgentDefaultsConfig } from "../../config/types.agent-defaults.js";
 import { parseDiscordTarget } from "../../discord/targets.js";
@@ -172,7 +172,7 @@ export function resolveOutboundTarget(params: {
   channel: GatewayMessageChannel;
   to?: string;
   allowFrom?: string[];
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   accountId?: string | null;
   mode?: ChannelOutboundTargetMode;
 }): OutboundTargetResolution {
@@ -238,7 +238,7 @@ export function resolveOutboundTarget(params: {
 }
 
 export function resolveHeartbeatDeliveryTarget(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   entry?: SessionEntry;
   heartbeat?: AgentDefaultsConfig["heartbeat"];
 }): OutboundTarget {
@@ -517,7 +517,7 @@ function resolveHeartbeatSenderId(params: {
 }
 
 export function resolveHeartbeatSenderContext(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   entry?: SessionEntry;
   delivery: OutboundTarget;
 }): HeartbeatSenderContext {

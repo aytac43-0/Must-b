@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { ensureAuthProfileStore, type AuthProfileStore } from "../agents/auth-profiles.js";
-import { loadConfig, type Must-bConfig, writeConfigFile } from "../config/config.js";
+import { loadConfig, type MustBonfig, writeConfigFile } from "../config/config.js";
 import { withTempHome } from "../config/home-env.test-harness.js";
 import {
   activateSecretsRuntimeSnapshot,
@@ -13,13 +13,13 @@ import {
   prepareSecretsRuntimeSnapshot,
 } from "./runtime.js";
 
-function asConfig(value: unknown): Must-bConfig {
-  return value as Must-bConfig;
+function asConfig(value: unknown): MustBonfig {
+  return value as MustBonfig;
 }
 
 const OPENAI_ENV_KEY_REF = { source: "env", provider: "default", id: "OPENAI_API_KEY" } as const;
 
-function createOpenAiFileModelsConfig(): NonNullable<Must-bConfig["models"]> {
+function createOpenAiFileModelsConfig(): NonNullable<MustBonfig["models"]> {
   return {
     providers: {
       openai: {
@@ -222,7 +222,7 @@ describe("secrets runtime snapshot", () => {
   });
 
   it("normalizes inline SecretRef object on token to tokenRef", async () => {
-    const config: Must-bConfig = { models: {}, secrets: {} };
+    const config: MustBonfig = { models: {}, secrets: {} };
     const snapshot = await prepareSecretsRuntimeSnapshot({
       config,
       env: { MY_TOKEN: "resolved-token-value" },
@@ -249,7 +249,7 @@ describe("secrets runtime snapshot", () => {
   });
 
   it("normalizes inline SecretRef object on key to keyRef", async () => {
-    const config: Must-bConfig = { models: {}, secrets: {} };
+    const config: MustBonfig = { models: {}, secrets: {} };
     const snapshot = await prepareSecretsRuntimeSnapshot({
       config,
       env: { MY_KEY: "resolved-key-value" },
@@ -276,7 +276,7 @@ describe("secrets runtime snapshot", () => {
   });
 
   it("keeps explicit keyRef when inline key SecretRef is also present", async () => {
-    const config: Must-bConfig = { models: {}, secrets: {} };
+    const config: MustBonfig = { models: {}, secrets: {} };
     const snapshot = await prepareSecretsRuntimeSnapshot({
       config,
       env: {
@@ -856,7 +856,7 @@ describe("secrets runtime snapshot", () => {
 
       const persistedConfig = JSON.parse(
         await fs.readFile(path.join(home, ".must-b", "must-b.json"), "utf8"),
-      ) as Must-bConfig;
+      ) as MustBonfig;
       expect(persistedConfig.tools?.web?.search?.gemini?.apiKey).toEqual({
         source: "env",
         provider: "default",

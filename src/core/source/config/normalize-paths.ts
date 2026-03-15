@@ -1,5 +1,5 @@
 import { isPlainObject, resolveUserPath } from "../utils.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 
 const PATH_VALUE_RE = /^~(?=$|[\\/])/;
 
@@ -60,7 +60,7 @@ function normalizeAny(key: string | undefined, value: unknown): unknown {
  * Goal: accept `~/...` consistently across config file + env overrides, while
  * keeping the surface area small and predictable.
  */
-export function normalizeConfigPaths(cfg: Must-bConfig): Must-bConfig {
+export function normalizeConfigPaths(cfg: MustBonfig): MustBonfig {
   if (!cfg || typeof cfg !== "object") {
     return cfg;
   }

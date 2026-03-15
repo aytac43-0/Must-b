@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { createEmptyPluginRegistry } from "../plugins/registry.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
@@ -34,7 +34,7 @@ function createUnexpectedPromptGuards() {
 type SetupChannelsOptions = Parameters<typeof setupChannels>[3];
 
 function runSetupChannels(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   prompter: WizardPrompter,
   options?: SetupChannelsOptions,
 ) {
@@ -71,7 +71,7 @@ function createUnexpectedQuickstartPrompter(select: WizardPrompter["select"]) {
   };
 }
 
-function createTelegramCfg(botToken: string, enabled?: boolean): Must-bConfig {
+function createTelegramCfg(botToken: string, enabled?: boolean): MustBonfig {
   return {
     channels: {
       telegram: {
@@ -79,7 +79,7 @@ function createTelegramCfg(botToken: string, enabled?: boolean): Must-bConfig {
         ...(typeof enabled === "boolean" ? { enabled } : {}),
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 function patchTelegramAdapter(overrides: Parameters<typeof patchChannelOnboardingAdapter>[1]) {
@@ -87,7 +87,7 @@ function patchTelegramAdapter(overrides: Parameters<typeof patchChannelOnboardin
     ...overrides,
     getStatus:
       overrides.getStatus ??
-      vi.fn(async ({ cfg }: { cfg: Must-bConfig }) => ({
+      vi.fn(async ({ cfg }: { cfg: MustBonfig }) => ({
         channel: "telegram",
         configured: Boolean(cfg.channels?.telegram?.botToken),
         statusLines: [],
@@ -151,7 +151,7 @@ async function runQuickstartTelegramSetupWithInteractive(params: {
   );
 
   try {
-    const cfg = await runSetupChannels({} as Must-bConfig, prompter, {
+    const cfg = await runSetupChannels({} as MustBonfig, prompter, {
       quickstartDefaults: true,
       onSelection: selection,
       onAccountId,
@@ -212,7 +212,7 @@ describe("setupChannels", () => {
       text: text as unknown as WizardPrompter["text"],
     });
 
-    await runSetupChannels({} as Must-bConfig, prompter, {
+    await runSetupChannels({} as MustBonfig, prompter, {
       quickstartDefaults: true,
       forceAllowFromChannels: ["whatsapp"],
     });
@@ -244,7 +244,7 @@ describe("setupChannels", () => {
       text: text as unknown as WizardPrompter["text"],
     });
 
-    await runSetupChannels({} as Must-bConfig, prompter, {
+    await runSetupChannels({} as MustBonfig, prompter, {
       quickstartDefaults: true,
     });
 
@@ -271,7 +271,7 @@ describe("setupChannels", () => {
       text,
     });
 
-    await runSetupChannels({} as Must-bConfig, prompter);
+    await runSetupChannels({} as MustBonfig, prompter);
 
     const sawPrimer = note.mock.calls.some(
       ([message, title]) =>
@@ -350,14 +350,14 @@ describe("setupChannels", () => {
   });
 
   it("applies configureInteractive result cfg/account updates", async () => {
-    const configureInteractive = vi.fn(async ({ cfg }: { cfg: Must-bConfig }) => ({
+    const configureInteractive = vi.fn(async ({ cfg }: { cfg: MustBonfig }) => ({
       cfg: {
         ...cfg,
         channels: {
           ...cfg.channels,
           telegram: { ...cfg.channels?.telegram, botToken: "new-token" },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       accountId: "acct-1",
     }));
     const configure = createUnexpectedConfigureCall(
@@ -376,14 +376,14 @@ describe("setupChannels", () => {
   });
 
   it("uses configureWhenConfigured when channel is already configured", async () => {
-    const configureWhenConfigured = vi.fn(async ({ cfg }: { cfg: Must-bConfig }) => ({
+    const configureWhenConfigured = vi.fn(async ({ cfg }: { cfg: MustBonfig }) => ({
       cfg: {
         ...cfg,
         channels: {
           ...cfg.channels,
           telegram: { ...cfg.channels?.telegram, botToken: "updated-token" },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       accountId: "acct-2",
     }));
     const { cfg, selection, onAccountId, configure } = await runConfiguredTelegramSetup({

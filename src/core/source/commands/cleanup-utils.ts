@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { resolveDefaultAgentWorkspaceDir } from "../agents/workspace.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { resolveHomeDir, resolveUserPath, shortenHomeInString } from "../utils.js";
 
@@ -18,7 +18,7 @@ export type CleanupResolvedPaths = {
   oauthInsideState: boolean;
 };
 
-export function collectWorkspaceDirs(cfg: Must-bConfig | undefined): string[] {
+export function collectWorkspaceDirs(cfg: MustBonfig | undefined): string[] {
   const dirs = new Set<string>();
   const defaults = cfg?.agents?.defaults;
   if (typeof defaults?.workspace === "string" && defaults.workspace.trim()) {
@@ -38,7 +38,7 @@ export function collectWorkspaceDirs(cfg: Must-bConfig | undefined): string[] {
 }
 
 export function buildCleanupPlan(params: {
-  cfg: Must-bConfig | undefined;
+  cfg: MustBonfig | undefined;
   stateDir: string;
   configPath: string;
   oauthDir: string;

@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/zalo";
+import type { MustBPluginApi } from "must-b/plugin-sdk/zalo";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/zalo";
 import { zaloDock, zaloPlugin } from "./src/channel.js";
 import { setZaloRuntime } from "./src/runtime.js";
@@ -8,7 +8,7 @@ const plugin = {
   name: "Zalo",
   description: "Zalo channel plugin (Bot API)",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     setZaloRuntime(api.runtime);
     api.registerChannel({ plugin: zaloPlugin, dock: zaloDock });
   },

@@ -1,4 +1,4 @@
-import type { Must-bConfig, PluginRuntime, RuntimeEnv } from "must-b/plugin-sdk/msteams";
+import type { MustBonfig, PluginRuntime, RuntimeEnv } from "must-b/plugin-sdk/msteams";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { MSTeamsConversationStore } from "./conversation-store.js";
 import type { MSTeamsAdapter } from "./messenger.js";
@@ -56,7 +56,7 @@ function createDeps(): MSTeamsMessageHandlerDeps {
     recordVote: async () => null,
   };
   return {
-    cfg: {} as Must-bConfig,
+    cfg: {} as MustBonfig,
     runtime: {
       error: vi.fn(),
     } as unknown as RuntimeEnv,

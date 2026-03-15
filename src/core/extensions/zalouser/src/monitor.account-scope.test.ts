@@ -1,4 +1,4 @@
-import type { Must-bConfig, PluginRuntime, RuntimeEnv } from "must-b/plugin-sdk/zalouser";
+import type { MustBConfig, PluginRuntime, RuntimeEnv } from "must-b/plugin-sdk/zalouser";
 import { describe, expect, it, vi } from "vitest";
 import "./monitor.send-mocks.js";
 import { __testing } from "./monitor.js";
@@ -57,7 +57,7 @@ describe("zalouser monitor pairing account scoping", () => {
       },
     };
 
-    const config: Must-bConfig = {
+    const config: MustBConfig = {
       channels: {
         zalouser: {
           accounts: {

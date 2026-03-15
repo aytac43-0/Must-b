@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveMemorySearchConfig } from "./memory-search.js";
 
-const asConfig = (cfg: Must-bConfig): Must-bConfig => cfg;
+const asConfig = (cfg: MustBonfig): MustBonfig => cfg;
 
 describe("memory search config", () => {
   function configWithDefaultProvider(
     provider: "openai" | "local" | "gemini" | "mistral" | "ollama",
-  ): Must-bConfig {
+  ): MustBonfig {
     return asConfig({
       agents: {
         defaults: {

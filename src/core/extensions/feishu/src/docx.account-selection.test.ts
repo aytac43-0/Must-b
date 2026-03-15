@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/feishu";
+import type { MustBPluginApi } from "must-b/plugin-sdk/feishu";
 import { describe, expect, test, vi } from "vitest";
 import { registerFeishuDocTools } from "./docx.js";
 import { createToolFactoryHarness } from "./tool-factory-test-harness.js";
@@ -21,7 +21,7 @@ vi.mock("@larksuiteoapi/node-sdk", () => {
 });
 
 describe("feishu_doc account selection", () => {
-  function createDocEnabledConfig(): Must-bPluginApi["config"] {
+  function createDocEnabledConfig(): MustBPluginApi["config"] {
     return {
       channels: {
         feishu: {
@@ -32,7 +32,7 @@ describe("feishu_doc account selection", () => {
           },
         },
       },
-    } as Must-bPluginApi["config"];
+    } as MustBPluginApi["config"];
   }
 
   test("uses agentAccountId context when params omit accountId", async () => {

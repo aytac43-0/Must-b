@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { Must-bSchema } from "./zod-schema.js";
+import { MustBchema } from "./zod-schema.js";
 
-describe("Must-bSchema talk validation", () => {
+describe("MustBchema talk validation", () => {
   it("accepts a positive integer talk.silenceTimeoutMs", () => {
     expect(() =>
-      Must-bSchema.parse({
+      MustBchema.parse({
         talk: {
           silenceTimeoutMs: 1500,
         },
@@ -18,7 +18,7 @@ describe("Must-bSchema talk validation", () => {
     ["float", 1500.5],
   ])("rejects %s talk.silenceTimeoutMs", (_label, value) => {
     expect(() =>
-      Must-bSchema.parse({
+      MustBchema.parse({
         talk: {
           silenceTimeoutMs: value,
         },
@@ -28,7 +28,7 @@ describe("Must-bSchema talk validation", () => {
 
   it("rejects talk.provider when it does not match talk.providers", () => {
     expect(() =>
-      Must-bSchema.parse({
+      MustBchema.parse({
         talk: {
           provider: "acme",
           providers: {
@@ -43,7 +43,7 @@ describe("Must-bSchema talk validation", () => {
 
   it("rejects multi-provider talk config without talk.provider", () => {
     expect(() =>
-      Must-bSchema.parse({
+      MustBchema.parse({
         talk: {
           providers: {
             acme: {

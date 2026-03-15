@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/types.js";
+import type { MustBonfig } from "../config/types.js";
 import {
   resolveConfiguredSecretInputWithFallback,
   resolveRequiredConfiguredSecretRefInputString,
 } from "./resolve-configured-secret-input-string.js";
 
-function createConfig(value: unknown): Must-bConfig {
+function createConfig(value: unknown): MustBonfig {
   return {
     gateway: {
       auth: {
@@ -17,7 +17,7 @@ function createConfig(value: unknown): Must-bConfig {
         default: { source: "env" },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 describe("resolveConfiguredSecretInputWithFallback", () => {

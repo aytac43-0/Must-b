@@ -1,5 +1,5 @@
 import { resolveUserTimezone } from "../../agents/date-time.js";
-import type { Must-bConfig } from "../../config/types.js";
+import type { MustBonfig } from "../../config/types.js";
 import { formatZonedTimestamp } from "../../infra/format-time/format-datetime.ts";
 
 /**
@@ -71,9 +71,9 @@ export function injectTimestamp(message: string, opts?: TimestampInjectionOption
 }
 
 /**
- * Build TimestampInjectionOptions from an Must-bConfig.
+ * Build TimestampInjectionOptions from an MustBonfig.
  */
-export function timestampOptsFromConfig(cfg: Must-bConfig): TimestampInjectionOptions {
+export function timestampOptsFromConfig(cfg: MustBonfig): TimestampInjectionOptions {
   return {
     timezone: resolveUserTimezone(cfg.agents?.defaults?.userTimezone),
   };

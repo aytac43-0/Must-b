@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveProviderPluginChoice } from "../plugins/provider-wizard.js";
 import { resolvePluginProviders } from "../plugins/providers.js";
 import type { AuthChoice } from "./onboard-types.js";
@@ -55,7 +55,7 @@ const PREFERRED_PROVIDER_BY_AUTH_CHOICE: Partial<Record<AuthChoice, string>> = {
 
 export function resolvePreferredProviderForAuthChoice(params: {
   choice: AuthChoice;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string;
   env?: NodeJS.ProcessEnv;
 }): string | undefined {

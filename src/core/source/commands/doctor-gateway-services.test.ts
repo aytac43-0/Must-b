@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { withEnvAsync } from "../test-utils/env.js";
 
 const fsMocks = vi.hoisted(() => ({
@@ -113,7 +113,7 @@ function makeDoctorPrompts() {
   };
 }
 
-async function runRepair(cfg: Must-bConfig) {
+async function runRepair(cfg: MustBonfig) {
   await maybeRepairGatewayServiceConfig(cfg, "local", makeDoctorIo(), makeDoctorPrompts());
 }
 
@@ -154,7 +154,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     fsMocks.realpath.mockImplementation(async (value: string) => value);
-    mocks.resolveGatewayAuthTokenForService.mockImplementation(async (cfg: Must-bConfig, env) => {
+    mocks.resolveGatewayAuthTokenForService.mockImplementation(async (cfg: MustBonfig, env) => {
       const configToken =
         typeof cfg.gateway?.auth?.token === "string" ? cfg.gateway.auth.token.trim() : undefined;
       const envToken = env.MUSTB_GATEWAY_TOKEN?.trim() || undefined;
@@ -165,7 +165,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
   it("treats gateway.auth.token as source of truth for service token repairs", async () => {
     setupGatewayTokenRepairScenario();
 
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         auth: {
           mode: "token",
@@ -200,7 +200,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     await withEnvAsync({ MUSTB_GATEWAY_TOKEN: "env-token" }, async () => {
       setupGatewayTokenRepairScenario();
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         gateway: {},
       };
 
@@ -368,7 +368,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
     });
     mocks.install.mockResolvedValue(undefined);
 
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         auth: {
           mode: "token",
@@ -405,7 +405,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
       async () => {
         setupGatewayTokenRepairScenario();
 
-        const cfg: Must-bConfig = {
+        const cfg: MustBonfig = {
           gateway: {},
         };
 
@@ -468,7 +468,7 @@ describe("maybeRepairGatewayServiceConfig", () => {
         });
         mocks.install.mockResolvedValue(undefined);
 
-        const cfg: Must-bConfig = {
+        const cfg: MustBonfig = {
           gateway: {},
         };
 

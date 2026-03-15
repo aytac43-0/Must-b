@@ -36,7 +36,7 @@ import {
   TelegramConfigSchema,
   type ChannelMessageActionAdapter,
   type ChannelPlugin,
-  type Must-bConfig,
+  type MustBConfig,
   type ResolvedTelegramAccount,
   type TelegramProbe,
 } from "must-b/plugin-sdk/telegram";
@@ -45,7 +45,7 @@ import { getTelegramRuntime } from "./runtime.js";
 const meta = getChatChannelMeta("telegram");
 
 function findTelegramTokenOwnerAccountId(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId: string;
 }): string | null {
   const normalizedAccountId = normalizeAccountId(params.accountId);
@@ -532,7 +532,7 @@ export const telegramPlugin: ChannelPlugin<ResolvedTelegramAccount, TelegramProb
     },
     logoutAccount: async ({ accountId, cfg }) => {
       const envToken = process.env.TELEGRAM_BOT_TOKEN?.trim() ?? "";
-      const nextCfg = { ...cfg } as Must-bConfig;
+      const nextCfg = { ...cfg } as MustBConfig;
       const nextTelegram = cfg.channels?.telegram ? { ...cfg.channels.telegram } : undefined;
       let cleared = false;
       let changed = false;

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "./config.js";
+import type { MustBonfig } from "./config.js";
 import type { WhatsAppConfig } from "./types.js";
 
 export type MergeSectionOptions<T> = {
@@ -24,10 +24,10 @@ export function mergeConfigSection<T extends Record<string, unknown>>(
 }
 
 export function mergeWhatsAppConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   patch: Partial<WhatsAppConfig>,
   options?: MergeSectionOptions<WhatsAppConfig>,
-): Must-bConfig {
+): MustBonfig {
   return {
     ...cfg,
     channels: {

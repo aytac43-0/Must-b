@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { buildCommandTestParams } from "../commands-spawn.test-harness.js";
 import {
   isAcpCommandDiscordChannel,
@@ -9,7 +9,7 @@ import {
 
 const baseCfg = {
   session: { mainKey: "main", scope: "per-sender" },
-} satisfies Must-bConfig;
+} satisfies MustBonfig;
 
 describe("commands-acp context", () => {
   it("resolves channel/account/thread context from originating fields", () => {

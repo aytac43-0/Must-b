@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import type { SecretInput } from "../../../config/types.secrets.js";
 import type { RuntimeEnv } from "../../../runtime.js";
 import { applyGoogleGeminiModelDefault } from "../../google-gemini-model-default.js";
@@ -62,7 +62,7 @@ type SimpleApiKeyAuthChoice = {
   envVar: string;
   profileId: string;
   setCredential: (value: SecretInput, options?: ApiKeyStorageOptions) => Promise<void> | void;
-  applyConfig: (cfg: Must-bConfig) => Must-bConfig;
+  applyConfig: (cfg: MustBonfig) => MustBonfig;
 };
 
 type ResolvedNonInteractiveApiKey = {
@@ -496,14 +496,14 @@ function buildSimpleApiKeyAuthChoices(params: { opts: OnboardOptions }): SimpleA
 
 export async function applySimpleNonInteractiveApiKeyChoice(params: {
   authChoice: AuthChoice;
-  nextConfig: Must-bConfig;
-  baseConfig: Must-bConfig;
+  nextConfig: MustBonfig;
+  baseConfig: MustBonfig;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
   apiKeyStorageOptions?: ApiKeyStorageOptions;
   resolveApiKey: (input: {
     provider: string;
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     flagValue?: string;
     flagName: `--${string}`;
     envVar: string;
@@ -513,7 +513,7 @@ export async function applySimpleNonInteractiveApiKeyChoice(params: {
     resolved: ResolvedNonInteractiveApiKey,
     setter: (value: SecretInput) => Promise<void> | void,
   ) => Promise<boolean>;
-}): Promise<Must-bConfig | null | undefined> {
+}): Promise<MustBonfig | null | undefined> {
   const definition = buildSimpleApiKeyAuthChoices({
     opts: params.opts,
   }).find((entry) => entry.authChoices.includes(params.authChoice));

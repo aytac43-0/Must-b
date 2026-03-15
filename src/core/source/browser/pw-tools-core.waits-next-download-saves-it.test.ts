@@ -12,7 +12,7 @@ import {
 installPwToolsCoreTestHooks();
 const sessionMocks = getPwToolsCoreSessionMocks();
 const tmpDirMocks = vi.hoisted(() => ({
-  resolvePreferredMust-bTmpDir: vi.fn(() => "/tmp/must-b"),
+  resolvePreferredMustBmpDir: vi.fn(() => "/tmp/must-b"),
 }));
 vi.mock("../infra/tmp-must-b-dir.js", () => tmpDirMocks);
 const mod = await import("./pw-tools-core.js");
@@ -22,7 +22,7 @@ describe("pw-tools-core", () => {
     for (const fn of Object.values(tmpDirMocks)) {
       fn.mockClear();
     }
-    tmpDirMocks.resolvePreferredMust-bTmpDir.mockReturnValue("/tmp/must-b");
+    tmpDirMocks.resolvePreferredMustBmpDir.mockReturnValue("/tmp/must-b");
   });
 
   async function withTempDir<T>(run: (tempDir: string) => Promise<T>): Promise<T> {
@@ -200,7 +200,7 @@ describe("pw-tools-core", () => {
   );
 
   it("uses preferred tmp dir when waiting for download without explicit path", async () => {
-    tmpDirMocks.resolvePreferredMust-bTmpDir.mockReturnValue("/tmp/must-b-preferred");
+    tmpDirMocks.resolvePreferredMustBmpDir.mockReturnValue("/tmp/must-b-preferred");
     const { res, outPath } = await waitForImplicitDownloadOutput({
       downloadUrl: "https://example.com/file.bin",
       suggestedFilename: "file.bin",
@@ -213,11 +213,11 @@ describe("pw-tools-core", () => {
     expect(path.dirname(String(outPath))).toBe(expectedRootedDownloadsDir);
     expect(path.basename(String(outPath))).toMatch(/-file\.bin$/);
     expect(path.normalize(res.path)).toContain(path.normalize(expectedDownloadsTail));
-    expect(tmpDirMocks.resolvePreferredMust-bTmpDir).toHaveBeenCalled();
+    expect(tmpDirMocks.resolvePreferredMustBmpDir).toHaveBeenCalled();
   });
 
   it("sanitizes suggested download filenames to prevent traversal escapes", async () => {
-    tmpDirMocks.resolvePreferredMust-bTmpDir.mockReturnValue("/tmp/must-b-preferred");
+    tmpDirMocks.resolvePreferredMustBmpDir.mockReturnValue("/tmp/must-b-preferred");
     const { res, outPath } = await waitForImplicitDownloadOutput({
       downloadUrl: "https://example.com/evil",
       suggestedFilename: "../../../../etc/passwd",

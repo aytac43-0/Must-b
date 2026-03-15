@@ -97,7 +97,7 @@ function validatePluginId(pluginId: string): string | null {
   return null;
 }
 
-function ensureMust-bExtensions(params: { manifest: PackageManifest }):
+function ensureMustBxtensions(params: { manifest: PackageManifest }):
   | {
       ok: true;
       entries: string[];
@@ -221,7 +221,7 @@ async function installPluginFromPackageDir(
     return { ok: false, error: `invalid package.json: ${String(err)}` };
   }
 
-  const extensionsResult = ensureMust-bExtensions({
+  const extensionsResult = ensureMustBxtensions({
     manifest,
   });
   if (!extensionsResult.ok) {

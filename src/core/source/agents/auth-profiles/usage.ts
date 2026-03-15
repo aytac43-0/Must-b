@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBConfig } from "../../config/config.js";
 import { normalizeProviderId } from "../model-selection.js";
 import { logAuthProfileFailureStateChange } from "./state-observation.js";
 import { saveAuthProfileStore, updateAuthProfileStoreWithLock } from "./store.js";
@@ -288,7 +288,7 @@ type ResolvedAuthCooldownConfig = {
 };
 
 function resolveAuthCooldownConfig(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   providerId: string;
 }): ResolvedAuthCooldownConfig {
   const defaults = {
@@ -465,7 +465,7 @@ export async function markAuthProfileFailure(params: {
   store: AuthProfileStore;
   profileId: string;
   reason: AuthProfileFailureReason;
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   agentDir?: string;
   runId?: string;
 }): Promise<void> {

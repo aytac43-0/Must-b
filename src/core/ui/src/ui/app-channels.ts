@@ -1,4 +1,4 @@
-import type { Must-bApp } from "./app.ts";
+import type { MustBpp } from "./app.ts";
 import {
   loadChannels,
   logoutWhatsApp,
@@ -9,28 +9,28 @@ import { loadConfig, saveConfig } from "./controllers/config.ts";
 import type { NostrProfile } from "./types.ts";
 import { createNostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
 
-export async function handleWhatsAppStart(host: Must-bApp, force: boolean) {
+export async function handleWhatsAppStart(host: MustBpp, force: boolean) {
   await startWhatsAppLogin(host, force);
   await loadChannels(host, true);
 }
 
-export async function handleWhatsAppWait(host: Must-bApp) {
+export async function handleWhatsAppWait(host: MustBpp) {
   await waitWhatsAppLogin(host);
   await loadChannels(host, true);
 }
 
-export async function handleWhatsAppLogout(host: Must-bApp) {
+export async function handleWhatsAppLogout(host: MustBpp) {
   await logoutWhatsApp(host);
   await loadChannels(host, true);
 }
 
-export async function handleChannelConfigSave(host: Must-bApp) {
+export async function handleChannelConfigSave(host: MustBpp) {
   await saveConfig(host);
   await loadConfig(host);
   await loadChannels(host, true);
 }
 
-export async function handleChannelConfigReload(host: Must-bApp) {
+export async function handleChannelConfigReload(host: MustBpp) {
   await loadConfig(host);
   await loadChannels(host, true);
 }
@@ -57,7 +57,7 @@ function parseValidationErrors(details: unknown): Record<string, string> {
   return errors;
 }
 
-function resolveNostrAccountId(host: Must-bApp): string {
+function resolveNostrAccountId(host: MustBpp): string {
   const accounts = host.channelsSnapshot?.channelAccounts?.nostr ?? [];
   return accounts[0]?.accountId ?? host.nostrProfileAccountId ?? "default";
 }
@@ -66,7 +66,7 @@ function buildNostrProfileUrl(accountId: string, suffix = ""): string {
   return `/api/channels/nostr/${encodeURIComponent(accountId)}/profile${suffix}`;
 }
 
-function resolveGatewayHttpAuthHeader(host: Must-bApp): string | null {
+function resolveGatewayHttpAuthHeader(host: MustBpp): string | null {
   const deviceToken = host.hello?.auth?.deviceToken?.trim();
   if (deviceToken) {
     return `Bearer ${deviceToken}`;
@@ -82,13 +82,13 @@ function resolveGatewayHttpAuthHeader(host: Must-bApp): string | null {
   return null;
 }
 
-function buildGatewayHttpHeaders(host: Must-bApp): Record<string, string> {
+function buildGatewayHttpHeaders(host: MustBpp): Record<string, string> {
   const authorization = resolveGatewayHttpAuthHeader(host);
   return authorization ? { Authorization: authorization } : {};
 }
 
 export function handleNostrProfileEdit(
-  host: Must-bApp,
+  host: MustBpp,
   accountId: string,
   profile: NostrProfile | null,
 ) {
@@ -96,13 +96,13 @@ export function handleNostrProfileEdit(
   host.nostrProfileFormState = createNostrProfileFormState(profile ?? undefined);
 }
 
-export function handleNostrProfileCancel(host: Must-bApp) {
+export function handleNostrProfileCancel(host: MustBpp) {
   host.nostrProfileFormState = null;
   host.nostrProfileAccountId = null;
 }
 
 export function handleNostrProfileFieldChange(
-  host: Must-bApp,
+  host: MustBpp,
   field: keyof NostrProfile,
   value: string,
 ) {
@@ -123,7 +123,7 @@ export function handleNostrProfileFieldChange(
   };
 }
 
-export function handleNostrProfileToggleAdvanced(host: Must-bApp) {
+export function handleNostrProfileToggleAdvanced(host: MustBpp) {
   const state = host.nostrProfileFormState;
   if (!state) {
     return;
@@ -134,7 +134,7 @@ export function handleNostrProfileToggleAdvanced(host: Must-bApp) {
   };
 }
 
-export async function handleNostrProfileSave(host: Must-bApp) {
+export async function handleNostrProfileSave(host: MustBpp) {
   const state = host.nostrProfileFormState;
   if (!state || state.saving) {
     return;
@@ -206,7 +206,7 @@ export async function handleNostrProfileSave(host: Must-bApp) {
   }
 }
 
-export async function handleNostrProfileImport(host: Must-bApp) {
+export async function handleNostrProfileImport(host: MustBpp) {
   const state = host.nostrProfileFormState;
   if (!state || state.importing) {
     return;

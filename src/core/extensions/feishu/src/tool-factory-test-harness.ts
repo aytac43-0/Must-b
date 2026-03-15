@@ -1,4 +1,4 @@
-import type { AnyAgentTool, Must-bPluginApi } from "must-b/plugin-sdk/feishu";
+import type { AnyAgentTool, MustBPluginApi } from "must-b/plugin-sdk/feishu";
 
 type ToolContextLike = {
   agentAccountId?: string;
@@ -34,10 +34,10 @@ function asToolLike(tool: AnyAgentTool, fallbackName?: string): ToolLike {
   };
 }
 
-export function createToolFactoryHarness(cfg: Must-bPluginApi["config"]) {
+export function createToolFactoryHarness(cfg: MustBPluginApi["config"]) {
   const registered: RegisteredTool[] = [];
 
-  const api: Pick<Must-bPluginApi, "config" | "logger" | "registerTool"> = {
+  const api: Pick<MustBPluginApi, "config" | "logger" | "registerTool"> = {
     config: cfg,
     logger: {
       info: () => {},
@@ -70,7 +70,7 @@ export function createToolFactoryHarness(cfg: Must-bPluginApi["config"]) {
   };
 
   return {
-    api: api as Must-bPluginApi,
+    api: api as MustBPluginApi,
     resolveTool,
   };
 }

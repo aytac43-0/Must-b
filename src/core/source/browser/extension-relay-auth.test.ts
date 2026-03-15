@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  probeAuthenticatedMust-bRelay,
+  probeAuthenticatedMustBelay,
   resolveRelayAcceptedTokensForPort,
   resolveRelayAuthTokenForPort,
 } from "./extension-relay-auth.js";
@@ -36,7 +36,7 @@ function handleNonVersionRequest(req: IncomingMessage, res: ServerResponse): boo
 }
 
 async function probeRelay(baseUrl: string, relayAuthToken: string): Promise<boolean> {
-  return await probeAuthenticatedMust-bRelay({
+  return await probeAuthenticatedMustBelay({
     baseUrl,
     relayAuthHeader: "x-must-b-relay-token",
     relayAuthToken,

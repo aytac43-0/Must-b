@@ -146,7 +146,7 @@ export type PluginPackageInstall = {
   defaultChoice?: "npm" | "local";
 };
 
-export type Must-bPackageManifest = {
+export type MustBackageManifest = {
   extensions?: string[];
   channel?: PluginPackageChannel;
   install?: PluginPackageInstall;
@@ -170,11 +170,11 @@ export type PackageManifest = {
   name?: string;
   version?: string;
   description?: string;
-} & Partial<Record<ManifestKey, Must-bPackageManifest>>;
+} & Partial<Record<ManifestKey, MustBackageManifest>>;
 
 export function getPackageManifestMetadata(
   manifest: PackageManifest | undefined,
-): Must-bPackageManifest | undefined {
+): MustBackageManifest | undefined {
   if (!manifest) {
     return undefined;
   }

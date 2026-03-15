@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { isTruthyEnvValue } from "../../infra/env.js";
 import { getPrimaryCommand, hasHelpOrVersion } from "../argv.js";
 import { reparseProgramFromActionArgs } from "./action-reparse.js";
@@ -29,7 +29,7 @@ const shouldEagerRegisterSubcommands = (_argv: string[]) => {
 };
 
 export const loadValidatedConfigForPluginRegistration =
-  async (): Promise<Must-bConfig | null> => {
+  async (): Promise<MustBonfig | null> => {
     const mod = await import("../../config/config.js");
     const snapshot = await mod.readConfigFileSnapshot();
     if (!snapshot.valid) {

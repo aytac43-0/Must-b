@@ -85,7 +85,7 @@ export async function resolveRelayAuthTokenForPort(port: number): Promise<string
   return (await resolveRelayAcceptedTokensForPort(port))[0];
 }
 
-export async function probeAuthenticatedMust-bRelay(params: {
+export async function probeAuthenticatedMustBelay(params: {
   baseUrl: string;
   relayAuthHeader: string;
   relayAuthToken: string;

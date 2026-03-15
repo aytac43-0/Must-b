@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   autoMigrateLegacyStateDir,
   autoMigrateLegacyState,
@@ -22,7 +22,7 @@ async function makeTempRoot() {
 
 async function makeRootWithEmptyCfg() {
   const root = await makeTempRoot();
-  const cfg: Must-bConfig = {};
+  const cfg: MustBonfig = {};
   return { root, cfg };
 }
 
@@ -57,7 +57,7 @@ function writeLegacySessionsFixture(params: {
 
 async function detectAndRunMigrations(params: {
   root: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   now?: () => number;
 }) {
   const detected = await detectLegacyStateMigrations({
@@ -76,7 +76,7 @@ function readSessionsStore(targetDir: string) {
 
 async function runAndReadSessionsStore(params: {
   root: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   targetDir: string;
   now?: () => number;
 }) {
@@ -115,7 +115,7 @@ async function runStateDirMigration(root: string, env = {} as NodeJS.ProcessEnv)
 
 async function runAutoMigrateLegacyStateWithLog(params: {
   root: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   now?: () => number;
 }) {
   const log = { info: vi.fn(), warn: vi.fn() };
@@ -158,7 +158,7 @@ function ensureCredentialsDir(root: string) {
 describe("doctor legacy state migrations", () => {
   it("migrates legacy sessions into agents/<id>/sessions", async () => {
     const root = await makeTempRoot();
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const legacySessionsDir = writeLegacySessionsFixture({
       root,
       sessions: {
@@ -313,7 +313,7 @@ describe("doctor legacy state migrations", () => {
 
   it("fans out legacy Telegram pairing allowFrom store to configured named accounts", async () => {
     const root = await makeTempRoot();
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         telegram: {
           accounts: {
@@ -366,7 +366,7 @@ describe("doctor legacy state migrations", () => {
 
   it("no-ops when nothing detected", async () => {
     const root = await makeTempRoot();
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const detected = await detectLegacyStateMigrations({
       cfg,
       env: { MUSTB_STATE_DIR: root } as NodeJS.ProcessEnv,
@@ -377,7 +377,7 @@ describe("doctor legacy state migrations", () => {
 
   it("routes legacy state to the default agent entry", async () => {
     const root = await makeTempRoot();
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: { list: [{ id: "alpha", default: true }] },
     };
     writeLegacySessionsFixture({
@@ -399,7 +399,7 @@ describe("doctor legacy state migrations", () => {
 
   it("honors session.mainKey when seeding the direct-chat bucket", async () => {
     const root = await makeTempRoot();
-    const cfg: Must-bConfig = { session: { mainKey: "work" } };
+    const cfg: MustBonfig = { session: { mainKey: "work" } };
     writeLegacySessionsFixture({
       root,
       sessions: {
@@ -439,7 +439,7 @@ describe("doctor legacy state migrations", () => {
 
   it("prefers the newest entry when collapsing main aliases", async () => {
     const root = await makeTempRoot();
-    const cfg: Must-bConfig = { session: { mainKey: "work" } };
+    const cfg: MustBonfig = { session: { mainKey: "work" } };
     const targetDir = path.join(root, "agents", "main", "sessions");
     writeJson5(path.join(targetDir, "sessions.json"), {
       "agent:main:main": { sessionId: "legacy", updatedAt: 50 },
@@ -458,7 +458,7 @@ describe("doctor legacy state migrations", () => {
 
   it("lowercases agent session keys during canonicalization", async () => {
     const root = await makeTempRoot();
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const targetDir = path.join(root, "agents", "main", "sessions");
     writeJson5(path.join(targetDir, "sessions.json"), {
       "agent:main:slack:channel:C123": { sessionId: "legacy", updatedAt: 10 },

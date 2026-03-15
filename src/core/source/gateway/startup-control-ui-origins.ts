@@ -1,14 +1,14 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   ensureControlUiAllowedOriginsForNonLoopbackBind,
   type GatewayNonLoopbackBindMode,
 } from "../config/gateway-control-ui-origins.js";
 
 export async function maybeSeedControlUiAllowedOriginsAtStartup(params: {
-  config: Must-bConfig;
-  writeConfig: (config: Must-bConfig) => Promise<void>;
+  config: MustBonfig;
+  writeConfig: (config: MustBonfig) => Promise<void>;
   log: { info: (msg: string) => void; warn: (msg: string) => void };
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const seeded = ensureControlUiAllowedOriginsForNonLoopbackBind(params.config);
   if (!seeded.seededOrigins || !seeded.bind) {
     return params.config;

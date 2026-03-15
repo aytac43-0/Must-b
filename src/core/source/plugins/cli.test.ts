@@ -1,15 +1,15 @@
 import { Command } from "commander";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 const mocks = vi.hoisted(() => ({
   memoryRegister: vi.fn(),
   otherRegister: vi.fn(),
-  loadMust-bPlugins: vi.fn(),
+  loadMustBlugins: vi.fn(),
 }));
 
 vi.mock("./loader.js", () => ({
-  loadMust-bPlugins: (...args: unknown[]) => mocks.loadMust-bPlugins(...args),
+  loadMustBlugins: (...args: unknown[]) => mocks.loadMustBlugins(...args),
 }));
 
 import { registerPluginCliCommands } from "./cli.js";
@@ -18,8 +18,8 @@ describe("registerPluginCliCommands", () => {
   beforeEach(() => {
     mocks.memoryRegister.mockClear();
     mocks.otherRegister.mockClear();
-    mocks.loadMust-bPlugins.mockReset();
-    mocks.loadMust-bPlugins.mockReturnValue({
+    mocks.loadMustBlugins.mockReset();
+    mocks.loadMustBlugins.mockReturnValue({
       cliRegistrars: [
         {
           pluginId: "memory-core",
@@ -52,9 +52,9 @@ describe("registerPluginCliCommands", () => {
     const program = new Command();
     const env = { MUSTB_HOME: "/srv/must-b-home" } as NodeJS.ProcessEnv;
 
-    registerPluginCliCommands(program, {} as Must-bConfig, env);
+    registerPluginCliCommands(program, {} as MustBonfig, env);
 
-    expect(mocks.loadMust-bPlugins).toHaveBeenCalledWith(
+    expect(mocks.loadMustBlugins).toHaveBeenCalledWith(
       expect.objectContaining({
         env,
       }),

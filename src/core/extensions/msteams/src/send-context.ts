@@ -1,6 +1,6 @@
 import {
   resolveChannelMediaMaxBytes,
-  type Must-bConfig,
+  type MustBonfig,
   type PluginRuntime,
 } from "must-b/plugin-sdk/msteams";
 import type { MSTeamsAccessTokenProvider } from "./attachments/types.js";
@@ -92,7 +92,7 @@ async function findConversationReference(recipient: {
 }
 
 export async function resolveMSTeamsSendContext(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   to: string;
 }): Promise<MSTeamsProactiveContext> {
   const msteamsCfg = params.cfg.channels?.msteams;

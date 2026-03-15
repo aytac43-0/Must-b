@@ -1,9 +1,9 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/diffs";
+import type { MustBConfig } from "must-b/plugin-sdk/diffs";
 
 const DEFAULT_GATEWAY_PORT = 18789;
 
 export function buildViewerUrl(params: {
-  config: Must-bConfig;
+  config: MustBConfig;
   viewerPath: string;
   baseUrl?: string;
 }): string {
@@ -40,7 +40,7 @@ export function normalizeViewerBaseUrl(raw: string): string {
   return withoutTrailingSlash;
 }
 
-function resolveGatewayBaseUrl(config: Must-bConfig): string {
+function resolveGatewayBaseUrl(config: MustBConfig): string {
   const scheme = config.gateway?.tls?.enabled ? "https" : "http";
   const port =
     typeof config.gateway?.port === "number" ? config.gateway.port : DEFAULT_GATEWAY_PORT;

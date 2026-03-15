@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { drainFormattedSystemEvents } from "../auto-reply/reply/session-updates.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveMainSessionKey } from "../config/sessions.js";
 import { isCronSystemEvent } from "./heartbeat-runner.js";
 import { enqueueSystemEvent, peekSystemEvents, resetSystemEventsForTest } from "./system-events.js";
 
-const cfg = {} as unknown as Must-bConfig;
+const cfg = {} as unknown as MustBonfig;
 const mainKey = resolveMainSessionKey(cfg);
 
 describe("system events (session routing)", () => {

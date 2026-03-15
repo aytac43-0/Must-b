@@ -2,18 +2,18 @@ import type { Skill } from "@mariozechner/pi-coding-agent";
 import { validateRegistryNpmSpec } from "../../infra/npm-registry-spec.js";
 import { parseFrontmatterBlock } from "../../markdown/frontmatter.js";
 import {
-  applyMust-bManifestInstallCommonFields,
+  applyMustBanifestInstallCommonFields,
   getFrontmatterString,
   normalizeStringList,
-  parseMust-bManifestInstallBase,
+  parseMustBanifestInstallBase,
   parseFrontmatterBool,
-  resolveMust-bManifestBlock,
-  resolveMust-bManifestInstall,
-  resolveMust-bManifestOs,
-  resolveMust-bManifestRequires,
+  resolveMustBanifestBlock,
+  resolveMustBanifestInstall,
+  resolveMustBanifestOs,
+  resolveMustBanifestRequires,
 } from "../../shared/frontmatter.js";
 import type {
-  Must-bSkillMetadata,
+  MustBkillMetadata,
   ParsedSkillFrontmatter,
   SkillEntry,
   SkillInstallSpec,
@@ -109,12 +109,12 @@ function normalizeSafeDownloadUrl(raw: unknown): string | undefined {
 }
 
 function parseInstallSpec(input: unknown): SkillInstallSpec | undefined {
-  const parsed = parseMust-bManifestInstallBase(input, ["brew", "node", "go", "uv", "download"]);
+  const parsed = parseMustBanifestInstallBase(input, ["brew", "node", "go", "uv", "download"]);
   if (!parsed) {
     return undefined;
   }
   const { raw } = parsed;
-  const spec = applyMust-bManifestInstallCommonFields<SkillInstallSpec>(
+  const spec = applyMustBanifestInstallCommonFields<SkillInstallSpec>(
     {
       kind: parsed.kind as SkillInstallSpec["kind"],
     },
@@ -183,16 +183,16 @@ function parseInstallSpec(input: unknown): SkillInstallSpec | undefined {
   return spec;
 }
 
-export function resolveMust-bMetadata(
+export function resolveMustBetadata(
   frontmatter: ParsedSkillFrontmatter,
-): Must-bSkillMetadata | undefined {
-  const metadataObj = resolveMust-bManifestBlock({ frontmatter });
+): MustBkillMetadata | undefined {
+  const metadataObj = resolveMustBanifestBlock({ frontmatter });
   if (!metadataObj) {
     return undefined;
   }
-  const requires = resolveMust-bManifestRequires(metadataObj);
-  const install = resolveMust-bManifestInstall(metadataObj, parseInstallSpec);
-  const osRaw = resolveMust-bManifestOs(metadataObj);
+  const requires = resolveMustBanifestRequires(metadataObj);
+  const install = resolveMustBanifestInstall(metadataObj, parseInstallSpec);
+  const osRaw = resolveMustBanifestOs(metadataObj);
   return {
     always: typeof metadataObj.always === "boolean" ? metadataObj.always : undefined,
     emoji: typeof metadataObj.emoji === "string" ? metadataObj.emoji : undefined,

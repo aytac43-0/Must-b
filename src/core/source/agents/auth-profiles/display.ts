@@ -1,8 +1,8 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBConfig } from "../../config/config.js";
 import type { AuthProfileStore } from "./types.js";
 
 export function resolveAuthProfileDisplayLabel(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   store: AuthProfileStore;
   profileId: string;
 }): string {

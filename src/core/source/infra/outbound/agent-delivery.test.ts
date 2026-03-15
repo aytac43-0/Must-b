@@ -12,7 +12,7 @@ vi.mock("./targets.js", async () => {
   };
 });
 
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveAgentDeliveryPlan, resolveAgentOutboundTarget } from "./agent-delivery.js";
 
 describe("agent delivery helpers", () => {
@@ -49,7 +49,7 @@ describe("agent delivery helpers", () => {
     });
 
     const resolved = resolveAgentOutboundTarget({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       plan,
       targetMode: "implicit",
     });
@@ -87,7 +87,7 @@ describe("agent delivery helpers", () => {
 
     mocks.resolveOutboundTarget.mockClear();
     const resolved = resolveAgentOutboundTarget({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       plan,
       targetMode: "explicit",
       validateExplicitTarget: false,

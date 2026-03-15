@@ -1,5 +1,5 @@
 import { listAcpBindings } from "../config/bindings.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBConfig } from "../config/config.js";
 import type { AgentAcpBinding } from "../config/types.js";
 import { pickFirstExistingAgentId } from "../routing/resolve-route.js";
 import {
@@ -66,7 +66,7 @@ function parseConfiguredBindingSessionKey(params: {
   };
 }
 
-function resolveAgentRuntimeAcpDefaults(params: { cfg: Must-bConfig; ownerAgentId: string }): {
+function resolveAgentRuntimeAcpDefaults(params: { cfg: MustBConfig; ownerAgentId: string }): {
   acpAgentId?: string;
   mode?: string;
   cwd?: string;
@@ -87,7 +87,7 @@ function resolveAgentRuntimeAcpDefaults(params: { cfg: Must-bConfig; ownerAgentI
 }
 
 function toConfiguredBindingSpec(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   channel: ConfiguredAcpBindingChannel;
   accountId: string;
   conversationId: string;
@@ -118,7 +118,7 @@ function toConfiguredBindingSpec(params: {
 }
 
 export function resolveConfiguredAcpBindingSpecBySessionKey(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   sessionKey: string;
 }): ConfiguredAcpBindingSpec | null {
   const sessionKey = params.sessionKey.trim();
@@ -191,7 +191,7 @@ export function resolveConfiguredAcpBindingSpecBySessionKey(params: {
 }
 
 export function resolveConfiguredAcpBindingRecord(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   channel: string;
   accountId: string;
   conversationId: string;

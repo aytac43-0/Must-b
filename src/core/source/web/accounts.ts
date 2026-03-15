@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createAccountListHelpers } from "../channels/plugins/account-helpers.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveOAuthDir } from "../config/paths.js";
 import type { DmPolicy, GroupPolicy, WhatsAppAccountConfig } from "../config/types.js";
 import { resolveAccountEntry } from "../routing/account-lookup.js";
@@ -38,7 +38,7 @@ const { listConfiguredAccountIds, listAccountIds, resolveDefaultAccountId } =
 export const listWhatsAppAccountIds = listAccountIds;
 export const resolveDefaultWhatsAppAccountId = resolveDefaultAccountId;
 
-export function listWhatsAppAuthDirs(cfg: Must-bConfig): string[] {
+export function listWhatsAppAuthDirs(cfg: MustBonfig): string[] {
   const oauthDir = resolveOAuthDir();
   const whatsappDir = path.join(oauthDir, "whatsapp");
   const authDirs = new Set<string>([oauthDir, path.join(whatsappDir, DEFAULT_ACCOUNT_ID)]);
@@ -63,12 +63,12 @@ export function listWhatsAppAuthDirs(cfg: Must-bConfig): string[] {
   return Array.from(authDirs);
 }
 
-export function hasAnyWhatsAppAuth(cfg: Must-bConfig): boolean {
+export function hasAnyWhatsAppAuth(cfg: MustBonfig): boolean {
   return listWhatsAppAuthDirs(cfg).some((authDir) => hasWebCredsSync(authDir));
 }
 
 function resolveAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
 ): WhatsAppAccountConfig | undefined {
   return resolveAccountEntry(cfg.channels?.whatsapp?.accounts, accountId);
@@ -91,7 +91,7 @@ function legacyAuthExists(authDir: string): boolean {
   }
 }
 
-export function resolveWhatsAppAuthDir(params: { cfg: Must-bConfig; accountId: string }): {
+export function resolveWhatsAppAuthDir(params: { cfg: MustBonfig; accountId: string }): {
   authDir: string;
   isLegacy: boolean;
 } {
@@ -114,7 +114,7 @@ export function resolveWhatsAppAuthDir(params: { cfg: Must-bConfig; accountId: s
 }
 
 export function resolveWhatsAppAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): ResolvedWhatsAppAccount {
   const rootCfg = params.cfg.channels?.whatsapp;
@@ -159,7 +159,7 @@ export function resolveWhatsAppMediaMaxBytes(
   return mediaMaxMb * 1024 * 1024;
 }
 
-export function listEnabledWhatsAppAccounts(cfg: Must-bConfig): ResolvedWhatsAppAccount[] {
+export function listEnabledWhatsAppAccounts(cfg: MustBonfig): ResolvedWhatsAppAccount[] {
   return listWhatsAppAccountIds(cfg)
     .map((accountId) => resolveWhatsAppAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

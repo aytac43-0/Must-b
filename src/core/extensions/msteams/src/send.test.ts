@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/msteams";
+import type { MustBonfig } from "must-b/plugin-sdk/msteams";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { sendMessageMSTeams } from "./send.js";
 
@@ -80,7 +80,7 @@ describe("sendMessageMSTeams", () => {
     });
 
     await sendMessageMSTeams({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       to: "conversation:19:conversation@thread.tacv2",
       text: "hello",
       mediaUrl: "file:///tmp/agent-workspace/inline.png",

@@ -1,6 +1,6 @@
 import { normalizeChatType } from "../channels/chat-type.js";
 import { createAccountListHelpers } from "../channels/plugins/account-helpers.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SlackAccountConfig } from "../config/types.js";
 import { resolveAccountEntry } from "../routing/account-lookup.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
@@ -27,14 +27,14 @@ export const listSlackAccountIds = listAccountIds;
 export const resolveDefaultSlackAccountId = resolveDefaultAccountId;
 
 function resolveAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
 ): SlackAccountConfig | undefined {
   return resolveAccountEntry(cfg.channels?.slack?.accounts, accountId);
 }
 
 export function mergeSlackAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
 ): SlackAccountConfig {
   const { accounts: _ignored, ...base } = (cfg.channels?.slack ?? {}) as SlackAccountConfig & {
@@ -45,7 +45,7 @@ export function mergeSlackAccountConfig(
 }
 
 export function resolveSlackAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): ResolvedSlackAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -101,7 +101,7 @@ export function resolveSlackAccount(params: {
   };
 }
 
-export function listEnabledSlackAccounts(cfg: Must-bConfig): ResolvedSlackAccount[] {
+export function listEnabledSlackAccounts(cfg: MustBonfig): ResolvedSlackAccount[] {
   return listSlackAccountIds(cfg)
     .map((accountId) => resolveSlackAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolvePluginTools } from "../plugins/tools.js";
 import { getActiveRuntimeWebToolsMetadata } from "../secrets/runtime.js";
 import type { GatewayMessageChannel } from "../utils/message-channel.js";
@@ -27,7 +27,7 @@ import { createTtsTool } from "./tools/tts-tool.js";
 import { createWebFetchTool, createWebSearchTool } from "./tools/web-tools.js";
 import { resolveWorkspaceRoot } from "./workspace-dir.js";
 
-export function createMust-bTools(
+export function createMustBools(
   options?: {
     sandboxBrowserBridgeUrl?: string;
     allowHostBrowserControl?: boolean;
@@ -43,7 +43,7 @@ export function createMust-bTools(
     sandboxFsBridge?: SandboxFsBridge;
     fsPolicy?: ToolFsPolicy;
     sandboxed?: boolean;
-    config?: Must-bConfig;
+    config?: MustBonfig;
     pluginToolAllowlist?: string[];
     /** Current channel ID for auto-threading (Slack). */
     currentChannelId?: string;

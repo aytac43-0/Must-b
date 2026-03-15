@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/twitch";
+import type { MustBConfig } from "must-b/plugin-sdk/twitch";
 import { afterEach, beforeEach, vi } from "vitest";
 
 export const BASE_TWITCH_TEST_ACCOUNT = {
@@ -7,7 +7,7 @@ export const BASE_TWITCH_TEST_ACCOUNT = {
   channel: "#testchannel",
 };
 
-export function makeTwitchTestConfig(account: Record<string, unknown>): Must-bConfig {
+export function makeTwitchTestConfig(account: Record<string, unknown>): MustBConfig {
   return {
     channels: {
       twitch: {
@@ -16,7 +16,7 @@ export function makeTwitchTestConfig(account: Record<string, unknown>): Must-bCo
         },
       },
     },
-  } as unknown as Must-bConfig;
+  } as unknown as MustBConfig;
 }
 
 export function installTwitchTestHooks() {

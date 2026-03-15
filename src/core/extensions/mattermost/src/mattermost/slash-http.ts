@@ -11,7 +11,7 @@ import {
   createReplyPrefixOptions,
   createTypingCallbacks,
   logTypingFailure,
-  type Must-bConfig,
+  type MustBConfig,
   type ReplyPayload,
   type RuntimeEnv,
 } from "must-b/plugin-sdk/mattermost";
@@ -45,7 +45,7 @@ import {
 
 type SlashHttpHandlerParams = {
   account: ResolvedMattermostAccount;
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   runtime: RuntimeEnv;
   /** Expected token from registered commands (for validation). */
   commandTokens: Set<string>;
@@ -99,7 +99,7 @@ type SlashInvocationAuth = {
 
 async function authorizeSlashInvocation(params: {
   account: ResolvedMattermostAccount;
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   client: ReturnType<typeof createMattermostClient>;
   commandText: string;
   channelId: string;
@@ -331,7 +331,7 @@ export function createSlashCommandHttpHandler(params: SlashHttpHandlerParams) {
 
 async function handleSlashCommandAsync(params: {
   account: ResolvedMattermostAccount;
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   runtime: RuntimeEnv;
   client: ReturnType<typeof createMattermostClient>;
   commandText: string;

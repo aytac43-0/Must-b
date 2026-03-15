@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveOnboardingSecretInputString } from "./onboarding.secret-input.js";
 
-function makeConfig(): Must-bConfig {
+function makeConfig(): MustBonfig {
   return {
     secrets: {
       providers: {
         default: { source: "env" },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 describe("resolveOnboardingSecretInputString", () => {

@@ -8,7 +8,7 @@ import {
   modelSupportsVision,
 } from "../agents/model-catalog.js";
 import { resolveDefaultModelForAgent } from "../agents/model-selection.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { STATE_DIR } from "../config/paths.js";
 import { logVerbose } from "../globals.js";
 import { loadJsonFile, saveJsonFile } from "../infra/json-file.js";
@@ -154,7 +154,7 @@ function loadImageRuntime() {
 
 export interface DescribeStickerParams {
   imagePath: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir?: string;
   agentId?: string;
 }

@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 import { resolveSandboxedMediaSource } from "./sandbox-paths.js";
 
 async function withSandboxRoot<T>(run: (sandboxDir: string) => Promise<T>) {
@@ -28,7 +28,7 @@ function makeTmpProbePath(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}.txt`;
 }
 
-async function withOutsideHardlinkInMust-bTmp<T>(
+async function withOutsideHardlinkInMustBmp<T>(
   params: {
     mustBTmpDir: string;
     hardlinkPrefix: string;
@@ -70,7 +70,7 @@ async function withOutsideHardlinkInMust-bTmp<T>(
 }
 
 describe("resolveSandboxedMediaSource", () => {
-  const mustBTmpDir = resolvePreferredMust-bTmpDir();
+  const mustBTmpDir = resolvePreferredMustBmpDir();
 
   // Group 1: /tmp paths (the bug fix)
   it.each([
@@ -219,7 +219,7 @@ describe("resolveSandboxedMediaSource", () => {
     if (process.platform === "win32") {
       return;
     }
-    await withOutsideHardlinkInMust-bTmp(
+    await withOutsideHardlinkInMustBmp(
       {
         mustBTmpDir,
         hardlinkPrefix: "sandbox-media-hardlink",
@@ -236,7 +236,7 @@ describe("resolveSandboxedMediaSource", () => {
     if (process.platform === "win32") {
       return;
     }
-    await withOutsideHardlinkInMust-bTmp(
+    await withOutsideHardlinkInMustBmp(
       {
         mustBTmpDir,
         hardlinkPrefix: "sandbox-media-hardlink-target",

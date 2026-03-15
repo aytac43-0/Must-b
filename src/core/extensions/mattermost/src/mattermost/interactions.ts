@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import {
   isTrustedProxyAddress,
   resolveClientIp,
-  type Must-bConfig,
+  type MustBConfig,
 } from "must-b/plugin-sdk/mattermost";
 import { getMattermostRuntime } from "../runtime.js";
 import { updateMattermostPost, type MattermostClient, type MattermostPost } from "./client.js";
@@ -59,7 +59,7 @@ export function getInteractionCallbackUrl(accountId: string): string | undefined
   return callbackUrls.get(accountId);
 }
 
-type InteractionCallbackConfig = Pick<Must-bConfig, "gateway" | "channels"> & {
+type InteractionCallbackConfig = Pick<MustBConfig, "gateway" | "channels"> & {
   interactions?: {
     callbackBaseUrl?: string;
   };

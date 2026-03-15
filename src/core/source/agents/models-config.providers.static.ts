@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   KILOCODE_BASE_URL,
   KILOCODE_DEFAULT_CONTEXT_WINDOW,
@@ -31,7 +31,7 @@ import {
   buildTogetherModelDefinition,
 } from "./together-models.js";
 
-type ModelsConfig = NonNullable<Must-bConfig["models"]>;
+type ModelsConfig = NonNullable<MustBonfig["models"]>;
 type ProviderConfig = NonNullable<ModelsConfig["providers"]>[string];
 type ProviderModelConfig = NonNullable<ProviderConfig["models"]>[number];
 

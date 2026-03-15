@@ -1,5 +1,5 @@
 import { resolveGatewayPort } from "../../config/config.js";
-import type { Must-bConfig, ConfigFileSnapshot } from "../../config/types.js";
+import type { MustBonfig, ConfigFileSnapshot } from "../../config/types.js";
 import { hasConfiguredSecretInput } from "../../config/types.secrets.js";
 import { readGatewayPasswordEnv, readGatewayTokenEnv } from "../../gateway/credentials.js";
 import type { GatewayProbeResult } from "../../gateway/probe.js";
@@ -91,7 +91,7 @@ function normalizeWsUrl(value: string): string | null {
   return trimmed;
 }
 
-export function resolveTargets(cfg: Must-bConfig, explicitUrl?: string): GatewayStatusTarget[] {
+export function resolveTargets(cfg: MustBonfig, explicitUrl?: string): GatewayStatusTarget[] {
   const targets: GatewayStatusTarget[] = [];
   const add = (t: GatewayStatusTarget) => {
     if (!targets.some((x) => x.url === t.url)) {
@@ -148,7 +148,7 @@ export function sanitizeSshTarget(value: unknown): string | null {
 }
 
 export async function resolveAuthForTarget(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   target: GatewayStatusTarget,
   overrides: { token?: string; password?: string },
 ): Promise<{ token?: string; password?: string; diagnostics?: string[] }> {
@@ -312,7 +312,7 @@ export function extractConfigSummary(snapshotUnknown: unknown): GatewayConfigSum
   };
 }
 
-export function buildNetworkHints(cfg: Must-bConfig) {
+export function buildNetworkHints(cfg: MustBonfig) {
   const tailnetIPv4 = pickPrimaryTailnetIPv4();
   const port = resolveGatewayPort(cfg);
   return {

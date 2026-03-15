@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import "../../agents/test-helpers/fast-coding-tools.js";
-import { createMust-bCodingTools } from "../../agents/pi-tools.js";
+import { createMustBodingTools } from "../../agents/pi-tools.js";
 import {
   clearFastTestEnv,
   loadRunCronIsolatedAgentTurn,
@@ -59,7 +59,7 @@ describe("runCronIsolatedAgentTurn owner auth", () => {
     const senderIsOwner = runEmbeddedPiAgentMock.mock.calls[0]?.[0]?.senderIsOwner;
     expect(senderIsOwner).toBe(true);
 
-    const toolNames = createMust-bCodingTools({ senderIsOwner }).map((tool) => tool.name);
+    const toolNames = createMustBodingTools({ senderIsOwner }).map((tool) => tool.name);
     expect(toolNames).toContain("cron");
     expect(toolNames).toContain("gateway");
   });

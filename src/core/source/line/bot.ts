@@ -1,7 +1,7 @@
 import type { WebhookRequestBody } from "@line/bot-sdk";
 import type { Request, Response, NextFunction } from "express";
 import { DEFAULT_GROUP_HISTORY_LIMIT, type HistoryEntry } from "../auto-reply/reply/history.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import { logVerbose } from "../globals.js";
 import { createNonExitingRuntime, type RuntimeEnv } from "../runtime.js";
@@ -16,7 +16,7 @@ export interface LineBotOptions {
   channelSecret: string;
   accountId?: string;
   runtime?: RuntimeEnv;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   mediaMaxMb?: number;
   onMessage?: (ctx: LineInboundContext) => Promise<void>;
 }

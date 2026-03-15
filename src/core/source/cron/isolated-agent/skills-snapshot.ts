@@ -2,12 +2,12 @@ import { resolveAgentSkillsFilter } from "../../agents/agent-scope.js";
 import { buildWorkspaceSkillSnapshot, type SkillSnapshot } from "../../agents/skills.js";
 import { matchesSkillFilter } from "../../agents/skills/filter.js";
 import { getSkillsSnapshotVersion } from "../../agents/skills/refresh.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { getRemoteSkillEligibility } from "../../infra/skills-remote.js";
 
 export function resolveCronSkillsSnapshot(params: {
   workspaceDir: string;
-  config: Must-bConfig;
+  config: MustBonfig;
   agentId: string;
   existingSnapshot?: SkillSnapshot;
   isFastTestEnv: boolean;

@@ -18,7 +18,7 @@ vi.mock("./logger.js", () => ({
 
 let loadConfigCalls = 0;
 let originalIsTty: boolean | undefined;
-let originalMust-bTestConsole: string | undefined;
+let originalMustBestConsole: string | undefined;
 let snapshot: ConsoleSnapshot;
 let logging: typeof import("../logging.js");
 let state: typeof import("./state.js");
@@ -32,7 +32,7 @@ beforeEach(() => {
   loadConfigCalls = 0;
   snapshot = captureConsoleSnapshot();
   originalIsTty = process.stdout.isTTY;
-  originalMust-bTestConsole = process.env.MUSTB_TEST_CONSOLE;
+  originalMustBestConsole = process.env.MUSTB_TEST_CONSOLE;
   process.env.MUSTB_TEST_CONSOLE = "1";
   Object.defineProperty(process.stdout, "isTTY", { value: false, configurable: true });
 });
@@ -44,10 +44,10 @@ afterEach(() => {
   console.error = snapshot.error;
   console.debug = snapshot.debug;
   console.trace = snapshot.trace;
-  if (originalMust-bTestConsole === undefined) {
+  if (originalMustBestConsole === undefined) {
     delete process.env.MUSTB_TEST_CONSOLE;
   } else {
-    process.env.MUSTB_TEST_CONSOLE = originalMust-bTestConsole;
+    process.env.MUSTB_TEST_CONSOLE = originalMustBestConsole;
   }
   Object.defineProperty(process.stdout, "isTTY", { value: originalIsTty, configurable: true });
   logging.setConsoleConfigLoaderForTests();

@@ -1,6 +1,6 @@
 import { ChannelType } from "discord-api-types/v10";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { ThreadBindingRecord } from "./thread-bindings.types.js";
 
 const hoisted = vi.hoisted(() => {
@@ -70,7 +70,7 @@ describe("resolveChannelIdForBinding", () => {
   it("forwards cfg when resolving channel id through Discord client", async () => {
     const cfg = {
       channels: { discord: { token: "tok" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     hoisted.restGet.mockResolvedValueOnce({
       id: "thread-1",
       type: ChannelType.PublicThread,
@@ -127,7 +127,7 @@ describe("maybeSendBindingMessage", () => {
   it("forwards cfg to webhook send path", async () => {
     const cfg = {
       channels: { discord: { token: "tok" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     const record = {
       accountId: "default",
       channelId: "parent-1",

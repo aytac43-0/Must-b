@@ -1,4 +1,4 @@
-import SHARED_TOOL_DISPLAY_JSON from "../../../apps/shared/Must-bKit/Sources/Must-bKit/Resources/tool-display.json" with { type: "json" };
+import SHARED_TOOL_DISPLAY_JSON from "../../../apps/shared/MustBit/Sources/MustBit/Resources/tool-display.json" with { type: "json" };
 import {
   defaultTitle,
   formatToolDetailText,

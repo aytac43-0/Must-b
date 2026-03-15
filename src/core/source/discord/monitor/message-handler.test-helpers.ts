@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import type { Must-bConfig } from "../../config/types.js";
+import type { MustBonfig } from "../../config/types.js";
 import type { createDiscordMessageHandler } from "./message-handler.js";
 import { createNoopThreadBindingManager } from "./thread-bindings.js";
 
@@ -11,7 +11,7 @@ export function createDiscordHandlerParams(overrides?: {
   abortSignal?: AbortSignal;
   workerRunTimeoutMs?: number;
 }): Parameters<typeof createDiscordMessageHandler>[0] {
-  const cfg: Must-bConfig = {
+  const cfg: MustBonfig = {
     channels: {
       discord: {
         enabled: true,

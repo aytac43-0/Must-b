@@ -17,7 +17,7 @@ import {
   createExitThrowingRuntime,
   createWizardPrompter,
   readAuthProfilesForAgent,
-  requireMust-bAgentDir,
+  requireMustBgentDir,
   setupAuthTestEnv,
 } from "./test-wizard-helpers.js";
 
@@ -118,7 +118,7 @@ describe("applyAuthChoice", () => {
   async function readAuthProfiles() {
     return await readAuthProfilesForAgent<{
       profiles?: Record<string, StoredAuthProfile>;
-    }>(requireMust-bAgentDir());
+    }>(requireMustBgentDir());
   }
   async function readAuthProfile(profileId: string) {
     return (await readAuthProfiles()).profiles?.[profileId];
@@ -984,7 +984,7 @@ describe("applyAuthChoice", () => {
     await setupTempState();
     process.env.LITELLM_API_KEY = "sk-litellm-test"; // pragma: allowlist secret
 
-    const authProfilePath = authProfilePathForAgent(requireMust-bAgentDir());
+    const authProfilePath = authProfilePathForAgent(requireMustBgentDir());
     await fs.writeFile(
       authProfilePath,
       JSON.stringify(

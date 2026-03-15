@@ -1,10 +1,10 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 export { shouldRequireGatewayTokenForInstall } from "../gateway/auth-install-policy.js";
 import { readGatewayTokenEnv } from "../gateway/credentials.js";
 import { resolveConfiguredSecretInputWithFallback } from "../gateway/resolve-configured-secret-input-string.js";
 
 export async function resolveGatewayAuthTokenForService(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
 ): Promise<{ token?: string; unavailableReason?: string }> {
   const resolved = await resolveConfiguredSecretInputWithFallback({

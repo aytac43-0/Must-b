@@ -1,7 +1,7 @@
 import {
   buildOauthProviderAuthResult,
   emptyPluginConfigSchema,
-  type Must-bPluginApi,
+  type MustBPluginApi,
   type ProviderAuthContext,
   type ProviderAuthResult,
 } from "must-b/plugin-sdk/minimax-portal-auth";
@@ -135,7 +135,7 @@ const minimaxPortalPlugin = {
   name: "MiniMax OAuth",
   description: "OAuth flow for MiniMax models",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: PROVIDER_LABEL,

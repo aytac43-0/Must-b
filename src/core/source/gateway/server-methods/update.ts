@@ -1,6 +1,6 @@
 import { loadConfig } from "../../config/config.js";
 import { extractDeliveryInfo } from "../../config/sessions.js";
-import { resolveMust-bPackageRoot } from "../../infra/must-b-root.js";
+import { resolveMustBackageRoot } from "../../infra/must-b-root.js";
 import {
   formatDoctorNonInteractiveHint,
   type RestartSentinelPayload,
@@ -34,7 +34,7 @@ export const updateHandlers: GatewayRequestHandlers = {
       const config = loadConfig();
       const configChannel = normalizeUpdateChannel(config.update?.channel);
       const root =
-        (await resolveMust-bPackageRoot({
+        (await resolveMustBackageRoot({
           moduleUrl: import.meta.url,
           argv1: process.argv[1],
           cwd: process.cwd(),

@@ -1,5 +1,5 @@
 import { createAccountListHelpers } from "../channels/plugins/account-helpers.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SignalAccountConfig } from "../config/types.js";
 import { resolveAccountEntry } from "../routing/account-lookup.js";
 import { normalizeAccountId } from "../routing/session-key.js";
@@ -18,13 +18,13 @@ export const listSignalAccountIds = listAccountIds;
 export const resolveDefaultSignalAccountId = resolveDefaultAccountId;
 
 function resolveAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
 ): SignalAccountConfig | undefined {
   return resolveAccountEntry(cfg.channels?.signal?.accounts, accountId);
 }
 
-function mergeSignalAccountConfig(cfg: Must-bConfig, accountId: string): SignalAccountConfig {
+function mergeSignalAccountConfig(cfg: MustBonfig, accountId: string): SignalAccountConfig {
   const { accounts: _ignored, ...base } = (cfg.channels?.signal ?? {}) as SignalAccountConfig & {
     accounts?: unknown;
   };
@@ -33,7 +33,7 @@ function mergeSignalAccountConfig(cfg: Must-bConfig, accountId: string): SignalA
 }
 
 export function resolveSignalAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): ResolvedSignalAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -62,7 +62,7 @@ export function resolveSignalAccount(params: {
   };
 }
 
-export function listEnabledSignalAccounts(cfg: Must-bConfig): ResolvedSignalAccount[] {
+export function listEnabledSignalAccounts(cfg: MustBonfig): ResolvedSignalAccount[] {
   return listSignalAccountIds(cfg)
     .map((accountId) => resolveSignalAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

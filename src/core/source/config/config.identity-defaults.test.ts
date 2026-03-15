@@ -70,7 +70,7 @@ describe("config identity defaults", () => {
               id: "main",
               identity: {
                 name: "Samantha Sloth",
-                theme: "space lobster",
+                theme: "space agent",
                 emoji: "",
               },
               groupChat: { mentionPatterns: ["@must-b"] },

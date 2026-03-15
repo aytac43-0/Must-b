@@ -1,5 +1,5 @@
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "must-b/plugin-sdk/account-id";
-import { createAccountListHelpers, type Must-bConfig } from "must-b/plugin-sdk/bluebubbles";
+import { createAccountListHelpers, type MustBConfig } from "must-b/plugin-sdk/bluebubbles";
 import { hasConfiguredSecretInput, normalizeSecretInputString } from "./secret-input.js";
 import { normalizeBlueBubblesServerUrl, type BlueBubblesAccountConfig } from "./types.js";
 
@@ -19,7 +19,7 @@ const {
 export { listBlueBubblesAccountIds, resolveDefaultBlueBubblesAccountId };
 
 function resolveAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
 ): BlueBubblesAccountConfig | undefined {
   const accounts = cfg.channels?.bluebubbles?.accounts;
@@ -30,7 +30,7 @@ function resolveAccountConfig(
 }
 
 function mergeBlueBubblesAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
 ): BlueBubblesAccountConfig {
   const base = (cfg.channels?.bluebubbles ?? {}) as BlueBubblesAccountConfig & {
@@ -44,7 +44,7 @@ function mergeBlueBubblesAccountConfig(
 }
 
 export function resolveBlueBubblesAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId?: string | null;
 }): ResolvedBlueBubblesAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -65,7 +65,7 @@ export function resolveBlueBubblesAccount(params: {
   };
 }
 
-export function listEnabledBlueBubblesAccounts(cfg: Must-bConfig): ResolvedBlueBubblesAccount[] {
+export function listEnabledBlueBubblesAccounts(cfg: MustBConfig): ResolvedBlueBubblesAccount[] {
   return listBlueBubblesAccountIds(cfg)
     .map((accountId) => resolveBlueBubblesAccount({ cfg, accountId }))
     .filter((account) => account.enabled);

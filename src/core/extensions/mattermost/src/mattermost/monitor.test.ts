@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/mattermost";
+import type { MustBConfig } from "must-b/plugin-sdk/mattermost";
 import { describe, expect, it, vi } from "vitest";
 import { resolveMattermostAccount } from "./accounts.js";
 import {
@@ -31,7 +31,7 @@ function resolveRequireMentionForTest(params: MattermostRequireMentionResolverIn
   return true;
 }
 
-function evaluateMentionGateForMessage(params: { cfg: Must-bConfig; threadRootId?: string }) {
+function evaluateMentionGateForMessage(params: { cfg: MustBConfig; threadRootId?: string }) {
   const account = resolveMattermostAccount({ cfg: params.cfg, accountId: "default" });
   const resolver = vi.fn(resolveRequireMentionForTest);
   const input: MattermostMentionGateInput = {
@@ -55,7 +55,7 @@ function evaluateMentionGateForMessage(params: { cfg: Must-bConfig; threadRootId
 
 describe("mattermost mention gating", () => {
   it("accepts unmentioned root channel posts in onmessage mode", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBConfig = {
       channels: {
         mattermost: {
           chatmode: "onmessage",
@@ -76,7 +76,7 @@ describe("mattermost mention gating", () => {
   });
 
   it("accepts unmentioned thread replies in onmessage mode", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBConfig = {
       channels: {
         mattermost: {
           chatmode: "onmessage",
@@ -96,7 +96,7 @@ describe("mattermost mention gating", () => {
   });
 
   it("rejects unmentioned channel posts in oncall mode", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBConfig = {
       channels: {
         mattermost: {
           chatmode: "oncall",

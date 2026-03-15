@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { escapeRegExp, formatEnvelopeTimestamp } from "../../test/helpers/envelope-timestamp.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { setLoggerOverride } from "../logging.js";
 import { withEnvAsync } from "../test-utils/env.js";
 import {
@@ -451,7 +451,7 @@ describe("web auto-reply connection", () => {
       return { text: "final reply" };
     });
 
-    const mockConfig: Must-bConfig = {
+    const mockConfig: MustBonfig = {
       channels: { whatsapp: { allowFrom: ["*"] } },
     };
 

@@ -3,7 +3,7 @@ import type {
   ChannelMessageActionName,
   ChannelThreadingToolContext,
 } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   getChannelMessageAdapter,
   type CrossContextComponentsBuilder,
@@ -91,7 +91,7 @@ export function enforceCrossContextPolicy(params: {
   action: ChannelMessageActionName;
   args: Record<string, unknown>;
   toolContext?: ChannelThreadingToolContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
 }): void {
   const currentTarget = params.toolContext?.currentChannelId?.trim();
   if (!currentTarget) {
@@ -139,7 +139,7 @@ export function enforceCrossContextPolicy(params: {
 }
 
 export async function buildCrossContextDecoration(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   channel: ChannelId;
   target: string;
   toolContext?: ChannelThreadingToolContext;

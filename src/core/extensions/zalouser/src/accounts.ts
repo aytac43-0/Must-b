@@ -1,5 +1,5 @@
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "must-b/plugin-sdk/account-id";
-import { createAccountListHelpers, type Must-bConfig } from "must-b/plugin-sdk/zalouser";
+import { createAccountListHelpers, type MustBConfig } from "must-b/plugin-sdk/zalouser";
 import type { ResolvedZalouserAccount, ZalouserAccountConfig, ZalouserConfig } from "./types.js";
 import { checkZaloAuthenticated, getZaloUserInfo } from "./zalo-js.js";
 
@@ -10,7 +10,7 @@ const {
 export { listZalouserAccountIds, resolveDefaultZalouserAccountId };
 
 function resolveAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
 ): ZalouserAccountConfig | undefined {
   const accounts = (cfg.channels?.zalouser as ZalouserConfig | undefined)?.accounts;
@@ -20,7 +20,7 @@ function resolveAccountConfig(
   return accounts[accountId] as ZalouserAccountConfig | undefined;
 }
 
-function mergeZalouserAccountConfig(cfg: Must-bConfig, accountId: string): ZalouserAccountConfig {
+function mergeZalouserAccountConfig(cfg: MustBConfig, accountId: string): ZalouserAccountConfig {
   const raw = (cfg.channels?.zalouser ?? {}) as ZalouserConfig;
   const { accounts: _ignored, defaultAccount: _ignored2, ...base } = raw;
   const account = resolveAccountConfig(cfg, accountId) ?? {};
@@ -44,7 +44,7 @@ function resolveProfile(config: ZalouserAccountConfig, accountId: string): strin
 }
 
 export async function resolveZalouserAccount(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId?: string | null;
 }): Promise<ResolvedZalouserAccount> {
   const accountId = normalizeAccountId(params.accountId);
@@ -67,7 +67,7 @@ export async function resolveZalouserAccount(params: {
 }
 
 export function resolveZalouserAccountSync(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId?: string | null;
 }): ResolvedZalouserAccount {
   const accountId = normalizeAccountId(params.accountId);
@@ -89,7 +89,7 @@ export function resolveZalouserAccountSync(params: {
 }
 
 export async function listEnabledZalouserAccounts(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
 ): Promise<ResolvedZalouserAccount[]> {
   const ids = listZalouserAccountIds(cfg);
   const accounts = await Promise.all(

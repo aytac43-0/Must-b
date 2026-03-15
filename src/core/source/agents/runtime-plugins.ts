@@ -1,9 +1,9 @@
-import type { Must-bConfig } from "../config/config.js";
-import { loadMust-bPlugins } from "../plugins/loader.js";
+import type { MustBonfig } from "../config/config.js";
+import { loadMustBlugins } from "../plugins/loader.js";
 import { resolveUserPath } from "../utils.js";
 
 export function ensureRuntimePluginsLoaded(params: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   workspaceDir?: string | null;
 }): void {
   const workspaceDir =
@@ -11,7 +11,7 @@ export function ensureRuntimePluginsLoaded(params: {
       ? resolveUserPath(params.workspaceDir)
       : undefined;
 
-  loadMust-bPlugins({
+  loadMustBlugins({
     config: params.config,
     workspaceDir,
   });

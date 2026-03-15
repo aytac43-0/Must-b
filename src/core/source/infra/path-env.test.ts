@@ -33,9 +33,9 @@ vi.mock("node:fs", async (importOriginal) => {
   return { ...wrapped, default: wrapped };
 });
 
-let ensureMust-bCliOnPath: typeof import("./path-env.js").ensureMust-bCliOnPath;
+let ensureMustBliOnPath: typeof import("./path-env.js").ensureMustBliOnPath;
 
-describe("ensureMust-bCliOnPath", () => {
+describe("ensureMustBliOnPath", () => {
   const envKeys = [
     "PATH",
     "MUSTB_PATH_BOOTSTRAPPED",
@@ -48,7 +48,7 @@ describe("ensureMust-bCliOnPath", () => {
   let envSnapshot: Record<(typeof envKeys)[number], string | undefined>;
 
   beforeAll(async () => {
-    ({ ensureMust-bCliOnPath } = await import("./path-env.js"));
+    ({ ensureMustBliOnPath } = await import("./path-env.js"));
   });
 
   beforeEach(() => {
@@ -83,7 +83,7 @@ describe("ensureMust-bCliOnPath", () => {
     process.env.PATH = "/usr/bin";
     delete process.env.MUSTB_PATH_BOOTSTRAPPED;
 
-    ensureMust-bCliOnPath({
+    ensureMustBliOnPath({
       execPath: cliPath,
       cwd: tmp,
       homeDir: tmp,
@@ -97,7 +97,7 @@ describe("ensureMust-bCliOnPath", () => {
   it("is idempotent", () => {
     process.env.PATH = "/bin";
     process.env.MUSTB_PATH_BOOTSTRAPPED = "1";
-    ensureMust-bCliOnPath({
+    ensureMustBliOnPath({
       execPath: "/tmp/does-not-matter",
       cwd: "/tmp",
       homeDir: "/tmp",
@@ -123,7 +123,7 @@ describe("ensureMust-bCliOnPath", () => {
     process.env.PATH = "/usr/bin";
     delete process.env.MUSTB_PATH_BOOTSTRAPPED;
 
-    ensureMust-bCliOnPath({
+    ensureMustBliOnPath({
       execPath: appCli,
       cwd: tmp,
       homeDir: tmp,
@@ -155,7 +155,7 @@ describe("ensureMust-bCliOnPath", () => {
     process.env.PATH = "/usr/bin";
     delete process.env.MUSTB_PATH_BOOTSTRAPPED;
 
-    ensureMust-bCliOnPath({
+    ensureMustBliOnPath({
       execPath: appCli,
       cwd: tmp,
       homeDir: tmp,
@@ -167,7 +167,7 @@ describe("ensureMust-bCliOnPath", () => {
     process.env.PATH = "/usr/bin";
     delete process.env.MUSTB_PATH_BOOTSTRAPPED;
 
-    ensureMust-bCliOnPath({
+    ensureMustBliOnPath({
       execPath: appCli,
       cwd: tmp,
       homeDir: tmp,
@@ -200,7 +200,7 @@ describe("ensureMust-bCliOnPath", () => {
     delete process.env.HOMEBREW_BREW_FILE;
     delete process.env.XDG_BIN_HOME;
 
-    ensureMust-bCliOnPath({
+    ensureMustBliOnPath({
       execPath: path.join(execDir, "node"),
       cwd: tmp,
       homeDir: tmp,

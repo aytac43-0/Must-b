@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { GATEWAY_CLIENT_MODES, GATEWAY_CLIENT_NAMES } from "../utils/message-channel.js";
 import { buildGatewayConnectionDetails } from "./call.js";
 import { GatewayClient, type GatewayClientOptions } from "./client.js";
@@ -9,7 +9,7 @@ export async function createOperatorApprovalsGatewayClient(
     GatewayClientOptions,
     "clientDisplayName" | "onClose" | "onConnectError" | "onEvent" | "onHelloOk"
   > & {
-    config: Must-bConfig;
+    config: MustBonfig;
     gatewayUrl?: string;
   },
 ): Promise<GatewayClient> {

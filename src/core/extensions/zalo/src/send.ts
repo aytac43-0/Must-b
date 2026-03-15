@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/zalo";
+import type { MustBConfig } from "must-b/plugin-sdk/zalo";
 import { resolveZaloAccount } from "./accounts.js";
 import type { ZaloFetch } from "./api.js";
 import { sendMessage, sendPhoto } from "./api.js";
@@ -8,7 +8,7 @@ import { resolveZaloToken } from "./token.js";
 export type ZaloSendOptions = {
   token?: string;
   accountId?: string;
-  cfg?: Must-bConfig;
+  cfg?: MustBConfig;
   mediaUrl?: string;
   caption?: string;
   verbose?: boolean;

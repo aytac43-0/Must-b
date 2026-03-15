@@ -27,7 +27,7 @@ import {
   type ChannelMessageActionAdapter,
   type ChannelPlugin,
   type ChannelStatusIssue,
-  type Must-bConfig,
+  type MustBConfig,
 } from "must-b/plugin-sdk/googlechat";
 import { GoogleChatConfigSchema } from "must-b/plugin-sdk/googlechat";
 import {

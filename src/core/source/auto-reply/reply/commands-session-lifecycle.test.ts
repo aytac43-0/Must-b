@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionBindingRecord } from "../../infra/outbound/session-binding-service.js";
 
 const hoisted = vi.hoisted(() => {
@@ -61,7 +61,7 @@ const { buildCommandTestParams } = await import("./commands.test-harness.js");
 
 const baseCfg = {
   session: { mainKey: "main", scope: "per-sender" },
-} satisfies Must-bConfig;
+} satisfies MustBonfig;
 
 type FakeBinding = {
   accountId: string;

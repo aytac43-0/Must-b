@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { resolveUserTimezone } from "../../agents/date-time.js";
 import { buildWorkspaceSkillSnapshot } from "../../agents/skills.js";
 import { ensureSkillsWatcher, getSkillsSnapshotVersion } from "../../agents/skills/refresh.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { type SessionEntry, updateSessionStore } from "../../config/sessions.js";
 import { buildChannelSummary } from "../../infra/channel-summary.js";
 import {
@@ -15,7 +15,7 @@ import { drainSystemEventEntries } from "../../infra/system-events.js";
 
 /** Drain queued system events, format as `System:` lines, return the block (or undefined). */
 export async function drainFormattedSystemEvents(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey: string;
   isMainSession: boolean;
   isNewSession: boolean;
@@ -44,7 +44,7 @@ export async function drainFormattedSystemEvents(params: {
     return trimmed;
   };
 
-  const resolveSystemEventTimezone = (cfg: Must-bConfig) => {
+  const resolveSystemEventTimezone = (cfg: MustBonfig) => {
     const raw = cfg.agents?.defaults?.envelopeTimezone?.trim();
     if (!raw) {
       return { mode: "local" as const };
@@ -66,7 +66,7 @@ export async function drainFormattedSystemEvents(params: {
     return explicit ? { mode: "iana" as const, timeZone: explicit } : { mode: "local" as const };
   };
 
-  const formatSystemEventTimestamp = (ts: number, cfg: Must-bConfig) => {
+  const formatSystemEventTimestamp = (ts: number, cfg: MustBonfig) => {
     const date = new Date(ts);
     if (Number.isNaN(date.getTime())) {
       return "unknown-time";
@@ -125,7 +125,7 @@ export async function ensureSkillSnapshot(params: {
   sessionId?: string;
   isFirstTurnInSession: boolean;
   workspaceDir: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   /** If provided, only load skills with these names (for per-channel skill filtering) */
   skillFilter?: string[];
 }): Promise<{

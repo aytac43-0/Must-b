@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AcpRuntimeError } from "../../acp/runtime/errors.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionBindingRecord } from "../../infra/outbound/session-binding-service.js";
 import { createInternalHookEventPayload } from "../../test-utils/internal-hook-event-payload.js";
 import type { MsgContext } from "../templating.js";
@@ -69,7 +69,7 @@ const ttsMocks = vi.hoisted(() => {
     normalizeTtsAutoMode: vi.fn((value: unknown) =>
       typeof value === "string" ? value : undefined,
     ),
-    resolveTtsConfig: vi.fn((_cfg: Must-bConfig) => ({ mode: "final" })),
+    resolveTtsConfig: vi.fn((_cfg: MustBonfig) => ({ mode: "final" })),
   };
 });
 
@@ -142,7 +142,7 @@ vi.mock("../../infra/outbound/session-binding-service.js", async (importOriginal
 vi.mock("../../tts/tts.js", () => ({
   maybeApplyTtsToPayload: (params: unknown) => ttsMocks.maybeApplyTtsToPayload(params),
   normalizeTtsAutoMode: (value: unknown) => ttsMocks.normalizeTtsAutoMode(value),
-  resolveTtsConfig: (cfg: Must-bConfig) => ttsMocks.resolveTtsConfig(cfg),
+  resolveTtsConfig: (cfg: MustBonfig) => ttsMocks.resolveTtsConfig(cfg),
 }));
 
 const { dispatchReplyFromConfig } = await import("./dispatch-from-config.js");
@@ -150,7 +150,7 @@ const { resetInboundDedupe } = await import("./inbound-dedupe.js");
 const { __testing: acpManagerTesting } = await import("../../acp/control-plane/manager.js");
 
 const noAbortResult = { handled: false, aborted: false } as const;
-const emptyConfig = {} as Must-bConfig;
+const emptyConfig = {} as MustBonfig;
 type DispatchReplyArgs = Parameters<typeof dispatchReplyFromConfig>[0];
 
 function createDispatcher(): ReplyDispatcher {
@@ -251,7 +251,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       _opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => ({ text: "hi" }) satisfies ReplyPayload;
     await dispatchReplyFromConfig({ ctx, cfg, dispatcher, replyResolver });
 
@@ -276,7 +276,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       _opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => ({ text: "hi" }) satisfies ReplyPayload;
     await dispatchReplyFromConfig({ ctx, cfg, dispatcher, replyResolver });
 
@@ -414,7 +414,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       _opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => ({ text: "hi" }) satisfies ReplyPayload;
     await dispatchReplyFromConfig({ ctx, cfg, dispatcher, replyResolver });
 
@@ -438,7 +438,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       _opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => ({ text: "hi" }) satisfies ReplyPayload;
     await dispatchReplyFromConfig({ ctx, cfg, dispatcher, replyResolver });
 
@@ -467,7 +467,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => {
       expect(opts?.onToolResult).toBeDefined();
       await opts?.onToolResult?.({
@@ -500,7 +500,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => {
       expect(opts?.onToolResult).toBeDefined();
       expect(typeof opts?.onToolResult).toBe("function");
@@ -523,7 +523,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => {
       expect(opts?.onToolResult).toBeDefined();
       await opts?.onToolResult?.({ text: "🔧 exec: ls" });
@@ -555,7 +555,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => {
       await opts?.onToolResult?.({
         text: "Approval required.\n\n```txt\n/approve 117ba06d allow-once\n```",
@@ -600,7 +600,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => {
       // Simulate tool result emission
       await opts?.onToolResult?.({ text: "🔧 exec: ls" });
@@ -627,7 +627,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => {
       expect(opts?.onToolResult).toBeDefined();
       await opts?.onToolResult?.({ text: "🔧 tools/sessions_send" });
@@ -658,7 +658,7 @@ describe("dispatchReplyFromConfig", () => {
     const replyResolver = async (
       _ctx: MsgContext,
       opts?: GetReplyOptions,
-      _cfg?: Must-bConfig,
+      _cfg?: MustBonfig,
     ) => {
       await opts?.onToolResult?.({
         text: "Approval required.\n\n```txt\n/approve 117ba06d allow-once\n```",
@@ -769,7 +769,7 @@ describe("dispatchReplyFromConfig", () => {
         dispatch: { enabled: true },
         stream: { coalesceIdleMs: 0, maxChunkChars: 128 },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -844,7 +844,7 @@ describe("dispatchReplyFromConfig", () => {
         enabled: true,
         dispatch: { enabled: true },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -926,7 +926,7 @@ describe("dispatchReplyFromConfig", () => {
         enabled: true,
         dispatch: { enabled: true },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -983,7 +983,7 @@ describe("dispatchReplyFromConfig", () => {
           default: "deny",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1032,7 +1032,7 @@ describe("dispatchReplyFromConfig", () => {
           default: "deny",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1089,7 +1089,7 @@ describe("dispatchReplyFromConfig", () => {
           default: "deny",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1151,7 +1151,7 @@ describe("dispatchReplyFromConfig", () => {
       commands: {
         text: false,
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1204,7 +1204,7 @@ describe("dispatchReplyFromConfig", () => {
           default: "deny",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1260,7 +1260,7 @@ describe("dispatchReplyFromConfig", () => {
           default: "deny",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1319,7 +1319,7 @@ describe("dispatchReplyFromConfig", () => {
         dispatch: { enabled: true },
         stream: { coalesceIdleMs: 0, maxChunkChars: 256 },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1370,7 +1370,7 @@ describe("dispatchReplyFromConfig", () => {
         dispatch: { enabled: true },
         stream: { coalesceIdleMs: 0, maxChunkChars: 256 },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1420,7 +1420,7 @@ describe("dispatchReplyFromConfig", () => {
         dispatch: { enabled: true },
         stream: { coalesceIdleMs: 0, maxChunkChars: 128 },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1472,7 +1472,7 @@ describe("dispatchReplyFromConfig", () => {
         enabled: true,
         dispatch: { enabled: true },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1513,7 +1513,7 @@ describe("dispatchReplyFromConfig", () => {
         enabled: true,
         dispatch: { enabled: false },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1541,7 +1541,7 @@ describe("dispatchReplyFromConfig", () => {
         enabled: true,
         dispatch: { enabled: true },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1589,7 +1589,7 @@ describe("dispatchReplyFromConfig", () => {
         enabled: true,
         dispatch: { enabled: true },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1640,7 +1640,7 @@ describe("dispatchReplyFromConfig", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "discord",
@@ -1808,7 +1808,7 @@ describe("dispatchReplyFromConfig", () => {
 
   it("emits diagnostics when enabled", async () => {
     setNoAbort();
-    const cfg = { diagnostics: { enabled: true } } as Must-bConfig;
+    const cfg = { diagnostics: { enabled: true } } as MustBonfig;
     const dispatcher = createDispatcher();
     const ctx = buildTestCtx({
       Provider: "slack",
@@ -1838,7 +1838,7 @@ describe("dispatchReplyFromConfig", () => {
 
   it("marks diagnostics skipped for duplicate inbound messages", async () => {
     setNoAbort();
-    const cfg = { diagnostics: { enabled: true } } as Must-bConfig;
+    const cfg = { diagnostics: { enabled: true } } as MustBonfig;
     const ctx = buildTestCtx({
       Provider: "whatsapp",
       OriginatingChannel: "whatsapp",

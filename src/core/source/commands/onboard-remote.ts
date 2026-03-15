@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SecretInput } from "../config/types.secrets.js";
 import { isSecureWebSocketUrl } from "../gateway/net.js";
 import type { GatewayBonjourBeacon } from "../infra/bonjour-discovery.js";
@@ -55,10 +55,10 @@ function validateGatewayWebSocketUrl(value: string): string | undefined {
 }
 
 export async function promptRemoteGatewayConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   prompter: WizardPrompter,
   options?: { secretInputMode?: SecretInputMode },
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   let selectedBeacon: GatewayBonjourBeacon | null = null;
   let suggestedUrl = cfg.gateway?.remote?.url ?? DEFAULT_GATEWAY_URL;
 

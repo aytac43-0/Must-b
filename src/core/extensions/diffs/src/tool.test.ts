@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { Must-bPluginApi } from "must-b/plugin-sdk/diffs";
+import type { MustBPluginApi } from "must-b/plugin-sdk/diffs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DiffScreenshotter } from "./browser.js";
 import { DEFAULT_DIFFS_TOOL_DEFAULTS } from "./config.js";
@@ -386,7 +386,7 @@ describe("diffs tool", () => {
   });
 });
 
-function createApi(): Must-bPluginApi {
+function createApi(): MustBPluginApi {
   return {
     id: "diffs",
     name: "Diffs",
@@ -398,7 +398,7 @@ function createApi(): Must-bPluginApi {
         bind: "loopback",
       },
     },
-    runtime: {} as Must-bPluginApi["runtime"],
+    runtime: {} as MustBPluginApi["runtime"],
     logger: {
       info() {},
       warn() {},

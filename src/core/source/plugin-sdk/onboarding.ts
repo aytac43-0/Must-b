@@ -1,13 +1,13 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 
 export type PromptAccountIdParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   label: string;
   currentId?: string;
-  listAccountIds: (cfg: Must-bConfig) => string[];
+  listAccountIds: (cfg: MustBonfig) => string[];
   defaultAccountId: string;
 };
 

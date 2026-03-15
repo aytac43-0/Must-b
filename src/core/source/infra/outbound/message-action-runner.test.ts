@@ -7,12 +7,12 @@ import { telegramPlugin } from "../../../extensions/telegram/src/channel.js";
 import { whatsappPlugin } from "../../../extensions/whatsapp/src/channel.js";
 import { jsonResult } from "../../agents/tools/common.js";
 import type { ChannelPlugin } from "../../channels/plugins/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { setActivePluginRegistry } from "../../plugins/runtime.js";
 import { createOutboundTestPlugin, createTestRegistry } from "../../test-utils/channel-plugins.js";
 import { createIMessageTestPlugin } from "../../test-utils/imessage-test-plugin.js";
 import { loadWebMedia } from "../../web/media.js";
-import { resolvePreferredMust-bTmpDir } from "../tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../tmp-must-b-dir.js";
 import { runMessageAction } from "./message-action-runner.js";
 
 vi.mock("../../web/media.js", async () => {
@@ -30,7 +30,7 @@ const slackConfig = {
       appToken: "xapp-test",
     },
   },
-} as Must-bConfig;
+} as MustBonfig;
 
 const whatsappConfig = {
   channels: {
@@ -38,7 +38,7 @@ const whatsappConfig = {
       allowFrom: ["*"],
     },
   },
-} as Must-bConfig;
+} as MustBonfig;
 
 async function withSandbox(test: (sandboxDir: string) => Promise<void>) {
   const sandboxDir = await fs.mkdtemp(path.join(os.tmpdir(), "msg-sandbox-"));
@@ -50,7 +50,7 @@ async function withSandbox(test: (sandboxDir: string) => Promise<void>) {
 }
 
 const runDryAction = (params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   action: "send" | "thread-reply" | "broadcast";
   actionParams: Record<string, unknown>;
   toolContext?: Record<string, unknown>;
@@ -68,7 +68,7 @@ const runDryAction = (params: {
   });
 
 const runDrySend = (params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   actionParams: Record<string, unknown>;
   toolContext?: Record<string, unknown>;
   abortSignal?: AbortSignal;
@@ -401,7 +401,7 @@ describe("runMessageAction context isolation", () => {
           token: "tg-test",
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const result = await runDrySend({
       cfg: multiConfig,
@@ -470,7 +470,7 @@ describe("runMessageAction context isolation", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await expect(
       runDrySend({
@@ -529,7 +529,7 @@ describe("runMessageAction sendAttachment hydration", () => {
         password: "test-password",
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
   const attachmentPlugin: ChannelPlugin = {
     id: "bluebubbles",
     meta: {
@@ -781,7 +781,7 @@ describe("runMessageAction sandboxed media validation", () => {
   });
 
   it("allows media paths under preferred Must-b tmp root", async () => {
-    const tmpRoot = resolvePreferredMust-bTmpDir();
+    const tmpRoot = resolvePreferredMustBmpDir();
     await fs.mkdir(tmpRoot, { recursive: true });
     const sandboxDir = await fs.mkdtemp(path.join(os.tmpdir(), "msg-sandbox-"));
     try {
@@ -863,7 +863,7 @@ describe("runMessageAction media caption behavior", () => {
           enabled: true,
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const result = await runMessageAction({
       cfg,
@@ -939,7 +939,7 @@ describe("runMessageAction card-only send behavior", () => {
           enabled: true,
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const card = {
       type: "AdaptiveCard",
@@ -1032,7 +1032,7 @@ describe("runMessageAction telegram plugin poll forwarding", () => {
             botToken: "tok",
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       action: "poll",
       params: {
         channel: "telegram",
@@ -1126,7 +1126,7 @@ describe("runMessageAction components parsing", () => {
       buttons: [{ label: "A", customId: "a" }],
     };
     const result = await runMessageAction({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       action: "send",
       params: {
         channel: "discord",
@@ -1145,7 +1145,7 @@ describe("runMessageAction components parsing", () => {
   it("throws on invalid components JSON strings", async () => {
     await expect(
       runMessageAction({
-        cfg: {} as Must-bConfig,
+        cfg: {} as MustBonfig,
         action: "send",
         params: {
           channel: "discord",
@@ -1203,7 +1203,7 @@ describe("runMessageAction accountId defaults", () => {
 
   it("propagates defaultAccountId into params", async () => {
     await runMessageAction({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       action: "send",
       params: {
         channel: "discord",
@@ -1231,7 +1231,7 @@ describe("runMessageAction accountId defaults", () => {
     await runMessageAction({
       cfg: {
         bindings: [{ agentId: "agent-b", match: { channel: "discord", accountId: "account-b" } }],
-      } as Must-bConfig,
+      } as MustBonfig,
       action: "send",
       params: {
         channel: "discord",

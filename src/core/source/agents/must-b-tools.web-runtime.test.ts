@@ -1,23 +1,23 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   activateSecretsRuntimeSnapshot,
   clearSecretsRuntimeSnapshot,
   prepareSecretsRuntimeSnapshot,
 } from "../secrets/runtime.js";
 import { withFetchPreconnect } from "../test-utils/fetch-mock.js";
-import { createMust-bTools } from "./must-b-tools.js";
+import { createMustBools } from "./must-b-tools.js";
 
 vi.mock("../plugins/tools.js", () => ({
   resolvePluginTools: () => [],
 }));
 
-function asConfig(value: unknown): Must-bConfig {
-  return value as Must-bConfig;
+function asConfig(value: unknown): MustBonfig {
+  return value as MustBonfig;
 }
 
-function findTool(name: string, config: Must-bConfig) {
-  const allTools = createMust-bTools({ config, sandboxed: true });
+function findTool(name: string, config: MustBonfig) {
+  const allTools = createMustBools({ config, sandboxed: true });
   const tool = allTools.find((candidate) => candidate.name === name);
   expect(tool).toBeDefined();
   if (!tool) {
@@ -32,7 +32,7 @@ function makeHeaders(map: Record<string, string>): { get: (key: string) => strin
   };
 }
 
-async function prepareAndActivate(params: { config: Must-bConfig; env?: NodeJS.ProcessEnv }) {
+async function prepareAndActivate(params: { config: MustBonfig; env?: NodeJS.ProcessEnv }) {
   const snapshot = await prepareSecretsRuntimeSnapshot({
     config: params.config,
     env: params.env,

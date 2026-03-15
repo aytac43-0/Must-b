@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveGatewayPort } from "../config/config.js";
 import { isValidEnvSecretRefId, type SecretInput } from "../config/types.secrets.js";
 import {
@@ -25,10 +25,10 @@ type GatewayAuthChoice = "token" | "password" | "trusted-proxy";
 type GatewayTokenInputMode = "plaintext" | "ref";
 
 export async function promptGatewayConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   runtime: RuntimeEnv,
 ): Promise<{
-  config: Must-bConfig;
+  config: MustBonfig;
   port: number;
   token?: string;
 }> {

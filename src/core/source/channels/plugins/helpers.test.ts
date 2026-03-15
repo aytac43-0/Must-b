@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { buildAccountScopedDmSecurityPolicy, formatPairingApproveHint } from "./helpers.js";
 
-function cfgWithChannel(channelKey: string, accounts?: Record<string, unknown>): Must-bConfig {
+function cfgWithChannel(channelKey: string, accounts?: Record<string, unknown>): MustBonfig {
   return {
     channels: {
       [channelKey]: accounts ? { accounts } : {},
     },
-  } as unknown as Must-bConfig;
+  } as unknown as MustBonfig;
 }
 
 describe("buildAccountScopedDmSecurityPolicy", () => {

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { startGmailWatcher } from "./gmail-watcher.js";
 
@@ -9,7 +9,7 @@ export type GMailWatcherLog = {
 };
 
 export async function startGmailWatcherWithLogs(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   log: GMailWatcherLog;
   onSkipped?: () => void;
 }) {

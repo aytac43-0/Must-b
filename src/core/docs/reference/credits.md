@@ -11,7 +11,7 @@ Must-b = CLAW + TARDIS, because every space lobster needs a time and space machi
 
 ## Credits
 
-- **Peter Steinberger** ([@steipete](https://x.com/steipete)) - Creator, lobster whisperer
+- **Mustafa Aytaç ÖZTAN** (Auto Step) - Creator, Must-b platform owner
 - **Mario Zechner** ([@badlogicc](https://x.com/badlogicgames)) - Pi creator, security pen tester
 - **Clawd** - The space lobster who demanded a better name
 

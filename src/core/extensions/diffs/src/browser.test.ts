@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { Must-bConfig } from "must-b/plugin-sdk/diffs";
+import type { MustBConfig } from "must-b/plugin-sdk/diffs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTempDiffRoot } from "./test-helpers.js";
 
@@ -182,12 +182,12 @@ describe("PlaywrightDiffScreenshotter", () => {
   });
 });
 
-function createConfig(): Must-bConfig {
+function createConfig(): MustBConfig {
   return {
     browser: {
       executablePath: process.execPath,
     },
-  } as Must-bConfig;
+  } as MustBConfig;
 }
 
 async function createScreenshotterHarness(options?: {

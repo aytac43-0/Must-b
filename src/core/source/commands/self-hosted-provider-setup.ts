@@ -1,6 +1,6 @@
 import { upsertAuthProfileWithLock } from "../agents/auth-profiles.js";
 import type { ApiKeyCredential, AuthProfileCredential } from "../agents/auth-profiles/types.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type {
   ProviderAuthMethodNonInteractiveContext,
   ProviderNonInteractiveApiKeyResult,
@@ -17,7 +17,7 @@ export const SELF_HOSTED_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
-export function applyProviderDefaultModel(cfg: Must-bConfig, modelRef: string): Must-bConfig {
+export function applyProviderDefaultModel(cfg: MustBonfig, modelRef: string): MustBonfig {
   const existingModel = cfg.agents?.defaults?.model;
   const fallbacks =
     existingModel && typeof existingModel === "object" && "fallbacks" in existingModel
@@ -40,7 +40,7 @@ export function applyProviderDefaultModel(cfg: Must-bConfig, modelRef: string): 
 }
 
 function buildOpenAICompatibleSelfHostedProviderConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   providerId: string;
   baseUrl: string;
   providerApiKey: string;
@@ -49,7 +49,7 @@ function buildOpenAICompatibleSelfHostedProviderConfig(params: {
   reasoning?: boolean;
   contextWindow?: number;
   maxTokens?: number;
-}): { config: Must-bConfig; modelId: string; modelRef: string; profileId: string } {
+}): { config: MustBonfig; modelId: string; modelRef: string; profileId: string } {
   const modelRef = `${params.providerId}/${params.modelId}`;
   const profileId = `${params.providerId}:default`;
   return {
@@ -86,7 +86,7 @@ function buildOpenAICompatibleSelfHostedProviderConfig(params: {
 }
 
 export async function promptAndConfigureOpenAICompatibleSelfHostedProvider(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   providerId: string;
   providerLabel: string;
@@ -98,7 +98,7 @@ export async function promptAndConfigureOpenAICompatibleSelfHostedProvider(param
   contextWindow?: number;
   maxTokens?: number;
 }): Promise<{
-  config: Must-bConfig;
+  config: MustBonfig;
   credential: AuthProfileCredential;
   modelId: string;
   modelRef: string;
@@ -185,7 +185,7 @@ export async function configureOpenAICompatibleSelfHostedProviderNonInteractive(
   reasoning?: boolean;
   contextWindow?: number;
   maxTokens?: number;
-}): Promise<Must-bConfig | null> {
+}): Promise<MustBonfig | null> {
   const baseUrl = (params.ctx.opts.customBaseUrl?.trim() || params.defaultBaseUrl).replace(
     /\/+$/,
     "",

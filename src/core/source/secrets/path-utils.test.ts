@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   deletePathStrict,
   getPath,
@@ -7,11 +7,11 @@ import {
   setPathExistingStrict,
 } from "./path-utils.js";
 
-function asConfig(value: unknown): Must-bConfig {
-  return value as Must-bConfig;
+function asConfig(value: unknown): MustBonfig {
+  return value as MustBonfig;
 }
 
-function createAgentListConfig(): Must-bConfig {
+function createAgentListConfig(): MustBonfig {
   return asConfig({
     agents: {
       list: [{ id: "a" }],

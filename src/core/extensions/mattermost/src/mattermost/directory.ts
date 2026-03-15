@@ -1,6 +1,6 @@
 import type {
   ChannelDirectoryEntry,
-  Must-bConfig,
+  MustBConfig,
   RuntimeEnv,
 } from "must-b/plugin-sdk/mattermost";
 import { listMattermostAccountIds, resolveMattermostAccount } from "./accounts.js";
@@ -13,7 +13,7 @@ import {
 } from "./client.js";
 
 export type MattermostDirectoryParams = {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;
@@ -21,7 +21,7 @@ export type MattermostDirectoryParams = {
 };
 
 function buildClient(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId?: string | null;
 }): MattermostClient | null {
   const account = resolveMattermostAccount({ cfg: params.cfg, accountId: params.accountId });

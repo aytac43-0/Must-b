@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveChannelModelOverride } from "./model-overrides.js";
 
 describe("resolveChannelModelOverride", () => {
@@ -15,7 +15,7 @@ describe("resolveChannelModelOverride", () => {
               },
             },
           },
-        } as unknown as Must-bConfig,
+        } as unknown as MustBonfig,
         channel: "telegram",
         groupId: "-100123:topic:99",
       },
@@ -33,7 +33,7 @@ describe("resolveChannelModelOverride", () => {
               },
             },
           },
-        } as unknown as Must-bConfig,
+        } as unknown as MustBonfig,
         channel: "telegram",
         groupId: "-100123:topic:99",
       },
@@ -50,7 +50,7 @@ describe("resolveChannelModelOverride", () => {
               },
             },
           },
-        } as unknown as Must-bConfig,
+        } as unknown as MustBonfig,
         channel: "discord",
         groupId: "999",
         parentSessionKey: "agent:main:discord:channel:123:thread:456",

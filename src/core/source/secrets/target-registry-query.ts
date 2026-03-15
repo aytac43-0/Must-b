@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { getPath } from "./path-utils.js";
 import { SECRET_TARGET_REGISTRY } from "./target-registry-data.js";
 import {
@@ -240,13 +240,13 @@ export function resolvePlanTargetAgainstRegistry(candidate: {
 }
 
 export function discoverConfigSecretTargets(
-  config: Must-bConfig,
+  config: MustBonfig,
 ): DiscoveredConfigSecretTarget[] {
   return discoverConfigSecretTargetsByIds(config);
 }
 
 export function discoverConfigSecretTargetsByIds(
-  config: Must-bConfig,
+  config: MustBonfig,
   targetIds?: Iterable<string>,
 ): DiscoveredConfigSecretTarget[] {
   const allowedTargetIds = normalizeAllowedTargetIds(targetIds);

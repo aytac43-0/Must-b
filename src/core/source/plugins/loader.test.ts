@@ -31,7 +31,7 @@ const {
   clearPluginLoaderCache,
   createHookRunner,
   getGlobalHookRunner,
-  loadMust-bPlugins,
+  loadMustBlugins,
   resetGlobalHookRunner,
 } = await importFreshPluginTestModules();
 const previousUmask = process.umask(0o022);
@@ -125,7 +125,7 @@ function loadBundledMemoryPluginRegistry(options?: {
 }) {
   if (!options && cachedBundledMemoryDir) {
     process.env.MUSTB_BUNDLED_PLUGINS_DIR = cachedBundledMemoryDir;
-    return loadMust-bPlugins({
+    return loadMustBlugins({
       cache: false,
       workspaceDir: cachedBundledMemoryDir,
       config: {
@@ -175,7 +175,7 @@ function loadBundledMemoryPluginRegistry(options?: {
   }
   process.env.MUSTB_BUNDLED_PLUGINS_DIR = bundledDir;
 
-  return loadMust-bPlugins({
+  return loadMustBlugins({
     cache: false,
     workspaceDir: bundledDir,
     config: {
@@ -201,7 +201,7 @@ function setupBundledTelegramPlugin() {
   process.env.MUSTB_BUNDLED_PLUGINS_DIR = cachedBundledTelegramDir;
 }
 
-function expectTelegramLoaded(registry: ReturnType<typeof loadMust-bPlugins>) {
+function expectTelegramLoaded(registry: ReturnType<typeof loadMustBlugins>) {
   const telegram = registry.plugins.find((entry) => entry.id === "telegram");
   expect(telegram?.status).toBe("loaded");
   expect(registry.channels.some((entry) => entry.plugin.id === "telegram")).toBe(true);
@@ -215,10 +215,10 @@ function loadRegistryFromSinglePlugin(params: {
   plugin: TempPlugin;
   pluginConfig?: Record<string, unknown>;
   includeWorkspaceDir?: boolean;
-  options?: Omit<Parameters<typeof loadMust-bPlugins>[0], "cache" | "workspaceDir" | "config">;
+  options?: Omit<Parameters<typeof loadMustBlugins>[0], "cache" | "workspaceDir" | "config">;
 }) {
   const pluginConfig = params.pluginConfig ?? {};
-  return loadMust-bPlugins({
+  return loadMustBlugins({
     cache: false,
     ...(params.includeWorkspaceDir === false ? {} : { workspaceDir: params.plugin.dir }),
     ...params.options,
@@ -306,7 +306,7 @@ afterAll(() => {
   }
 });
 
-describe("loadMust-bPlugins", () => {
+describe("loadMustBlugins", () => {
   it("disables bundled plugins by default", () => {
     const bundledDir = makeTempDir();
     writePlugin({
@@ -317,7 +317,7 @@ describe("loadMust-bPlugins", () => {
     });
     process.env.MUSTB_BUNDLED_PLUGINS_DIR = bundledDir;
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -333,7 +333,7 @@ describe("loadMust-bPlugins", () => {
   it("loads bundled telegram plugin when enabled", () => {
     setupBundledTelegramPlugin();
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       workspaceDir: cachedBundledTelegramDir,
       config: {
@@ -352,7 +352,7 @@ describe("loadMust-bPlugins", () => {
   it("loads bundled channel plugins when channels.<id>.enabled=true", () => {
     setupBundledTelegramPlugin();
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       workspaceDir: cachedBundledTelegramDir,
       config: {
@@ -373,7 +373,7 @@ describe("loadMust-bPlugins", () => {
   it("still respects explicit disable via plugins.entries for bundled channels", () => {
     setupBundledTelegramPlugin();
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       workspaceDir: cachedBundledTelegramDir,
       config: {
@@ -425,7 +425,7 @@ describe("loadMust-bPlugins", () => {
 };`,
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       workspaceDir: plugin.dir,
       config: {
@@ -459,13 +459,13 @@ describe("loadMust-bPlugins", () => {
       },
     };
 
-    const first = loadMust-bPlugins(options);
+    const first = loadMustBlugins(options);
     expect(getGlobalHookRunner()).not.toBeNull();
 
     resetGlobalHookRunner();
     expect(getGlobalHookRunner()).toBeNull();
 
-    const second = loadMust-bPlugins(options);
+    const second = loadMustBlugins(options);
     expect(second).toBe(first);
     expect(getGlobalHookRunner()).not.toBeNull();
 
@@ -499,14 +499,14 @@ describe("loadMust-bPlugins", () => {
       },
     };
 
-    const first = loadMust-bPlugins({
+    const first = loadMustBlugins({
       ...options,
       env: {
         ...process.env,
         MUSTB_BUNDLED_PLUGINS_DIR: bundledA,
       },
     });
-    const second = loadMust-bPlugins({
+    const second = loadMustBlugins({
       ...options,
       env: {
         ...process.env,
@@ -555,7 +555,7 @@ describe("loadMust-bPlugins", () => {
       },
     };
 
-    const first = loadMust-bPlugins({
+    const first = loadMustBlugins({
       ...options,
       env: {
         ...process.env,
@@ -565,7 +565,7 @@ describe("loadMust-bPlugins", () => {
         MUSTB_BUNDLED_PLUGINS_DIR: bundledDir,
       },
     });
-    const second = loadMust-bPlugins({
+    const second = loadMustBlugins({
       ...options,
       env: {
         ...process.env,
@@ -615,7 +615,7 @@ describe("loadMust-bPlugins", () => {
       },
     };
 
-    const first = loadMust-bPlugins({
+    const first = loadMustBlugins({
       ...options,
       env: {
         ...process.env,
@@ -638,8 +638,8 @@ describe("loadMust-bPlugins", () => {
         MUSTB_BUNDLED_PLUGINS_DIR: "/nonexistent/bundled/plugins",
       },
     };
-    const second = loadMust-bPlugins(secondOptions);
-    const third = loadMust-bPlugins(secondOptions);
+    const second = loadMustBlugins(secondOptions);
+    const third = loadMustBlugins(secondOptions);
 
     expect(second).not.toBe(first);
     expect(third).toBe(second);
@@ -657,7 +657,7 @@ describe("loadMust-bPlugins", () => {
     );
 
     const loadWithStateDir = (stateDir: string) =>
-      loadMust-bPlugins({
+      loadMustBlugins({
         env: {
           ...process.env,
           MUSTB_STATE_DIR: stateDir,
@@ -697,7 +697,7 @@ describe("loadMust-bPlugins", () => {
       body: `module.exports = { id: "tilde-bundled", register() {} };`,
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       env: {
         ...process.env,
         HOME: homeDir,
@@ -731,7 +731,7 @@ describe("loadMust-bPlugins", () => {
       body: `module.exports = { id: "must-b-home-demo", register() {} };`,
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       env: {
         ...process.env,
         HOME: ignoredHome,
@@ -1049,7 +1049,7 @@ describe("loadMust-bPlugins", () => {
 } };`,
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -1128,7 +1128,7 @@ describe("loadMust-bPlugins", () => {
       body: `module.exports = { id: "config-disable", register() {} };`,
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -1271,7 +1271,7 @@ describe("loadMust-bPlugins", () => {
       body: `module.exports = { id: "memory-b", kind: "memory", register() {} };`,
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -1333,7 +1333,7 @@ describe("loadMust-bPlugins", () => {
     );
     process.env.MUSTB_BUNDLED_PLUGINS_DIR = bundledDir;
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -1361,7 +1361,7 @@ describe("loadMust-bPlugins", () => {
       body: `module.exports = { id: "memory-off", kind: "memory", register() {} };`,
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -1390,7 +1390,7 @@ describe("loadMust-bPlugins", () => {
       body: `module.exports = { id: "shadow", register() {} };`,
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -1430,7 +1430,7 @@ describe("loadMust-bPlugins", () => {
         filename: "index.cjs",
       });
 
-      const registry = loadMust-bPlugins({
+      const registry = loadMustBlugins({
         cache: false,
         config: {
           plugins: {
@@ -1458,7 +1458,7 @@ describe("loadMust-bPlugins", () => {
       body: `module.exports = { id: "warn-open-allow", register() {} };`,
     });
     const warnings: string[] = [];
-    loadMust-bPlugins({
+    loadMustBlugins({
       cache: false,
       logger: createWarningLogger(warnings),
       config: {
@@ -1484,7 +1484,7 @@ describe("loadMust-bPlugins", () => {
       filename: "index.cjs",
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       workspaceDir,
       config: {
@@ -1512,7 +1512,7 @@ describe("loadMust-bPlugins", () => {
       filename: "index.cjs",
     });
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       workspaceDir,
       config: {
@@ -1542,7 +1542,7 @@ describe("loadMust-bPlugins", () => {
       });
 
       const warnings: string[] = [];
-      const registry = loadMust-bPlugins({
+      const registry = loadMustBlugins({
         cache: false,
         logger: createWarningLogger(warnings),
         config: {
@@ -1578,7 +1578,7 @@ describe("loadMust-bPlugins", () => {
     });
 
     const warnings: string[] = [];
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       logger: createWarningLogger(warnings),
       env: {
@@ -1620,7 +1620,7 @@ describe("loadMust-bPlugins", () => {
     });
 
     const warnings: string[] = [];
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       logger: createWarningLogger(warnings),
       env: {
@@ -1667,7 +1667,7 @@ describe("loadMust-bPlugins", () => {
       return;
     }
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -1701,7 +1701,7 @@ describe("loadMust-bPlugins", () => {
       throw err;
     }
 
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       config: {
         plugins: {
@@ -1748,7 +1748,7 @@ describe("loadMust-bPlugins", () => {
     }
 
     process.env.MUSTB_BUNDLED_PLUGINS_DIR = bundledDir;
-    const registry = loadMust-bPlugins({
+    const registry = loadMustBlugins({
       cache: false,
       workspaceDir: bundledDir,
       config: {
@@ -1815,8 +1815,8 @@ describe("loadMust-bPlugins", () => {
       path.join(process.cwd(), "src", "plugins", "loader.ts"),
     ).href;
     const script = `
-      import { loadMust-bPlugins } from ${JSON.stringify(loaderModuleUrl)};
-      const registry = loadMust-bPlugins({
+      import { loadMustBlugins } from ${JSON.stringify(loaderModuleUrl)};
+      const registry = loadMustBlugins({
         cache: false,
         workspaceDir: ${JSON.stringify(plugin.dir)},
         config: {

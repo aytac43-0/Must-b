@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { createGatewayCredentialPlan } from "../gateway/credential-planner.js";
 import type { SecretDefaults } from "./runtime-shared.js";
 import { isRecord } from "./shared.js";
@@ -58,7 +58,7 @@ function createState(params: {
 }
 
 export function evaluateGatewayAuthSurfaceStates(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   env: NodeJS.ProcessEnv;
   defaults?: SecretDefaults;
 }): GatewayAuthSurfaceStateMap {

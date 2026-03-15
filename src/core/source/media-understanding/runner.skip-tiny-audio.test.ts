@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import type { MsgContext } from "../auto-reply/templating.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { MIN_AUDIO_FILE_BYTES } from "./defaults.js";
 import {
   buildProviderRegistry,
@@ -57,7 +57,7 @@ const AUDIO_CAPABILITY_CFG = {
       },
     },
   },
-} as unknown as Must-bConfig;
+} as unknown as MustBonfig;
 
 async function runAudioCapabilityWithTranscriber(params: {
   ctx: MsgContext;

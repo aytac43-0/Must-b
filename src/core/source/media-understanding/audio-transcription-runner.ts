@@ -1,5 +1,5 @@
 import type { MsgContext } from "../auto-reply/templating.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   type ActiveMediaModel,
   buildProviderRegistry,
@@ -11,7 +11,7 @@ import type { MediaAttachment, MediaUnderstandingProvider } from "./types.js";
 
 export async function runAudioTranscription(params: {
   ctx: MsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   attachments?: MediaAttachment[];
   agentDir?: string;
   providers?: Record<string, MediaUnderstandingProvider>;

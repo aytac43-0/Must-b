@@ -17,7 +17,7 @@ vi.mock("./graph-upload.js", async () => {
   };
 });
 
-import { resolvePreferredMust-bTmpDir } from "../../../src/infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../../../src/infra/tmp-must-b-dir.js";
 import {
   type MSTeamsAdapter,
   renderReplyPayloadsToMessages,
@@ -201,7 +201,7 @@ describe("msteams messenger", () => {
     });
 
     it("preserves parsed mentions when appending OneDrive fallback file links", async () => {
-      const tmpDir = await mkdtemp(path.join(resolvePreferredMust-bTmpDir(), "msteams-mention-"));
+      const tmpDir = await mkdtemp(path.join(resolvePreferredMustBmpDir(), "msteams-mention-"));
       const localFile = path.join(tmpDir, "note.txt");
       await writeFile(localFile, "hello");
 

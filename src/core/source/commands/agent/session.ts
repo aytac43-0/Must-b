@@ -8,7 +8,7 @@ import {
   type ThinkLevel,
   type VerboseLevel,
 } from "../../auto-reply/thinking.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   evaluateSessionFreshness,
   loadSessionStore,
@@ -41,7 +41,7 @@ type SessionKeyResolution = {
 };
 
 export function resolveSessionKeyForRequest(opts: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   to?: string;
   sessionId?: string;
   sessionKey?: string;
@@ -109,7 +109,7 @@ export function resolveSessionKeyForRequest(opts: {
 }
 
 export function resolveSession(opts: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   to?: string;
   sessionId?: string;
   sessionKey?: string;

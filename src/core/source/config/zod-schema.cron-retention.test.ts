@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { Must-bSchema } from "./zod-schema.js";
+import { MustBchema } from "./zod-schema.js";
 
-describe("Must-bSchema cron retention and run-log validation", () => {
+describe("MustBchema cron retention and run-log validation", () => {
   it("accepts valid cron.sessionRetention and runLog values", () => {
     expect(() =>
-      Must-bSchema.parse({
+      MustBchema.parse({
         cron: {
           sessionRetention: "1h30m",
           runLog: {
@@ -18,7 +18,7 @@ describe("Must-bSchema cron retention and run-log validation", () => {
 
   it("rejects invalid cron.sessionRetention", () => {
     expect(() =>
-      Must-bSchema.parse({
+      MustBchema.parse({
         cron: {
           sessionRetention: "abc",
         },
@@ -28,7 +28,7 @@ describe("Must-bSchema cron retention and run-log validation", () => {
 
   it("rejects invalid cron.runLog.maxBytes", () => {
     expect(() =>
-      Must-bSchema.parse({
+      MustBchema.parse({
         cron: {
           runLog: {
             maxBytes: "wat",

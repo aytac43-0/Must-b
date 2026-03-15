@@ -28,7 +28,7 @@ import {
   VENICE_DEFAULT_MODEL_REF,
   VENICE_MODEL_CATALOG,
 } from "../agents/venice-models.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { ModelApi } from "../config/types.models.js";
 import { KILOCODE_BASE_URL } from "../providers/kilocode-shared.js";
 import {
@@ -86,9 +86,9 @@ import {
 } from "./onboard-auth.models.js";
 
 export function applyZaiProviderConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params?: { endpoint?: string; modelId?: string },
-): Must-bConfig {
+): MustBonfig {
   const modelId = params?.modelId?.trim() || ZAI_DEFAULT_MODEL_ID;
   const modelRef = `zai/${modelId}`;
 
@@ -142,16 +142,16 @@ export function applyZaiProviderConfig(
 }
 
 export function applyZaiConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params?: { endpoint?: string; modelId?: string },
-): Must-bConfig {
+): MustBonfig {
   const modelId = params?.modelId?.trim() || ZAI_DEFAULT_MODEL_ID;
   const modelRef = modelId === ZAI_DEFAULT_MODEL_ID ? ZAI_DEFAULT_MODEL_REF : `zai/${modelId}`;
   const next = applyZaiProviderConfig(cfg, params);
   return applyAgentDefaultModelPrimary(next, modelRef);
 }
 
-export function applyOpenrouterProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyOpenrouterProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[OPENROUTER_DEFAULT_MODEL_REF] = {
     ...models[OPENROUTER_DEFAULT_MODEL_REF],
@@ -170,23 +170,23 @@ export function applyOpenrouterProviderConfig(cfg: Must-bConfig): Must-bConfig {
   };
 }
 
-export function applyOpenrouterConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyOpenrouterConfig(cfg: MustBonfig): MustBonfig {
   const next = applyOpenrouterProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, OPENROUTER_DEFAULT_MODEL_REF);
 }
 
-export function applyMoonshotProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyMoonshotProviderConfig(cfg: MustBonfig): MustBonfig {
   return applyMoonshotProviderConfigWithBaseUrl(cfg, MOONSHOT_BASE_URL);
 }
 
-export function applyMoonshotProviderConfigCn(cfg: Must-bConfig): Must-bConfig {
+export function applyMoonshotProviderConfigCn(cfg: MustBonfig): MustBonfig {
   return applyMoonshotProviderConfigWithBaseUrl(cfg, MOONSHOT_CN_BASE_URL);
 }
 
 function applyMoonshotProviderConfigWithBaseUrl(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   baseUrl: string,
-): Must-bConfig {
+): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[MOONSHOT_DEFAULT_MODEL_REF] = {
     ...models[MOONSHOT_DEFAULT_MODEL_REF],
@@ -205,17 +205,17 @@ function applyMoonshotProviderConfigWithBaseUrl(
   });
 }
 
-export function applyMoonshotConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyMoonshotConfig(cfg: MustBonfig): MustBonfig {
   const next = applyMoonshotProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, MOONSHOT_DEFAULT_MODEL_REF);
 }
 
-export function applyMoonshotConfigCn(cfg: Must-bConfig): Must-bConfig {
+export function applyMoonshotConfigCn(cfg: MustBonfig): MustBonfig {
   const next = applyMoonshotProviderConfigCn(cfg);
   return applyAgentDefaultModelPrimary(next, MOONSHOT_DEFAULT_MODEL_REF);
 }
 
-export function applyKimiCodeProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyKimiCodeProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[KIMI_CODING_MODEL_REF] = {
     ...models[KIMI_CODING_MODEL_REF],
@@ -234,12 +234,12 @@ export function applyKimiCodeProviderConfig(cfg: Must-bConfig): Must-bConfig {
   });
 }
 
-export function applyKimiCodeConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyKimiCodeConfig(cfg: MustBonfig): MustBonfig {
   const next = applyKimiCodeProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, KIMI_CODING_MODEL_REF);
 }
 
-export function applySyntheticProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applySyntheticProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[SYNTHETIC_DEFAULT_MODEL_REF] = {
     ...models[SYNTHETIC_DEFAULT_MODEL_REF],
@@ -273,12 +273,12 @@ export function applySyntheticProviderConfig(cfg: Must-bConfig): Must-bConfig {
   return applyOnboardAuthAgentModelsAndProviders(cfg, { agentModels: models, providers });
 }
 
-export function applySyntheticConfig(cfg: Must-bConfig): Must-bConfig {
+export function applySyntheticConfig(cfg: MustBonfig): MustBonfig {
   const next = applySyntheticProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, SYNTHETIC_DEFAULT_MODEL_REF);
 }
 
-export function applyXiaomiProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyXiaomiProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[XIAOMI_DEFAULT_MODEL_REF] = {
     ...models[XIAOMI_DEFAULT_MODEL_REF],
@@ -296,7 +296,7 @@ export function applyXiaomiProviderConfig(cfg: Must-bConfig): Must-bConfig {
   });
 }
 
-export function applyXiaomiConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyXiaomiConfig(cfg: MustBonfig): MustBonfig {
   const next = applyXiaomiProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, XIAOMI_DEFAULT_MODEL_REF);
 }
@@ -305,7 +305,7 @@ export function applyXiaomiConfig(cfg: Must-bConfig): Must-bConfig {
  * Apply Venice provider configuration without changing the default model.
  * Registers Venice models and sets up the provider, but preserves existing model selection.
  */
-export function applyVeniceProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyVeniceProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[VENICE_DEFAULT_MODEL_REF] = {
     ...models[VENICE_DEFAULT_MODEL_REF],
@@ -326,7 +326,7 @@ export function applyVeniceProviderConfig(cfg: Must-bConfig): Must-bConfig {
  * Apply Venice provider configuration AND set Venice as the default model.
  * Use this when Venice is the primary provider choice during onboarding.
  */
-export function applyVeniceConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyVeniceConfig(cfg: MustBonfig): MustBonfig {
   const next = applyVeniceProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, VENICE_DEFAULT_MODEL_REF);
 }
@@ -335,7 +335,7 @@ export function applyVeniceConfig(cfg: Must-bConfig): Must-bConfig {
  * Apply Together provider configuration without changing the default model.
  * Registers Together models and sets up the provider, but preserves existing model selection.
  */
-export function applyTogetherProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyTogetherProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[TOGETHER_DEFAULT_MODEL_REF] = {
     ...models[TOGETHER_DEFAULT_MODEL_REF],
@@ -356,7 +356,7 @@ export function applyTogetherProviderConfig(cfg: Must-bConfig): Must-bConfig {
  * Apply Together provider configuration AND set Together as the default model.
  * Use this when Together is the primary provider choice during onboarding.
  */
-export function applyTogetherConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyTogetherConfig(cfg: MustBonfig): MustBonfig {
   const next = applyTogetherProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, TOGETHER_DEFAULT_MODEL_REF);
 }
@@ -364,7 +364,7 @@ export function applyTogetherConfig(cfg: Must-bConfig): Must-bConfig {
 /**
  * Apply Hugging Face (Inference Providers) provider configuration without changing the default model.
  */
-export function applyHuggingfaceProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyHuggingfaceProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[HUGGINGFACE_DEFAULT_MODEL_REF] = {
     ...models[HUGGINGFACE_DEFAULT_MODEL_REF],
@@ -384,12 +384,12 @@ export function applyHuggingfaceProviderConfig(cfg: Must-bConfig): Must-bConfig 
 /**
  * Apply Hugging Face provider configuration AND set Hugging Face as the default model.
  */
-export function applyHuggingfaceConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyHuggingfaceConfig(cfg: MustBonfig): MustBonfig {
   const next = applyHuggingfaceProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, HUGGINGFACE_DEFAULT_MODEL_REF);
 }
 
-export function applyXaiProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyXaiProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[XAI_DEFAULT_MODEL_REF] = {
     ...models[XAI_DEFAULT_MODEL_REF],
@@ -408,12 +408,12 @@ export function applyXaiProviderConfig(cfg: Must-bConfig): Must-bConfig {
   });
 }
 
-export function applyXaiConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyXaiConfig(cfg: MustBonfig): MustBonfig {
   const next = applyXaiProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, XAI_DEFAULT_MODEL_REF);
 }
 
-export function applyMistralProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyMistralProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[MISTRAL_DEFAULT_MODEL_REF] = {
     ...models[MISTRAL_DEFAULT_MODEL_REF],
@@ -432,7 +432,7 @@ export function applyMistralProviderConfig(cfg: Must-bConfig): Must-bConfig {
   });
 }
 
-export function applyMistralConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyMistralConfig(cfg: MustBonfig): MustBonfig {
   const next = applyMistralProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, MISTRAL_DEFAULT_MODEL_REF);
 }
@@ -443,7 +443,7 @@ export { KILOCODE_BASE_URL };
  * Apply Kilo Gateway provider configuration without changing the default model.
  * Registers Kilo Gateway and sets up the provider, but preserves existing model selection.
  */
-export function applyKilocodeProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyKilocodeProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[KILOCODE_DEFAULT_MODEL_REF] = {
     ...models[KILOCODE_DEFAULT_MODEL_REF],
@@ -465,13 +465,13 @@ export function applyKilocodeProviderConfig(cfg: Must-bConfig): Must-bConfig {
  * Apply Kilo Gateway provider configuration AND set Kilo Gateway as the default model.
  * Use this when Kilo Gateway is the primary provider choice during onboarding.
  */
-export function applyKilocodeConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyKilocodeConfig(cfg: MustBonfig): MustBonfig {
   const next = applyKilocodeProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, KILOCODE_DEFAULT_MODEL_REF);
 }
 
 export function applyAuthProfileConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params: {
     profileId: string;
     provider: string;
@@ -479,7 +479,7 @@ export function applyAuthProfileConfig(
     email?: string;
     preferProfileFirst?: boolean;
   },
-): Must-bConfig {
+): MustBonfig {
   const normalizedProvider = params.provider.toLowerCase();
   const profiles = {
     ...cfg.auth?.profiles,
@@ -542,7 +542,7 @@ export function applyAuthProfileConfig(
   };
 }
 
-export function applyQianfanProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyQianfanProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[QIANFAN_DEFAULT_MODEL_REF] = {
     ...models[QIANFAN_DEFAULT_MODEL_REF],
@@ -573,7 +573,7 @@ export function applyQianfanProviderConfig(cfg: Must-bConfig): Must-bConfig {
   });
 }
 
-export function applyQianfanConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyQianfanConfig(cfg: MustBonfig): MustBonfig {
   const next = applyQianfanProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, QIANFAN_DEFAULT_MODEL_REF);
 }
@@ -581,9 +581,9 @@ export function applyQianfanConfig(cfg: Must-bConfig): Must-bConfig {
 // Alibaba Cloud Model Studio Coding Plan
 
 function applyModelStudioProviderConfigWithBaseUrl(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   baseUrl: string,
-): Must-bConfig {
+): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
 
   const modelStudioModelIds = [
@@ -649,20 +649,20 @@ function applyModelStudioProviderConfigWithBaseUrl(
   return applyOnboardAuthAgentModelsAndProviders(cfg, { agentModels: models, providers });
 }
 
-export function applyModelStudioProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyModelStudioProviderConfig(cfg: MustBonfig): MustBonfig {
   return applyModelStudioProviderConfigWithBaseUrl(cfg, MODELSTUDIO_GLOBAL_BASE_URL);
 }
 
-export function applyModelStudioProviderConfigCn(cfg: Must-bConfig): Must-bConfig {
+export function applyModelStudioProviderConfigCn(cfg: MustBonfig): MustBonfig {
   return applyModelStudioProviderConfigWithBaseUrl(cfg, MODELSTUDIO_CN_BASE_URL);
 }
 
-export function applyModelStudioConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyModelStudioConfig(cfg: MustBonfig): MustBonfig {
   const next = applyModelStudioProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, MODELSTUDIO_DEFAULT_MODEL_REF);
 }
 
-export function applyModelStudioConfigCn(cfg: Must-bConfig): Must-bConfig {
+export function applyModelStudioConfigCn(cfg: MustBonfig): MustBonfig {
   const next = applyModelStudioProviderConfigCn(cfg);
   return applyAgentDefaultModelPrimary(next, MODELSTUDIO_DEFAULT_MODEL_REF);
 }

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveGatewayCredentialsWithSecretInputs } from "./call.js";
 import {
   type ExplicitGatewayAuth,
@@ -7,7 +7,7 @@ import {
 } from "./credentials.js";
 
 function buildGatewayProbeCredentialPolicy(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   mode: "local" | "remote";
   env?: NodeJS.ProcessEnv;
   explicitAuth?: ExplicitGatewayAuth;
@@ -25,7 +25,7 @@ function buildGatewayProbeCredentialPolicy(params: {
 }
 
 export function resolveGatewayProbeAuth(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   mode: "local" | "remote";
   env?: NodeJS.ProcessEnv;
 }): { token?: string; password?: string } {
@@ -34,7 +34,7 @@ export function resolveGatewayProbeAuth(params: {
 }
 
 export async function resolveGatewayProbeAuthWithSecretInputs(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   mode: "local" | "remote";
   env?: NodeJS.ProcessEnv;
   explicitAuth?: ExplicitGatewayAuth;
@@ -51,7 +51,7 @@ export async function resolveGatewayProbeAuthWithSecretInputs(params: {
 }
 
 export function resolveGatewayProbeAuthSafe(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   mode: "local" | "remote";
   env?: NodeJS.ProcessEnv;
 }): {

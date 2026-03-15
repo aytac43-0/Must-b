@@ -1,5 +1,5 @@
 import { resolveEnvApiKey } from "../agents/model-auth.js";
-import type { Must-bConfig } from "../config/types.js";
+import type { MustBonfig } from "../config/types.js";
 import {
   isValidEnvSecretRefId,
   type SecretInput,
@@ -65,7 +65,7 @@ function resolveDefaultFilePointerId(provider: string): string {
 }
 
 function resolveRefFallbackInput(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   provider: string;
   preferredEnvVar?: string;
 }): { ref: SecretRef; resolvedValue: string } {
@@ -95,7 +95,7 @@ function resolveRefFallbackInput(params: {
 
 export async function promptSecretRefForOnboarding(params: {
   provider: string;
-  config: Must-bConfig;
+  config: MustBonfig;
   prompter: WizardPrompter;
   preferredEnvVar?: string;
   copy?: SecretRefOnboardingPromptCopy;
@@ -438,7 +438,7 @@ export async function ensureApiKeyFromOptionEnvOrPrompt(params: {
   token: string | undefined;
   tokenProvider: string | undefined;
   secretInputMode?: SecretInputMode;
-  config: Must-bConfig;
+  config: MustBonfig;
   expectedProviders: string[];
   provider: string;
   envLabel: string;
@@ -480,7 +480,7 @@ export async function ensureApiKeyFromOptionEnvOrPrompt(params: {
 }
 
 export async function ensureApiKeyFromEnvOrPrompt(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   provider: string;
   envLabel: string;
   promptMessage: string;

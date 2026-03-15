@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { Command } from "commander";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { loadConfig, writeConfigFile } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
 import { resolveArchiveKind } from "../infra/archive.js";
@@ -120,9 +120,9 @@ function formatPluginLine(plugin: PluginRecord, verbose = false): string {
 }
 
 function applySlotSelectionForPlugin(
-  config: Must-bConfig,
+  config: MustBonfig,
   pluginId: string,
-): { config: Must-bConfig; warnings: string[] } {
+): { config: MustBonfig; warnings: string[] } {
   const report = buildPluginStatusReport({ config });
   const plugin = report.plugins.find((entry) => entry.id === pluginId);
   if (!plugin) {
@@ -154,14 +154,14 @@ function logSlotWarnings(warnings: string[]) {
 }
 
 async function installBundledPluginSource(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   rawSpec: string;
   bundledSource: BundledPluginSource;
   warning: string;
 }) {
   const existing = params.config.plugins?.load?.paths ?? [];
   const mergedPaths = Array.from(new Set([...existing, params.bundledSource.localPath]));
-  let next: Must-bConfig = {
+  let next: MustBonfig = {
     ...params.config,
     plugins: {
       ...params.config.plugins,
@@ -220,7 +220,7 @@ async function runPluginInstallCommand(params: {
         process.exit(1);
       }
 
-      let next: Must-bConfig = enablePluginInConfig(
+      let next: MustBonfig = enablePluginInConfig(
         {
           ...cfg,
           plugins: {
@@ -554,7 +554,7 @@ export function registerPluginsCli(program: Command) {
     .action(async (id: string) => {
       const cfg = loadConfig();
       const enableResult = enablePluginInConfig(cfg, id);
-      let next: Must-bConfig = enableResult.config;
+      let next: MustBonfig = enableResult.config;
       const slotResult = applySlotSelectionForPlugin(next, id);
       next = slotResult.config;
       await writeConfigFile(next);

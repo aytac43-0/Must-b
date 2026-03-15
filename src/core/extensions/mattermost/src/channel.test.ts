@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/mattermost";
+import type { MustBConfig } from "must-b/plugin-sdk/mattermost";
 import { createReplyPrefixOptions } from "must-b/plugin-sdk/mattermost";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const { sendMessageMattermostMock } = vi.hoisted(() => ({
@@ -72,7 +72,7 @@ describe("mattermostPlugin", () => {
         return;
       }
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBConfig = {
         channels: {
           mattermost: {
             replyToMode: "all",
@@ -122,7 +122,7 @@ describe("mattermostPlugin", () => {
     };
 
     it("exposes react when mattermost is configured", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBConfig = {
         channels: {
           mattermost: {
             enabled: true,
@@ -140,7 +140,7 @@ describe("mattermostPlugin", () => {
     });
 
     it("hides react when mattermost is not configured", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBConfig = {
         channels: {
           mattermost: {
             enabled: true,
@@ -153,7 +153,7 @@ describe("mattermostPlugin", () => {
     });
 
     it("hides react when actions.reactions is false", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBConfig = {
         channels: {
           mattermost: {
             enabled: true,
@@ -170,7 +170,7 @@ describe("mattermostPlugin", () => {
     });
 
     it("respects per-account actions.reactions in listActions", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBConfig = {
         channels: {
           mattermost: {
             enabled: true,
@@ -192,7 +192,7 @@ describe("mattermostPlugin", () => {
     });
 
     it("blocks react when default account disables reactions and accountId is omitted", async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBConfig = {
         channels: {
           mattermost: {
             enabled: true,
@@ -337,7 +337,7 @@ describe("mattermostPlugin", () => {
             baseUrl: "https://chat.example.com",
           },
         },
-      } as Must-bConfig;
+      } as MustBConfig;
 
       await sendText({
         cfg,
@@ -362,14 +362,14 @@ describe("mattermostPlugin", () => {
       const formatAllowFrom = mattermostPlugin.config.formatAllowFrom!;
 
       const formatted = formatAllowFrom({
-        cfg: {} as Must-bConfig,
+        cfg: {} as MustBConfig,
         allowFrom: ["@Alice", "user:USER123", "mattermost:BOT999"],
       });
       expect(formatted).toEqual(["@alice", "user123", "bot999"]);
     });
 
     it("uses account responsePrefix overrides", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBConfig = {
         channels: {
           mattermost: {
             responsePrefix: "[Channel]",

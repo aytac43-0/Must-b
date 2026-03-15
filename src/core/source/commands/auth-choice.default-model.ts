@@ -1,17 +1,17 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { ensureModelAllowlistEntry } from "./model-allowlist.js";
 
 export async function applyDefaultModelChoice(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   setDefaultModel: boolean;
   defaultModel: string;
-  applyDefaultConfig: (config: Must-bConfig) => Must-bConfig;
-  applyProviderConfig: (config: Must-bConfig) => Must-bConfig;
+  applyDefaultConfig: (config: MustBonfig) => MustBonfig;
+  applyProviderConfig: (config: MustBonfig) => MustBonfig;
   noteDefault?: string;
   noteAgentModel: (model: string) => Promise<void>;
   prompter: WizardPrompter;
-}): Promise<{ config: Must-bConfig; agentModelOverride?: string }> {
+}): Promise<{ config: MustBonfig; agentModelOverride?: string }> {
   if (params.setDefaultModel) {
     const next = params.applyDefaultConfig(params.config);
     if (params.noteDefault) {

@@ -1,5 +1,5 @@
 import util from "node:util";
-import type { Must-bConfig } from "../config/types.js";
+import type { MustBonfig } from "../config/types.js";
 import { isVerbose } from "../globals.js";
 import { stripAnsi } from "../terminal/ansi.js";
 import { readLoggingConfig } from "./config.js";
@@ -18,12 +18,12 @@ type ConsoleSettings = {
 export type ConsoleLoggerSettings = ConsoleSettings;
 
 const requireConfig = resolveNodeRequireFromMeta(import.meta.url);
-type ConsoleConfigLoader = () => Must-bConfig["logging"] | undefined;
+type ConsoleConfigLoader = () => MustBonfig["logging"] | undefined;
 const loadConfigFallbackDefault: ConsoleConfigLoader = () => {
   try {
     const loaded = requireConfig?.("../config/config.js") as
       | {
-          loadConfig?: () => Must-bConfig;
+          loadConfig?: () => MustBonfig;
         }
       | undefined;
     return loaded?.loadConfig?.().logging;
@@ -71,7 +71,7 @@ function resolveConsoleSettings(): ConsoleSettings {
     return { level: "silent", style: normalizeConsoleStyle(undefined) };
   }
 
-  let cfg: Must-bConfig["logging"] | undefined =
+  let cfg: MustBonfig["logging"] | undefined =
     (loggingState.overrideSettings as LoggerSettings | null) ?? readLoggingConfig();
   if (!cfg) {
     if (loggingState.resolvingConsoleSettings) {

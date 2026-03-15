@@ -3,14 +3,14 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import "./test-helpers/fast-coding-tools.js";
-import { createMust-bCodingTools } from "./pi-tools.js";
+import { createMustBodingTools } from "./pi-tools.js";
 import { expectReadWriteEditTools } from "./test-helpers/pi-tools-fs-helpers.js";
 
-describe("createMust-bCodingTools", () => {
+describe("createMustBodingTools", () => {
   it("accepts Claude Code parameter aliases for read/write/edit", async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "must-b-alias-"));
     try {
-      const tools = createMust-bCodingTools({ workspaceDir: tmpDir });
+      const tools = createMustBodingTools({ workspaceDir: tmpDir });
       const { readTool, writeTool, editTool } = expectReadWriteEditTools(tools);
 
       const filePath = "alias-test.txt";
@@ -42,7 +42,7 @@ describe("createMust-bCodingTools", () => {
   it("coerces structured content blocks for write", async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "must-b-structured-write-"));
     try {
-      const tools = createMust-bCodingTools({ workspaceDir: tmpDir });
+      const tools = createMustBodingTools({ workspaceDir: tmpDir });
       const writeTool = tools.find((tool) => tool.name === "write");
       expect(writeTool).toBeDefined();
 
@@ -69,7 +69,7 @@ describe("createMust-bCodingTools", () => {
       const filePath = path.join(tmpDir, "structured-edit.js");
       await fs.writeFile(filePath, "const value = 'old';\n", "utf8");
 
-      const tools = createMust-bCodingTools({ workspaceDir: tmpDir });
+      const tools = createMustBodingTools({ workspaceDir: tmpDir });
       const editTool = tools.find((tool) => tool.name === "edit");
       expect(editTool).toBeDefined();
 

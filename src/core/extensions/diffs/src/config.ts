@@ -1,4 +1,4 @@
-import type { Must-bPluginConfigSchema } from "must-b/plugin-sdk/diffs";
+import type { MustBPluginConfigSchema } from "must-b/plugin-sdk/diffs";
 import {
   DIFF_IMAGE_QUALITY_PRESETS,
   DIFF_INDICATORS,
@@ -197,7 +197,7 @@ const DIFFS_PLUGIN_CONFIG_JSON_SCHEMA = {
   },
 } as const;
 
-export const diffsPluginConfigSchema: Must-bPluginConfigSchema = {
+export const diffsPluginConfigSchema: MustBPluginConfigSchema = {
   safeParse(value: unknown) {
     if (value === undefined) {
       return { success: true, data: undefined };

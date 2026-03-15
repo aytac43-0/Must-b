@@ -1,7 +1,7 @@
 import { formatCliCommand } from "../../../cli/command-format.js";
 import { detectBinary } from "../../../commands/onboard-helpers.js";
 import { installSignalCli } from "../../../commands/signal-install.js";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import {
   listSignalAccountIds,
   resolveDefaultSignalAccountId,
@@ -61,10 +61,10 @@ export function parseSignalAllowFromEntries(raw: string): { entries: string[]; e
 }
 
 async function promptSignalAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   return onboardingHelpers.promptParsedAllowFromForScopedChannel({
     cfg: params.cfg,
     channel: "signal",

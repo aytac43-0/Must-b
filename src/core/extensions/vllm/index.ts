@@ -3,7 +3,7 @@ import {
   configureOpenAICompatibleSelfHostedProviderNonInteractive,
   emptyPluginConfigSchema,
   promptAndConfigureOpenAICompatibleSelfHostedProvider,
-  type Must-bPluginApi,
+  type MustBPluginApi,
   type ProviderAuthContext,
   type ProviderAuthMethodNonInteractiveContext,
   type ProviderAuthResult,
@@ -18,7 +18,7 @@ const vllmPlugin = {
   name: "vLLM Provider",
   description: "Bundled vLLM provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "vLLM",

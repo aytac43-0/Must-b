@@ -14,7 +14,7 @@ import { getBlockedBindReason } from "../agents/sandbox/validate-sandbox-securit
 import { resolveToolProfilePolicy } from "../agents/tool-policy.js";
 import { resolveBrowserConfig } from "../browser/config.js";
 import { formatCliCommand } from "../cli/command-format.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveAgentModelFallbackValues,
   resolveAgentModelPrimaryValue,
@@ -43,7 +43,7 @@ const SMALL_MODEL_PARAM_B_MAX = 300;
 // Helpers
 // --------------------------------------------------------------------------
 
-function summarizeGroupPolicy(cfg: Must-bConfig): {
+function summarizeGroupPolicy(cfg: MustBonfig): {
   open: number;
   allowlist: number;
   other: number;
@@ -88,7 +88,7 @@ function looksLikeEnvRef(value: string): boolean {
   return v.startsWith("${") && v.endsWith("}");
 }
 
-function isGatewayRemotelyExposed(cfg: Must-bConfig): boolean {
+function isGatewayRemotelyExposed(cfg: MustBonfig): boolean {
   const bind = typeof cfg.gateway?.bind === "string" ? cfg.gateway.bind : "loopback";
   if (bind !== "loopback") {
     return true;
@@ -110,7 +110,7 @@ function addModel(models: ModelRef[], raw: unknown, source: string) {
   models.push({ id, source });
 }
 
-function collectModels(cfg: Must-bConfig): ModelRef[] {
+function collectModels(cfg: MustBonfig): ModelRef[] {
   const out: ModelRef[] = [];
   addModel(
     out,
@@ -199,8 +199,8 @@ function normalizeNodeCommand(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function listKnownNodeCommands(cfg: Must-bConfig): Set<string> {
-  const baseCfg: Must-bConfig = {
+function listKnownNodeCommands(cfg: MustBonfig): Set<string> {
+  const baseCfg: MustBonfig = {
     ...cfg,
     gateway: {
       ...cfg.gateway,
@@ -297,7 +297,7 @@ function suggestKnownNodeCommands(unknown: string, known: Set<string>): string[]
 }
 
 function resolveToolPolicies(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentTools?: AgentToolsConfig;
   sandboxMode?: "off" | "non-main" | "all";
   agentId?: string | null;
@@ -327,14 +327,14 @@ function resolveToolPolicies(params: {
   return policies;
 }
 
-function hasWebSearchKey(cfg: Must-bConfig, env: NodeJS.ProcessEnv): boolean {
+function hasWebSearchKey(cfg: MustBonfig, env: NodeJS.ProcessEnv): boolean {
   const search = cfg.tools?.web?.search;
   return Boolean(
     search?.apiKey || search?.perplexity?.apiKey || env.BRAVE_API_KEY || env.PERPLEXITY_API_KEY,
   );
 }
 
-function isWebSearchEnabled(cfg: Must-bConfig, env: NodeJS.ProcessEnv): boolean {
+function isWebSearchEnabled(cfg: MustBonfig, env: NodeJS.ProcessEnv): boolean {
   const enabled = cfg.tools?.web?.search?.enabled;
   if (enabled === false) {
     return false;
@@ -345,7 +345,7 @@ function isWebSearchEnabled(cfg: Must-bConfig, env: NodeJS.ProcessEnv): boolean 
   return hasWebSearchKey(cfg, env);
 }
 
-function isWebFetchEnabled(cfg: Must-bConfig): boolean {
+function isWebFetchEnabled(cfg: MustBonfig): boolean {
   const enabled = cfg.tools?.web?.fetch?.enabled;
   if (enabled === false) {
     return false;
@@ -353,7 +353,7 @@ function isWebFetchEnabled(cfg: Must-bConfig): boolean {
   return true;
 }
 
-function isBrowserEnabled(cfg: Must-bConfig): boolean {
+function isBrowserEnabled(cfg: MustBonfig): boolean {
   try {
     return resolveBrowserConfig(cfg.browser, cfg).enabled;
   } catch {
@@ -361,7 +361,7 @@ function isBrowserEnabled(cfg: Must-bConfig): boolean {
   }
 }
 
-function listGroupPolicyOpen(cfg: Must-bConfig): string[] {
+function listGroupPolicyOpen(cfg: MustBonfig): string[] {
   const out: string[] = [];
   const channels = cfg.channels as Record<string, unknown> | undefined;
   if (!channels || typeof channels !== "object") {
@@ -399,7 +399,7 @@ function hasConfiguredGroupTargets(section: Record<string, unknown>): boolean {
   });
 }
 
-function listPotentialMultiUserSignals(cfg: Must-bConfig): string[] {
+function listPotentialMultiUserSignals(cfg: MustBonfig): string[] {
   const out = new Set<string>();
   const channels = cfg.channels as Record<string, unknown> | undefined;
   if (!channels || typeof channels !== "object") {
@@ -467,7 +467,7 @@ function listPotentialMultiUserSignals(cfg: Must-bConfig): string[] {
   return Array.from(out);
 }
 
-function collectRiskyToolExposureContexts(cfg: Must-bConfig): {
+function collectRiskyToolExposureContexts(cfg: MustBonfig): {
   riskyContexts: string[];
   hasRuntimeRisk: boolean;
 } {
@@ -526,7 +526,7 @@ function collectRiskyToolExposureContexts(cfg: Must-bConfig): {
 // Exported collectors
 // --------------------------------------------------------------------------
 
-export function collectAttackSurfaceSummaryFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectAttackSurfaceSummaryFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const group = summarizeGroupPolicy(cfg);
   const elevated = cfg.tools?.elevated?.enabled !== false;
   const webhooksEnabled = cfg.hooks?.enabled === true;
@@ -573,7 +573,7 @@ export function collectSyncedFolderFindings(params: {
   return findings;
 }
 
-export function collectSecretsInConfigFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectSecretsInConfigFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const password =
     typeof cfg.gateway?.auth?.password === "string" ? cfg.gateway.auth.password.trim() : "";
@@ -604,7 +604,7 @@ export function collectSecretsInConfigFindings(cfg: Must-bConfig): SecurityAudit
 }
 
 export function collectHooksHardeningFindings(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv = process.env,
 ): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
@@ -723,7 +723,7 @@ export function collectHooksHardeningFindings(
 }
 
 export function collectGatewayHttpSessionKeyOverrideFindings(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const chatCompletionsEnabled = cfg.gateway?.http?.endpoints?.chatCompletions?.enabled === true;
@@ -750,7 +750,7 @@ export function collectGatewayHttpSessionKeyOverrideFindings(
 }
 
 export function collectGatewayHttpNoAuthFindings(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
 ): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
@@ -783,7 +783,7 @@ export function collectGatewayHttpNoAuthFindings(
   return findings;
 }
 
-export function collectSandboxDockerNoopFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectSandboxDockerNoopFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const configuredPaths: string[] = [];
   const agents = Array.isArray(cfg.agents?.list) ? cfg.agents.list : [];
@@ -833,7 +833,7 @@ export function collectSandboxDockerNoopFindings(cfg: Must-bConfig): SecurityAud
   return findings;
 }
 
-export function collectSandboxDangerousConfigFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectSandboxDangerousConfigFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const agents = Array.isArray(cfg.agents?.list) ? cfg.agents.list : [];
 
@@ -981,7 +981,7 @@ export function collectSandboxDangerousConfigFindings(cfg: Must-bConfig): Securi
   return findings;
 }
 
-export function collectNodeDenyCommandPatternFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectNodeDenyCommandPatternFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const denyListRaw = cfg.gateway?.nodes?.denyCommands;
   if (!Array.isArray(denyListRaw) || denyListRaw.length === 0) {
@@ -1039,7 +1039,7 @@ export function collectNodeDenyCommandPatternFindings(cfg: Must-bConfig): Securi
 }
 
 export function collectNodeDangerousAllowCommandFindings(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
 ): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const allowRaw = cfg.gateway?.nodes?.allowCommands;
@@ -1075,7 +1075,7 @@ export function collectNodeDangerousAllowCommandFindings(
   return findings;
 }
 
-export function collectMinimalProfileOverrideFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectMinimalProfileOverrideFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   if (cfg.tools?.profile !== "minimal") {
     return findings;
@@ -1111,7 +1111,7 @@ export function collectMinimalProfileOverrideFindings(cfg: Must-bConfig): Securi
   return findings;
 }
 
-export function collectModelHygieneFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectModelHygieneFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const models = collectModels(cfg);
   if (models.length === 0) {
@@ -1197,7 +1197,7 @@ export function collectModelHygieneFindings(cfg: Must-bConfig): SecurityAuditFin
 }
 
 export function collectSmallModelRiskFindings(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env: NodeJS.ProcessEnv;
 }): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
@@ -1291,7 +1291,7 @@ export function collectSmallModelRiskFindings(params: {
   return findings;
 }
 
-export function collectExposureMatrixFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectExposureMatrixFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const openGroups = listGroupPolicyOpen(cfg);
   if (openGroups.length === 0) {
@@ -1330,7 +1330,7 @@ export function collectExposureMatrixFindings(cfg: Must-bConfig): SecurityAuditF
   return findings;
 }
 
-export function collectLikelyMultiUserSetupFindings(cfg: Must-bConfig): SecurityAuditFinding[] {
+export function collectLikelyMultiUserSetupFindings(cfg: MustBonfig): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
   const signals = listPotentialMultiUserSignals(cfg);
   if (signals.length === 0) {

@@ -72,14 +72,14 @@ const SERVICE_REFRESH_TIMEOUT_MS = 60_000;
 
 const UPDATE_QUIPS = [
   "Leveled up! New skills unlocked. You're welcome.",
-  "Fresh code, same lobster. Miss me?",
+  "Fresh code, same Must-b. Miss me?",
   "Back and better. Did you even notice I was gone?",
   "Update complete. I learned some new tricks while I was out.",
   "Upgraded! Now with 23% more sass.",
   "I've evolved. Try to keep up.",
   "New version, who dis? Oh right, still me but shinier.",
   "Patched, polished, and ready to pinch. Let's go.",
-  "The lobster has molted. Harder shell, sharper claws.",
+  "Must-b has leveled up. Sharper mind, smarter answers.",
   "Update done! Check the changelog or just trust me, it's good.",
   "Reborn from the boiling waters of npm. Stronger now.",
   "I went away and came back smarter. You should try it sometime.",
@@ -88,7 +88,7 @@ const UPDATE_QUIPS = [
   "Firmware fresh. Brain wrinkles: increased.",
   "I've seen things you wouldn't believe. Anyway, I'm updated.",
   "Back online. The changelog is long but our friendship is longer.",
-  "Upgraded! Peter fixed stuff. Blame him if it breaks.",
+  "Upgraded! Aytaç fixed stuff. Blame him if it breaks.",
   "Molting complete. Please don't look at my soft shell phase.",
   "Version bump! Same chaos energy, fewer crashes (probably).",
 ];

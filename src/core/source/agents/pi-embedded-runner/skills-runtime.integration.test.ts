@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { clearPluginManifestRegistryCache } from "../../plugins/manifest-registry.js";
 import { writePluginWithSkill } from "../test-helpers/skill-plugin-fixtures.js";
 import { resolveEmbeddedRunSkillEntries } from "./skills-runtime.js";
@@ -45,7 +45,7 @@ describe("resolveEmbeddedRunSkillEntries (integration)", () => {
     process.env.MUSTB_BUNDLED_PLUGINS_DIR = bundledPluginsDir;
     clearPluginManifestRegistryCache();
 
-    const config: Must-bConfig = {
+    const config: MustBonfig = {
       plugins: {
         entries: {
           diffs: { enabled: true },

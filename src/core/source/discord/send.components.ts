@@ -5,7 +5,7 @@ import {
   type RequestClient,
 } from "@buape/carbon";
 import { ChannelType, Routes } from "discord-api-types/v10";
-import { loadConfig, type Must-bConfig } from "../config/config.js";
+import { loadConfig, type MustBonfig } from "../config/config.js";
 import { recordChannelActivity } from "../infra/channel-activity.js";
 import { loadWebMedia } from "../web/media.js";
 import { resolveDiscordAccount } from "./accounts.js";
@@ -41,7 +41,7 @@ function extractComponentAttachmentNames(spec: DiscordComponentMessageSpec): str
 }
 
 type DiscordComponentSendOpts = {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   accountId?: string;
   token?: string;
   rest?: RequestClient;

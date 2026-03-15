@@ -11,7 +11,7 @@ import {
 import { listChannelPlugins } from "../channels/plugins/index.js";
 import type { ChannelAccountSnapshot, ChannelPlugin } from "../channels/plugins/types.js";
 import { inspectReadOnlyChannelAccount } from "../channels/read-only-account-inspect.js";
-import { type Must-bConfig, loadConfig } from "../config/config.js";
+import { type MustBonfig, loadConfig } from "../config/config.js";
 import { DEFAULT_ACCOUNT_ID } from "../routing/session-key.js";
 import { theme } from "../terminal/theme.js";
 import { formatTimeAgo } from "./format-time/format-relative.ts";
@@ -19,7 +19,7 @@ import { formatTimeAgo } from "./format-time/format-relative.ts";
 export type ChannelSummaryOptions = {
   colorize?: boolean;
   includeAllowFrom?: boolean;
-  sourceConfig?: Must-bConfig;
+  sourceConfig?: MustBonfig;
 };
 
 const DEFAULT_OPTIONS: Omit<Required<ChannelSummaryOptions>, "sourceConfig"> = {
@@ -49,7 +49,7 @@ const accountLine = (label: string, details: string[]) =>
 const buildAccountDetails = (params: {
   entry: ChannelAccountEntry;
   plugin: ChannelPlugin;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   includeAllowFrom: boolean;
 }): string[] => {
   const details: string[] = [];
@@ -105,7 +105,7 @@ const buildAccountDetails = (params: {
   return details;
 };
 
-function inspectChannelAccount(plugin: ChannelPlugin, cfg: Must-bConfig, accountId: string) {
+function inspectChannelAccount(plugin: ChannelPlugin, cfg: MustBonfig, accountId: string) {
   return (
     plugin.config.inspectAccount?.(cfg, accountId) ??
     inspectReadOnlyChannelAccount({
@@ -117,7 +117,7 @@ function inspectChannelAccount(plugin: ChannelPlugin, cfg: Must-bConfig, account
 }
 
 export async function buildChannelSummary(
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
   options?: ChannelSummaryOptions,
 ): Promise<string[]> {
   const effective = cfg ?? loadConfig();

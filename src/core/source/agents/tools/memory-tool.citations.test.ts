@@ -6,18 +6,18 @@ import {
   setMemorySearchImpl,
   type MemoryReadParams,
 } from "../../../test/helpers/memory-tool-manager-mock.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { createMemoryGetTool, createMemorySearchTool } from "./memory-tool.js";
 
-function asMust-bConfig(config: Partial<Must-bConfig>): Must-bConfig {
-  return config as Must-bConfig;
+function asMustBonfig(config: Partial<MustBonfig>): MustBonfig {
+  return config as MustBonfig;
 }
 
 function createToolConfig() {
-  return asMust-bConfig({ agents: { list: [{ id: "main", default: true }] } });
+  return asMustBonfig({ agents: { list: [{ id: "main", default: true }] } });
 }
 
-function createMemoryGetToolOrThrow(config: Must-bConfig = createToolConfig()) {
+function createMemoryGetToolOrThrow(config: MustBonfig = createToolConfig()) {
   const tool = createMemoryGetTool({ config });
   if (!tool) {
     throw new Error("tool missing");
@@ -45,7 +45,7 @@ beforeEach(() => {
 describe("memory search citations", () => {
   it("appends source information when citations are enabled", async () => {
     setMemoryBackend("builtin");
-    const cfg = asMust-bConfig({
+    const cfg = asMustBonfig({
       memory: { citations: "on" },
       agents: { list: [{ id: "main", default: true }] },
     });
@@ -61,7 +61,7 @@ describe("memory search citations", () => {
 
   it("leaves snippet untouched when citations are off", async () => {
     setMemoryBackend("builtin");
-    const cfg = asMust-bConfig({
+    const cfg = asMustBonfig({
       memory: { citations: "off" },
       agents: { list: [{ id: "main", default: true }] },
     });
@@ -77,7 +77,7 @@ describe("memory search citations", () => {
 
   it("clamps decorated snippets to qmd injected budget", async () => {
     setMemoryBackend("qmd");
-    const cfg = asMust-bConfig({
+    const cfg = asMustBonfig({
       memory: { citations: "on", backend: "qmd", qmd: { limits: { maxInjectedChars: 20 } } },
       agents: { list: [{ id: "main", default: true }] },
     });
@@ -92,7 +92,7 @@ describe("memory search citations", () => {
 
   it("honors auto mode for direct chats", async () => {
     setMemoryBackend("builtin");
-    const cfg = asMust-bConfig({
+    const cfg = asMustBonfig({
       memory: { citations: "auto" },
       agents: { list: [{ id: "main", default: true }] },
     });
@@ -110,7 +110,7 @@ describe("memory search citations", () => {
 
   it("suppresses citations for auto mode in group chats", async () => {
     setMemoryBackend("builtin");
-    const cfg = asMust-bConfig({
+    const cfg = asMustBonfig({
       memory: { citations: "auto" },
       agents: { list: [{ id: "main", default: true }] },
     });

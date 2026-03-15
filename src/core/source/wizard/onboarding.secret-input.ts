@@ -1,8 +1,8 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { normalizeSecretInputString, resolveSecretInputRef } from "../config/types.secrets.js";
 import { resolveSecretRefString } from "../secrets/resolve.js";
 
-type SecretDefaults = NonNullable<Must-bConfig["secrets"]>["defaults"];
+type SecretDefaults = NonNullable<MustBonfig["secrets"]>["defaults"];
 
 function formatSecretResolutionError(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) {
@@ -12,7 +12,7 @@ function formatSecretResolutionError(error: unknown): string {
 }
 
 export async function resolveOnboardingSecretInputString(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   value: unknown;
   path: string;
   defaults?: SecretDefaults;

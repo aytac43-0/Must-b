@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
 vi.mock("../../config/sessions.js", () => ({
   loadSessionStore: vi.fn(),
@@ -41,7 +41,7 @@ function resolveWithStoredEntry(params?: {
   vi.mocked(evaluateSessionFreshness).mockReturnValue({ fresh: params?.fresh ?? true });
 
   return resolveCronSession({
-    cfg: {} as Must-bConfig,
+    cfg: {} as MustBonfig,
     sessionKey,
     agentId: "main",
     nowMs: NOW_MS,

@@ -4,11 +4,11 @@ import { VERSION } from "../version.js";
 import type { ConfigUiHint, ConfigUiHints } from "./schema.hints.js";
 import { applySensitiveHints, buildBaseHints, mapSensitivePaths } from "./schema.hints.js";
 import { applyDerivedTags } from "./schema.tags.js";
-import { Must-bSchema } from "./zod-schema.js";
+import { MustBchema } from "./zod-schema.js";
 
 export type { ConfigUiHint, ConfigUiHints } from "./schema.hints.js";
 
-export type ConfigSchema = ReturnType<typeof Must-bSchema.toJSONSchema>;
+export type ConfigSchema = ReturnType<typeof MustBchema.toJSONSchema>;
 
 type JsonSchemaNode = Record<string, unknown>;
 
@@ -430,12 +430,12 @@ function buildBaseConfigSchema(): ConfigSchemaResponse {
   if (cachedBase) {
     return cachedBase;
   }
-  const schema = Must-bSchema.toJSONSchema({
+  const schema = MustBchema.toJSONSchema({
     target: "draft-07",
     unrepresentable: "any",
   });
-  schema.title = "Must-bConfig";
-  const hints = applyDerivedTags(mapSensitivePaths(Must-bSchema, "", buildBaseHints()));
+  schema.title = "MustBonfig";
+  const hints = applyDerivedTags(mapSensitivePaths(MustBchema, "", buildBaseHints()));
   const next = {
     schema: stripChannelSchema(schema),
     uiHints: hints,

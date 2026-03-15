@@ -1,5 +1,5 @@
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
 export type OutboundSessionContext = {
   /** Canonical session key used for internal hook dispatch. */
@@ -17,7 +17,7 @@ function normalizeOptionalString(value?: string | null): string | undefined {
 }
 
 export function buildOutboundSessionContext(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   sessionKey?: string | null;
   agentId?: string | null;
 }): OutboundSessionContext | undefined {

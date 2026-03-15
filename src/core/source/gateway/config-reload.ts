@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import chokidar from "chokidar";
-import type { Must-bConfig, ConfigFileSnapshot, GatewayReloadMode } from "../config/config.js";
+import type { MustBonfig, ConfigFileSnapshot, GatewayReloadMode } from "../config/config.js";
 import { formatConfigIssueLines } from "../config/issue-format.js";
 import { isPlainObject } from "../utils.js";
 import { buildGatewayReloadPlan, type GatewayReloadPlan } from "./config-reload-plan.js";
@@ -51,7 +51,7 @@ export function diffConfigPaths(prev: unknown, next: unknown, prefix = ""): stri
   return [prefix || "<root>"];
 }
 
-export function resolveGatewayReloadSettings(cfg: Must-bConfig): GatewayReloadSettings {
+export function resolveGatewayReloadSettings(cfg: MustBonfig): GatewayReloadSettings {
   const rawMode = cfg.gateway?.reload?.mode;
   const mode =
     rawMode === "off" || rawMode === "restart" || rawMode === "hot" || rawMode === "hybrid"
@@ -70,10 +70,10 @@ export type GatewayConfigReloader = {
 };
 
 export function startGatewayConfigReloader(opts: {
-  initialConfig: Must-bConfig;
+  initialConfig: MustBonfig;
   readSnapshot: () => Promise<ConfigFileSnapshot>;
-  onHotReload: (plan: GatewayReloadPlan, nextConfig: Must-bConfig) => Promise<void>;
-  onRestart: (plan: GatewayReloadPlan, nextConfig: Must-bConfig) => void | Promise<void>;
+  onHotReload: (plan: GatewayReloadPlan, nextConfig: MustBonfig) => Promise<void>;
+  onRestart: (plan: GatewayReloadPlan, nextConfig: MustBonfig) => void | Promise<void>;
   log: {
     info: (msg: string) => void;
     warn: (msg: string) => void;
@@ -104,7 +104,7 @@ export function startGatewayConfigReloader(opts: {
   const schedule = () => {
     scheduleAfter(settings.debounceMs);
   };
-  const queueRestart = (plan: GatewayReloadPlan, nextConfig: Must-bConfig) => {
+  const queueRestart = (plan: GatewayReloadPlan, nextConfig: MustBonfig) => {
     if (restartQueued) {
       return;
     }
@@ -147,7 +147,7 @@ export function startGatewayConfigReloader(opts: {
     return true;
   };
 
-  const applySnapshot = async (nextConfig: Must-bConfig) => {
+  const applySnapshot = async (nextConfig: MustBonfig) => {
     const changedPaths = diffConfigPaths(currentConfig, nextConfig);
     currentConfig = nextConfig;
     settings = resolveGatewayReloadSettings(nextConfig);

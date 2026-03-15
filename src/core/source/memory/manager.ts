@@ -5,7 +5,7 @@ import { type FSWatcher } from "chokidar";
 import { resolveAgentDir, resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
 import type { ResolvedMemorySearchConfig } from "../agents/memory-search.js";
 import { resolveMemorySearchConfig } from "../agents/memory-search.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import {
   createEmbeddingProvider,
@@ -60,7 +60,7 @@ export async function closeAllMemoryIndexManagers(): Promise<void> {
 
 export class MemoryIndexManager extends MemoryManagerEmbeddingOps implements MemorySearchManager {
   private readonly cacheKey: string;
-  protected readonly cfg: Must-bConfig;
+  protected readonly cfg: MustBonfig;
   protected readonly agentId: string;
   protected readonly workspaceDir: string;
   protected readonly settings: ResolvedMemorySearchConfig;
@@ -133,7 +133,7 @@ export class MemoryIndexManager extends MemoryManagerEmbeddingOps implements Mem
   private readonlyRecoveryLastError?: string;
 
   static async get(params: {
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     agentId: string;
     purpose?: "default" | "status";
   }): Promise<MemoryIndexManager | null> {
@@ -191,7 +191,7 @@ export class MemoryIndexManager extends MemoryManagerEmbeddingOps implements Mem
 
   private constructor(params: {
     cacheKey: string;
-    cfg: Must-bConfig;
+    cfg: MustBonfig;
     agentId: string;
     workspaceDir: string;
     settings: ResolvedMemorySearchConfig;

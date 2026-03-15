@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   createGatewayCredentialPlan,
   type GatewayCredentialPlan,
@@ -251,7 +251,7 @@ function resolveRemoteGatewayCredentials(params: {
 }
 
 export function resolveGatewayCredentialsFromConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env?: NodeJS.ProcessEnv;
   explicitAuth?: ExplicitGatewayAuth;
   urlOverride?: string;
@@ -323,7 +323,7 @@ export function resolveGatewayCredentialsFromConfig(params: {
 }
 
 export function resolveGatewayProbeCredentialsFromConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   mode: GatewayCredentialMode;
   env?: NodeJS.ProcessEnv;
   explicitAuth?: ExplicitGatewayAuth;
@@ -339,7 +339,7 @@ export function resolveGatewayProbeCredentialsFromConfig(params: {
 }
 
 export function resolveGatewayDriftCheckCredentialsFromConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
 }): ResolvedGatewayCredentials {
   return resolveGatewayCredentialsFromConfig({
     cfg: params.cfg,

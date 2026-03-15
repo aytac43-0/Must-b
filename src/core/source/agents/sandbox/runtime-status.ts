@@ -1,5 +1,5 @@
 import { formatCliCommand } from "../../cli/command-format.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { canonicalizeMainSessionAlias, resolveAgentMainSessionKey } from "../../config/sessions.js";
 import { resolveSessionAgentId } from "../agent-scope.js";
 import { expandToolGroups } from "../tool-policy.js";
@@ -18,7 +18,7 @@ function shouldSandboxSession(cfg: SandboxConfig, sessionKey: string, mainSessio
 }
 
 function resolveMainSessionKeyForSandbox(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   agentId: string;
 }): string {
   if (params.cfg?.session?.scope === "global") {
@@ -31,7 +31,7 @@ function resolveMainSessionKeyForSandbox(params: {
 }
 
 function resolveComparableSessionKeyForSandbox(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   agentId: string;
   sessionKey: string;
 }): string {
@@ -43,7 +43,7 @@ function resolveComparableSessionKeyForSandbox(params: {
 }
 
 export function resolveSandboxRuntimeStatus(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   sessionKey?: string;
 }): {
   agentId: string;
@@ -79,7 +79,7 @@ export function resolveSandboxRuntimeStatus(params: {
 }
 
 export function formatSandboxToolPolicyBlockedMessage(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   sessionKey?: string;
   toolName: string;
 }): string | undefined {

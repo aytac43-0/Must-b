@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { getMemorySearchManager, type MemoryIndexManager } from "./index.js";
 import {
   closeAllMemoryIndexManagers,
@@ -64,7 +64,7 @@ describe("memory manager cache hydration", () => {
         },
         list: [{ id: "main", default: true }],
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const results = await Promise.all(
       Array.from(
@@ -98,7 +98,7 @@ describe("memory manager cache hydration", () => {
         },
         list: [{ id: "main", default: true }],
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     hoisted.providerDelayMs = 100;
 

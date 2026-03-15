@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { MANIFEST_KEY } from "../../compat/legacy-names.js";
-import { discoverMust-bPlugins } from "../../plugins/discovery.js";
-import type { Must-bPackageManifest } from "../../plugins/manifest.js";
+import { discoverMustBlugins } from "../../plugins/discovery.js";
+import type { MustBackageManifest } from "../../plugins/manifest.js";
 import type { PluginOrigin } from "../../plugins/types.js";
 import { isRecord, resolveConfigDir, resolveUserPath } from "../../utils.js";
 import type { ChannelMeta } from "./types.js";
@@ -50,7 +50,7 @@ type ExternalCatalogEntry = {
   name?: string;
   version?: string;
   description?: string;
-} & Partial<Record<ManifestKey, Must-bPackageManifest>>;
+} & Partial<Record<ManifestKey, MustBackageManifest>>;
 
 const ENV_CATALOG_PATHS = ["MUSTB_PLUGIN_CATALOG_PATHS", "MUSTB_MPM_CATALOG_PATHS"];
 
@@ -125,7 +125,7 @@ function loadExternalCatalogEntries(options: CatalogOptions): ExternalCatalogEnt
 }
 
 function toChannelMeta(params: {
-  channel: NonNullable<Must-bPackageManifest["channel"]>;
+  channel: NonNullable<MustBackageManifest["channel"]>;
   id: string;
 }): ChannelMeta | null {
   const label = params.channel.label?.trim();
@@ -175,7 +175,7 @@ function toChannelMeta(params: {
 }
 
 function resolveInstallInfo(params: {
-  manifest: Must-bPackageManifest;
+  manifest: MustBackageManifest;
   packageName?: string;
   packageDir?: string;
   workspaceDir?: string;
@@ -200,7 +200,7 @@ function buildCatalogEntry(candidate: {
   packageName?: string;
   packageDir?: string;
   workspaceDir?: string;
-  packageManifest?: Must-bPackageManifest;
+  packageManifest?: MustBackageManifest;
 }): ChannelPluginCatalogEntry | null {
   const manifest = candidate.packageManifest;
   if (!manifest?.channel) {
@@ -265,7 +265,7 @@ export function buildChannelUiCatalog(
 export function listChannelPluginCatalogEntries(
   options: CatalogOptions = {},
 ): ChannelPluginCatalogEntry[] {
-  const discovery = discoverMust-bPlugins({
+  const discovery = discoverMustBlugins({
     workspaceDir: options.workspaceDir,
     env: options.env,
   });

@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { telegramOutbound } from "../channels/plugins/outbound/telegram.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
 import { createOutboundTestPlugin, createTestRegistry } from "../test-utils/channel-plugins.js";
 import { createExecApprovalForwarder } from "./exec-approval-forwarder.js";
@@ -48,10 +48,10 @@ const TARGETS_CFG = {
       targets: [{ channel: "slack", to: "U123" }],
     },
   },
-} as Must-bConfig;
+} as MustBonfig;
 
 function createForwarder(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   deliver?: ReturnType<typeof vi.fn>;
   resolveSessionTarget?: () => { channel: string; to: string } | null;
 }) {
@@ -70,7 +70,7 @@ function createForwarder(params: {
   return { deliver, forwarder };
 }
 
-function makeSessionCfg(options: { discordExecApprovalsEnabled?: boolean } = {}): Must-bConfig {
+function makeSessionCfg(options: { discordExecApprovalsEnabled?: boolean } = {}): MustBonfig {
   return {
     ...(options.discordExecApprovalsEnabled
       ? {
@@ -85,11 +85,11 @@ function makeSessionCfg(options: { discordExecApprovalsEnabled?: boolean } = {})
         }
       : {}),
     approvals: { exec: { enabled: true, mode: "session" } },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 async function expectDiscordSessionTargetRequest(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   expectedAccepted: boolean;
   expectedDeliveryCount: number;
 }) {
@@ -121,7 +121,7 @@ async function expectSessionFilterRequestResult(params: {
         sessionFilter: params.sessionFilter,
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 
   const { deliver, forwarder } = createForwarder({
     cfg,
@@ -153,7 +153,7 @@ describe("exec approval forwarder", () => {
     vi.useFakeTimers();
     const cfg = {
       approvals: { exec: { enabled: true, mode: "session" } },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const { deliver, forwarder } = createForwarder({
       cfg,
@@ -205,7 +205,7 @@ describe("exec approval forwarder", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const { deliver, forwarder } = createForwarder({
       cfg,
@@ -238,7 +238,7 @@ describe("exec approval forwarder", () => {
           targets: [{ channel: "telegram", to: "123" }],
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     const { deliver, forwarder } = createForwarder({ cfg });
 
@@ -332,7 +332,7 @@ describe("exec approval forwarder", () => {
 
   it("returns false when forwarding is disabled", async () => {
     const { deliver, forwarder } = createForwarder({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
     });
     await expect(forwarder.handleRequested(baseRequest)).resolves.toBe(false);
     expect(deliver).not.toHaveBeenCalled();
@@ -402,7 +402,7 @@ describe("exec approval forwarder", () => {
       const cfg = {
         session: { store: storePath },
         approvals: { exec: { enabled: true, mode: "session" } },
-      } as Must-bConfig;
+      } as MustBonfig;
 
       const { deliver, forwarder } = createForwarder({ cfg });
       await expect(
@@ -442,7 +442,7 @@ describe("exec approval forwarder", () => {
           targets: [{ channel: "telegram", to: "123" }],
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const { deliver, forwarder } = createForwarder({ cfg });
 
     await forwarder.handleResolved({

@@ -1,7 +1,7 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/mattermost";
+import type { MustBConfig } from "must-b/plugin-sdk/mattermost";
 import { expect, vi } from "vitest";
 
-export function createMattermostTestConfig(): Must-bConfig {
+export function createMattermostTestConfig(): MustBConfig {
   return {
     channels: {
       mattermost: {

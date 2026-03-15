@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveGatewayProbeAuthSafe,
   resolveGatewayProbeAuthWithSecretInputs,
@@ -14,7 +14,7 @@ describe("resolveGatewayProbeAuthSafe", () => {
             token: "token-value",
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       mode: "local",
       env: {} as NodeJS.ProcessEnv,
     });
@@ -41,7 +41,7 @@ describe("resolveGatewayProbeAuthSafe", () => {
             default: { source: "env" },
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       mode: "local",
       env: {} as NodeJS.ProcessEnv,
     });
@@ -69,7 +69,7 @@ describe("resolveGatewayProbeAuthSafe", () => {
             default: { source: "env" },
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       mode: "local",
       env: {} as NodeJS.ProcessEnv,
     });
@@ -97,7 +97,7 @@ describe("resolveGatewayProbeAuthSafe", () => {
             default: { source: "env" },
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       mode: "remote",
       env: {} as NodeJS.ProcessEnv,
     });
@@ -126,7 +126,7 @@ describe("resolveGatewayProbeAuthWithSecretInputs", () => {
             default: { source: "env" },
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       mode: "local",
       env: {
         DAEMON_GATEWAY_TOKEN: "resolved-daemon-token",

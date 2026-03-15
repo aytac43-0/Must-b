@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import type { Must-bConfig, PluginRuntime } from "must-b/plugin-sdk/bluebubbles";
+import type { MustBConfig, PluginRuntime } from "must-b/plugin-sdk/bluebubbles";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sendBlueBubblesMedia } from "./media-send.js";
 import { setBlueBubblesRuntime } from "./runtime.js";
@@ -54,14 +54,14 @@ function createMockRuntime(): { runtime: PluginRuntime; mocks: RuntimeMocks } {
   };
 }
 
-function createConfig(overrides?: Record<string, unknown>): Must-bConfig {
+function createConfig(overrides?: Record<string, unknown>): MustBConfig {
   return {
     channels: {
       bluebubbles: {
         ...overrides,
       },
     },
-  } as unknown as Must-bConfig;
+  } as unknown as MustBConfig;
 }
 
 async function makeTempDir(): Promise<string> {

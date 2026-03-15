@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/mattermost";
+import type { MustBConfig } from "must-b/plugin-sdk/mattermost";
 import { describe, expect, it } from "vitest";
 import { mattermostOnboardingAdapter } from "./onboarding.js";
 
@@ -16,7 +16,7 @@ describe("mattermost onboarding status", () => {
             },
           },
         },
-      } as Must-bConfig,
+      } as MustBConfig,
       accountOverrides: {},
     });
 

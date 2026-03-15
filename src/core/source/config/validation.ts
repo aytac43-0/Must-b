@@ -21,8 +21,8 @@ import { findDuplicateAgentDirs, formatDuplicateAgentDirError } from "./agent-di
 import { appendAllowedValuesHint, summarizeAllowedValues } from "./allowed-values.js";
 import { applyAgentDefaults, applyModelDefaults, applySessionDefaults } from "./defaults.js";
 import { findLegacyConfigIssues } from "./legacy.js";
-import type { Must-bConfig, ConfigValidationIssue } from "./types.js";
-import { Must-bSchema } from "./zod-schema.js";
+import type { MustBonfig, ConfigValidationIssue } from "./types.js";
+import { MustBchema } from "./zod-schema.js";
 
 const LEGACY_REMOVED_PLUGIN_IDS = new Set(["google-antigravity-auth"]);
 
@@ -145,7 +145,7 @@ function isWorkspaceAvatarPath(value: string, workspaceDir: string): boolean {
   return isPathWithinRoot(workspaceRoot, resolved);
 }
 
-function validateIdentityAvatar(config: Must-bConfig): ConfigValidationIssue[] {
+function validateIdentityAvatar(config: MustBonfig): ConfigValidationIssue[] {
   const agents = config.agents?.list;
   if (!Array.isArray(agents) || agents.length === 0) {
     return [];
@@ -195,7 +195,7 @@ function validateIdentityAvatar(config: Must-bConfig): ConfigValidationIssue[] {
   return issues;
 }
 
-function validateGatewayTailscaleBind(config: Must-bConfig): ConfigValidationIssue[] {
+function validateGatewayTailscaleBind(config: MustBonfig): ConfigValidationIssue[] {
   const tailscaleMode = config.gateway?.tailscale?.mode ?? "off";
   if (tailscaleMode !== "serve" && tailscaleMode !== "funnel") {
     return [];
@@ -228,7 +228,7 @@ function validateGatewayTailscaleBind(config: Must-bConfig): ConfigValidationIss
  */
 export function validateConfigObjectRaw(
   raw: unknown,
-): { ok: true; config: Must-bConfig } | { ok: false; issues: ConfigValidationIssue[] } {
+): { ok: true; config: MustBonfig } | { ok: false; issues: ConfigValidationIssue[] } {
   const legacyIssues = findLegacyConfigIssues(raw);
   if (legacyIssues.length > 0) {
     return {
@@ -239,14 +239,14 @@ export function validateConfigObjectRaw(
       })),
     };
   }
-  const validated = Must-bSchema.safeParse(raw);
+  const validated = MustBchema.safeParse(raw);
   if (!validated.success) {
     return {
       ok: false,
       issues: validated.error.issues.map((issue) => mapZodIssueToConfigIssue(issue)),
     };
   }
-  const duplicates = findDuplicateAgentDirs(validated.data as Must-bConfig);
+  const duplicates = findDuplicateAgentDirs(validated.data as MustBonfig);
   if (duplicates.length > 0) {
     return {
       ok: false,
@@ -258,23 +258,23 @@ export function validateConfigObjectRaw(
       ],
     };
   }
-  const avatarIssues = validateIdentityAvatar(validated.data as Must-bConfig);
+  const avatarIssues = validateIdentityAvatar(validated.data as MustBonfig);
   if (avatarIssues.length > 0) {
     return { ok: false, issues: avatarIssues };
   }
-  const gatewayTailscaleBindIssues = validateGatewayTailscaleBind(validated.data as Must-bConfig);
+  const gatewayTailscaleBindIssues = validateGatewayTailscaleBind(validated.data as MustBonfig);
   if (gatewayTailscaleBindIssues.length > 0) {
     return { ok: false, issues: gatewayTailscaleBindIssues };
   }
   return {
     ok: true,
-    config: validated.data as Must-bConfig,
+    config: validated.data as MustBonfig,
   };
 }
 
 export function validateConfigObject(
   raw: unknown,
-): { ok: true; config: Must-bConfig } | { ok: false; issues: ConfigValidationIssue[] } {
+): { ok: true; config: MustBonfig } | { ok: false; issues: ConfigValidationIssue[] } {
   const result = validateConfigObjectRaw(raw);
   if (!result.ok) {
     return result;
@@ -288,7 +288,7 @@ export function validateConfigObject(
 type ValidateConfigWithPluginsResult =
   | {
       ok: true;
-      config: Must-bConfig;
+      config: MustBonfig;
       warnings: ConfigValidationIssue[];
     }
   | {

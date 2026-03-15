@@ -4,7 +4,7 @@ import {
   listChannelPlugins,
   normalizeChannelId,
 } from "../../channels/plugins/index.js";
-import { type Must-bConfig, writeConfigFile } from "../../config/config.js";
+import { type MustBonfig, writeConfigFile } from "../../config/config.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../routing/session-key.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { deleteTelegramUpdateOffset } from "../../telegram/update-offset-store.js";
@@ -17,7 +17,7 @@ export type ChannelsRemoveOptions = {
   delete?: boolean;
 };
 
-function listAccountIds(cfg: Must-bConfig, channel: ChatChannel): string[] {
+function listAccountIds(cfg: MustBonfig, channel: ChatChannel): string[] {
   const plugin = getChannelPlugin(channel);
   if (!plugin) {
     return [];

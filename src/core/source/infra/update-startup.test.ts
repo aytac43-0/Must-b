@@ -6,7 +6,7 @@ import { captureEnv } from "../test-utils/env.js";
 import type { UpdateCheckResult } from "./update-check.js";
 
 vi.mock("./must-b-root.js", () => ({
-  resolveMust-bPackageRoot: vi.fn(),
+  resolveMustBackageRoot: vi.fn(),
 }));
 
 vi.mock("./update-check.js", async () => {
@@ -45,7 +45,7 @@ describe("update-startup", () => {
   let tempDir: string;
   let envSnapshot: ReturnType<typeof captureEnv>;
 
-  let resolveMust-bPackageRoot: (typeof import("./must-b-root.js"))["resolveMust-bPackageRoot"];
+  let resolveMustBackageRoot: (typeof import("./must-b-root.js"))["resolveMustBackageRoot"];
   let checkUpdateStatus: (typeof import("./update-check.js"))["checkUpdateStatus"];
   let resolveNpmChannelTag: (typeof import("./update-check.js"))["resolveNpmChannelTag"];
   let runCommandWithTimeout: (typeof import("../process/exec.js"))["runCommandWithTimeout"];
@@ -74,7 +74,7 @@ describe("update-startup", () => {
 
     // Perf: load mocked modules once (after timers/env are set up).
     if (!loaded) {
-      ({ resolveMust-bPackageRoot } = await import("./must-b-root.js"));
+      ({ resolveMustBackageRoot } = await import("./must-b-root.js"));
       ({ checkUpdateStatus, resolveNpmChannelTag } = await import("./update-check.js"));
       ({ runCommandWithTimeout } = await import("../process/exec.js"));
       ({
@@ -85,7 +85,7 @@ describe("update-startup", () => {
       } = await import("./update-startup.js"));
       loaded = true;
     }
-    vi.mocked(resolveMust-bPackageRoot).mockClear();
+    vi.mocked(resolveMustBackageRoot).mockClear();
     vi.mocked(checkUpdateStatus).mockClear();
     vi.mocked(resolveNpmChannelTag).mockClear();
     vi.mocked(runCommandWithTimeout).mockClear();
@@ -112,7 +112,7 @@ describe("update-startup", () => {
   }
 
   function mockPackageInstallStatus() {
-    vi.mocked(resolveMust-bPackageRoot).mockResolvedValue("/opt/must-b");
+    vi.mocked(resolveMustBackageRoot).mockResolvedValue("/opt/must-b");
     vi.mocked(checkUpdateStatus).mockResolvedValue({
       root: "/opt/must-b",
       installKind: "package",

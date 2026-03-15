@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 const note = vi.hoisted(() => vi.fn());
 
@@ -9,7 +9,7 @@ vi.mock("../terminal/note.js", () => ({
 
 import { noteOpenAIOAuthTlsPrerequisites } from "./oauth-tls-preflight.js";
 
-function buildOpenAICodexOAuthConfig(): Must-bConfig {
+function buildOpenAICodexOAuthConfig(): MustBonfig {
   return {
     auth: {
       profiles: {

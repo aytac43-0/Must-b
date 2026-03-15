@@ -1,7 +1,7 @@
 import {
   formatInboundFromLabel as formatInboundFromLabelShared,
   resolveThreadSessionKeys as resolveThreadSessionKeysShared,
-  type Must-bConfig,
+  type MustBConfig,
 } from "must-b/plugin-sdk/mattermost";
 export { createDedupeCache, rawDataToString } from "must-b/plugin-sdk/mattermost";
 
@@ -39,9 +39,9 @@ function normalizeAgentId(value: string | undefined | null): string {
   );
 }
 
-type AgentEntry = NonNullable<NonNullable<Must-bConfig["agents"]>["list"]>[number];
+type AgentEntry = NonNullable<NonNullable<MustBConfig["agents"]>["list"]>[number];
 
-function listAgents(cfg: Must-bConfig): AgentEntry[] {
+function listAgents(cfg: MustBConfig): AgentEntry[] {
   const list = cfg.agents?.list;
   if (!Array.isArray(list)) {
     return [];
@@ -49,12 +49,12 @@ function listAgents(cfg: Must-bConfig): AgentEntry[] {
   return list.filter((entry): entry is AgentEntry => Boolean(entry && typeof entry === "object"));
 }
 
-function resolveAgentEntry(cfg: Must-bConfig, agentId: string): AgentEntry | undefined {
+function resolveAgentEntry(cfg: MustBConfig, agentId: string): AgentEntry | undefined {
   const id = normalizeAgentId(agentId);
   return listAgents(cfg).find((entry) => normalizeAgentId(entry.id) === id);
 }
 
-export function resolveIdentityName(cfg: Must-bConfig, agentId: string): string | undefined {
+export function resolveIdentityName(cfg: MustBConfig, agentId: string): string | undefined {
   const entry = resolveAgentEntry(cfg, agentId);
   return entry?.identity?.name?.trim() || undefined;
 }

@@ -110,7 +110,7 @@ function resolveOnboardingMode(): boolean {
 }
 
 @customElement("must-b-app")
-export class Must-bApp extends LitElement {
+export class MustBpp extends LitElement {
   private i18nController = new I18nController(this);
   clientInstanceId = generateUUID();
   connectGeneration = 0;

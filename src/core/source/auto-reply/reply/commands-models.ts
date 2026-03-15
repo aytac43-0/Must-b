@@ -8,7 +8,7 @@ import {
   resolveDefaultModelForAgent,
   resolveModelRefFromString,
 } from "../../agents/model-selection.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import {
   buildModelsKeyboard,
@@ -35,7 +35,7 @@ export type ModelsProviderData = {
  * Exported for reuse by callback handlers.
  */
 export async function buildModelsProviderData(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   agentId?: string,
 ): Promise<ModelsProviderData> {
   const resolvedDefault = resolveDefaultModelForAgent({
@@ -185,7 +185,7 @@ function parseModelsArgs(raw: string): {
 
 function resolveProviderLabel(params: {
   provider: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir?: string;
   sessionEntry?: SessionEntry;
 }): string {
@@ -204,7 +204,7 @@ function resolveProviderLabel(params: {
 export function formatModelsAvailableHeader(params: {
   provider: string;
   total: number;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir?: string;
   sessionEntry?: SessionEntry;
 }): string {
@@ -218,7 +218,7 @@ export function formatModelsAvailableHeader(params: {
 }
 
 export async function resolveModelsCommandReply(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   commandBodyNormalized: string;
   surface?: string;
   currentModel?: string;

@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/feishu";
+import type { MustBPluginApi } from "must-b/plugin-sdk/feishu";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { registerFeishuBitableTools } from "./bitable.js";
 import { registerFeishuDriveTools } from "./drive.js";
@@ -26,7 +26,7 @@ function createConfig(params: {
     perm?: boolean;
   };
   defaultAccount?: string;
-}): Must-bPluginApi["config"] {
+}): MustBPluginApi["config"] {
   return {
     channels: {
       feishu: {
@@ -46,7 +46,7 @@ function createConfig(params: {
         },
       },
     },
-  } as Must-bPluginApi["config"];
+  } as MustBPluginApi["config"];
 }
 
 describe("feishu tool account routing", () => {

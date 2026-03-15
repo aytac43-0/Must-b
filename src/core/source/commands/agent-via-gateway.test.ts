@@ -11,7 +11,7 @@ vi.mock("./agent.js", () => ({
   agentCommand: vi.fn(),
 }));
 
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import * as configModule from "../config/config.js";
 import { callGateway } from "../gateway/call.js";
 import type { RuntimeEnv } from "../runtime.js";
@@ -26,7 +26,7 @@ const runtime: RuntimeEnv = {
 
 const configSpy = vi.spyOn(configModule, "loadConfig");
 
-function mockConfig(storePath: string, overrides?: Partial<Must-bConfig>) {
+function mockConfig(storePath: string, overrides?: Partial<MustBonfig>) {
   configSpy.mockReturnValue({
     agents: {
       defaults: {
@@ -45,7 +45,7 @@ function mockConfig(storePath: string, overrides?: Partial<Must-bConfig>) {
 
 async function withTempStore(
   fn: (ctx: { dir: string; store: string }) => Promise<void>,
-  overrides?: Partial<Must-bConfig>,
+  overrides?: Partial<MustBonfig>,
 ) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "must-b-agent-cli-"));
   const store = path.join(dir, "sessions.json");

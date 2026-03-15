@@ -8,10 +8,10 @@ type MockRegistryToolEntry = {
   factory: (ctx: unknown) => unknown;
 };
 
-const loadMust-bPluginsMock = vi.fn();
+const loadMustBluginsMock = vi.fn();
 
 vi.mock("./loader.js", () => ({
-  loadMust-bPlugins: (params: unknown) => loadMust-bPluginsMock(params),
+  loadMustBlugins: (params: unknown) => loadMustBluginsMock(params),
 }));
 
 function makeTool(name: string) {
@@ -48,7 +48,7 @@ function setRegistry(entries: MockRegistryToolEntry[]) {
       message: string;
     }>,
   };
-  loadMust-bPluginsMock.mockReturnValue(registry);
+  loadMustBluginsMock.mockReturnValue(registry);
   return registry;
 }
 
@@ -91,7 +91,7 @@ function resolveOptionalDemoTools(toolAllowlist?: string[]) {
 
 describe("resolvePluginTools optional tools", () => {
   beforeEach(() => {
-    loadMust-bPluginsMock.mockClear();
+    loadMustBluginsMock.mockClear();
   });
 
   it("skips optional tools without explicit allowlist", () => {
@@ -164,7 +164,7 @@ describe("resolvePluginTools optional tools", () => {
       toolAllowlist: ["optional_tool"],
     });
 
-    expect(loadMust-bPluginsMock).toHaveBeenCalledWith(
+    expect(loadMustBluginsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         env,
       }),

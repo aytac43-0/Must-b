@@ -6,7 +6,7 @@ import type { RuntimeEnv } from "../runtime.js";
 import { note } from "../terminal/note.js";
 import type { DoctorOptions } from "./doctor-prompter.js";
 
-async function detectMust-bGitCheckout(root: string): Promise<"git" | "not-git" | "unknown"> {
+async function detectMustBitCheckout(root: string): Promise<"git" | "not-git" | "unknown"> {
   const res = await runCommandWithTimeout(["git", "-C", root, "rev-parse", "--show-toplevel"], {
     timeoutMs: 5000,
   }).catch(() => null);
@@ -42,7 +42,7 @@ export async function maybeOfferUpdateBeforeDoctor(params: {
     return { updated: false };
   }
 
-  const git = await detectMust-bGitCheckout(params.root);
+  const git = await detectMustBitCheckout(params.root);
   if (git === "git") {
     const shouldUpdate = await params.confirm({
       message: "Update Must-b from git before running doctor?",

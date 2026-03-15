@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { normalizeAgentId, parseAgentSessionKey } from "../routing/session-key.js";
 import { resolveAgentWorkspaceDir } from "./agent-scope.js";
 
@@ -57,7 +57,7 @@ export function mapToolContextToSpawnedRunMetadata(
 }
 
 export function resolveSpawnedWorkspaceInheritance(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   requesterSessionKey?: string;
   explicitWorkspaceDir?: string | null;
 }): string | undefined {

@@ -85,7 +85,7 @@ function hasGatewayServiceMarker(content: string): boolean {
   );
 }
 
-function isMust-bGatewayLaunchdService(label: string, contents: string): boolean {
+function isMustBatewayLaunchdService(label: string, contents: string): boolean {
   if (hasGatewayServiceMarker(contents)) {
     return true;
   }
@@ -96,7 +96,7 @@ function isMust-bGatewayLaunchdService(label: string, contents: string): boolean
   return label.startsWith("ai.must-b.");
 }
 
-function isMust-bGatewaySystemdService(name: string, contents: string): boolean {
+function isMustBatewaySystemdService(name: string, contents: string): boolean {
   if (hasGatewayServiceMarker(contents)) {
     return true;
   }
@@ -106,7 +106,7 @@ function isMust-bGatewaySystemdService(name: string, contents: string): boolean 
   return contents.toLowerCase().includes("gateway");
 }
 
-function isMust-bGatewayTaskName(name: string): boolean {
+function isMustBatewayTaskName(name: string): boolean {
   const normalized = name.trim().toLowerCase();
   if (!normalized) {
     return false;
@@ -216,7 +216,7 @@ async function scanLaunchdDir(params: {
     if (isIgnoredLaunchdLabel(label)) {
       continue;
     }
-    if (marker === "must-b" && isMust-bGatewayLaunchdService(label, contents)) {
+    if (marker === "must-b" && isMustBatewayLaunchdService(label, contents)) {
       continue;
     }
     results.push({
@@ -248,7 +248,7 @@ async function scanSystemdDir(params: {
     if (!marker) {
       continue;
     }
-    if (marker === "must-b" && isMust-bGatewaySystemdService(name, contents)) {
+    if (marker === "must-b" && isMustBatewaySystemdService(name, contents)) {
       continue;
     }
     results.push({
@@ -401,7 +401,7 @@ export async function findExtraGatewayServices(
       if (!name) {
         continue;
       }
-      if (isMust-bGatewayTaskName(name)) {
+      if (isMustBatewayTaskName(name)) {
         continue;
       }
       const lowerName = name.toLowerCase();

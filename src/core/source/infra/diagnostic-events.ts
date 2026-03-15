@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 export type DiagnosticSessionState = "idle" | "processing" | "waiting";
 
@@ -188,7 +188,7 @@ function getDiagnosticEventsState(): DiagnosticEventsGlobalState {
   return globalStore.__must-bDiagnosticEventsState;
 }
 
-export function isDiagnosticsEnabled(config?: Must-bConfig): boolean {
+export function isDiagnosticsEnabled(config?: MustBonfig): boolean {
   return config?.diagnostics?.enabled === true;
 }
 

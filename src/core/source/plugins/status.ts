@@ -2,7 +2,7 @@ import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent
 import { resolveDefaultAgentWorkspaceDir } from "../agents/workspace.js";
 import { loadConfig } from "../config/config.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
-import { loadMust-bPlugins } from "./loader.js";
+import { loadMustBlugins } from "./loader.js";
 import { createPluginLoaderLogger } from "./logger.js";
 import type { PluginRegistry } from "./registry.js";
 
@@ -24,7 +24,7 @@ export function buildPluginStatusReport(params?: {
     : (resolveAgentWorkspaceDir(config, resolveDefaultAgentId(config)) ??
       resolveDefaultAgentWorkspaceDir());
 
-  const registry = loadMust-bPlugins({
+  const registry = loadMustBlugins({
     config,
     workspaceDir,
     env: params?.env,

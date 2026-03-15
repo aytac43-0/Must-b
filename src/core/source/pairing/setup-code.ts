@@ -1,6 +1,6 @@
 import os from "node:os";
 import { resolveGatewayPort } from "../config/paths.js";
-import type { Must-bConfig } from "../config/types.js";
+import type { MustBonfig } from "../config/types.js";
 import {
   hasConfiguredSecretInput,
   normalizeSecretInputString,
@@ -95,7 +95,7 @@ function normalizeUrl(raw: string, schemeFallback: "ws" | "wss"): string | null 
 }
 
 function resolveScheme(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   opts?: {
     forceSecure?: boolean;
   },
@@ -164,7 +164,7 @@ function resolveGatewayPasswordFromEnv(env: NodeJS.ProcessEnv): string | undefin
 }
 
 function resolvePairingSetupAuthLabel(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
 ): ResolveAuthLabelResult {
   const mode = cfg.gateway?.auth?.mode;
@@ -207,9 +207,9 @@ function resolvePairingSetupAuthLabel(
 }
 
 async function resolveGatewayTokenSecretRef(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const hasTokenEnvCandidate = Boolean(resolveGatewayTokenFromEnv(env));
   if (hasTokenEnvCandidate) {
     return cfg;
@@ -248,9 +248,9 @@ async function resolveGatewayTokenSecretRef(
 }
 
 async function resolveGatewayPasswordSecretRef(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const hasPasswordEnvCandidate = Boolean(resolveGatewayPasswordFromEnv(env));
   if (hasPasswordEnvCandidate) {
     return cfg;
@@ -289,15 +289,15 @@ async function resolveGatewayPasswordSecretRef(
 }
 
 async function materializePairingSetupAuthConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
-): Promise<Must-bConfig> {
+): Promise<MustBonfig> {
   const cfgWithToken = await resolveGatewayTokenSecretRef(cfg, env);
   return await resolveGatewayPasswordSecretRef(cfgWithToken, env);
 }
 
 async function resolveGatewayUrl(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   opts: {
     env: NodeJS.ProcessEnv;
     publicUrl?: string;
@@ -365,7 +365,7 @@ export function encodePairingSetupCode(payload: PairingSetupPayload): string {
 }
 
 export async function resolvePairingSetupFromConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   options: ResolvePairingSetupOptions = {},
 ): Promise<PairingSetupResolution> {
   assertExplicitGatewayAuthModeWhenBothConfigured(cfg);

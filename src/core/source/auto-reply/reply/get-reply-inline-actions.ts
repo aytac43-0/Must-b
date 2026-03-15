@@ -1,9 +1,9 @@
 import { collectTextContentBlocks } from "../../agents/content-blocks.js";
-import { createMust-bTools } from "../../agents/must-b-tools.js";
+import { createMustBools } from "../../agents/must-b-tools.js";
 import type { SkillCommandSpec } from "../../agents/skills.js";
 import { applyOwnerOnlyToolPolicy } from "../../agents/tool-policy.js";
 import { getChannelDock } from "../../channels/dock.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { logVerbose } from "../../globals.js";
 import { generateSecureToken } from "../../infra/secure-random.js";
@@ -86,7 +86,7 @@ function extractTextFromToolResult(result: any): string | null {
 export async function handleInlineActions(params: {
   ctx: MsgContext;
   sessionCtx: TemplateContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   agentDir?: string;
   sessionEntry?: SessionEntry;
@@ -205,7 +205,7 @@ export async function handleInlineActions(params: {
         resolveGatewayMessageChannel(ctx.Provider) ??
         undefined;
 
-      const tools = createMust-bTools({
+      const tools = createMustBools({
         agentSessionKey: sessionKey,
         agentChannel: channel,
         agentAccountId: (ctx as { AccountId?: string }).AccountId,

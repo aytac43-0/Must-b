@@ -4,7 +4,7 @@ import path from "node:path";
 import { inspect } from "node:util";
 import { cancel, isCancel } from "@clack/prompts";
 import { DEFAULT_AGENT_WORKSPACE_DIR, ensureAgentWorkspace } from "../agents/workspace.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { CONFIG_PATH } from "../config/config.js";
 import { resolveAgentModelPrimaryValue } from "../config/model-input.js";
 import { resolveSessionTranscriptsDirForAgent } from "../config/sessions.js";
@@ -37,7 +37,7 @@ export function guardCancel<T>(value: T | symbol, runtime: RuntimeEnv): T {
   return value;
 }
 
-export function summarizeExistingConfig(config: Must-bConfig): string {
+export function summarizeExistingConfig(config: MustBonfig): string {
   const rows: string[] = [];
   const defaults = config.agents?.defaults;
   if (defaults?.workspace) {
@@ -112,9 +112,9 @@ export function printWizardHeader(runtime: RuntimeEnv) {
 }
 
 export function applyWizardMetadata(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params: { command: string; mode: OnboardMode },
-): Must-bConfig {
+): MustBonfig {
   const commit = process.env.GIT_COMMIT?.trim() || process.env.GIT_SHA?.trim() || undefined;
   return {
     ...cfg,

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveMust-bPackageRoot } from "../infra/must-b-root.js";
+import { resolveMustBackageRoot } from "../infra/must-b-root.js";
 import { pathExists } from "../utils.js";
 
 const FALLBACK_TEMPLATE_DIR = path.resolve(
@@ -28,7 +28,7 @@ export async function resolveWorkspaceTemplateDir(opts?: {
     const argv1 = opts?.argv1 ?? process.argv[1];
     const cwd = opts?.cwd ?? process.cwd();
 
-    const packageRoot = await resolveMust-bPackageRoot({ moduleUrl, argv1, cwd });
+    const packageRoot = await resolveMustBackageRoot({ moduleUrl, argv1, cwd });
     const candidates = [
       packageRoot ? path.join(packageRoot, "docs", "reference", "templates") : null,
       cwd ? path.resolve(cwd, "docs", "reference", "templates") : null,

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { resolveAgentConfig } from "../agent-scope.js";
 import {
   DEFAULT_SANDBOX_BROWSER_AUTOSTART_TIMEOUT_MS,
@@ -168,7 +168,7 @@ export function resolveSandboxPruneConfig(params: {
 }
 
 export function resolveSandboxConfigForAgent(
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
   agentId?: string,
 ): SandboxConfig {
   const agent = cfg?.agents?.defaults?.sandbox;

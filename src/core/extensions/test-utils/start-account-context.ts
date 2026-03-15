@@ -1,7 +1,7 @@
 import type {
   ChannelAccountSnapshot,
   ChannelGatewayContext,
-  Must-bConfig,
+  MustBConfig,
 } from "must-b/plugin-sdk/test-utils";
 import { vi } from "vitest";
 import { createRuntimeEnv } from "./runtime-env.js";
@@ -20,7 +20,7 @@ export function createStartAccountContext<TAccount extends { accountId: string }
   return {
     accountId: params.account.accountId,
     account: params.account,
-    cfg: {} as Must-bConfig,
+    cfg: {} as MustBConfig,
     runtime: createRuntimeEnv(),
     abortSignal: params.abortSignal,
     log: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { expandHomePrefix, resolveRequiredHomeDir } from "../infra/home-dir.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 
 /**
  * Nix mode detection: When MUSTB_NIX_MODE=1, the gateway is running under Nix.
@@ -264,7 +264,7 @@ export function resolveOAuthPath(
 }
 
 export function resolveGatewayPort(
-  cfg?: Must-bConfig,
+  cfg?: MustBonfig,
   env: NodeJS.ProcessEnv = process.env,
 ): number {
   const envRaw = env.MUSTB_GATEWAY_PORT?.trim() || env.CLAWDBOT_GATEWAY_PORT?.trim();

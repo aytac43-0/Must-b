@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { Must-bPluginApi, Must-bPluginService } from "must-b/plugin-sdk/phone-control";
+import type { MustBPluginApi, MustBPluginService } from "must-b/plugin-sdk/phone-control";
 
 type ArmGroup = "camera" | "screen" | "writes" | "all";
 
@@ -155,18 +155,18 @@ async function writeArmState(statePath: string, state: ArmStateFile | null): Pro
   await fs.writeFile(statePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
 }
 
-function normalizeDenyList(cfg: Must-bPluginApi["config"]): string[] {
+function normalizeDenyList(cfg: MustBPluginApi["config"]): string[] {
   return uniqSorted([...(cfg.gateway?.nodes?.denyCommands ?? [])]);
 }
 
-function normalizeAllowList(cfg: Must-bPluginApi["config"]): string[] {
+function normalizeAllowList(cfg: MustBPluginApi["config"]): string[] {
   return uniqSorted([...(cfg.gateway?.nodes?.allowCommands ?? [])]);
 }
 
 function patchConfigNodeLists(
-  cfg: Must-bPluginApi["config"],
+  cfg: MustBPluginApi["config"],
   next: { allowCommands: string[]; denyCommands: string[] },
-): Must-bPluginApi["config"] {
+): MustBPluginApi["config"] {
   return {
     ...cfg,
     gateway: {
@@ -181,7 +181,7 @@ function patchConfigNodeLists(
 }
 
 async function disarmNow(params: {
-  api: Must-bPluginApi;
+  api: MustBPluginApi;
   stateDir: string;
   statePath: string;
   reason: string;
@@ -283,10 +283,10 @@ function formatStatus(state: ArmStateFile | null): string {
   return `Phone control: armed (${until}).\nTemporarily allowed: ${cmdLabel}`;
 }
 
-export default function register(api: Must-bPluginApi) {
+export default function register(api: MustBPluginApi) {
   let expiryInterval: ReturnType<typeof setInterval> | null = null;
 
-  const timerService: Must-bPluginService = {
+  const timerService: MustBPluginService = {
     id: "phone-control-expiry",
     start: async (ctx) => {
       const statePath = resolveStatePath(ctx.stateDir);

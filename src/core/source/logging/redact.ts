@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { compileSafeRegex } from "../security/safe-regex.js";
 import { resolveNodeRequireFromMeta } from "./node-require.js";
 import { replacePatternBounded } from "./redact-bounded.js";
@@ -106,11 +106,11 @@ function redactText(text: string, patterns: RegExp[]): string {
 }
 
 function resolveConfigRedaction(): RedactOptions {
-  let cfg: Must-bConfig["logging"] | undefined;
+  let cfg: MustBonfig["logging"] | undefined;
   try {
     const loaded = requireConfig?.("../config/config.js") as
       | {
-          loadConfig?: () => Must-bConfig;
+          loadConfig?: () => MustBonfig;
         }
       | undefined;
     cfg = loaded?.loadConfig?.().logging;

@@ -5,7 +5,7 @@ import {
   OLLAMA_DEFAULT_BASE_URL,
   promptAndConfigureOllama,
   configureOllamaNonInteractive,
-  type Must-bPluginApi,
+  type MustBPluginApi,
   type ProviderAuthContext,
   type ProviderAuthMethodNonInteractiveContext,
   type ProviderAuthResult,
@@ -20,7 +20,7 @@ const ollamaPlugin = {
   name: "Ollama Provider",
   description: "Bundled Ollama provider plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: "Ollama",

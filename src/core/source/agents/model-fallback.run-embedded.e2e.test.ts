@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import type { AssistantMessage } from "@mariozechner/pi-ai";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { AuthProfileFailureReason } from "./auth-profiles.js";
 import { runWithModelFallback } from "./model-fallback.js";
 import type { EmbeddedRunAttemptResult } from "./pi-embedded-runner/run/types.js";
@@ -35,7 +35,7 @@ vi.mock("./models-config.js", async (importOriginal) => {
   const mod = await importOriginal<typeof import("./models-config.js")>();
   return {
     ...mod,
-    ensureMust-bModelsJson: vi.fn(async () => ({ wrote: false })),
+    ensureMustBodelsJson: vi.fn(async () => ({ wrote: false })),
   };
 });
 
@@ -94,7 +94,7 @@ const makeAttempt = (overrides: Partial<EmbeddedRunAttemptResult>): EmbeddedRunA
   ...overrides,
 });
 
-function makeConfig(): Must-bConfig {
+function makeConfig(): MustBonfig {
   const apiKeyField = ["api", "Key"].join("");
   return {
     agents: {
@@ -141,7 +141,7 @@ function makeConfig(): Must-bConfig {
         },
       },
     },
-  } satisfies Must-bConfig;
+  } satisfies MustBonfig;
 }
 
 async function withAgentWorkspace<T>(

@@ -163,7 +163,7 @@ describe("mergeExecApprovalsSocketDefaults", () => {
 describe("resolve exec approvals defaults", () => {
   it("expands home-prefixed default file and socket paths", () => {
     const dir = makeTempDir();
-    const prevMust-bHome = process.env.MUSTB_HOME;
+    const prevMustBome = process.env.MUSTB_HOME;
     try {
       process.env.MUSTB_HOME = dir;
       expect(path.normalize(resolveExecApprovalsPath())).toBe(
@@ -173,10 +173,10 @@ describe("resolve exec approvals defaults", () => {
         path.normalize(path.join(dir, ".must-b", "exec-approvals.sock")),
       );
     } finally {
-      if (prevMust-bHome === undefined) {
+      if (prevMustBome === undefined) {
         delete process.env.MUSTB_HOME;
       } else {
-        process.env.MUSTB_HOME = prevMust-bHome;
+        process.env.MUSTB_HOME = prevMustBome;
       }
     }
   });

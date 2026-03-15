@@ -5,7 +5,7 @@ import {
   installModelsConfigTestHooks,
   withModelsTempHome,
 } from "./models-config.e2e-harness.js";
-import { ensureMust-bModelsJson } from "./models-config.js";
+import { ensureMustBodelsJson } from "./models-config.js";
 import { readGeneratedModelsJson } from "./models-config.test-utils.js";
 
 installModelsConfigTestHooks();
@@ -40,7 +40,7 @@ describe("models-config write serialization", () => {
       });
 
       try {
-        await Promise.all([ensureMust-bModelsJson(first), ensureMust-bModelsJson(second)]);
+        await Promise.all([ensureMustBodelsJson(first), ensureMustBodelsJson(second)]);
       } finally {
         writeSpy.mockRestore();
       }

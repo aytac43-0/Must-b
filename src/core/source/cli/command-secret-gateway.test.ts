@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 const callGateway = vi.fn();
 
@@ -10,12 +10,12 @@ vi.mock("../gateway/call.js", () => ({
 const { resolveCommandSecretRefsViaGateway } = await import("./command-secret-gateway.js");
 
 describe("resolveCommandSecretRefsViaGateway", () => {
-  function makeTalkApiKeySecretRefConfig(envKey: string): Must-bConfig {
+  function makeTalkApiKeySecretRefConfig(envKey: string): MustBonfig {
     return {
       talk: {
         apiKey: { source: "env", provider: "default", id: envKey },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
   }
 
   async function withEnvValue(
@@ -69,7 +69,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
       talk: {
         apiKey: "plain", // pragma: allowlist secret
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const result = await resolveCommandSecretRefsViaGateway({
       config,
       commandName: "memory status",
@@ -94,7 +94,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
           },
         ],
       },
-    } as unknown as Must-bConfig;
+    } as unknown as MustBonfig;
 
     const result = await resolveCommandSecretRefsViaGateway({
       config,
@@ -124,7 +124,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
       talk: {
         apiKey: { source: "env", provider: "default", id: "TALK_API_KEY" },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const result = await resolveCommandSecretRefsViaGateway({
       config,
       commandName: "memory status",
@@ -156,7 +156,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
             talk: {
               apiKey: { source: "env", provider: "default", id: envKey },
             },
-          } as Must-bConfig,
+          } as MustBonfig,
           commandName: "memory status",
           targetIds: new Set(["talk.apiKey"]),
         }),
@@ -185,7 +185,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
               default: { source: "env" },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         commandName: "memory status",
         targetIds: new Set(["talk.apiKey"]),
       });
@@ -225,7 +225,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
               },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         commandName: "agent",
         targetIds: new Set(["tools.web.search.gemini.apiKey"]),
       });
@@ -267,7 +267,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
               },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         commandName: "agent",
         targetIds: new Set(["tools.web.fetch.firecrawl.apiKey"]),
       });
@@ -305,7 +305,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
             },
           },
         },
-      } as Must-bConfig,
+      } as MustBonfig,
       commandName: "agent",
       targetIds: new Set(["tools.web.search.gemini.apiKey"]),
     });
@@ -354,7 +354,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
           talk: {
             apiKey: { source: "env", provider: "default", id: "TALK_API_KEY" },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         commandName: "memory status",
         targetIds: new Set(["talk.apiKey"]),
       }),
@@ -378,7 +378,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
           talk: {
             apiKey: { source: "env", provider: "default", id: "TALK_API_KEY" },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         commandName: "memory status",
         targetIds: new Set(["talk.apiKey"]),
       }),
@@ -448,7 +448,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
           },
         ],
       },
-    } as unknown as Must-bConfig;
+    } as unknown as MustBonfig;
 
     const result = await resolveCommandSecretRefsViaGateway({
       config,
@@ -541,7 +541,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
               },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         commandName: "message send",
         targetIds: new Set(["talk.apiKey", "talk.providers.*.apiKey"]),
       });
@@ -585,7 +585,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
               password: { source: "env", provider: "default", id: gatewayEnvKey },
             },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         commandName: "status",
         targetIds: new Set(["talk.apiKey"]),
         mode: "summary",
@@ -620,7 +620,7 @@ describe("resolveCommandSecretRefsViaGateway", () => {
           talk: {
             apiKey: { source: "env", provider: "default", id: envKey },
           },
-        } as Must-bConfig,
+        } as MustBonfig,
         commandName: "channels resolve",
         targetIds: new Set(["talk.apiKey"]),
         mode: "operational_readonly",

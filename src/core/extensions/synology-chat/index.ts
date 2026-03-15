@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/synology-chat";
+import type { MustBPluginApi } from "must-b/plugin-sdk/synology-chat";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/synology-chat";
 import { createSynologyChatPlugin } from "./src/channel.js";
 import { setSynologyRuntime } from "./src/runtime.js";
@@ -8,7 +8,7 @@ const plugin = {
   name: "Synology Chat",
   description: "Native Synology Chat channel plugin for Must-b",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     setSynologyRuntime(api.runtime);
     api.registerChannel({ plugin: createSynologyChatPlugin() });
   },

@@ -1,8 +1,8 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveDmGroupAccessWithLists } from "../security/dm-policy-shared.js";
 
 export type ResolveSenderCommandAuthorizationParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   rawBody: string;
   isGroup: boolean;
   dmPolicy: string;
@@ -11,7 +11,7 @@ export type ResolveSenderCommandAuthorizationParams = {
   senderId: string;
   isSenderAllowed: (senderId: string, allowFrom: string[]) => boolean;
   readAllowFromStore: () => Promise<string[]>;
-  shouldComputeCommandAuthorized: (rawBody: string, cfg: Must-bConfig) => boolean;
+  shouldComputeCommandAuthorized: (rawBody: string, cfg: MustBonfig) => boolean;
   resolveCommandAuthorizedFromAuthorizers: (params: {
     useAccessGroups: boolean;
     authorizers: Array<{ configured: boolean; allowed: boolean }>;
@@ -19,7 +19,7 @@ export type ResolveSenderCommandAuthorizationParams = {
 };
 
 export type CommandAuthorizationRuntime = {
-  shouldComputeCommandAuthorized: (rawBody: string, cfg: Must-bConfig) => boolean;
+  shouldComputeCommandAuthorized: (rawBody: string, cfg: MustBonfig) => boolean;
   resolveCommandAuthorizedFromAuthorizers: (params: {
     useAccessGroups: boolean;
     authorizers: Array<{ configured: boolean; allowed: boolean }>;

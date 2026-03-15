@@ -31,7 +31,7 @@ export function parseFrontmatterBool(value: string | undefined, fallback: boolea
   return parsed === undefined ? fallback : parsed;
 }
 
-export function resolveMust-bManifestBlock(params: {
+export function resolveMustBanifestBlock(params: {
   frontmatter: Record<string, unknown>;
   key?: string;
 }): Record<string, unknown> | undefined {
@@ -59,16 +59,16 @@ export function resolveMust-bManifestBlock(params: {
   }
 }
 
-export type Must-bManifestRequires = {
+export type MustBanifestRequires = {
   bins: string[];
   anyBins: string[];
   env: string[];
   config: string[];
 };
 
-export function resolveMust-bManifestRequires(
+export function resolveMustBanifestRequires(
   metadataObj: Record<string, unknown>,
-): Must-bManifestRequires | undefined {
+): MustBanifestRequires | undefined {
   const requiresRaw =
     typeof metadataObj.requires === "object" && metadataObj.requires !== null
       ? (metadataObj.requires as Record<string, unknown>)
@@ -84,7 +84,7 @@ export function resolveMust-bManifestRequires(
   };
 }
 
-export function resolveMust-bManifestInstall<T>(
+export function resolveMustBanifestInstall<T>(
   metadataObj: Record<string, unknown>,
   parseInstallSpec: (input: unknown) => T | undefined,
 ): T[] {
@@ -94,11 +94,11 @@ export function resolveMust-bManifestInstall<T>(
     .filter((entry): entry is T => Boolean(entry));
 }
 
-export function resolveMust-bManifestOs(metadataObj: Record<string, unknown>): string[] {
+export function resolveMustBanifestOs(metadataObj: Record<string, unknown>): string[] {
   return normalizeStringList(metadataObj.os);
 }
 
-export type ParsedMust-bManifestInstallBase = {
+export type ParsedMustBanifestInstallBase = {
   raw: Record<string, unknown>;
   kind: string;
   id?: string;
@@ -106,10 +106,10 @@ export type ParsedMust-bManifestInstallBase = {
   bins?: string[];
 };
 
-export function parseMust-bManifestInstallBase(
+export function parseMustBanifestInstallBase(
   input: unknown,
   allowedKinds: readonly string[],
-): ParsedMust-bManifestInstallBase | undefined {
+): ParsedMustBanifestInstallBase | undefined {
   if (!input || typeof input !== "object") {
     return undefined;
   }
@@ -121,7 +121,7 @@ export function parseMust-bManifestInstallBase(
     return undefined;
   }
 
-  const spec: ParsedMust-bManifestInstallBase = {
+  const spec: ParsedMustBanifestInstallBase = {
     raw,
     kind,
   };
@@ -138,9 +138,9 @@ export function parseMust-bManifestInstallBase(
   return spec;
 }
 
-export function applyMust-bManifestInstallCommonFields<
+export function applyMustBanifestInstallCommonFields<
   T extends { id?: string; label?: string; bins?: string[] },
->(spec: T, parsed: Pick<ParsedMust-bManifestInstallBase, "id" | "label" | "bins">): T {
+>(spec: T, parsed: Pick<ParsedMustBanifestInstallBase, "id" | "label" | "bins">): T {
   if (parsed.id) {
     spec.id = parsed.id;
   }

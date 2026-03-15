@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import { resolveGatewayAuth } from "../gateway/auth.js";
 import { ensureGatewayStartupAuth } from "../gateway/startup-auth.js";
@@ -9,7 +9,7 @@ export type BrowserControlAuth = {
 };
 
 export function resolveBrowserControlAuth(
-  cfg: Must-bConfig | undefined,
+  cfg: MustBonfig | undefined,
   env: NodeJS.ProcessEnv = process.env,
 ): BrowserControlAuth {
   const auth = resolveGatewayAuth({
@@ -38,7 +38,7 @@ function shouldAutoGenerateBrowserAuth(env: NodeJS.ProcessEnv): boolean {
 }
 
 export async function ensureBrowserControlAuth(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env?: NodeJS.ProcessEnv;
 }): Promise<{
   auth: BrowserControlAuth;

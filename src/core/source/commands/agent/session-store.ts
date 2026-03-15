@@ -3,7 +3,7 @@ import { resolveContextTokensForModel } from "../../agents/context.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../agents/defaults.js";
 import { isCliProvider } from "../../agents/model-selection.js";
 import { deriveSessionTotalTokens, hasNonzeroUsage } from "../../agents/usage.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   mergeSessionEntry,
   setSessionRuntimeModel,
@@ -16,7 +16,7 @@ type RunResult = Awaited<
 >;
 
 export async function updateSessionStoreAfterAgentRun(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   contextTokensOverride?: number;
   sessionId: string;
   sessionKey: string;

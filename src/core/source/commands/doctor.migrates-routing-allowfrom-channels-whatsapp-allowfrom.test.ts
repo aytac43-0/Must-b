@@ -6,7 +6,7 @@ import {
   mockDoctorConfigSnapshot,
   note,
   readConfigFileSnapshot,
-  resolveMust-bPackageRoot,
+  resolveMustBackageRoot,
   runCommandWithTimeout,
   runGatewayUpdate,
   serviceInstall,
@@ -91,7 +91,7 @@ describe("doctor command", () => {
     delete process.env.MUSTB_UPDATE_IN_PROGRESS;
 
     const root = "/tmp/must-b";
-    resolveMust-bPackageRoot.mockResolvedValueOnce(root);
+    resolveMustBackageRoot.mockResolvedValueOnce(root);
     runCommandWithTimeout.mockResolvedValueOnce({
       stdout: `${root}\n`,
       stderr: "",

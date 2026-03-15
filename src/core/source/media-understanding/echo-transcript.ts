@@ -1,5 +1,5 @@
 import type { MsgContext } from "../auto-reply/templating.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { logVerbose, shouldLogVerbose } from "../globals.js";
 import { isDeliverableMessageChannel } from "../utils/message-channel.js";
 
@@ -23,7 +23,7 @@ function formatEchoTranscript(transcript: string, format: string): string {
  */
 export async function sendTranscriptEcho(params: {
   ctx: MsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   transcript: string;
   format?: string;
 }): Promise<void> {

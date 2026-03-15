@@ -21,7 +21,7 @@ type CoreToolDefinition = {
   description: string;
   sectionId: string;
   profiles: ToolProfileId[];
-  includeInMust-bGroup?: boolean;
+  includeInMustBroup?: boolean;
 };
 
 const CORE_TOOL_SECTION_ORDER: Array<{ id: string; label: string }> = [
@@ -87,7 +87,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Search the web",
     sectionId: "web",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "web_fetch",
@@ -95,7 +95,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Fetch web content",
     sectionId: "web",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "memory_search",
@@ -103,7 +103,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Semantic search",
     sectionId: "memory",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "memory_get",
@@ -111,7 +111,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Read memory files",
     sectionId: "memory",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "sessions_list",
@@ -119,7 +119,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "List sessions",
     sectionId: "sessions",
     profiles: ["coding", "messaging"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "sessions_history",
@@ -127,7 +127,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Session history",
     sectionId: "sessions",
     profiles: ["coding", "messaging"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "sessions_send",
@@ -135,7 +135,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Send to session",
     sectionId: "sessions",
     profiles: ["coding", "messaging"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "sessions_spawn",
@@ -143,7 +143,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Spawn sub-agent",
     sectionId: "sessions",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "sessions_yield",
@@ -151,7 +151,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "End turn to receive sub-agent results",
     sectionId: "sessions",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "subagents",
@@ -159,7 +159,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Manage sub-agents",
     sectionId: "sessions",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "session_status",
@@ -167,7 +167,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Session status",
     sectionId: "sessions",
     profiles: ["minimal", "coding", "messaging"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "browser",
@@ -175,7 +175,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Control web browser",
     sectionId: "ui",
     profiles: [],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "canvas",
@@ -183,7 +183,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Control canvases",
     sectionId: "ui",
     profiles: [],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "message",
@@ -191,7 +191,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Send messages",
     sectionId: "messaging",
     profiles: ["messaging"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "cron",
@@ -199,7 +199,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Schedule tasks",
     sectionId: "automation",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "gateway",
@@ -207,7 +207,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Gateway control",
     sectionId: "automation",
     profiles: [],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "nodes",
@@ -215,7 +215,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Nodes + devices",
     sectionId: "nodes",
     profiles: [],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "agents_list",
@@ -223,7 +223,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "List agents",
     sectionId: "agents",
     profiles: [],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "image",
@@ -231,7 +231,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Image understanding",
     sectionId: "media",
     profiles: ["coding"],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
   {
     id: "tts",
@@ -239,7 +239,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Text-to-speech conversion",
     sectionId: "media",
     profiles: [],
-    includeInMust-bGroup: true,
+    includeInMustBroup: true,
   },
 ];
 
@@ -274,7 +274,7 @@ function buildCoreToolGroupMap() {
     list.push(tool.id);
     sectionToolMap.set(groupId, list);
   }
-  const must-bTools = CORE_TOOL_DEFINITIONS.filter((tool) => tool.includeInMust-bGroup).map(
+  const must-bTools = CORE_TOOL_DEFINITIONS.filter((tool) => tool.includeInMustBroup).map(
     (tool) => tool.id,
   );
   return {

@@ -2,7 +2,7 @@ import {
   buildCloudflareAiGatewayModelDefinition,
   resolveCloudflareAiGatewayBaseUrl,
 } from "../agents/cloudflare-ai-gateway.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   applyAgentDefaultModelPrimary,
   applyProviderConfigWithDefaultModel,
@@ -12,7 +12,7 @@ import {
   VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
 } from "./onboard-auth.credentials.js";
 
-export function applyVercelAiGatewayProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyVercelAiGatewayProviderConfig(cfg: MustBonfig): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF] = {
     ...models[VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF],
@@ -32,9 +32,9 @@ export function applyVercelAiGatewayProviderConfig(cfg: Must-bConfig): Must-bCon
 }
 
 export function applyCloudflareAiGatewayProviderConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params?: { accountId?: string; gatewayId?: string },
-): Must-bConfig {
+): MustBonfig {
   const models = { ...cfg.agents?.defaults?.models };
   models[CLOUDFLARE_AI_GATEWAY_DEFAULT_MODEL_REF] = {
     ...models[CLOUDFLARE_AI_GATEWAY_DEFAULT_MODEL_REF],
@@ -77,15 +77,15 @@ export function applyCloudflareAiGatewayProviderConfig(
   });
 }
 
-export function applyVercelAiGatewayConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyVercelAiGatewayConfig(cfg: MustBonfig): MustBonfig {
   const next = applyVercelAiGatewayProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF);
 }
 
 export function applyCloudflareAiGatewayConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params?: { accountId?: string; gatewayId?: string },
-): Must-bConfig {
+): MustBonfig {
   const next = applyCloudflareAiGatewayProviderConfig(cfg, params);
   return applyAgentDefaultModelPrimary(next, CLOUDFLARE_AI_GATEWAY_DEFAULT_MODEL_REF);
 }

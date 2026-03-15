@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resetLogger, setLoggerOverride } from "../logging/logger.js";
 import type { AuthProfileStore } from "./auth-profiles.js";
 import { saveAuthProfileStore } from "./auth-profiles.js";
@@ -14,7 +14,7 @@ import { makeModelFallbackCfg } from "./test-helpers/model-fallback-config-fixtu
 
 const makeCfg = makeModelFallbackCfg;
 
-function makeFallbacksOnlyCfg(): Must-bConfig {
+function makeFallbacksOnlyCfg(): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -23,10 +23,10 @@ function makeFallbacksOnlyCfg(): Must-bConfig {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
-function makeProviderFallbackCfg(provider: string): Must-bConfig {
+function makeProviderFallbackCfg(provider: string): MustBonfig {
   return makeCfg({
     agents: {
       defaults: {
@@ -53,7 +53,7 @@ async function withTempAuthStore<T>(
 }
 
 async function runWithStoredAuth(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   store: AuthProfileStore;
   provider: string;
   run: (provider: string, model: string) => Promise<string>;

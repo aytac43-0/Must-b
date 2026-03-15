@@ -1,13 +1,13 @@
 import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveUserPath } from "../utils.js";
 import { createCacheTrace } from "./cache-trace.js";
 
 describe("createCacheTrace", () => {
   it("returns null when diagnostics cache tracing is disabled", () => {
     const trace = createCacheTrace({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       env: {},
     });
 

@@ -2,9 +2,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { SafeOpenError, openFileWithinRoot } from "../infra/fs-safe.js";
 import { isNotFoundPathError, isPathInside } from "../infra/path-guards.js";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 
-export const DEFAULT_BROWSER_TMP_DIR = resolvePreferredMust-bTmpDir();
+export const DEFAULT_BROWSER_TMP_DIR = resolvePreferredMustBmpDir();
 export const DEFAULT_TRACE_DIR = DEFAULT_BROWSER_TMP_DIR;
 export const DEFAULT_DOWNLOAD_DIR = path.join(DEFAULT_BROWSER_TMP_DIR, "downloads");
 export const DEFAULT_UPLOAD_DIR = path.join(DEFAULT_BROWSER_TMP_DIR, "uploads");

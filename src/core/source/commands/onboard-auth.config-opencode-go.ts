@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { applyAgentDefaultModelPrimary } from "./onboard-auth.config-shared.js";
 import { OPENCODE_GO_DEFAULT_MODEL_REF } from "./opencode-go-model-default.js";
 
@@ -8,7 +8,7 @@ const OPENCODE_GO_ALIAS_DEFAULTS: Record<string, string> = {
   "opencode-go/minimax-m2.5": "MiniMax",
 };
 
-export function applyOpencodeGoProviderConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyOpencodeGoProviderConfig(cfg: MustBonfig): MustBonfig {
   // Use the built-in opencode-go provider from pi-ai; only seed allowlist aliases.
   const models = { ...cfg.agents?.defaults?.models };
   for (const [modelRef, alias] of Object.entries(OPENCODE_GO_ALIAS_DEFAULTS)) {
@@ -30,7 +30,7 @@ export function applyOpencodeGoProviderConfig(cfg: Must-bConfig): Must-bConfig {
   };
 }
 
-export function applyOpencodeGoConfig(cfg: Must-bConfig): Must-bConfig {
+export function applyOpencodeGoConfig(cfg: MustBonfig): MustBonfig {
   const next = applyOpencodeGoProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, OPENCODE_GO_DEFAULT_MODEL_REF);
 }

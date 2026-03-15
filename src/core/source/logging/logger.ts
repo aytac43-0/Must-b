@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { Logger as TsLogger } from "tslog";
 import { getCommandPathWithRootOptions } from "../cli/argv.js";
-import type { Must-bConfig } from "../config/types.js";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import type { MustBonfig } from "../config/types.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 import { readLoggingConfig } from "./config.js";
 import type { ConsoleStyle } from "./console.js";
 import { resolveEnvLogLevelOverride } from "./env-log-level.js";
@@ -12,7 +12,7 @@ import { resolveNodeRequireFromMeta } from "./node-require.js";
 import { loggingState } from "./state.js";
 import { formatLocalIsoWithOffset } from "./timestamps.js";
 
-export const DEFAULT_LOG_DIR = resolvePreferredMust-bTmpDir();
+export const DEFAULT_LOG_DIR = resolvePreferredMustBmpDir();
 export const DEFAULT_LOG_FILE = path.join(DEFAULT_LOG_DIR, "must-b.log"); // legacy single-file path
 
 const LOG_PREFIX = "must-b";
@@ -82,13 +82,13 @@ function resolveSettings(): ResolvedSettings {
     };
   }
 
-  let cfg: Must-bConfig["logging"] | undefined =
+  let cfg: MustBonfig["logging"] | undefined =
     (loggingState.overrideSettings as LoggerSettings | null) ?? readLoggingConfig();
   if (!cfg && !shouldSkipLoadConfigFallback()) {
     try {
       const loaded = requireConfig?.("../config/config.js") as
         | {
-            loadConfig?: () => Must-bConfig;
+            loadConfig?: () => MustBonfig;
           }
         | undefined;
       cfg = loaded?.loadConfig?.().logging;

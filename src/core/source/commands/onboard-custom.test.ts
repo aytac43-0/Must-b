@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CONTEXT_WINDOW_HARD_MIN_TOKENS } from "../agents/context-window-guard.js";
 import { OLLAMA_DEFAULT_BASE_URL } from "../agents/ollama-models.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { defaultRuntime } from "../runtime.js";
 import {
   applyCustomApiConfig,
@@ -80,7 +80,7 @@ function expectOpenAiCompatResult(params: {
 
 function buildCustomProviderConfig(contextWindow?: number) {
   if (contextWindow === undefined) {
-    return {} as Must-bConfig;
+    return {} as MustBonfig;
   }
   return {
     models: {
@@ -102,7 +102,7 @@ function buildCustomProviderConfig(contextWindow?: number) {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 function applyCustomModelConfigWithContextWindow(contextWindow?: number) {

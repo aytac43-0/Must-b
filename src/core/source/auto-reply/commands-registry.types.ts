@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/types.js";
+import type { MustBonfig } from "../config/types.js";
 
 export type CommandScope = "text" | "native" | "both";
 
@@ -14,7 +14,7 @@ export type CommandCategory =
 export type CommandArgType = "string" | "number" | "boolean";
 
 export type CommandArgChoiceContext = {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   provider?: string;
   model?: string;
   command: ChatCommandDefinition;
@@ -81,7 +81,7 @@ export type CommandDetection = {
 };
 
 export type ShouldHandleTextCommandsParams = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   surface: string;
   commandSource?: "text" | "native";
 };

@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import type { AssistantMessage } from "@mariozechner/pi-ai";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { registerLogTransport, resetLogger, setLoggerOverride } from "../logging/logger.js";
 import { redactIdentifier } from "../logging/redact-identifier.js";
 import type { AuthProfileFailureReason } from "./auth-profiles.js";
@@ -48,7 +48,7 @@ vi.mock("./models-config.js", async (importOriginal) => {
   const mod = await importOriginal<typeof import("./models-config.js")>();
   return {
     ...mod,
-    ensureMust-bModelsJson: vi.fn(async () => ({ wrote: false })),
+    ensureMustBodelsJson: vi.fn(async () => ({ wrote: false })),
   };
 });
 
@@ -114,7 +114,7 @@ const makeAttempt = (overrides: Partial<EmbeddedRunAttemptResult>): EmbeddedRunA
   ...overrides,
 });
 
-const makeConfig = (opts?: { fallbacks?: string[]; apiKey?: string }): Must-bConfig =>
+const makeConfig = (opts?: { fallbacks?: string[]; apiKey?: string }): MustBonfig =>
   ({
     agents: {
       defaults: {
@@ -143,9 +143,9 @@ const makeConfig = (opts?: { fallbacks?: string[]; apiKey?: string }): Must-bCon
         },
       },
     },
-  }) satisfies Must-bConfig;
+  }) satisfies MustBonfig;
 
-const makeAgentOverrideOnlyFallbackConfig = (agentId: string): Must-bConfig =>
+const makeAgentOverrideOnlyFallbackConfig = (agentId: string): MustBonfig =>
   ({
     agents: {
       defaults: {
@@ -182,11 +182,11 @@ const makeAgentOverrideOnlyFallbackConfig = (agentId: string): Must-bConfig =>
         },
       },
     },
-  }) satisfies Must-bConfig;
+  }) satisfies MustBonfig;
 
 const copilotModelId = "gpt-4o";
 
-const makeCopilotConfig = (): Must-bConfig =>
+const makeCopilotConfig = (): MustBonfig =>
   ({
     models: {
       providers: {
@@ -207,7 +207,7 @@ const makeCopilotConfig = (): Must-bConfig =>
         },
       },
     },
-  }) satisfies Must-bConfig;
+  }) satisfies MustBonfig;
 
 const writeAuthStore = async (
   agentDir: string,

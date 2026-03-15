@@ -2,7 +2,7 @@ import type { RequestClient } from "@buape/carbon";
 import { resolveAgentAvatar } from "../../agents/identity-avatar.js";
 import type { ChunkMode } from "../../auto-reply/chunk.js";
 import type { ReplyPayload } from "../../auto-reply/types.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { MarkdownTableMode, ReplyToMode } from "../../config/types.base.js";
 import { createDiscordRetryRunner, type RetryRunner } from "../../infra/retry-policy.js";
 import { resolveRetryConfig, retryAsync, type RetryConfig } from "../../infra/retry.js";
@@ -104,7 +104,7 @@ function resolveBoundThreadBinding(params: {
 }
 
 function resolveBindingPersona(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   binding: DiscordThreadBindingLookupRecord | undefined,
 ): {
   username?: string;
@@ -129,7 +129,7 @@ function resolveBindingPersona(
 }
 
 async function sendDiscordChunkWithFallback(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   target: string;
   text: string;
   token: string;
@@ -206,7 +206,7 @@ async function sendDiscordChunkWithFallback(params: {
 }
 
 async function sendAdditionalDiscordMedia(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   target: string;
   token: string;
   rest?: RequestClient;
@@ -235,7 +235,7 @@ async function sendAdditionalDiscordMedia(params: {
 }
 
 export async function deliverDiscordReply(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   replies: ReplyPayload[];
   target: string;
   token: string;

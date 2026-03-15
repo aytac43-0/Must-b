@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { runEmbeddedPiAgentMock } from "./reply.directive.directive-behavior.e2e-mocks.js";
 import { createTempHomeHarness, makeReplyConfig } from "./reply.test-harness.js";
 
@@ -39,7 +39,7 @@ describe("getReplyFromConfig typing (heartbeat)", () => {
       await getReplyFromConfig(
         { Body: "hi", From: "+1000", To: "+2000", Provider: "whatsapp" },
         { onReplyStart, isHeartbeat },
-        makeReplyConfig(home) as unknown as Must-bConfig,
+        makeReplyConfig(home) as unknown as MustBonfig,
       );
     });
     return onReplyStart;

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
-const loadConfig = vi.hoisted(() => vi.fn(() => ({}) as Must-bConfig));
+const loadConfig = vi.hoisted(() => vi.fn(() => ({}) as MustBonfig));
 const resolveDefaultAgentId = vi.hoisted(() => vi.fn(() => "main"));
 const getMemorySearchManager = vi.hoisted(() => vi.fn());
 

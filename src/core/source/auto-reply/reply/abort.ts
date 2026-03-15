@@ -9,7 +9,7 @@ import {
   resolveInternalSessionKey,
   resolveMainSessionAlias,
 } from "../../agents/tools/sessions-helpers.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   loadSessionStore,
   resolveSessionStoreEntry,
@@ -203,7 +203,7 @@ function resolveAbortTargetKey(ctx: MsgContext): string | undefined {
 }
 
 function normalizeRequesterSessionKey(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   key: string | undefined,
 ): string | undefined {
   const cleaned = key?.trim();
@@ -215,7 +215,7 @@ function normalizeRequesterSessionKey(
 }
 
 export function stopSubagentsForRequester(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   requesterSessionKey?: string;
 }): { stopped: number } {
   const requesterKey = normalizeRequesterSessionKey(params.cfg, params.requesterSessionKey);
@@ -278,7 +278,7 @@ export function stopSubagentsForRequester(params: {
 
 export async function tryFastAbortFromMessage(params: {
   ctx: FinalizedMsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
 }): Promise<{ handled: boolean; aborted: boolean; stoppedSubagents?: number }> {
   const { ctx, cfg } = params;
   const targetKey = resolveAbortTargetKey(ctx);

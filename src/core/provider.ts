@@ -1,7 +1,7 @@
 import winston from 'winston';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 export interface CompletionMessage {
   role: 'system' | 'user' | 'assistant';
@@ -9,20 +9,15 @@ export interface CompletionMessage {
 }
 
 export class LLMProvider {
-  private apiKey: string;
   private model: string;
   private logger: winston.Logger;
   private baseUrl: string;
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
-    this.apiKey = process.env.OPENROUTER_API_KEY || '';
     this.model = process.env.OPENROUTER_MODEL || 'openai/gpt-3.5-turbo';
     this.baseUrl = 'https://openrouter.ai/api/v1';
 
-    if (!this.apiKey) {
-      this.logger.warn('Provider: OPENROUTER_API_KEY is not set. LLM calls will fail.');
-    }
   }
 
   async generateJson<T>(messages: CompletionMessage[]): Promise<T> {
@@ -39,11 +34,15 @@ export class LLMProvider {
   }
 
   async chat(messages: CompletionMessage[], options: { jsonMode?: boolean } = {}): Promise<string> {
+    // Re-read env so keys written by onboard wizard are picked up without restart
+    dotenv.config({ override: true });
+    const apiKey = process.env.OPENROUTER_API_KEY || '';
+    if (!apiKey) this.logger.warn('Provider: OPENROUTER_API_KEY is not set. LLM calls will fail.');
     this.logger.info(`Provider: Sending request to ${this.model}...`);
 
     try {
       const headers: Record<string, string> = {
-        'Authorization': `Bearer ${this.apiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://must-b.ai', // Required by OpenRouter
         'X-Title': 'Must-b Agent',

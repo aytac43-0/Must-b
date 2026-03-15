@@ -5,7 +5,7 @@ import {
   resolveStateDir,
 } from "../../config/config.js";
 import type {
-  Must-bConfig,
+  MustBonfig,
   GatewayBindMode,
   GatewayControlUiConfig,
 } from "../../config/types.js";
@@ -59,8 +59,8 @@ type PortStatusSummary = {
 
 type DaemonConfigContext = {
   mergedDaemonEnv: Record<string, string | undefined>;
-  cliCfg: Must-bConfig;
-  daemonCfg: Must-bConfig;
+  cliCfg: MustBonfig;
+  daemonCfg: MustBonfig;
   cliConfigSummary: ConfigSummary;
   daemonConfigSummary: ConfigSummary;
   configMismatch: boolean;
@@ -178,8 +178,8 @@ async function loadDaemonConfigContext(
 }
 
 async function resolveGatewayStatusSummary(params: {
-  daemonCfg: Must-bConfig;
-  cliCfg: Must-bConfig;
+  daemonCfg: MustBonfig;
+  cliCfg: MustBonfig;
   mergedDaemonEnv: Record<string, string | undefined>;
   commandProgramArguments?: string[];
   rpcUrlOverride?: string;

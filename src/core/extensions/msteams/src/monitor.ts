@@ -5,7 +5,7 @@ import {
   keepHttpServerTaskAlive,
   mergeAllowlist,
   summarizeMapping,
-  type Must-bConfig,
+  type MustBonfig,
   type RuntimeEnv,
 } from "must-b/plugin-sdk/msteams";
 import { createMSTeamsConversationStoreFs } from "./conversation-store-fs.js";
@@ -23,7 +23,7 @@ import { createMSTeamsAdapter, loadMSTeamsSdkWithAuth } from "./sdk.js";
 import { resolveMSTeamsCredentials } from "./token.js";
 
 export type MonitorMSTeamsOpts = {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   conversationStore?: MSTeamsConversationStore;

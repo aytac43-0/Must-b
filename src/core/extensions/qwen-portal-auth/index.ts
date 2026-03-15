@@ -1,7 +1,7 @@
 import {
   buildOauthProviderAuthResult,
   emptyPluginConfigSchema,
-  type Must-bPluginApi,
+  type MustBPluginApi,
   type ProviderAuthContext,
 } from "must-b/plugin-sdk/qwen-portal-auth";
 import { loginQwenPortalOAuth } from "./oauth.js";
@@ -41,7 +41,7 @@ const qwenPortalPlugin = {
   name: "Qwen OAuth",
   description: "OAuth flow for Qwen (free-tier) models",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     api.registerProvider({
       id: PROVIDER_ID,
       label: PROVIDER_LABEL,

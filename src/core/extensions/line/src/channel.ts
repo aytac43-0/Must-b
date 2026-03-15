@@ -14,7 +14,7 @@ import {
   processLineMessage,
   type ChannelPlugin,
   type ChannelStatusIssue,
-  type Must-bConfig,
+  type MustBConfig,
   type LineConfig,
   type LineChannelData,
   type ResolvedLineAccount,
@@ -44,7 +44,7 @@ const lineConfigAccessors = createScopedAccountConfigAccessors({
       .map((entry) => entry.replace(/^line:(?:user:)?/i, "")),
 });
 
-const lineConfigBase = createScopedChannelConfigBase<ResolvedLineAccount, Must-bConfig>({
+const lineConfigBase = createScopedChannelConfigBase<ResolvedLineAccount, MustBConfig>({
   sectionKey: "line",
   listAccountIds: (cfg) => getLineRuntime().channel.line.listLineAccountIds(cfg),
   resolveAccount: (cfg, accountId) =>
@@ -63,11 +63,11 @@ const resolveLineDmPolicy = createScopedDmSecurityResolver<ResolvedLineAccount>(
 });
 
 function patchLineAccountConfig(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   lineConfig: LineConfig,
   accountId: string,
   patch: Record<string, unknown>,
-): Must-bConfig {
+): MustBConfig {
   if (accountId === DEFAULT_ACCOUNT_ID) {
     return {
       ...cfg,
@@ -629,7 +629,7 @@ export const linePlugin: ChannelPlugin<ResolvedLineAccount> = {
     },
     logoutAccount: async ({ accountId, cfg }) => {
       const envToken = process.env.LINE_CHANNEL_ACCESS_TOKEN?.trim() ?? "";
-      const nextCfg = { ...cfg } as Must-bConfig;
+      const nextCfg = { ...cfg } as MustBConfig;
       const lineConfig = (cfg.channels?.line ?? {}) as LineConfig;
       const nextLine = { ...lineConfig };
       let cleared = false;

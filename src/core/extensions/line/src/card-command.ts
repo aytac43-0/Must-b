@@ -1,4 +1,4 @@
-import type { LineChannelData, Must-bPluginApi, ReplyPayload } from "must-b/plugin-sdk/line";
+import type { LineChannelData, MustBPluginApi, ReplyPayload } from "must-b/plugin-sdk/line";
 import {
   createActionCard,
   createImageCard,
@@ -154,7 +154,7 @@ function parseCardArgs(argsStr: string): {
   return result;
 }
 
-export function registerLineCardCommand(api: Must-bPluginApi): void {
+export function registerLineCardCommand(api: MustBPluginApi): void {
   api.registerCommand({
     name: "card",
     description: "Send a rich card message (LINE).",

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import {
   applyProviderDefaultModel,
@@ -14,9 +14,9 @@ export const VLLM_DEFAULT_MAX_TOKENS = SELF_HOSTED_DEFAULT_MAX_TOKENS;
 export const VLLM_DEFAULT_COST = SELF_HOSTED_DEFAULT_COST;
 
 export async function promptAndConfigureVllm(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
-}): Promise<{ config: Must-bConfig; modelId: string; modelRef: string }> {
+}): Promise<{ config: MustBonfig; modelId: string; modelRef: string }> {
   const result = await promptAndConfigureOpenAICompatibleSelfHostedProvider({
     cfg: params.cfg,
     prompter: params.prompter,

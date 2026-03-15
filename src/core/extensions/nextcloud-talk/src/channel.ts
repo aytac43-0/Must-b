@@ -18,7 +18,7 @@ import {
   normalizeAccountId,
   setAccountEnabledInConfigSection,
   type ChannelPlugin,
-  type Must-bConfig,
+  type MustBConfig,
   type ChannelSetupInput,
 } from "must-b/plugin-sdk/nextcloud-talk";
 import {
@@ -238,7 +238,7 @@ export const nextcloudTalkPlugin: ChannelPlugin<ResolvedNextcloudTalkAccount> = 
                     : {}),
             },
           },
-        } as Must-bConfig;
+        } as MustBConfig;
       }
       return {
         ...namedConfig,
@@ -262,7 +262,7 @@ export const nextcloudTalkPlugin: ChannelPlugin<ResolvedNextcloudTalkAccount> = 
             },
           },
         },
-      } as Must-bConfig;
+      } as MustBConfig;
     },
   },
   outbound: {
@@ -360,7 +360,7 @@ export const nextcloudTalkPlugin: ChannelPlugin<ResolvedNextcloudTalkAccount> = 
       });
     },
     logoutAccount: async ({ accountId, cfg }) => {
-      const nextCfg = { ...cfg } as Must-bConfig;
+      const nextCfg = { ...cfg } as MustBConfig;
       const nextSection = cfg.channels?.["nextcloud-talk"]
         ? { ...cfg.channels["nextcloud-talk"] }
         : undefined;
@@ -398,7 +398,7 @@ export const nextcloudTalkPlugin: ChannelPlugin<ResolvedNextcloudTalkAccount> = 
           const nextChannels = { ...nextCfg.channels } as Record<string, unknown>;
           delete nextChannels["nextcloud-talk"];
           if (Object.keys(nextChannels).length > 0) {
-            nextCfg.channels = nextChannels as Must-bConfig["channels"];
+            nextCfg.channels = nextChannels as MustBConfig["channels"];
           } else {
             delete nextCfg.channels;
           }

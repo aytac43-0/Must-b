@@ -1,7 +1,7 @@
 import type {
   ChannelOnboardingAdapter,
   ChannelOnboardingDmPolicy,
-  Must-bConfig,
+  MustBConfig,
   WizardPrompter,
 } from "must-b/plugin-sdk/zalouser";
 import {
@@ -32,29 +32,29 @@ import {
 const channel = "zalouser" as const;
 
 function setZalouserAccountScopedConfig(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
   defaultPatch: Record<string, unknown>,
   accountPatch: Record<string, unknown> = defaultPatch,
-): Must-bConfig {
+): MustBConfig {
   return patchScopedAccountConfig({
     cfg,
     channelKey: channel,
     accountId,
     patch: defaultPatch,
     accountPatch,
-  }) as Must-bConfig;
+  }) as MustBConfig;
 }
 
 function setZalouserDmPolicy(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   dmPolicy: "pairing" | "allowlist" | "open" | "disabled",
-): Must-bConfig {
+): MustBConfig {
   return setTopLevelChannelDmPolicyWithAllowFrom({
     cfg,
     channel: "zalouser",
     dmPolicy,
-  }) as Must-bConfig;
+  }) as MustBConfig;
 }
 
 async function noteZalouserHelp(prompter: WizardPrompter): Promise<void> {
@@ -71,10 +71,10 @@ async function noteZalouserHelp(prompter: WizardPrompter): Promise<void> {
 }
 
 async function promptZalouserAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   prompter: WizardPrompter;
   accountId: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBConfig> {
   const { cfg, prompter, accountId } = params;
   const resolved = resolveZalouserAccountSync({ cfg, accountId });
   const existingAllowFrom = resolved.config.allowFrom ?? [];
@@ -126,20 +126,20 @@ async function promptZalouserAllowFrom(params: {
 }
 
 function setZalouserGroupPolicy(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
   groupPolicy: "open" | "allowlist" | "disabled",
-): Must-bConfig {
+): MustBConfig {
   return setZalouserAccountScopedConfig(cfg, accountId, {
     groupPolicy,
   });
 }
 
 function setZalouserGroupAllowlist(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   accountId: string,
   groupKeys: string[],
-): Must-bConfig {
+): MustBConfig {
   const groups = Object.fromEntries(groupKeys.map((key) => [key, { allow: true }]));
   return setZalouserAccountScopedConfig(cfg, accountId, {
     groups,

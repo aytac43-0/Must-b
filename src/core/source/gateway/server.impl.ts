@@ -11,7 +11,7 @@ import { createDefaultDeps } from "../cli/deps.js";
 import { isRestartEnabled } from "../config/commands.js";
 import {
   CONFIG_PATH,
-  type Must-bConfig,
+  type MustBonfig,
   isNixMode,
   loadConfig,
   migrateLegacyConfig,
@@ -34,7 +34,7 @@ import { createExecApprovalForwarder } from "../infra/exec-approval-forwarder.js
 import { onHeartbeatEvent } from "../infra/heartbeat-events.js";
 import { startHeartbeatRunner, type HeartbeatRunner } from "../infra/heartbeat-runner.js";
 import { getMachineDisplayName } from "../infra/machine-name.js";
-import { ensureMust-bCliOnPath } from "../infra/path-env.js";
+import { ensureMustBliOnPath } from "../infra/path-env.js";
 import { setGatewaySigusr1RestartPolicy, setPreRestartDeferralCheck } from "../infra/restart.js";
 import {
   primeRemoteSkillsCache,
@@ -119,7 +119,7 @@ import { maybeSeedControlUiAllowedOriginsAtStartup } from "./startup-control-ui-
 
 export { __resetModelCatalogCacheForTest } from "./server-model-catalog.js";
 
-ensureMust-bCliOnPath();
+ensureMustBliOnPath();
 
 const MAX_MEDIA_TTL_HOURS = 24 * 7;
 
@@ -164,7 +164,7 @@ function createGatewayAuthRateLimiters(rateLimitConfig: AuthRateLimitConfig | un
 }
 
 function logGatewayAuthSurfaceDiagnostics(prepared: {
-  sourceConfig: Must-bConfig;
+  sourceConfig: MustBonfig;
   warnings: Array<{ code: string; path: string; message: string }>;
 }): void {
   const states = evaluateGatewayAuthSurfaceStates({
@@ -193,9 +193,9 @@ function logGatewayAuthSurfaceDiagnostics(prepared: {
 }
 
 function applyGatewayAuthOverridesForStartupPreflight(
-  config: Must-bConfig,
+  config: MustBonfig,
   overrides: Pick<GatewayServerOptions, "auth" | "tailscale">,
-): Must-bConfig {
+): MustBonfig {
   if (!overrides.auth && !overrides.tailscale) {
     return config;
   }
@@ -335,7 +335,7 @@ export async function startGatewayServer(
   const emitSecretsStateEvent = (
     code: "SECRETS_RELOADER_DEGRADED" | "SECRETS_RELOADER_RECOVERED",
     message: string,
-    cfg: Must-bConfig,
+    cfg: MustBonfig,
   ) => {
     enqueueSystemEvent(`[${code}] ${message}`, {
       sessionKey: resolveMainSessionKey(cfg),
@@ -352,7 +352,7 @@ export async function startGatewayServer(
     return await run;
   };
   const activateRuntimeSecrets = async (
-    config: Must-bConfig,
+    config: MustBonfig,
     params: { reason: "startup" | "reload" | "restart-check"; activate: boolean },
   ) =>
     await runWithSecretsActivationLock(async () => {
@@ -398,7 +398,7 @@ export async function startGatewayServer(
     });
 
   // Fail fast before startup if required refs are unresolved.
-  let cfgAtStart: Must-bConfig;
+  let cfgAtStart: MustBonfig;
   {
     const freshSnapshot = await readConfigFileSnapshot();
     if (!freshSnapshot.valid) {

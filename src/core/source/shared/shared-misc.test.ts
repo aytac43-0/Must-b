@@ -4,7 +4,7 @@ import {
   getFrontmatterString,
   normalizeStringList,
   parseFrontmatterBool,
-  resolveMust-bManifestBlock,
+  resolveMustBanifestBlock,
 } from "./frontmatter.js";
 import { resolveNodeIdFromCandidates } from "./node-match.js";
 
@@ -66,20 +66,20 @@ describe("shared/frontmatter", () => {
     expect(parseFrontmatterBool(undefined, true)).toBe(true);
   });
 
-  test("resolveMust-bManifestBlock parses JSON5 metadata and picks must-b block", () => {
+  test("resolveMustBanifestBlock parses JSON5 metadata and picks must-b block", () => {
     const frontmatter = {
       metadata: "{ must-b: { foo: 1, bar: 'baz' } }",
     };
-    expect(resolveMust-bManifestBlock({ frontmatter })).toEqual({ foo: 1, bar: "baz" });
+    expect(resolveMustBanifestBlock({ frontmatter })).toEqual({ foo: 1, bar: "baz" });
   });
 
-  test("resolveMust-bManifestBlock returns undefined for invalid input", () => {
-    expect(resolveMust-bManifestBlock({ frontmatter: {} })).toBeUndefined();
+  test("resolveMustBanifestBlock returns undefined for invalid input", () => {
+    expect(resolveMustBanifestBlock({ frontmatter: {} })).toBeUndefined();
     expect(
-      resolveMust-bManifestBlock({ frontmatter: { metadata: "not-json5" } }),
+      resolveMustBanifestBlock({ frontmatter: { metadata: "not-json5" } }),
     ).toBeUndefined();
     expect(
-      resolveMust-bManifestBlock({ frontmatter: { metadata: "{ nope: { a: 1 } }" } }),
+      resolveMustBanifestBlock({ frontmatter: { metadata: "{ nope: { a: 1 } }" } }),
     ).toBeUndefined();
   });
 });

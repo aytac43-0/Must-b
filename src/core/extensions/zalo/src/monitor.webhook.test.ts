@@ -1,6 +1,6 @@
 import { createServer, type RequestListener } from "node:http";
 import type { AddressInfo } from "node:net";
-import type { Must-bConfig, PluginRuntime } from "must-b/plugin-sdk/zalo";
+import type { MustBConfig, PluginRuntime } from "must-b/plugin-sdk/zalo";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createEmptyPluginRegistry } from "../../../src/plugins/registry.js";
 import { setActivePluginRegistry } from "../../../src/plugins/runtime.js";
@@ -50,13 +50,13 @@ function registerTarget(params: {
   secret?: string;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
   account?: ResolvedZaloAccount;
-  config?: Must-bConfig;
+  config?: MustBConfig;
   core?: PluginRuntime;
 }): () => void {
   return registerZaloWebhookTarget({
     token: "tok",
     account: params.account ?? DEFAULT_ACCOUNT,
-    config: params.config ?? ({} as Must-bConfig),
+    config: params.config ?? ({} as MustBConfig),
     runtime: {},
     core: params.core ?? ({} as PluginRuntime),
     secret: params.secret ?? "secret",
@@ -355,7 +355,7 @@ describe("handleZaloWebhookRequest", () => {
         gateway: {
           trustedProxies: ["127.0.0.1"],
         },
-      } as Must-bConfig,
+      } as MustBConfig,
     });
 
     try {

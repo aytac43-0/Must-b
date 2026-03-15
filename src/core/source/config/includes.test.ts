@@ -22,7 +22,7 @@ function configPath(...parts: string[]) {
   return path.join(CONFIG_DIR, ...parts);
 }
 
-function etcMust-bPath(...parts: string[]) {
+function etcMustBath(...parts: string[]) {
   return path.join(ETC_MUSTB_DIR, ...parts);
 }
 
@@ -83,7 +83,7 @@ describe("resolveConfigIncludes", () => {
   });
 
   it("rejects absolute path outside config directory (CWE-22)", () => {
-    const absolute = etcMust-bPath("agents.json");
+    const absolute = etcMustBath("agents.json");
     const files = { [absolute]: { list: [{ id: "main" }] } };
     const obj = { agents: { $include: absolute } };
     expectResolveIncludeError(() => resolve(obj, files), /escapes config directory/);

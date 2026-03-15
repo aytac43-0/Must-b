@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { captureEnv } from "../test-utils/env.js";
 import {
   loadConfigMock as loadConfig,
@@ -229,7 +229,7 @@ describe("callGateway url resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
     resolveGatewayPort.mockReturnValue(18789);
     pickPrimaryTailnetIPv4.mockReturnValue(undefined);
     process.env.MUSTB_GATEWAY_URL = "wss://gateway-in-container.internal:9443/ws";
@@ -738,7 +738,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -761,7 +761,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -784,7 +784,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -807,7 +807,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -834,7 +834,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await expect(callGateway({ method: "health" })).rejects.toThrow("gateway.auth.token");
   });
@@ -856,7 +856,7 @@ describe("callGateway password resolution", () => {
             default: { source: "env" },
           },
         },
-      } as unknown as Must-bConfig);
+      } as unknown as MustBonfig);
 
       await callGateway({ method: "health" });
 
@@ -884,7 +884,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -908,7 +908,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -932,7 +932,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -956,7 +956,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -982,7 +982,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -1007,7 +1007,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -1032,7 +1032,7 @@ describe("callGateway password resolution", () => {
           default: { source: "env" },
         },
       },
-    } as unknown as Must-bConfig);
+    } as unknown as MustBonfig);
 
     await callGateway({ method: "health" });
 
@@ -1059,7 +1059,7 @@ describe("callGateway password resolution", () => {
             default: { source: "env" },
           },
         },
-      } as unknown as Must-bConfig);
+      } as unknown as MustBonfig);
 
       await callGateway({ method: "health" });
 

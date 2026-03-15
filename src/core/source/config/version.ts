@@ -1,4 +1,4 @@
-export type Must-bVersion = {
+export type MustBersion = {
   major: number;
   minor: number;
   patch: number;
@@ -7,7 +7,7 @@ export type Must-bVersion = {
 
 const VERSION_RE = /^v?(\d+)\.(\d+)\.(\d+)(?:-(\d+))?/;
 
-export function parseMust-bVersion(raw: string | null | undefined): Must-bVersion | null {
+export function parseMustBersion(raw: string | null | undefined): MustBersion | null {
   if (!raw) {
     return null;
   }
@@ -24,12 +24,12 @@ export function parseMust-bVersion(raw: string | null | undefined): Must-bVersio
   };
 }
 
-export function compareMust-bVersions(
+export function compareMustBersions(
   a: string | null | undefined,
   b: string | null | undefined,
 ): number | null {
-  const parsedA = parseMust-bVersion(a);
-  const parsedB = parseMust-bVersion(b);
+  const parsedA = parseMustBersion(a);
+  const parsedB = parseMustBersion(b);
   if (!parsedA || !parsedB) {
     return null;
   }

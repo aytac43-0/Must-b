@@ -96,10 +96,10 @@ export { ACP_ERROR_CODES, AcpRuntimeError } from "../acp/runtime/errors.js";
 export type { AcpRuntimeErrorCode } from "../acp/runtime/errors.js";
 export type {
   AnyAgentTool,
-  Must-bPluginConfigSchema,
-  Must-bPluginApi,
-  Must-bPluginService,
-  Must-bPluginServiceContext,
+  MustBluginConfigSchema,
+  MustBluginApi,
+  MustBluginService,
+  MustBluginServiceContext,
   PluginLogger,
   ProviderAuthContext,
   ProviderAuthResult,
@@ -125,9 +125,9 @@ export type {
 export { normalizePluginHttpPath } from "../plugins/http-path.js";
 export { registerPluginHttpRoute } from "../plugins/http-registry.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
-export type { Must-bConfig } from "../config/config.js";
-/** @deprecated Use Must-bConfig instead */
-export type { Must-bConfig as ClawdbotConfig } from "../config/config.js";
+export type { MustBonfig } from "../config/config.js";
+/** @deprecated Use MustBonfig instead */
+export type { MustBonfig as ClawdbotConfig } from "../config/config.js";
 export { isDangerousNameMatchingEnabled } from "../config/dangerous-name-matching.js";
 
 export type { FileLockHandle, FileLockOptions } from "./file-lock.js";
@@ -375,7 +375,7 @@ export type {
   WindowsSpawnProgram,
   WindowsSpawnResolution,
 } from "./windows-spawn.js";
-export { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+export { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 export {
   runPluginCommandWithTimeout,
   type PluginCommandRunOptions,

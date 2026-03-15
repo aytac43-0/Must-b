@@ -1,6 +1,6 @@
 import path from "node:path";
-import type { Must-bPluginApi } from "must-b/plugin-sdk/diffs";
-import { resolvePreferredMust-bTmpDir } from "must-b/plugin-sdk/diffs";
+import type { MustBPluginApi } from "must-b/plugin-sdk/diffs";
+import { resolvePreferredMustBTmpDir } from "must-b/plugin-sdk/diffs";
 import {
   diffsPluginConfigSchema,
   resolveDiffsPluginDefaults,
@@ -16,11 +16,11 @@ const plugin = {
   name: "Diffs",
   description: "Read-only diff viewer and PNG/PDF renderer for agents.",
   configSchema: diffsPluginConfigSchema,
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     const defaults = resolveDiffsPluginDefaults(api.pluginConfig);
     const security = resolveDiffsPluginSecurity(api.pluginConfig);
     const store = new DiffArtifactStore({
-      rootDir: path.join(resolvePreferredMust-bTmpDir(), "must-b-diffs"),
+      rootDir: path.join(resolvePreferredMustBTmpDir(), "must-b-diffs"),
       logger: api.logger,
     });
 

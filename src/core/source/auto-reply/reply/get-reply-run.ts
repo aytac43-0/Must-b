@@ -8,7 +8,7 @@ import {
   isEmbeddedPiRunStreaming,
   resolveEmbeddedSessionLane,
 } from "../../agents/pi-embedded.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   resolveGroupSessionKey,
   resolveSessionFilePath,
@@ -51,7 +51,7 @@ import { resolveRunTypingPolicy } from "./typing-policy.js";
 import type { TypingController } from "./typing.js";
 import { appendUntrustedContext } from "./untrusted-context.js";
 
-type AgentDefaults = NonNullable<Must-bConfig["agents"]>["defaults"];
+type AgentDefaults = NonNullable<MustBonfig["agents"]>["defaults"];
 type ExecOverrides = Pick<ExecToolDefaults, "host" | "security" | "ask" | "node">;
 
 function buildResetSessionNoticeText(params: {
@@ -91,7 +91,7 @@ async function sendResetSessionNotice(params: {
   ctx: MsgContext;
   command: ReturnType<typeof buildCommandContext>;
   sessionKey: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId: string | undefined;
   threadId: string | number | undefined;
   provider: string;
@@ -127,11 +127,11 @@ async function sendResetSessionNotice(params: {
 type RunPreparedReplyParams = {
   ctx: MsgContext;
   sessionCtx: TemplateContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   agentDir: string;
   agentCfg: AgentDefaults;
-  sessionCfg: Must-bConfig["session"];
+  sessionCfg: MustBonfig["session"];
   commandAuthorized: boolean;
   command: ReturnType<typeof buildCommandContext>;
   commandSource: string;

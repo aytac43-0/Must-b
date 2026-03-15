@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { runAudioTranscription } from "./audio-transcription-runner.js";
 
 /**
@@ -12,7 +12,7 @@ import { runAudioTranscription } from "./audio-transcription-runner.js";
  */
 export async function transcribeAudioFile(params: {
   filePath: string;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir?: string;
   mime?: string;
 }): Promise<{ text: string | undefined }> {

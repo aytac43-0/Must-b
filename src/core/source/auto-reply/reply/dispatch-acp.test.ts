@@ -4,7 +4,7 @@ import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AcpRuntimeError } from "../../acp/runtime/errors.js";
 import type { AcpSessionStoreEntry } from "../../acp/runtime/session-meta.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionBindingRecord } from "../../infra/outbound/session-binding-service.js";
 import type { ReplyDispatcher } from "./reply-dispatcher.js";
 import { buildTestCtx } from "./test-ctx.js";
@@ -20,8 +20,8 @@ const managerMocks = vi.hoisted(() => ({
 }));
 
 const policyMocks = vi.hoisted(() => ({
-  resolveAcpDispatchPolicyError: vi.fn<(cfg: Must-bConfig) => AcpRuntimeError | null>(() => null),
-  resolveAcpAgentPolicyError: vi.fn<(cfg: Must-bConfig, agent: string) => AcpRuntimeError | null>(
+  resolveAcpDispatchPolicyError: vi.fn<(cfg: MustBonfig) => AcpRuntimeError | null>(() => null),
+  resolveAcpAgentPolicyError: vi.fn<(cfg: MustBonfig, agent: string) => AcpRuntimeError | null>(
     () => null,
   ),
 }));
@@ -39,12 +39,12 @@ const ttsMocks = vi.hoisted(() => ({
     const params = paramsUnknown as { payload: unknown };
     return params.payload;
   }),
-  resolveTtsConfig: vi.fn((_cfg: Must-bConfig) => ({ mode: "final" })),
+  resolveTtsConfig: vi.fn((_cfg: MustBonfig) => ({ mode: "final" })),
 }));
 
 const sessionMetaMocks = vi.hoisted(() => ({
   readAcpSessionEntry: vi.fn<
-    (params: { sessionKey: string; cfg?: Must-bConfig }) => AcpSessionStoreEntry | null
+    (params: { sessionKey: string; cfg?: MustBonfig }) => AcpSessionStoreEntry | null
   >(() => null),
 }));
 
@@ -57,9 +57,9 @@ vi.mock("../../acp/control-plane/manager.js", () => ({
 }));
 
 vi.mock("../../acp/policy.js", () => ({
-  resolveAcpDispatchPolicyError: (cfg: Must-bConfig) =>
+  resolveAcpDispatchPolicyError: (cfg: MustBonfig) =>
     policyMocks.resolveAcpDispatchPolicyError(cfg),
-  resolveAcpAgentPolicyError: (cfg: Must-bConfig, agent: string) =>
+  resolveAcpAgentPolicyError: (cfg: MustBonfig, agent: string) =>
     policyMocks.resolveAcpAgentPolicyError(cfg, agent),
 }));
 
@@ -73,11 +73,11 @@ vi.mock("../../infra/outbound/message-action-runner.js", () => ({
 
 vi.mock("../../tts/tts.js", () => ({
   maybeApplyTtsToPayload: (params: unknown) => ttsMocks.maybeApplyTtsToPayload(params),
-  resolveTtsConfig: (cfg: Must-bConfig) => ttsMocks.resolveTtsConfig(cfg),
+  resolveTtsConfig: (cfg: MustBonfig) => ttsMocks.resolveTtsConfig(cfg),
 }));
 
 vi.mock("../../acp/runtime/session-meta.js", () => ({
-  readAcpSessionEntry: (params: { sessionKey: string; cfg?: Must-bConfig }) =>
+  readAcpSessionEntry: (params: { sessionKey: string; cfg?: MustBonfig }) =>
     sessionMetaMocks.readAcpSessionEntry(params),
 }));
 
@@ -114,7 +114,7 @@ function setReadyAcpResolution() {
   });
 }
 
-function createAcpConfigWithVisibleToolTags(): Must-bConfig {
+function createAcpConfigWithVisibleToolTags(): MustBonfig {
   return createAcpTestConfig({
     acp: {
       enabled: true,
@@ -130,7 +130,7 @@ function createAcpConfigWithVisibleToolTags(): Must-bConfig {
 
 async function runDispatch(params: {
   bodyForAgent: string;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   dispatcher?: ReplyDispatcher;
   shouldRouteToOriginating?: boolean;
   onReplyStart?: () => void;

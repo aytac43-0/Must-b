@@ -5,13 +5,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { captureFullEnv } from "../test-utils/env.js";
 
 const spawnMock = vi.hoisted(() => vi.fn());
-const resolvePreferredMust-bTmpDirMock = vi.hoisted(() => vi.fn(() => os.tmpdir()));
+const resolvePreferredMustBmpDirMock = vi.hoisted(() => vi.fn(() => os.tmpdir()));
 
 vi.mock("node:child_process", () => ({
   spawn: (...args: unknown[]) => spawnMock(...args),
 }));
 vi.mock("./tmp-must-b-dir.js", () => ({
-  resolvePreferredMust-bTmpDir: () => resolvePreferredMust-bTmpDirMock(),
+  resolvePreferredMustBmpDir: () => resolvePreferredMustBmpDirMock(),
 }));
 
 import { relaunchGatewayScheduledTask } from "./windows-task-restart.js";
@@ -30,8 +30,8 @@ function decodeCmdPathArg(value: string): string {
 afterEach(() => {
   envSnapshot.restore();
   spawnMock.mockReset();
-  resolvePreferredMust-bTmpDirMock.mockReset();
-  resolvePreferredMust-bTmpDirMock.mockReturnValue(os.tmpdir());
+  resolvePreferredMustBmpDirMock.mockReset();
+  resolvePreferredMustBmpDirMock.mockReturnValue(os.tmpdir());
   for (const scriptPath of createdScriptPaths) {
     try {
       fs.unlinkSync(scriptPath);
@@ -119,7 +119,7 @@ describe("relaunchGatewayScheduledTask", () => {
     const unref = vi.fn();
     const metacharTmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "must-b&(restart)-"));
     createdTmpDirs.add(metacharTmpDir);
-    resolvePreferredMust-bTmpDirMock.mockReturnValue(metacharTmpDir);
+    resolvePreferredMustBmpDirMock.mockReturnValue(metacharTmpDir);
     spawnMock.mockReturnValue({ unref });
 
     relaunchGatewayScheduledTask({ MUSTB_PROFILE: "work" });

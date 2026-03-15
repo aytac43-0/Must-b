@@ -1,6 +1,6 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
-type AgentToolsConfig = NonNullable<NonNullable<Must-bConfig["agents"]>["list"]>[number]["tools"];
+type AgentToolsConfig = NonNullable<NonNullable<MustBonfig["agents"]>["list"]>[number]["tools"];
 type SandboxToolsConfig = {
   allow?: string[];
   deny?: string[];
@@ -10,7 +10,7 @@ export function createRestrictedAgentSandboxConfig(params: {
   agentTools?: AgentToolsConfig;
   globalSandboxTools?: SandboxToolsConfig;
   workspace?: string;
-}): Must-bConfig {
+}): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -40,5 +40,5 @@ export function createRestrictedAgentSandboxConfig(params: {
           },
         }
       : {}),
-  } as Must-bConfig;
+  } as MustBonfig;
 }

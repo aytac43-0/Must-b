@@ -1,6 +1,6 @@
 import type { Bot } from "grammy";
 import type { HistoryEntry } from "../auto-reply/reply/history.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type {
   DmPolicy,
   TelegramDirectConfig,
@@ -48,7 +48,7 @@ export type BuildTelegramMessageContextParams = {
   storeAllowFrom: string[];
   options?: TelegramMessageContextOptions;
   bot: Bot;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   account: { accountId: string };
   historyLimit: number;
   groupHistories: Map<string, HistoryEntry[]>;

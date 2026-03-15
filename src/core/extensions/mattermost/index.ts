@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/mattermost";
+import type { MustBPluginApi } from "must-b/plugin-sdk/mattermost";
 import { emptyPluginConfigSchema } from "must-b/plugin-sdk/mattermost";
 import { mattermostPlugin } from "./src/channel.js";
 import { getSlashCommandState, registerSlashCommandRoute } from "./src/mattermost/slash-state.js";
@@ -9,7 +9,7 @@ const plugin = {
   name: "Mattermost",
   description: "Mattermost channel plugin",
   configSchema: emptyPluginConfigSchema(),
-  register(api: Must-bPluginApi) {
+  register(api: MustBPluginApi) {
     setMattermostRuntime(api.runtime);
     api.registerChannel({ plugin: mattermostPlugin });
 

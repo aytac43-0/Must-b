@@ -69,8 +69,8 @@ vi.mock("node:fs", async (importOriginal) => {
 });
 
 vi.mock("./must-b-root.js", () => ({
-  resolveMust-bPackageRoot: vi.fn(async () => null),
-  resolveMust-bPackageRootSync: vi.fn(() => null),
+  resolveMustBackageRoot: vi.fn(async () => null),
+  resolveMustBackageRootSync: vi.fn(() => null),
 }));
 
 let resolveControlUiRepoRoot: typeof import("./control-ui-assets.js").resolveControlUiRepoRoot;
@@ -137,10 +137,10 @@ describe("control UI assets helpers (fs-mocked)", () => {
     );
   });
 
-  it("uses resolveMust-bPackageRoot when available", async () => {
+  it("uses resolveMustBackageRoot when available", async () => {
     const pkgRoot = abs("fixtures/must-b");
     (
-      must-bRoot.resolveMust-bPackageRoot as unknown as ReturnType<typeof vi.fn>
+      must-bRoot.resolveMustBackageRoot as unknown as ReturnType<typeof vi.fn>
     ).mockResolvedValueOnce(pkgRoot);
 
     await expect(resolveControlUiDistIndexPath(abs("fixtures/bin/must-b"))).resolves.toBe(
@@ -198,7 +198,7 @@ describe("control UI assets helpers (fs-mocked)", () => {
   it("resolves control-ui root for dist bundle argv1 and moduleUrl candidates", async () => {
     const pkgRoot = abs("fixtures/must-b-bundle");
     (
-      must-bRoot.resolveMust-bPackageRootSync as unknown as ReturnType<typeof vi.fn>
+      must-bRoot.resolveMustBackageRootSync as unknown as ReturnType<typeof vi.fn>
     ).mockReturnValueOnce(pkgRoot);
 
     const uiDir = path.join(pkgRoot, "dist", "control-ui");
@@ -232,7 +232,7 @@ describe("control UI assets helpers (fs-mocked)", () => {
     setDir(uiDir);
     setFile(path.join(uiDir, "index.html"), "<html></html>\n");
     (
-      must-bRoot.resolveMust-bPackageRootSync as unknown as ReturnType<typeof vi.fn>
+      must-bRoot.resolveMustBackageRootSync as unknown as ReturnType<typeof vi.fn>
     ).mockReturnValueOnce(pkgRoot);
 
     expect(
@@ -248,7 +248,7 @@ describe("control UI assets helpers (fs-mocked)", () => {
     setDir(fallbackRoot);
     setFile(path.join(fallbackRoot, "index.html"), "<html></html>\n");
     (
-      must-bRoot.resolveMust-bPackageRootSync as unknown as ReturnType<typeof vi.fn>
+      must-bRoot.resolveMustBackageRootSync as unknown as ReturnType<typeof vi.fn>
     ).mockReturnValueOnce(pkgRoot);
 
     expect(

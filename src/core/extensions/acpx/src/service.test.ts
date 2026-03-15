@@ -1,4 +1,4 @@
-import type { AcpRuntime, Must-bPluginServiceContext } from "must-b/plugin-sdk/acpx";
+import type { AcpRuntime, MustBPluginServiceContext } from "must-b/plugin-sdk/acpx";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AcpRuntimeError } from "../../../src/acp/runtime/errors.js";
 import {
@@ -54,8 +54,8 @@ function createRuntimeStub(healthy: boolean): {
 }
 
 function createServiceContext(
-  overrides: Partial<Must-bPluginServiceContext> = {},
-): Must-bPluginServiceContext {
+  overrides: Partial<MustBPluginServiceContext> = {},
+): MustBPluginServiceContext {
   return {
     config: {},
     workspaceDir: "/tmp/workspace",

@@ -307,7 +307,7 @@ vi.mock("../gateway/session-utils.js", async (importOriginal) => {
   };
 });
 vi.mock("../infra/must-b-root.js", () => ({
-  resolveMust-bPackageRoot: vi.fn().mockResolvedValue("/tmp/must-b"),
+  resolveMustBackageRoot: vi.fn().mockResolvedValue("/tmp/must-b"),
 }));
 vi.mock("../infra/os-summary.js", () => ({
   resolveOsSummary: () => ({

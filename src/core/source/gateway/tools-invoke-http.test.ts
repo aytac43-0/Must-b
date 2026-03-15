@@ -20,7 +20,7 @@ const hookMocks = vi.hoisted(() => ({
 }));
 
 let cfg: Record<string, unknown> = {};
-let lastCreateMust-bToolsContext: Record<string, unknown> | undefined;
+let lastCreateMustBoolsContext: Record<string, unknown> | undefined;
 
 // Perf: keep this suite pure unit. Mock heavyweight config/session modules.
 vi.mock("../config/config.js", () => ({
@@ -97,8 +97,8 @@ vi.mock("../agents/must-b-tools.js", () => {
       execute: async () => ({
         ok: true,
         route: {
-          agentTo: lastCreateMust-bToolsContext?.agentTo,
-          agentThreadId: lastCreateMust-bToolsContext?.agentThreadId,
+          agentTo: lastCreateMustBoolsContext?.agentTo,
+          agentThreadId: lastCreateMustBoolsContext?.agentThreadId,
         },
       }),
     },
@@ -160,8 +160,8 @@ vi.mock("../agents/must-b-tools.js", () => {
   ];
 
   return {
-    createMust-bTools: (ctx: Record<string, unknown>) => {
-      lastCreateMust-bToolsContext = ctx;
+    createMustBools: (ctx: Record<string, unknown>) => {
+      lastCreateMustBoolsContext = ctx;
       return tools;
     },
   };
@@ -228,7 +228,7 @@ beforeEach(() => {
   delete process.env.MUSTB_GATEWAY_PASSWORD;
   pluginHttpHandlers = [];
   cfg = {};
-  lastCreateMust-bToolsContext = undefined;
+  lastCreateMustBoolsContext = undefined;
   hookMocks.resolveToolLoopDetectionConfig.mockClear();
   hookMocks.resolveToolLoopDetectionConfig.mockImplementation(() => ({ warnAt: 3 }));
   hookMocks.runBeforeToolCallHook.mockClear();
@@ -367,7 +367,7 @@ describe("POST /tools/invoke", () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body).toHaveProperty("result");
-    expect(lastCreateMust-bToolsContext?.allowMediaInvokeCommands).toBe(true);
+    expect(lastCreateMustBoolsContext?.allowMediaInvokeCommands).toBe(true);
     expect(hookMocks.runBeforeToolCallHook).toHaveBeenCalledWith(
       expect.objectContaining({
         toolName: "agents_list",

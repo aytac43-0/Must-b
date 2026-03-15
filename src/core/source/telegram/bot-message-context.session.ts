@@ -7,7 +7,7 @@ import {
 import { finalizeInboundContext } from "../auto-reply/reply/inbound-context.js";
 import { toLocationContext } from "../channels/location.js";
 import { recordInboundSession } from "../channels/session.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { readSessionUpdatedAt, resolveStorePath } from "../config/sessions.js";
 import type {
   TelegramDirectConfig,
@@ -36,7 +36,7 @@ import type { TelegramContext } from "./bot/types.js";
 import { resolveTelegramGroupPromptSettings } from "./group-config-helpers.js";
 
 export async function buildTelegramInboundContextPayload(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   primaryCtx: TelegramContext;
   msg: TelegramContext["message"];
   allMedia: TelegramMediaRef[];

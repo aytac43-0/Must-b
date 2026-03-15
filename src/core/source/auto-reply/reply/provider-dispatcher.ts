@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { DispatchInboundResult } from "../dispatch.js";
 import {
   dispatchInboundMessageWithBufferedDispatcher,
@@ -13,7 +13,7 @@ import type {
 
 export async function dispatchReplyWithBufferedBlockDispatcher(params: {
   ctx: MsgContext | FinalizedMsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   dispatcherOptions: ReplyDispatcherWithTypingOptions;
   replyOptions?: Omit<GetReplyOptions, "onToolResult" | "onBlockReply">;
   replyResolver?: typeof import("../reply.js").getReplyFromConfig;
@@ -29,7 +29,7 @@ export async function dispatchReplyWithBufferedBlockDispatcher(params: {
 
 export async function dispatchReplyWithDispatcher(params: {
   ctx: MsgContext | FinalizedMsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   dispatcherOptions: ReplyDispatcherOptions;
   replyOptions?: Omit<GetReplyOptions, "onToolResult" | "onBlockReply">;
   replyResolver?: typeof import("../reply.js").getReplyFromConfig;

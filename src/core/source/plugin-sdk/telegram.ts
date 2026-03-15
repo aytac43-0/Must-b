@@ -4,9 +4,9 @@ export type {
   ChannelMessageActionAdapter,
 } from "../channels/plugins/types.js";
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
-export type { Must-bConfig } from "../config/config.js";
+export type { MustBonfig } from "../config/config.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { Must-bPluginApi } from "../plugins/types.js";
+export type { MustBluginApi } from "../plugins/types.js";
 export type { InspectedTelegramAccount } from "../telegram/account-inspect.js";
 export type { ResolvedTelegramAccount } from "../telegram/accounts.js";
 export type { TelegramProbe } from "../telegram/probe.js";

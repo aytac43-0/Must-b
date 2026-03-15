@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { normalizeDiscordMessagingTarget } from "../channels/plugins/normalize/discord.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { listDiscordDirectoryPeersLive } from "./directory-live.js";
 import { parseDiscordTarget, resolveDiscordChannelId, resolveDiscordTarget } from "./targets.js";
 
@@ -72,7 +72,7 @@ describe("resolveDiscordChannelId", () => {
 });
 
 describe("resolveDiscordTarget", () => {
-  const cfg = { channels: { discord: {} } } as Must-bConfig;
+  const cfg = { channels: { discord: {} } } as MustBonfig;
   const listPeers = vi.mocked(listDiscordDirectoryPeersLive);
 
   beforeEach(() => {

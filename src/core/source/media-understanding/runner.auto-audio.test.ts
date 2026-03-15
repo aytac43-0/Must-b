@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { buildProviderRegistry, runCapability } from "./runner.js";
 import { withAudioFixture } from "./runner.test-utils.js";
 
@@ -15,7 +15,7 @@ function createOpenAiAudioProvider(
   });
 }
 
-function createOpenAiAudioCfg(extra?: Partial<Must-bConfig>): Must-bConfig {
+function createOpenAiAudioCfg(extra?: Partial<MustBonfig>): MustBonfig {
   return {
     models: {
       providers: {
@@ -26,12 +26,12 @@ function createOpenAiAudioCfg(extra?: Partial<Must-bConfig>): Must-bConfig {
       },
     },
     ...extra,
-  } as unknown as Must-bConfig;
+  } as unknown as MustBonfig;
 }
 
 async function runAutoAudioCase(params: {
   transcribeAudio: (req: { model?: string }) => Promise<{ text: string; model: string }>;
-  cfgExtra?: Partial<Must-bConfig>;
+  cfgExtra?: Partial<MustBonfig>;
 }) {
   let runResult: Awaited<ReturnType<typeof runCapability>> | undefined;
   await withAudioFixture("must-b-auto-audio", async ({ ctx, media, cache }) => {
@@ -152,7 +152,7 @@ describe("runCapability auto audio entries", () => {
               },
             },
           },
-        } as unknown as Must-bConfig;
+        } as unknown as MustBonfig;
 
         runResult = await runCapability({
           capability: "audio",

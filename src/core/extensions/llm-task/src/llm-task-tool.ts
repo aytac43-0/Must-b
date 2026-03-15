@@ -6,14 +6,14 @@ import {
   formatThinkingLevels,
   formatXHighModelHint,
   normalizeThinkLevel,
-  resolvePreferredMust-bTmpDir,
+  resolvePreferredMustBTmpDir,
   supportsXHighThinking,
 } from "must-b/plugin-sdk/llm-task";
 // NOTE: This extension is intended to be bundled with Must-b.
 // When running from source (tests/dev), Must-b internals live under src/.
 // When running from a built install, internals live under dist/ (no src/ tree).
 // So we resolve internal imports dynamically with src-first, dist-fallback.
-import type { Must-bPluginApi } from "must-b/plugin-sdk/llm-task";
+import type { MustBPluginApi } from "must-b/plugin-sdk/llm-task";
 
 type RunEmbeddedPiAgentFn = (params: Record<string, unknown>) => Promise<unknown>;
 
@@ -76,7 +76,7 @@ type PluginCfg = {
   timeoutMs?: number;
 };
 
-export function createLlmTaskTool(api: Must-bPluginApi) {
+export function createLlmTaskTool(api: MustBPluginApi) {
   return {
     name: "llm-task",
     label: "LLM Task",
@@ -204,7 +204,7 @@ export function createLlmTaskTool(api: Must-bPluginApi) {
       let tmpDir: string | null = null;
       try {
         tmpDir = await fs.mkdtemp(
-          path.join(resolvePreferredMust-bTmpDir(), "must-b-llm-task-"),
+          path.join(resolvePreferredMustBTmpDir(), "must-b-llm-task-"),
         );
         const sessionId = `llm-task-${Date.now()}`;
         const sessionFile = path.join(tmpDir, "session.json");

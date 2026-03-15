@@ -12,7 +12,7 @@ import {
   resolveDefaultGroupPolicy,
   warnMissingProviderGroupPolicyFallbackOnce,
   type OutboundReplyPayload,
-  type Must-bConfig,
+  type MustBConfig,
   type RuntimeEnv,
 } from "must-b/plugin-sdk/nextcloud-talk";
 import type { ResolvedNextcloudTalkAccount } from "./accounts.js";
@@ -84,7 +84,7 @@ export async function handleNextcloudTalkInbound(params: {
   statusSink?.({ lastInboundAt: message.timestamp });
 
   const dmPolicy = account.config.dmPolicy ?? "pairing";
-  const defaultGroupPolicy = resolveDefaultGroupPolicy(config as Must-bConfig);
+  const defaultGroupPolicy = resolveDefaultGroupPolicy(config as MustBConfig);
   const { groupPolicy, providerMissingFallbackApplied } =
     resolveAllowlistProviderRuntimeGroupPolicy({
       providerConfigPresent:
@@ -129,12 +129,12 @@ export async function handleNextcloudTalkInbound(params: {
   const roomAllowFrom = normalizeNextcloudTalkAllowlist(roomConfig?.allowFrom);
 
   const allowTextCommands = core.channel.commands.shouldHandleTextCommands({
-    cfg: config as Must-bConfig,
+    cfg: config as MustBConfig,
     surface: CHANNEL_ID,
   });
   const useAccessGroups =
     (config.commands as Record<string, unknown> | undefined)?.useAccessGroups !== false;
-  const hasControlCommand = core.channel.text.hasControlCommand(rawBody, config as Must-bConfig);
+  const hasControlCommand = core.channel.text.hasControlCommand(rawBody, config as MustBConfig);
   const access = resolveDmGroupAccessWithCommandGate({
     isGroup,
     dmPolicy,
@@ -204,7 +204,7 @@ export async function handleNextcloudTalkInbound(params: {
     return;
   }
 
-  const mentionRegexes = core.channel.mentions.buildMentionRegexes(config as Must-bConfig);
+  const mentionRegexes = core.channel.mentions.buildMentionRegexes(config as MustBConfig);
   const wasMentioned = mentionRegexes.length
     ? core.channel.mentions.matchesMentionPatterns(rawBody, mentionRegexes)
     : false;
@@ -228,7 +228,7 @@ export async function handleNextcloudTalkInbound(params: {
   }
 
   const route = core.channel.routing.resolveAgentRoute({
-    cfg: config as Must-bConfig,
+    cfg: config as MustBConfig,
     channel: CHANNEL_ID,
     accountId: account.accountId,
     peer: {
@@ -244,7 +244,7 @@ export async function handleNextcloudTalkInbound(params: {
       agentId: route.agentId,
     },
   );
-  const envelopeOptions = core.channel.reply.resolveEnvelopeFormatOptions(config as Must-bConfig);
+  const envelopeOptions = core.channel.reply.resolveEnvelopeFormatOptions(config as MustBConfig);
   const previousTimestamp = core.channel.session.readSessionUpdatedAt({
     storePath,
     sessionKey: route.sessionKey,
@@ -286,7 +286,7 @@ export async function handleNextcloudTalkInbound(params: {
   });
 
   await dispatchInboundReplyWithBase({
-    cfg: config as Must-bConfig,
+    cfg: config as MustBConfig,
     channel: CHANNEL_ID,
     accountId: account.accountId,
     route,

@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "must-b/plugin-sdk/tlon";
+import type { MustBConfig } from "must-b/plugin-sdk/tlon";
 import {
   formatDocsLink,
   patchScopedAccountConfig,
@@ -19,7 +19,7 @@ function isConfigured(account: TlonResolvedAccount): boolean {
 }
 
 function applyAccountConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId: string;
   input: {
     name?: string;
@@ -31,7 +31,7 @@ function applyAccountConfig(params: {
     dmAllowlist?: string[];
     autoDiscoverChannels?: boolean;
   };
-}): Must-bConfig {
+}): MustBConfig {
   const { cfg, accountId, input } = params;
   const nextValues = {
     enabled: true,

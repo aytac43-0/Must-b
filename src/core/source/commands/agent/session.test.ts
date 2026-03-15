@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
 const mocks = vi.hoisted(() => ({
   loadSessionStore: vi.fn(),
@@ -51,7 +51,7 @@ describe("resolveSessionKeyForRequest", () => {
     mocks.listAgentIds.mockReturnValue(["main"]);
   });
 
-  const baseCfg: Must-bConfig = {};
+  const baseCfg: MustBonfig = {};
 
   it("returns sessionKey when --to resolves a session key via context", async () => {
     mocks.resolveStorePath.mockReturnValue(MAIN_STORE_PATH);

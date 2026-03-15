@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ModelAliasIndex } from "../../agents/model-selection.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { handleDirectiveOnly } from "./directive-handling.impl.js";
 import { parseInlineDirectives } from "./directive-handling.js";
@@ -32,11 +32,11 @@ function baseAliasIndex(): ModelAliasIndex {
   return { byAlias: new Map(), byKey: new Map() };
 }
 
-function baseConfig(): Must-bConfig {
+function baseConfig(): MustBonfig {
   return {
     commands: { text: true },
     agents: { defaults: {} },
-  } as unknown as Must-bConfig;
+  } as unknown as MustBonfig;
 }
 
 function resolveModelSelectionForCommand(params: {
@@ -46,7 +46,7 @@ function resolveModelSelectionForCommand(params: {
 }) {
   return resolveModelSelectionFromDirective({
     directives: parseInlineDirectives(params.command),
-    cfg: { commands: { text: true } } as unknown as Must-bConfig,
+    cfg: { commands: { text: true } } as unknown as MustBonfig,
     agentDir: "/tmp/agent",
     defaultProvider: "anthropic",
     defaultModel: "claude-opus-4-5",
@@ -60,7 +60,7 @@ function resolveModelSelectionForCommand(params: {
 describe("/model chat UX", () => {
   it("shows summary for /model with no args", async () => {
     const directives = parseInlineDirectives("/model");
-    const cfg = { commands: { text: true } } as unknown as Must-bConfig;
+    const cfg = { commands: { text: true } } as unknown as MustBonfig;
 
     const reply = await maybeHandleModelDirectiveInfo({
       directives,
@@ -83,7 +83,7 @@ describe("/model chat UX", () => {
 
   it("shows active runtime model when different from selected model", async () => {
     const directives = parseInlineDirectives("/model");
-    const cfg = { commands: { text: true } } as unknown as Must-bConfig;
+    const cfg = { commands: { text: true } } as unknown as MustBonfig;
 
     const reply = await maybeHandleModelDirectiveInfo({
       directives,
@@ -109,7 +109,7 @@ describe("/model chat UX", () => {
 
   it("auto-applies closest match for typos", () => {
     const directives = parseInlineDirectives("/model anthropic/claud-opus-4-5");
-    const cfg = { commands: { text: true } } as unknown as Must-bConfig;
+    const cfg = { commands: { text: true } } as unknown as MustBonfig;
 
     const resolved = resolveModelSelectionFromDirective({
       directives,

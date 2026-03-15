@@ -17,7 +17,7 @@ import {
 describe("exec approvals wildcard agent", () => {
   it("merges wildcard allowlist entries with agent entries", () => {
     const dir = makeTempDir();
-    const prevMust-bHome = process.env.MUSTB_HOME;
+    const prevMustBome = process.env.MUSTB_HOME;
 
     try {
       process.env.MUSTB_HOME = dir;
@@ -44,10 +44,10 @@ describe("exec approvals wildcard agent", () => {
         "/usr/bin/uname",
       ]);
     } finally {
-      if (prevMust-bHome === undefined) {
+      if (prevMustBome === undefined) {
         delete process.env.MUSTB_HOME;
       } else {
-        process.env.MUSTB_HOME = prevMust-bHome;
+        process.env.MUSTB_HOME = prevMustBome;
       }
     }
   });

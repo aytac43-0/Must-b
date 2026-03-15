@@ -1,7 +1,7 @@
 import type {
   ChannelAccountSnapshot,
   ChatType,
-  Must-bConfig,
+  MustBConfig,
   ReplyPayload,
   RuntimeEnv,
 } from "must-b/plugin-sdk/mattermost";
@@ -100,7 +100,7 @@ export type MonitorMattermostOpts = {
   botToken?: string;
   baseUrl?: string;
   accountId?: string;
-  config?: Must-bConfig;
+  config?: MustBConfig;
   runtime?: RuntimeEnv;
   abortSignal?: AbortSignal;
   statusSink?: (patch: Partial<ChannelAccountSnapshot>) => void;
@@ -182,7 +182,7 @@ function channelChatType(kind: ChatType): "direct" | "group" | "channel" {
 }
 
 export type MattermostRequireMentionResolverInput = {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   channel: "mattermost";
   accountId: string;
   groupId: string;
@@ -191,7 +191,7 @@ export type MattermostRequireMentionResolverInput = {
 
 export type MattermostMentionGateInput = {
   kind: ChatType;
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   accountId: string;
   channelId: string;
   threadRootId?: string;

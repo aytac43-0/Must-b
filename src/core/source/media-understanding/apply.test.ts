@@ -4,8 +4,8 @@ import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { resolveApiKeyForProvider } from "../agents/model-auth.js";
 import type { MsgContext } from "../auto-reply/templating.js";
-import type { Must-bConfig } from "../config/config.js";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import type { MustBonfig } from "../config/config.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 import { fetchRemoteMedia } from "../media/fetch.js";
 import { runExec } from "../process/exec.js";
 import { withEnvAsync } from "../test-utils/env.js";
@@ -60,7 +60,7 @@ async function getSharedTempMediaCacheDir() {
   return sharedTempMediaCacheDir;
 }
 
-function createGroqAudioConfig(): Must-bConfig {
+function createGroqAudioConfig(): MustBonfig {
   return {
     tools: {
       media: {
@@ -96,7 +96,7 @@ function expectTranscriptApplied(params: {
   expect(params.ctx.BodyForCommands).toBe(params.commandBody);
 }
 
-function createMediaDisabledConfig(): Must-bConfig {
+function createMediaDisabledConfig(): MustBonfig {
   return {
     tools: {
       media: {
@@ -108,7 +108,7 @@ function createMediaDisabledConfig(): Must-bConfig {
   };
 }
 
-function createMediaDisabledConfigWithAllowedMimes(allowedMimes: string[]): Must-bConfig {
+function createMediaDisabledConfigWithAllowedMimes(allowedMimes: string[]): MustBonfig {
   return {
     ...createMediaDisabledConfig(),
     gateway: {
@@ -186,14 +186,14 @@ async function createAudioCtx(params?: {
 
 async function setupAudioAutoDetectCase(stdout: string): Promise<{
   ctx: MsgContext;
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
 }> {
   const ctx = await createAudioCtx({
     fileName: "sample.wav",
     mediaType: "audio/wav",
     content: createSafeAudioFixtureBuffer(2048),
   });
-  const cfg: Must-bConfig = { tools: { media: { audio: {} } } };
+  const cfg: MustBonfig = { tools: { media: { audio: {} } } };
   mockedRunExec.mockResolvedValueOnce({
     stdout,
     stderr: "",
@@ -205,7 +205,7 @@ async function applyWithDisabledMedia(params: {
   body: string;
   mediaPath: string;
   mediaType?: string;
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
 }) {
   const ctx: MsgContext = {
     Body: params.body,
@@ -234,7 +234,7 @@ describe("applyMediaUnderstanding", () => {
   const mockedFetchRemoteMedia = vi.mocked(fetchRemoteMedia);
 
   beforeAll(async () => {
-    const baseDir = resolvePreferredMust-bTmpDir();
+    const baseDir = resolvePreferredMustBmpDir();
     await fs.mkdir(baseDir, { recursive: true });
     suiteTempMediaRootDir = await fs.mkdtemp(path.join(baseDir, TEMP_MEDIA_PREFIX));
     ({ applyMediaUnderstanding } = await import("./apply.js"));
@@ -331,7 +331,7 @@ describe("applyMediaUnderstanding", () => {
       MediaType: "audio/ogg",
       ChatType: "direct",
     };
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -370,7 +370,7 @@ describe("applyMediaUnderstanding", () => {
     });
     ctx.Surface = "whatsapp";
 
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -412,7 +412,7 @@ describe("applyMediaUnderstanding", () => {
       ChatType: "dm",
     };
     const transcribeAudio = vi.fn(async () => ({ text: "should-not-run" }));
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -447,7 +447,7 @@ describe("applyMediaUnderstanding", () => {
       content: Buffer.from([0, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
     });
     const transcribeAudio = vi.fn(async () => ({ text: "should-not-run" }));
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -472,7 +472,7 @@ describe("applyMediaUnderstanding", () => {
 
   it("falls back to CLI model when provider fails", async () => {
     const ctx = await createAudioCtx();
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -515,7 +515,7 @@ describe("applyMediaUnderstanding", () => {
 
   it("reads parakeet-mlx transcript from output-dir txt file", async () => {
     const ctx = await createAudioCtx({ fileName: "sample.wav", mediaType: "audio/wav" });
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -553,7 +553,7 @@ describe("applyMediaUnderstanding", () => {
 
   it("falls back to stdout for parakeet-mlx when output format is not txt", async () => {
     const ctx = await createAudioCtx({ fileName: "sample.wav", mediaType: "audio/wav" });
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -655,7 +655,7 @@ describe("applyMediaUnderstanding", () => {
       mediaType: "audio/wav",
       content: createSafeAudioFixtureBuffer(2048),
     });
-    const cfg: Must-bConfig = { tools: { media: { audio: {} } } };
+    const cfg: MustBonfig = { tools: { media: { audio: {} } } };
     mockedResolveApiKey.mockResolvedValue({
       source: "none",
       mode: "api-key",
@@ -689,7 +689,7 @@ describe("applyMediaUnderstanding", () => {
       MediaPath: imagePath,
       MediaType: "image/jpeg",
     };
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           image: {
@@ -735,7 +735,7 @@ describe("applyMediaUnderstanding", () => {
       MediaPath: imagePath,
       MediaType: "image/jpeg",
     };
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           models: [
@@ -775,7 +775,7 @@ describe("applyMediaUnderstanding", () => {
       MediaPath: audioPath,
       MediaType: "audio/ogg",
     };
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -814,7 +814,7 @@ describe("applyMediaUnderstanding", () => {
       MediaPaths: [audioPathA, audioPathB],
       MediaTypes: ["audio/ogg", "audio/ogg"],
     };
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           audio: {
@@ -858,7 +858,7 @@ describe("applyMediaUnderstanding", () => {
       MediaPaths: [imagePath, audioPath, videoPath],
       MediaTypes: ["image/jpeg", "audio/ogg", "video/mp4"],
     };
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         media: {
           image: { enabled: true, models: [{ provider: "openai", model: "gpt-5.2" }] },

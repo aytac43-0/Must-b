@@ -25,7 +25,7 @@ vi.mock("../infra/runtime-guard.js", () => ({
 }));
 
 vi.mock("../infra/path-env.js", () => ({
-  ensureMust-bCliOnPath: vi.fn(),
+  ensureMustBliOnPath: vi.fn(),
 }));
 
 vi.mock("./route.js", () => ({

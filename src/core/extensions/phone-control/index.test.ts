@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type {
-  Must-bPluginApi,
-  Must-bPluginCommandDefinition,
+  MustBPluginApi,
+  MustBPluginCommandDefinition,
   PluginCommandContext,
 } from "must-b/plugin-sdk/phone-control";
 import { describe, expect, it, vi } from "vitest";
@@ -13,8 +13,8 @@ function createApi(params: {
   stateDir: string;
   getConfig: () => Record<string, unknown>;
   writeConfig: (next: Record<string, unknown>) => Promise<void>;
-  registerCommand: (command: Must-bPluginCommandDefinition) => void;
-}): Must-bPluginApi {
+  registerCommand: (command: MustBPluginCommandDefinition) => void;
+}): MustBPluginApi {
   return {
     id: "phone-control",
     name: "phone-control",
@@ -29,7 +29,7 @@ function createApi(params: {
         loadConfig: () => params.getConfig(),
         writeConfigFile: (next: Record<string, unknown>) => params.writeConfig(next),
       },
-    } as Must-bPluginApi["runtime"],
+    } as MustBPluginApi["runtime"],
     logger: { info() {}, warn() {}, error() {} },
     registerTool() {},
     registerHook() {},
@@ -74,7 +74,7 @@ describe("phone-control plugin", () => {
         config = next;
       });
 
-      let command: Must-bPluginCommandDefinition | undefined;
+      let command: MustBPluginCommandDefinition | undefined;
       registerPhoneControl(
         createApi({
           stateDir,

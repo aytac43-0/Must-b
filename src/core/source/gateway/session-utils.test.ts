@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
 import { clearConfigCache, writeConfigFile } from "../config/config.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import { withStateDirEnv } from "../test-helpers/state-dir-env.js";
 import {
@@ -39,19 +39,19 @@ function createSymlinkOrSkip(targetPath: string, linkPath: string): boolean {
   }
 }
 
-function createSingleAgentAvatarConfig(workspace: string): Must-bConfig {
+function createSingleAgentAvatarConfig(workspace: string): MustBonfig {
   return {
     session: { mainKey: "main" },
     agents: {
       list: [{ id: "main", default: true, workspace, identity: { avatar: "avatar-link.png" } }],
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 function createModelDefaultsConfig(params: {
   primary: string;
   models?: Record<string, Record<string, never>>;
-}): Must-bConfig {
+}): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -59,12 +59,12 @@ function createModelDefaultsConfig(params: {
         models: params.models,
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 function createLegacyRuntimeListConfig(
   models?: Record<string, Record<string, never>>,
-): Must-bConfig {
+): MustBonfig {
   return createModelDefaultsConfig({
     primary: "google-gemini-cli/gemini-3-pro-preview",
     ...(models ? { models } : {}),
@@ -114,7 +114,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { mainKey: "work" },
       agents: { list: [{ id: "ops", default: true }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     expect(resolveSessionStoreKey({ cfg, sessionKey: "main" })).toBe("agent:ops:work");
     expect(resolveSessionStoreKey({ cfg, sessionKey: "work" })).toBe("agent:ops:work");
     expect(resolveSessionStoreKey({ cfg, sessionKey: "agent:ops:main" })).toBe("agent:ops:work");
@@ -127,7 +127,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { mainKey: "main" },
       agents: { list: [{ id: "ops", default: true }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     expect(resolveSessionStoreKey({ cfg, sessionKey: "discord:group:123" })).toBe(
       "agent:ops:discord:group:123",
     );
@@ -140,7 +140,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { mainKey: "main" },
       agents: { list: [{ id: "ops" }, { id: "review" }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     expect(resolveSessionStoreKey({ cfg, sessionKey: "main" })).toBe("agent:ops:main");
     expect(resolveSessionStoreKey({ cfg, sessionKey: "discord:group:123" })).toBe(
       "agent:ops:discord:group:123",
@@ -150,7 +150,7 @@ describe("gateway session utils", () => {
   test("resolveSessionStoreKey falls back to main when agents.list is missing", () => {
     const cfg = {
       session: { mainKey: "work" },
-    } as Must-bConfig;
+    } as MustBonfig;
     expect(resolveSessionStoreKey({ cfg, sessionKey: "main" })).toBe("agent:main:work");
     expect(resolveSessionStoreKey({ cfg, sessionKey: "thread-1" })).toBe("agent:main:thread-1");
   });
@@ -159,7 +159,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { mainKey: "main" },
       agents: { list: [{ id: "ops", default: true }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     // Bare keys with different casing must resolve to the same canonical key
     expect(resolveSessionStoreKey({ cfg, sessionKey: "CoP" })).toBe(
       resolveSessionStoreKey({ cfg, sessionKey: "cop" }),
@@ -176,7 +176,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { scope: "global", mainKey: "work" },
       agents: { list: [{ id: "ops", default: true }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     expect(resolveSessionStoreKey({ cfg, sessionKey: "main" })).toBe("global");
     const target = resolveGatewaySessionStoreTarget({ cfg, key: "main" });
     expect(target.canonicalKey).toBe("global");
@@ -193,7 +193,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { mainKey: "main", store: storeTemplate },
       agents: { list: [{ id: "ops", default: true }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     const target = resolveGatewaySessionStoreTarget({ cfg, key: "main" });
     expect(target.canonicalKey).toBe("agent:ops:main");
     expect(target.storeKeys).toEqual(expect.arrayContaining(["agent:ops:main", "main"]));
@@ -212,7 +212,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { mainKey: "main", store: storePath },
       agents: { list: [{ id: "ops", default: true }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     // Client passes the lowercased canonical key (as returned by sessions.list)
     const target = resolveGatewaySessionStoreTarget({ cfg, key: "agent:ops:mysession" });
     expect(target.canonicalKey).toBe("agent:ops:mysession");
@@ -241,7 +241,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { mainKey: "main", store: storePath },
       agents: { list: [{ id: "ops", default: true }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     const target = resolveGatewaySessionStoreTarget({ cfg, key: "agent:ops:mysession" });
     // storeKeys must include BOTH variants so delete/reset/patch can clean up all duplicates
     expect(target.storeKeys).toEqual(
@@ -261,7 +261,7 @@ describe("gateway session utils", () => {
     const cfg = {
       session: { mainKey: "work", store: storePath },
       agents: { list: [{ id: "ops", default: true }] },
-    } as Must-bConfig;
+    } as MustBonfig;
     const target = resolveGatewaySessionStoreTarget({ cfg, key: "agent:ops:main" });
     expect(target.canonicalKey).toBe("agent:ops:work");
     // storeKeys must include the legacy mixed-case alias key
@@ -287,7 +287,7 @@ describe("gateway session utils", () => {
           store: path.join(stateDir, "agents", "{agentId}", "sessions", "sessions.json"),
         },
         agents: { list: [{ id: "main", default: true }] },
-      } as Must-bConfig;
+      } as MustBonfig;
 
       const target = resolveGatewaySessionStoreTarget({ cfg, key: "agent:retired-agent:main" });
 
@@ -387,7 +387,7 @@ describe("gateway session utils", () => {
       const cfg = {
         session: { mainKey: "main" },
         agents: { list: [{ id: "main", default: true }] },
-      } as Must-bConfig;
+      } as MustBonfig;
 
       const { agents } = listAgentsForGateway(cfg);
       expect(agents.map((agent) => agent.id)).toEqual(["main"]);
@@ -483,7 +483,7 @@ describe("resolveSessionModelRef", () => {
 
 describe("resolveSessionModelIdentityRef", () => {
   const resolveLegacyIdentityRef = (
-    cfg: Must-bConfig,
+    cfg: MustBonfig,
     modelProvider: string | undefined = undefined,
   ) =>
     resolveSessionModelIdentityRef(cfg, {
@@ -666,7 +666,7 @@ describe("listSessionsFromStore search", () => {
   const baseCfg = {
     session: { mainKey: "main" },
     agents: { list: [{ id: "main", default: true }] },
-  } as Must-bConfig;
+  } as MustBonfig;
 
   const makeStore = (): Record<string, SessionEntry> => ({
     "agent:main:work-project": {
@@ -864,7 +864,7 @@ describe("loadCombinedSessionStoreForGateway includes disk-only agents (#32804)"
         agents: {
           list: [{ id: "main", default: true }],
         },
-      } as Must-bConfig;
+      } as MustBonfig;
 
       const { store } = loadCombinedSessionStoreForGateway(cfg);
       expect(store["agent:main:main"]).toBeDefined();

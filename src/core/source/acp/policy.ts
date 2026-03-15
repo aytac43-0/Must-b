@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBConfig } from "../config/config.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 import { AcpRuntimeError } from "./runtime/errors.js";
 
@@ -8,11 +8,11 @@ const ACP_DISPATCH_DISABLED_MESSAGE =
 
 export type AcpDispatchPolicyState = "enabled" | "acp_disabled" | "dispatch_disabled";
 
-export function isAcpEnabledByPolicy(cfg: Must-bConfig): boolean {
+export function isAcpEnabledByPolicy(cfg: MustBConfig): boolean {
   return cfg.acp?.enabled !== false;
 }
 
-export function resolveAcpDispatchPolicyState(cfg: Must-bConfig): AcpDispatchPolicyState {
+export function resolveAcpDispatchPolicyState(cfg: MustBConfig): AcpDispatchPolicyState {
   if (!isAcpEnabledByPolicy(cfg)) {
     return "acp_disabled";
   }
@@ -23,11 +23,11 @@ export function resolveAcpDispatchPolicyState(cfg: Must-bConfig): AcpDispatchPol
   return "enabled";
 }
 
-export function isAcpDispatchEnabledByPolicy(cfg: Must-bConfig): boolean {
+export function isAcpDispatchEnabledByPolicy(cfg: MustBConfig): boolean {
   return resolveAcpDispatchPolicyState(cfg) === "enabled";
 }
 
-export function resolveAcpDispatchPolicyMessage(cfg: Must-bConfig): string | null {
+export function resolveAcpDispatchPolicyMessage(cfg: MustBConfig): string | null {
   const state = resolveAcpDispatchPolicyState(cfg);
   if (state === "acp_disabled") {
     return ACP_DISABLED_MESSAGE;
@@ -38,7 +38,7 @@ export function resolveAcpDispatchPolicyMessage(cfg: Must-bConfig): string | nul
   return null;
 }
 
-export function resolveAcpDispatchPolicyError(cfg: Must-bConfig): AcpRuntimeError | null {
+export function resolveAcpDispatchPolicyError(cfg: MustBConfig): AcpRuntimeError | null {
   const message = resolveAcpDispatchPolicyMessage(cfg);
   if (!message) {
     return null;
@@ -46,7 +46,7 @@ export function resolveAcpDispatchPolicyError(cfg: Must-bConfig): AcpRuntimeErro
   return new AcpRuntimeError("ACP_DISPATCH_DISABLED", message);
 }
 
-export function isAcpAgentAllowedByPolicy(cfg: Must-bConfig, agentId: string): boolean {
+export function isAcpAgentAllowedByPolicy(cfg: MustBConfig, agentId: string): boolean {
   const allowed = (cfg.acp?.allowedAgents ?? [])
     .map((entry) => normalizeAgentId(entry))
     .filter(Boolean);
@@ -57,7 +57,7 @@ export function isAcpAgentAllowedByPolicy(cfg: Must-bConfig, agentId: string): b
 }
 
 export function resolveAcpAgentPolicyError(
-  cfg: Must-bConfig,
+  cfg: MustBConfig,
   agentId: string,
 ): AcpRuntimeError | null {
   if (isAcpAgentAllowedByPolicy(cfg, agentId)) {

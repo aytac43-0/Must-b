@@ -1,19 +1,19 @@
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import type { WizardPrompter } from "../../../wizard/prompts.js";
 import { promptChannelAccessConfig, type ChannelAccessPolicy } from "./channel-access.js";
 
 export async function configureChannelAccessWithAllowlist<TResolved>(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   label: string;
   currentPolicy: ChannelAccessPolicy;
   currentEntries: string[];
   placeholder: string;
   updatePrompt: boolean;
-  setPolicy: (cfg: Must-bConfig, policy: ChannelAccessPolicy) => Must-bConfig;
-  resolveAllowlist: (params: { cfg: Must-bConfig; entries: string[] }) => Promise<TResolved>;
-  applyAllowlist: (params: { cfg: Must-bConfig; resolved: TResolved }) => Must-bConfig;
-}): Promise<Must-bConfig> {
+  setPolicy: (cfg: MustBonfig, policy: ChannelAccessPolicy) => MustBonfig;
+  resolveAllowlist: (params: { cfg: MustBonfig; entries: string[] }) => Promise<TResolved>;
+  applyAllowlist: (params: { cfg: MustBonfig; resolved: TResolved }) => MustBonfig;
+}): Promise<MustBonfig> {
   let next = params.cfg;
   const accessConfig = await promptChannelAccessConfig({
     prompter: params.prompter,

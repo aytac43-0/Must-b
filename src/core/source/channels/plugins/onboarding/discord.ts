@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import type { DiscordGuildEntry } from "../../../config/types.discord.js";
 import { hasConfiguredSecretInput } from "../../../config/types.secrets.js";
 import { inspectDiscordAccount } from "../../../discord/account-inspect.js";
@@ -49,13 +49,13 @@ async function noteDiscordTokenHelp(prompter: WizardPrompter): Promise<void> {
 }
 
 function setDiscordGuildChannelAllowlist(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   accountId: string,
   entries: Array<{
     guildKey: string;
     channelKey?: string;
   }>,
-): Must-bConfig {
+): MustBonfig {
   const baseGuilds =
     accountId === DEFAULT_ACCOUNT_ID
       ? (cfg.channels?.discord?.guilds ?? {})
@@ -81,10 +81,10 @@ function setDiscordGuildChannelAllowlist(
 }
 
 async function promptDiscordAllowFrom(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   prompter: WizardPrompter;
   accountId?: string;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   const accountId = resolveOnboardingAccountId({
     accountId: params.accountId,
     defaultAccountId: resolveDefaultDiscordAccountId(params.cfg),

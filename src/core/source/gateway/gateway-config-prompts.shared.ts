@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { getTailnetHostname } from "../infra/tailscale.js";
 import { isIpv6Address, parseCanonicalIpAddress } from "../shared/net/ip.js";
 
@@ -64,10 +64,10 @@ export function appendAllowedOrigin(existing: string[] | undefined, origin: stri
 }
 
 export async function maybeAddTailnetOriginToControlUiAllowedOrigins(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   tailscaleMode: string;
   tailscaleBin?: string | null;
-}): Promise<Must-bConfig> {
+}): Promise<MustBonfig> {
   if (params.tailscaleMode !== "serve" && params.tailscaleMode !== "funnel") {
     return params.config;
   }

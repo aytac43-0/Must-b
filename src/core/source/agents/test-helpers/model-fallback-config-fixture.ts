@@ -1,6 +1,6 @@
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
-export function makeModelFallbackCfg(overrides: Partial<Must-bConfig> = {}): Must-bConfig {
+export function makeModelFallbackCfg(overrides: Partial<MustBonfig> = {}): MustBonfig {
   return {
     agents: {
       defaults: {
@@ -11,5 +11,5 @@ export function makeModelFallbackCfg(overrides: Partial<Must-bConfig> = {}): Mus
       },
     },
     ...overrides,
-  } as Must-bConfig;
+  } as MustBonfig;
 }

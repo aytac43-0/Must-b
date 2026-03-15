@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { AgentModelListConfig } from "../config/types.js";
 
 export const OPENAI_CODEX_DEFAULT_MODEL = "openai-codex/gpt-5.4";
@@ -28,8 +28,8 @@ function resolvePrimaryModel(model?: AgentModelListConfig | string): string | un
   return undefined;
 }
 
-export function applyOpenAICodexModelDefault(cfg: Must-bConfig): {
-  next: Must-bConfig;
+export function applyOpenAICodexModelDefault(cfg: MustBonfig): {
+  next: MustBonfig;
   changed: boolean;
 } {
   const current = resolvePrimaryModel(cfg.agents?.defaults?.model);

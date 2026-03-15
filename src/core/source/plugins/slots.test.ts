@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { applyExclusiveSlotSelection } from "./slots.js";
 
 describe("applyExclusiveSlotSelection", () => {
-  const createMemoryConfig = (plugins?: Must-bConfig["plugins"]): Must-bConfig => ({
+  const createMemoryConfig = (plugins?: MustBonfig["plugins"]): MustBonfig => ({
     plugins: {
       ...plugins,
       entries: {
@@ -16,7 +16,7 @@ describe("applyExclusiveSlotSelection", () => {
     },
   });
 
-  const runMemorySelection = (config: Must-bConfig, selectedId = "memory") =>
+  const runMemorySelection = (config: MustBonfig, selectedId = "memory") =>
     applyExclusiveSlotSelection({
       config,
       selectedId,
@@ -93,7 +93,7 @@ describe("applyExclusiveSlotSelection", () => {
   });
 
   it("skips changes when no exclusive slot applies", () => {
-    const config: Must-bConfig = {};
+    const config: MustBonfig = {};
     const result = applyExclusiveSlotSelection({
       config,
       selectedId: "custom",

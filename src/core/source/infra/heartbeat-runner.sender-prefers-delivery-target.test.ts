@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { runHeartbeatOnce } from "./heartbeat-runner.js";
 import { installHeartbeatRunnerTestRuntime } from "./heartbeat-runner.test-harness.js";
 import { seedMainSessionStore, withTempHeartbeatSandbox } from "./heartbeat-runner.test-utils.js";
@@ -13,7 +13,7 @@ describe("runHeartbeatOnce", () => {
   it("uses the delivery target as sender when lastTo differs", async () => {
     await withTempHeartbeatSandbox(
       async ({ tmpDir, storePath, replySpy }) => {
-        const cfg: Must-bConfig = {
+        const cfg: MustBonfig = {
           agents: {
             defaults: {
               workspace: tmpDir,

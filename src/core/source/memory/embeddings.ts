@@ -1,6 +1,6 @@
 import fsSync from "node:fs";
 import type { Llama, LlamaEmbeddingContext, LlamaModel } from "node-llama-cpp";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SecretInput } from "../config/types.secrets.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { resolveUserPath } from "../utils.js";
@@ -58,7 +58,7 @@ export type EmbeddingProviderResult = {
 };
 
 export type EmbeddingProviderOptions = {
-  config: Must-bConfig;
+  config: MustBonfig;
   agentDir?: string;
   provider: EmbeddingProviderRequest;
   remote?: {

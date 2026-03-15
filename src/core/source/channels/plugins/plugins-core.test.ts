@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { DiscordProbe } from "../../discord/probe.js";
 import type { DiscordTokenResolution } from "../../discord/token.js";
 import type { IMessageProbe } from "../../imessage/probe.js";
@@ -287,13 +287,13 @@ function makeSlackConfigWritesCfg(accountIdKey: string) {
 }
 
 type DirectoryListFn = (params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   query?: string | null;
   limit?: number | null;
 }) => Promise<ChannelDirectoryEntry[]>;
 
-async function listDirectoryEntriesWithDefaults(listFn: DirectoryListFn, cfg: Must-bConfig) {
+async function listDirectoryEntriesWithDefaults(listFn: DirectoryListFn, cfg: MustBonfig) {
   return await listFn({
     cfg,
     accountId: "default",
@@ -304,7 +304,7 @@ async function listDirectoryEntriesWithDefaults(listFn: DirectoryListFn, cfg: Mu
 
 async function expectDirectoryIds(
   listFn: DirectoryListFn,
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   expected: string[],
   options?: { sorted?: boolean },
 ) {

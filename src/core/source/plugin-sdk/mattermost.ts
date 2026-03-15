@@ -55,7 +55,7 @@ export type { ChannelDirectoryEntry } from "../channels/plugins/types.core.js";
 export type { ChannelPlugin } from "../channels/plugins/types.plugin.js";
 export { createReplyPrefixOptions } from "../channels/reply-prefix.js";
 export { createTypingCallbacks } from "../channels/typing.js";
-export type { Must-bConfig } from "../config/config.js";
+export type { MustBonfig } from "../config/config.js";
 export { isDangerousNameMatchingEnabled } from "../config/dangerous-name-matching.js";
 export { loadSessionStore, resolveStorePath } from "../config/sessions.js";
 export {
@@ -85,7 +85,7 @@ export { isLoopbackHost, isTrustedProxyAddress, resolveClientIp } from "../gatew
 export { registerPluginHttpRoute } from "../plugins/http-registry.js";
 export { emptyPluginConfigSchema } from "../plugins/config-schema.js";
 export type { PluginRuntime } from "../plugins/runtime/types.js";
-export type { Must-bPluginApi } from "../plugins/types.js";
+export type { MustBluginApi } from "../plugins/types.js";
 export {
   DEFAULT_ACCOUNT_ID,
   normalizeAccountId,

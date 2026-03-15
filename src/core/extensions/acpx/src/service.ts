@@ -1,7 +1,7 @@
 import type {
   AcpRuntime,
-  Must-bPluginService,
-  Must-bPluginServiceContext,
+  MustBPluginService,
+  MustBPluginServiceContext,
   PluginLogger,
 } from "must-b/plugin-sdk/acpx";
 import { registerAcpRuntimeBackend, unregisterAcpRuntimeBackend } from "must-b/plugin-sdk/acpx";
@@ -34,13 +34,13 @@ function createDefaultRuntime(params: AcpxRuntimeFactoryParams): AcpxRuntimeLike
 
 export function createAcpxRuntimeService(
   params: CreateAcpxRuntimeServiceParams = {},
-): Must-bPluginService {
+): MustBPluginService {
   let runtime: AcpxRuntimeLike | null = null;
   let lifecycleRevision = 0;
 
   return {
     id: "acpx-runtime",
-    async start(ctx: Must-bPluginServiceContext): Promise<void> {
+    async start(ctx: MustBPluginServiceContext): Promise<void> {
       const pluginConfig = resolveAcpxPluginConfig({
         rawConfig: params.pluginConfig,
         workspaceDir: ctx.workspaceDir,
@@ -96,7 +96,7 @@ export function createAcpxRuntimeService(
         }
       })();
     },
-    async stop(_ctx: Must-bPluginServiceContext): Promise<void> {
+    async stop(_ctx: MustBPluginServiceContext): Promise<void> {
       lifecycleRevision += 1;
       unregisterAcpRuntimeBackend(ACPX_BACKEND_ID);
       runtime = null;

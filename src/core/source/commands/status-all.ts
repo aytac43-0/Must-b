@@ -17,7 +17,7 @@ import { normalizeControlUiBasePath } from "../gateway/control-ui-shared.js";
 import { resolveGatewayProbeAuthSafe } from "../gateway/probe-auth.js";
 import { probeGateway } from "../gateway/probe.js";
 import { collectChannelStatusIssues } from "../infra/channels-status-issues.js";
-import { resolveMust-bPackageRoot } from "../infra/must-b-root.js";
+import { resolveMustBackageRoot } from "../infra/must-b-root.js";
 import { resolveOsSummary } from "../infra/os-summary.js";
 import { inspectPortUsage } from "../infra/ports.js";
 import { readRestartSentinel } from "../infra/restart-sentinel.js";
@@ -92,7 +92,7 @@ export async function statusAllCommand(
     progress.tick();
 
     progress.setLabel("Checking for updates…");
-    const root = await resolveMust-bPackageRoot({
+    const root = await resolveMustBackageRoot({
       moduleUrl: import.meta.url,
       argv1: process.argv[1],
       cwd: process.cwd(),

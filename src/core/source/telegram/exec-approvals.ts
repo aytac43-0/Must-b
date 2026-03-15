@@ -1,5 +1,5 @@
 import type { ReplyPayload } from "../auto-reply/types.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { TelegramExecApprovalConfig } from "../config/types.telegram.js";
 import { getExecApprovalReplyMetadata } from "../infra/exec-approval-reply.js";
 import { resolveTelegramAccount } from "./accounts.js";
@@ -10,14 +10,14 @@ function normalizeApproverId(value: string | number): string {
 }
 
 export function resolveTelegramExecApprovalConfig(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): TelegramExecApprovalConfig | undefined {
   return resolveTelegramAccount(params).config.execApprovals;
 }
 
 export function getTelegramExecApprovalApprovers(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): string[] {
   return (resolveTelegramExecApprovalConfig(params)?.approvers ?? [])
@@ -26,7 +26,7 @@ export function getTelegramExecApprovalApprovers(params: {
 }
 
 export function isTelegramExecApprovalClientEnabled(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): boolean {
   const config = resolveTelegramExecApprovalConfig(params);
@@ -34,7 +34,7 @@ export function isTelegramExecApprovalClientEnabled(params: {
 }
 
 export function isTelegramExecApprovalApprover(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   senderId?: string | null;
 }): boolean {
@@ -47,14 +47,14 @@ export function isTelegramExecApprovalApprover(params: {
 }
 
 export function resolveTelegramExecApprovalTarget(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): "dm" | "channel" | "both" {
   return resolveTelegramExecApprovalConfig(params)?.target ?? "dm";
 }
 
 export function shouldInjectTelegramExecApprovalButtons(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   to: string;
 }): boolean {
@@ -73,7 +73,7 @@ export function shouldInjectTelegramExecApprovalButtons(params: {
 }
 
 function resolveExecApprovalButtonsExplicitlyDisabled(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
 }): boolean {
   const capabilities = resolveTelegramAccount(params).config.capabilities;
@@ -85,7 +85,7 @@ function resolveExecApprovalButtonsExplicitlyDisabled(params: {
 }
 
 export function shouldEnableTelegramExecApprovalButtons(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   to: string;
 }): boolean {
@@ -96,7 +96,7 @@ export function shouldEnableTelegramExecApprovalButtons(params: {
 }
 
 export function shouldSuppressLocalTelegramExecApprovalPrompt(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   accountId?: string | null;
   payload: ReplyPayload;
 }): boolean {

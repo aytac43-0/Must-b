@@ -1,5 +1,5 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/open-prose";
+import type { MustBPluginApi } from "must-b/plugin-sdk/open-prose";
 
-export default function register(_api: Must-bPluginApi) {
+export default function register(_api: MustBPluginApi) {
   // OpenProse is delivered via plugin-shipped skills.
 }

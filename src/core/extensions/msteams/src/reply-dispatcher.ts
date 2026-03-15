@@ -3,7 +3,7 @@ import {
   createTypingCallbacks,
   logTypingFailure,
   resolveChannelMediaMaxBytes,
-  type Must-bConfig,
+  type MustBonfig,
   type MSTeamsReplyStyle,
   type RuntimeEnv,
 } from "must-b/plugin-sdk/msteams";
@@ -26,7 +26,7 @@ import { getMSTeamsRuntime } from "./runtime.js";
 import type { MSTeamsTurnContext } from "./sdk-types.js";
 
 export function createMSTeamsReplyDispatcher(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentId: string;
   accountId?: string;
   runtime: RuntimeEnv;

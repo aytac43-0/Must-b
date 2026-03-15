@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { MsgContext } from "../auto-reply/templating.js";
-import type { Must-bConfig } from "../config/config.js";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import type { MustBonfig } from "../config/config.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 import { createSafeAudioFixtureBuffer } from "./runner.test-utils.js";
 
 // ---------------------------------------------------------------------------
@@ -93,10 +93,10 @@ function createAudioConfigWithEcho(opts?: {
   echoFormat?: string;
   transcribedText?: string;
 }): {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   providers: Record<string, { id: string; transcribeAudio: () => Promise<{ text: string }> }>;
 } {
-  const cfg: Must-bConfig = {
+  const cfg: MustBonfig = {
     tools: {
       media: {
         audio: {
@@ -145,7 +145,7 @@ function createAudioConfigWithoutEchoFlag() {
 
 describe("applyMediaUnderstanding – echo transcript", () => {
   beforeAll(async () => {
-    const baseDir = resolvePreferredMust-bTmpDir();
+    const baseDir = resolvePreferredMustBmpDir();
     await fs.mkdir(baseDir, { recursive: true });
     suiteTempMediaRootDir = await fs.mkdtemp(path.join(baseDir, TEMP_MEDIA_PREFIX));
     const mod = await import("./apply.js");

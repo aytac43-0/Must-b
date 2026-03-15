@@ -5,7 +5,7 @@ import { t } from "../i18n/index.ts";
 import { refreshChat } from "./app-chat.ts";
 import { syncUrlWithSessionKey } from "./app-settings.ts";
 import type { AppViewState } from "./app-view-state.ts";
-import { Must-bApp } from "./app.ts";
+import { MustBpp } from "./app.ts";
 import { ChatState, loadChatHistory } from "./controllers/chat.ts";
 import { loadSessions } from "./controllers/sessions.ts";
 import { icons } from "./icons.ts";
@@ -38,10 +38,10 @@ function resetChatStateForSessionSwitch(state: AppViewState, sessionKey: string)
   state.sessionKey = sessionKey;
   state.chatMessage = "";
   state.chatStream = null;
-  (state as unknown as Must-bApp).chatStreamStartedAt = null;
+  (state as unknown as MustBpp).chatStreamStartedAt = null;
   state.chatRunId = null;
-  (state as unknown as Must-bApp).resetToolStream();
-  (state as unknown as Must-bApp).resetChatScroll();
+  (state as unknown as MustBpp).resetToolStream();
+  (state as unknown as MustBpp).resetChatScroll();
   state.applySettings({
     ...state.settings,
     sessionKey,
@@ -211,7 +211,7 @@ export function renderChatControls(state: AppViewState) {
         class="btn btn--sm btn--icon"
         ?disabled=${state.chatLoading || !state.connected}
         @click=${async () => {
-          const app = state as unknown as Must-bApp;
+          const app = state as unknown as MustBpp;
           app.chatManualRefreshInFlight = true;
           app.chatNewMessagesBelow = false;
           await app.updateComplete;
@@ -293,10 +293,10 @@ function switchChatSession(state: AppViewState, nextSessionKey: string) {
   state.chatStream = null;
   // P1: Clear queued chat items from the previous session
   (state as unknown as { chatQueue: unknown[] }).chatQueue = [];
-  (state as unknown as Must-bApp).chatStreamStartedAt = null;
+  (state as unknown as MustBpp).chatStreamStartedAt = null;
   state.chatRunId = null;
-  (state as unknown as Must-bApp).resetToolStream();
-  (state as unknown as Must-bApp).resetChatScroll();
+  (state as unknown as MustBpp).resetToolStream();
+  (state as unknown as MustBpp).resetChatScroll();
   state.applySettings({
     ...state.settings,
     sessionKey: nextSessionKey,

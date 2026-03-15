@@ -8,7 +8,7 @@ import {
   resolveActiveTalkProviderConfig,
   resolveTalkApiKey,
 } from "./talk.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 import type { ModelDefinitionConfig } from "./types.models.js";
 import { hasConfiguredSecretInput } from "./types.secrets.js";
 
@@ -71,7 +71,7 @@ function resolveModelCost(
   };
 }
 
-function resolveAnthropicDefaultAuthMode(cfg: Must-bConfig): AnthropicAuthDefaultsMode | null {
+function resolveAnthropicDefaultAuthMode(cfg: MustBonfig): AnthropicAuthDefaultsMode | null {
   const profiles = cfg.auth?.profiles ?? {};
   const anthropicProfiles = Object.entries(profiles).filter(
     ([, profile]) => profile?.provider === "anthropic",
@@ -128,7 +128,7 @@ export type SessionDefaultsOptions = {
   warnState?: WarnState;
 };
 
-export function applyMessageDefaults(cfg: Must-bConfig): Must-bConfig {
+export function applyMessageDefaults(cfg: MustBonfig): MustBonfig {
   const messages = cfg.messages;
   const hasAckScope = messages?.ackReactionScope !== undefined;
   if (hasAckScope) {
@@ -144,9 +144,9 @@ export function applyMessageDefaults(cfg: Must-bConfig): Must-bConfig {
 }
 
 export function applySessionDefaults(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   options: SessionDefaultsOptions = {},
-): Must-bConfig {
+): MustBonfig {
   const session = cfg.session;
   if (!session || session.mainKey === undefined) {
     return cfg;
@@ -156,7 +156,7 @@ export function applySessionDefaults(
   const warn = options.warn ?? console.warn;
   const warnState = options.warnState ?? defaultWarnState;
 
-  const next: Must-bConfig = {
+  const next: MustBonfig = {
     ...cfg,
     session: { ...session, mainKey: "main" },
   };
@@ -169,7 +169,7 @@ export function applySessionDefaults(
   return next;
 }
 
-export function applyTalkApiKey(config: Must-bConfig): Must-bConfig {
+export function applyTalkApiKey(config: MustBonfig): MustBonfig {
   const normalized = normalizeTalkConfig(config);
   const resolved = resolveTalkApiKey();
   if (!resolved) {
@@ -206,11 +206,11 @@ export function applyTalkApiKey(config: Must-bConfig): Must-bConfig {
   };
 }
 
-export function applyTalkConfigNormalization(config: Must-bConfig): Must-bConfig {
+export function applyTalkConfigNormalization(config: MustBonfig): MustBonfig {
   return normalizeTalkConfig(config);
 }
 
-export function applyModelDefaults(cfg: Must-bConfig): Must-bConfig {
+export function applyModelDefaults(cfg: MustBonfig): MustBonfig {
   let mutated = false;
   let nextCfg = cfg;
 
@@ -346,7 +346,7 @@ export function applyModelDefaults(cfg: Must-bConfig): Must-bConfig {
   };
 }
 
-export function applyAgentDefaults(cfg: Must-bConfig): Must-bConfig {
+export function applyAgentDefaults(cfg: MustBonfig): MustBonfig {
   const agents = cfg.agents;
   const defaults = agents?.defaults;
   const hasMax =
@@ -387,7 +387,7 @@ export function applyAgentDefaults(cfg: Must-bConfig): Must-bConfig {
   };
 }
 
-export function applyLoggingDefaults(cfg: Must-bConfig): Must-bConfig {
+export function applyLoggingDefaults(cfg: MustBonfig): MustBonfig {
   const logging = cfg.logging;
   if (!logging) {
     return cfg;
@@ -404,7 +404,7 @@ export function applyLoggingDefaults(cfg: Must-bConfig): Must-bConfig {
   };
 }
 
-export function applyContextPruningDefaults(cfg: Must-bConfig): Must-bConfig {
+export function applyContextPruningDefaults(cfg: MustBonfig): MustBonfig {
   const defaults = cfg.agents?.defaults;
   if (!defaults) {
     return cfg;
@@ -506,7 +506,7 @@ export function applyContextPruningDefaults(cfg: Must-bConfig): Must-bConfig {
   };
 }
 
-export function applyCompactionDefaults(cfg: Must-bConfig): Must-bConfig {
+export function applyCompactionDefaults(cfg: MustBonfig): MustBonfig {
   const defaults = cfg.agents?.defaults;
   if (!defaults) {
     return cfg;

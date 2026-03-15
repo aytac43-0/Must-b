@@ -6,7 +6,7 @@ import {
   sortSubagentRuns,
   type SubagentTargetResolution,
 } from "../auto-reply/reply/subagents-utils.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import { loadSessionStore, resolveStorePath, updateSessionStore } from "../config/sessions.js";
 import { callGateway } from "../gateway/call.js";
@@ -87,7 +87,7 @@ export type BuiltSubagentList = {
 };
 
 function resolveStorePathForKey(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   key: string,
   parsed?: ParsedAgentSessionKey | null,
 ) {
@@ -97,7 +97,7 @@ function resolveStorePathForKey(
 }
 
 export function resolveSessionEntryForKey(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   key: string;
   cache: Map<string, Record<string, SessionEntry>>;
 }): SessionEntryResolution {
@@ -115,7 +115,7 @@ export function resolveSessionEntryForKey(params: {
 }
 
 export function resolveSubagentController(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentSessionKey?: string;
 }): ResolvedSubagentController {
   const { mainKey, alias } = resolveMainSessionAlias(params.cfg);
@@ -251,7 +251,7 @@ function buildListText(params: {
 }
 
 export function buildSubagentList(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   runs: SubagentRunRecord[];
   recentMinutes: number;
   taskMaxChars?: number;
@@ -329,7 +329,7 @@ function ensureControllerOwnsRun(params: {
 }
 
 async function killSubagentRun(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   entry: SubagentRunRecord;
   cache: Map<string, Record<string, SessionEntry>>;
 }): Promise<{ killed: boolean; sessionId?: string }> {
@@ -371,7 +371,7 @@ async function killSubagentRun(params: {
 }
 
 async function cascadeKillChildren(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   parentChildSessionKey: string;
   cache: Map<string, Record<string, SessionEntry>>;
   seenChildSessionKeys?: Set<string>;
@@ -414,7 +414,7 @@ async function cascadeKillChildren(params: {
 }
 
 export async function killAllControlledSubagentRuns(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   controller: ResolvedSubagentController;
   runs: SubagentRunRecord[];
 }) {
@@ -458,7 +458,7 @@ export async function killAllControlledSubagentRuns(params: {
 }
 
 export async function killControlledSubagentRun(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   controller: ResolvedSubagentController;
   entry: SubagentRunRecord;
 }) {
@@ -524,7 +524,7 @@ export async function killControlledSubagentRun(params: {
 }
 
 export async function steerControlledSubagentRun(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   controller: ResolvedSubagentController;
   entry: SubagentRunRecord;
   message: string;
@@ -685,7 +685,7 @@ export async function steerControlledSubagentRun(params: {
 }
 
 export async function sendControlledSubagentMessage(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   entry: SubagentRunRecord;
   message: string;
 }) {

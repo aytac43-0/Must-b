@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, vi } from "vitest";
 import { i18n } from "../../i18n/index.ts";
 import "../app.ts";
-import type { Must-bApp } from "../app.ts";
+import type { MustBpp } from "../app.ts";
 
 class MockWebSocket {
   static CONNECTING = 0;
@@ -22,7 +22,7 @@ class MockWebSocket {
 
 export function mountApp(pathname: string) {
   window.history.replaceState({}, "", pathname);
-  const app = document.createElement("must-b-app") as Must-bApp;
+  const app = document.createElement("must-b-app") as MustBpp;
   document.body.append(app);
   app.connected = true;
   app.requestUpdate();

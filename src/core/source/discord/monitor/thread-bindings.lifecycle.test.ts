@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clearRuntimeConfigSnapshot,
   setRuntimeConfigSnapshot,
-  type Must-bConfig,
+  type MustBonfig,
 } from "../../config/config.js";
 
 const hoisted = vi.hoisted(() => {
@@ -634,7 +634,7 @@ describe("thread binding lifecycle", () => {
   it("passes manager token when resolving parent channels for auto-bind", async () => {
     const cfg = {
       channels: { discord: { token: "tok" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     createThreadBindingManager({
       accountId: "runtime",
       token: "runtime-token",
@@ -687,10 +687,10 @@ describe("thread binding lifecycle", () => {
   it("uses the active runtime snapshot cfg for manager operations", async () => {
     const startupCfg = {
       channels: { discord: { token: "startup-token" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     const refreshedCfg = {
       channels: { discord: { token: "refreshed-token" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     const manager = createThreadBindingManager({
       accountId: "runtime",
       token: "runtime-token",
@@ -889,7 +889,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       accountId: "default",
     });
 
@@ -925,7 +925,7 @@ describe("thread binding lifecycle", () => {
     hoisted.readAcpSessionEntry.mockReturnValue({
       sessionKey: "agent:codex:acp:uncertain",
       storeSessionKey: "agent:codex:acp:uncertain",
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       storePath: "/tmp/mock-sessions.json",
       storeReadFailed: true,
       entry: undefined,
@@ -933,7 +933,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       accountId: "default",
     });
 
@@ -976,7 +976,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       accountId: "default",
       healthProbe: async () => ({ status: "stale", reason: "status-timeout-running-stale" }),
     });
@@ -1020,7 +1020,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       accountId: "default",
       healthProbe: async () => ({ status: "uncertain", reason: "status-timeout" }),
     });
@@ -1064,7 +1064,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const result = await reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       accountId: "default",
     });
 
@@ -1126,7 +1126,7 @@ describe("thread binding lifecycle", () => {
     let secondProbeStartedBeforeFirstResolved = false;
 
     const reconcilePromise = reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       accountId: "default",
       healthProbe: async () => {
         probeCallCount += 1;
@@ -1198,7 +1198,7 @@ describe("thread binding lifecycle", () => {
     });
 
     const reconcilePromise = reconcileAcpThreadBindingsOnStartup({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       accountId: "default",
       healthProbe: async () => {
         probeCalls += 1;

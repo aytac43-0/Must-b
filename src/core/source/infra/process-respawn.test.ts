@@ -3,14 +3,14 @@ import { captureFullEnv } from "../test-utils/env.js";
 import { SUPERVISOR_HINT_ENV_VARS } from "./supervisor-markers.js";
 
 const spawnMock = vi.hoisted(() => vi.fn());
-const triggerMust-bRestartMock = vi.hoisted(() => vi.fn());
+const triggerMustBestartMock = vi.hoisted(() => vi.fn());
 const scheduleDetachedLaunchdRestartHandoffMock = vi.hoisted(() => vi.fn());
 
 vi.mock("node:child_process", () => ({
   spawn: (...args: unknown[]) => spawnMock(...args),
 }));
 vi.mock("./restart.js", () => ({
-  triggerMust-bRestart: (...args: unknown[]) => triggerMust-bRestartMock(...args),
+  triggerMustBestart: (...args: unknown[]) => triggerMustBestartMock(...args),
 }));
 vi.mock("../daemon/launchd-restart-handoff.js", () => ({
   scheduleDetachedLaunchdRestartHandoff: (...args: unknown[]) =>
@@ -39,7 +39,7 @@ afterEach(() => {
   process.argv = [...originalArgv];
   process.execArgv = [...originalExecArgv];
   spawnMock.mockClear();
-  triggerMust-bRestartMock.mockClear();
+  triggerMustBestartMock.mockClear();
   scheduleDetachedLaunchdRestartHandoffMock.mockReset();
   scheduleDetachedLaunchdRestartHandoffMock.mockReturnValue({ ok: true, pid: 8123 });
   if (originalPlatformDescriptor) {
@@ -66,7 +66,7 @@ function expectLaunchdSupervisedWithoutKickstart(params?: { launchJobLabel?: str
     mode: "start-after-exit",
     waitForPid: process.pid,
   });
-  expect(triggerMust-bRestartMock).not.toHaveBeenCalled();
+  expect(triggerMustBestartMock).not.toHaveBeenCalled();
   expect(spawnMock).not.toHaveBeenCalled();
 }
 
@@ -90,7 +90,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
       mode: "start-after-exit",
       waitForPid: process.pid,
     });
-    expect(triggerMust-bRestartMock).not.toHaveBeenCalled();
+    expect(triggerMustBestartMock).not.toHaveBeenCalled();
     expect(spawnMock).not.toHaveBeenCalled();
   });
 
@@ -98,12 +98,12 @@ describe("restartGatewayProcessWithFreshPid", () => {
     expectLaunchdSupervisedWithoutKickstart({ launchJobLabel: "ai.must-b.gateway" });
   });
 
-  it("launchd supervisor never returns failed regardless of triggerMust-bRestart outcome", () => {
+  it("launchd supervisor never returns failed regardless of triggerMustBestart outcome", () => {
     clearSupervisorHints();
     setPlatform("darwin");
     process.env.MUSTB_LAUNCHD_LABEL = "ai.must-b.gateway";
-    // Even if triggerMust-bRestart *would* fail, launchd path must not call it.
-    triggerMust-bRestartMock.mockReturnValue({
+    // Even if triggerMustBestart *would* fail, launchd path must not call it.
+    triggerMustBestartMock.mockReturnValue({
       ok: false,
       method: "launchctl",
       detail: "Bootstrap failed: 5: Input/output error",
@@ -111,7 +111,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
     const result = restartGatewayProcessWithFreshPid();
     expect(result.mode).toBe("supervised");
     expect(result.mode).not.toBe("failed");
-    expect(triggerMust-bRestartMock).not.toHaveBeenCalled();
+    expect(triggerMustBestartMock).not.toHaveBeenCalled();
   });
 
   it("falls back to plain supervised exit when launchd handoff scheduling fails", () => {
@@ -129,7 +129,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
       mode: "supervised",
       detail: "launchd exit fallback (spawn failed)",
     });
-    expect(triggerMust-bRestartMock).not.toHaveBeenCalled();
+    expect(triggerMustBestartMock).not.toHaveBeenCalled();
     expect(spawnMock).not.toHaveBeenCalled();
   });
 
@@ -141,7 +141,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
     const result = restartGatewayProcessWithFreshPid();
 
     expect(result.mode).toBe("supervised");
-    expect(triggerMust-bRestartMock).not.toHaveBeenCalled();
+    expect(triggerMustBestartMock).not.toHaveBeenCalled();
     expect(spawnMock).not.toHaveBeenCalled();
   });
 
@@ -151,7 +151,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
     process.env.XPC_SERVICE_NAME = "ai.must-b.gateway";
     const result = restartGatewayProcessWithFreshPid();
     expect(result.mode).toBe("supervised");
-    expect(triggerMust-bRestartMock).not.toHaveBeenCalled();
+    expect(triggerMustBestartMock).not.toHaveBeenCalled();
     expect(spawnMock).not.toHaveBeenCalled();
   });
 
@@ -195,10 +195,10 @@ describe("restartGatewayProcessWithFreshPid", () => {
     setPlatform("win32");
     process.env.MUSTB_SERVICE_MARKER = "must-b";
     process.env.MUSTB_SERVICE_KIND = "gateway";
-    triggerMust-bRestartMock.mockReturnValue({ ok: true, method: "schtasks" });
+    triggerMustBestartMock.mockReturnValue({ ok: true, method: "schtasks" });
     const result = restartGatewayProcessWithFreshPid();
     expect(result.mode).toBe("supervised");
-    expect(triggerMust-bRestartMock).toHaveBeenCalledOnce();
+    expect(triggerMustBestartMock).toHaveBeenCalledOnce();
     expect(spawnMock).not.toHaveBeenCalled();
   });
 
@@ -212,7 +212,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
     const result = restartGatewayProcessWithFreshPid();
 
     expect(result).toEqual({ mode: "spawned", pid: 4242 });
-    expect(triggerMust-bRestartMock).not.toHaveBeenCalled();
+    expect(triggerMustBestartMock).not.toHaveBeenCalled();
   });
 
   it("returns disabled on Windows without Scheduled Task markers", () => {
@@ -237,7 +237,7 @@ describe("restartGatewayProcessWithFreshPid", () => {
     const result = restartGatewayProcessWithFreshPid();
 
     expect(result.mode).toBe("disabled");
-    expect(triggerMust-bRestartMock).not.toHaveBeenCalled();
+    expect(triggerMustBestartMock).not.toHaveBeenCalled();
     expect(spawnMock).not.toHaveBeenCalled();
   });
 

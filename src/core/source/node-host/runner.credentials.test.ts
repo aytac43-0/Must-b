@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { withEnvAsync } from "../test-utils/env.js";
 import { resolveNodeHostGatewayCredentials } from "./runner.js";
 
-function createRemoteGatewayTokenRefConfig(tokenId: string): Must-bConfig {
+function createRemoteGatewayTokenRefConfig(tokenId: string): MustBonfig {
   return {
     secrets: {
       providers: {
@@ -16,7 +16,7 @@ function createRemoteGatewayTokenRefConfig(tokenId: string): Must-bConfig {
         token: { source: "env", provider: "default", id: tokenId },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
 describe("resolveNodeHostGatewayCredentials", () => {
@@ -26,7 +26,7 @@ describe("resolveNodeHostGatewayCredentials", () => {
         mode: "local",
         remote: { token: "remote-only-token" },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await withEnvAsync(
       {
@@ -54,7 +54,7 @@ describe("resolveNodeHostGatewayCredentials", () => {
           token: { source: "env", provider: "default", id: "MISSING_REMOTE_GATEWAY_TOKEN" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await withEnvAsync(
       {
@@ -133,7 +133,7 @@ describe("resolveNodeHostGatewayCredentials", () => {
           password: { source: "env", provider: "default", id: "MISSING_REMOTE_GATEWAY_PASSWORD" },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await withEnvAsync(
       {

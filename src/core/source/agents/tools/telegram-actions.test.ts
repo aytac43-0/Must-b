@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import { captureEnv } from "../../test-utils/env.js";
 import { handleTelegramAction, readTelegramButtons } from "./telegram-actions.js";
 
@@ -54,13 +54,13 @@ describe("handleTelegramAction", () => {
     emoji: "✅",
   } as const;
 
-  function reactionConfig(reactionLevel: "minimal" | "extensive" | "off" | "ack"): Must-bConfig {
+  function reactionConfig(reactionLevel: "minimal" | "extensive" | "off" | "ack"): MustBonfig {
     return {
       channels: { telegram: { botToken: "tok", reactionLevel } },
-    } as Must-bConfig;
+    } as MustBonfig;
   }
 
-  function telegramConfig(overrides?: Record<string, unknown>): Must-bConfig {
+  function telegramConfig(overrides?: Record<string, unknown>): MustBonfig {
     return {
       channels: {
         telegram: {
@@ -68,7 +68,7 @@ describe("handleTelegramAction", () => {
           ...overrides,
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
   }
 
   async function sendInlineButtonsMessage(params: {
@@ -162,7 +162,7 @@ describe("handleTelegramAction", () => {
   it("soft-fails when messageId is missing", async () => {
     const cfg = {
       channels: { telegram: { botToken: "tok", reactionLevel: "minimal" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     const result = await handleTelegramAction(
       {
         action: "react",
@@ -197,7 +197,7 @@ describe("handleTelegramAction", () => {
   });
 
   it("rejects sticker actions when disabled by default", async () => {
-    const cfg = { channels: { telegram: { botToken: "tok" } } } as Must-bConfig;
+    const cfg = { channels: { telegram: { botToken: "tok" } } } as MustBonfig;
     await expect(
       handleTelegramAction(
         {
@@ -214,7 +214,7 @@ describe("handleTelegramAction", () => {
   it("sends stickers when enabled", async () => {
     const cfg = {
       channels: { telegram: { botToken: "tok", actions: { sticker: true } } },
-    } as Must-bConfig;
+    } as MustBonfig;
     await handleTelegramAction(
       {
         action: "sendSticker",
@@ -278,7 +278,7 @@ describe("handleTelegramAction", () => {
           actions: { reactions: false },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     const result = await handleTelegramAction(
       {
         action: "react",
@@ -543,7 +543,7 @@ describe("handleTelegramAction", () => {
       channels: {
         telegram: { botToken: "tok", actions: { sendMessage: false } },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     await expect(
       handleTelegramAction(
         {
@@ -561,7 +561,7 @@ describe("handleTelegramAction", () => {
       channels: {
         telegram: { botToken: "tok", actions: { poll: false } },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     await expect(
       handleTelegramAction(
         {
@@ -578,7 +578,7 @@ describe("handleTelegramAction", () => {
   it("deletes a message", async () => {
     const cfg = {
       channels: { telegram: { botToken: "tok" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     await handleTelegramAction(
       {
         action: "deleteMessage",
@@ -599,7 +599,7 @@ describe("handleTelegramAction", () => {
       channels: {
         telegram: { botToken: "tok", actions: { deleteMessage: false } },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
     await expect(
       handleTelegramAction(
         {
@@ -614,7 +614,7 @@ describe("handleTelegramAction", () => {
 
   it("throws on missing bot token for sendMessage", async () => {
     delete process.env.TELEGRAM_BOT_TOKEN;
-    const cfg = {} as Must-bConfig;
+    const cfg = {} as MustBonfig;
     await expect(
       handleTelegramAction(
         {
@@ -630,7 +630,7 @@ describe("handleTelegramAction", () => {
   it("allows inline buttons by default (allowlist)", async () => {
     const cfg = {
       channels: { telegram: { botToken: "tok" } },
-    } as Must-bConfig;
+    } as MustBonfig;
     await handleTelegramAction(
       {
         action: "sendMessage",
@@ -783,7 +783,7 @@ describe("handleTelegramAction per-account gating", () => {
     >;
     topLevelBotToken?: string;
     topLevelActions?: { reactions?: boolean };
-  }): Must-bConfig {
+  }): MustBonfig {
     return {
       channels: {
         telegram: {
@@ -792,10 +792,10 @@ describe("handleTelegramAction per-account gating", () => {
           accounts: params.accounts,
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
   }
 
-  async function expectAccountStickerSend(cfg: Must-bConfig, accountId = "media") {
+  async function expectAccountStickerSend(cfg: MustBonfig, accountId = "media") {
     await handleTelegramAction(
       { action: "sendSticker", to: "123", fileId: "sticker-id", accountId },
       cfg,
@@ -825,7 +825,7 @@ describe("handleTelegramAction per-account gating", () => {
           },
         },
       },
-    } as Must-bConfig;
+    } as MustBonfig;
 
     await expect(
       handleTelegramAction(

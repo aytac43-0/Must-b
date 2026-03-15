@@ -1,4 +1,4 @@
-import { discoverMust-bPlugins } from "./discovery.js";
+import { discoverMustBlugins } from "./discovery.js";
 import { loadPluginManifest } from "./manifest.js";
 
 export type BundledPluginSource = {
@@ -35,7 +35,7 @@ export function resolveBundledPluginSources(params: {
   /** Use an explicit env when bundled roots should resolve independently from process.env. */
   env?: NodeJS.ProcessEnv;
 }): Map<string, BundledPluginSource> {
-  const discovery = discoverMust-bPlugins({
+  const discovery = discoverMustBlugins({
     workspaceDir: params.workspaceDir,
     env: params.env,
   });

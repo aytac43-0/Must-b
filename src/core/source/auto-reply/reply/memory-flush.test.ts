@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import {
   DEFAULT_MEMORY_FLUSH_PROMPT,
   resolveMemoryFlushPromptForRun,
@@ -14,7 +14,7 @@ describe("resolveMemoryFlushPromptForRun", () => {
         timeFormat: "12",
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 
   it("replaces YYYY-MM-DD using user timezone and appends current time", () => {
     const prompt = resolveMemoryFlushPromptForRun({

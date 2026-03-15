@@ -1,7 +1,7 @@
 import { resolveDefaultAgentId, resolveAgentWorkspaceDir } from "../../../agents/agent-scope.js";
 import type { ApiKeyCredential } from "../../../agents/auth-profiles/types.js";
 import { resolveDefaultAgentWorkspaceDir } from "../../../agents/workspace.js";
-import type { Must-bConfig } from "../../../config/config.js";
+import type { MustBonfig } from "../../../config/config.js";
 import { enablePluginInConfig } from "../../../plugins/enable.js";
 import {
   PROVIDER_PLUGIN_CHOICE_PREFIX,
@@ -17,9 +17,9 @@ import { resolvePreferredProviderForAuthChoice } from "../../auth-choice.preferr
 import type { OnboardOptions } from "../../onboard-types.js";
 
 function buildIsolatedProviderResolutionConfig(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   providerId: string | undefined,
-): Must-bConfig {
+): MustBonfig {
   if (!providerId) {
     return cfg;
   }
@@ -42,11 +42,11 @@ function buildIsolatedProviderResolutionConfig(
 }
 
 export async function applyNonInteractivePluginProviderChoice(params: {
-  nextConfig: Must-bConfig;
+  nextConfig: MustBonfig;
   authChoice: string;
   opts: OnboardOptions;
   runtime: RuntimeEnv;
-  baseConfig: Must-bConfig;
+  baseConfig: MustBonfig;
   resolveApiKey: (input: ProviderResolveNonInteractiveApiKeyParams) => Promise<{
     key: string;
     source: "profile" | "env" | "flag";
@@ -55,7 +55,7 @@ export async function applyNonInteractivePluginProviderChoice(params: {
   toApiKeyCredential: (
     input: ProviderNonInteractiveApiKeyCredentialParams,
   ) => ApiKeyCredential | null;
-}): Promise<Must-bConfig | null | undefined> {
+}): Promise<MustBonfig | null | undefined> {
   const agentId = resolveDefaultAgentId(params.nextConfig);
   const workspaceDir =
     resolveAgentWorkspaceDir(params.nextConfig, agentId) ?? resolveDefaultAgentWorkspaceDir();

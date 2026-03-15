@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
 vi.mock("../../config/sessions.js", () => ({
   loadSessionStore: vi.fn().mockReturnValue({}),
@@ -32,15 +32,15 @@ import { readChannelAllowFromStoreSync } from "../../pairing/pairing-store.js";
 import { resolveWhatsAppAccount } from "../../web/accounts.js";
 import { resolveDeliveryTarget } from "./delivery-target.js";
 
-function makeCfg(overrides?: Partial<Must-bConfig>): Must-bConfig {
+function makeCfg(overrides?: Partial<MustBonfig>): MustBonfig {
   return {
     bindings: [],
     channels: {},
     ...overrides,
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
-function makeTelegramBoundCfg(accountId = "account-b"): Must-bConfig {
+function makeTelegramBoundCfg(accountId = "account-b"): MustBonfig {
   return makeCfg({
     bindings: [
       {
@@ -75,7 +75,7 @@ function setStoredWhatsAppAllowFrom(allowFrom: string[]) {
 }
 
 async function resolveForAgent(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   target?: { channel?: "last" | "telegram"; to?: string };
 }) {
   const channel = params.target ? params.target.channel : DEFAULT_TARGET.channel;

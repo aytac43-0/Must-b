@@ -22,7 +22,7 @@ import {
 } from "./thread-bindings.js";
 
 type DiscordConfig = NonNullable<
-  import("../../config/config.js").Must-bConfig["channels"]
+  import("../../config/config.js").MustBonfig["channels"]
 >["discord"];
 type DiscordMessageEvent = import("./listeners.js").DiscordMessageEvent;
 type DiscordClient = import("@buape/carbon").Client;
@@ -32,7 +32,7 @@ const DEFAULT_CFG = {
     mainKey: "main",
     scope: "per-sender",
   },
-} as import("../../config/config.js").Must-bConfig;
+} as import("../../config/config.js").MustBonfig;
 
 function createThreadBinding(
   overrides?: Partial<
@@ -62,7 +62,7 @@ function createThreadBinding(
 }
 
 function createPreflightArgs(params: {
-  cfg: import("../../config/config.js").Must-bConfig;
+  cfg: import("../../config/config.js").MustBonfig;
   discordConfig: DiscordConfig;
   data: DiscordMessageEvent;
   client: DiscordClient;
@@ -218,7 +218,7 @@ async function runGuildPreflight(params: {
   guildId: string;
   message: import("@buape/carbon").Message;
   discordConfig: DiscordConfig;
-  cfg?: import("../../config/config.js").Must-bConfig;
+  cfg?: import("../../config/config.js").MustBonfig;
   guildEntries?: Parameters<typeof preflightDiscordMessage>[0]["guildEntries"];
 }) {
   return preflightDiscordMessage({
@@ -364,7 +364,7 @@ describe("preflightDiscordMessage", () => {
       createPreflightArgs({
         cfg: {
           ...DEFAULT_CFG,
-        } as import("../../config/config.js").Must-bConfig,
+        } as import("../../config/config.js").MustBonfig,
         discordConfig: {
           allowBots: true,
         } as DiscordConfig,
@@ -574,7 +574,7 @@ describe("preflightDiscordMessage", () => {
               mentionPatterns: ["must-b"],
             },
           },
-        } as import("../../config/config.js").Must-bConfig,
+        } as import("../../config/config.js").MustBonfig,
         discordConfig: {} as DiscordConfig,
         data: createGuildEvent({
           channelId,

@@ -99,7 +99,7 @@ vi.mock("../infra/provider-usage.js", () => ({
 }));
 
 import "./test-helpers/fast-core-tools.js";
-import { createMust-bTools } from "./must-b-tools.js";
+import { createMustBools } from "./must-b-tools.js";
 
 function resetSessionStore(store: Record<string, unknown>) {
   loadSessionStoreMock.mockClear();
@@ -116,7 +116,7 @@ function resetSessionStore(store: Record<string, unknown>) {
 }
 
 function getSessionStatusTool(agentSessionKey = "main", options?: { sandboxed?: boolean }) {
-  const tool = createMust-bTools({
+  const tool = createMustBools({
     agentSessionKey,
     sandboxed: options?.sandboxed,
   }).find((candidate) => candidate.name === "session_status");

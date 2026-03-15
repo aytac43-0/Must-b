@@ -20,7 +20,7 @@ import { listAgentWorkspaceDirs } from "../agents/workspace-dirs.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { MANIFEST_KEY } from "../compat/legacy-names.js";
 import { resolveNativeSkillsEnabled } from "../config/commands.js";
-import type { Must-bConfig, ConfigFileSnapshot } from "../config/config.js";
+import type { MustBonfig, ConfigFileSnapshot } from "../config/config.js";
 import { createConfigIO } from "../config/config.js";
 import { collectIncludePathsRecursive } from "../config/includes-scan.js";
 import { resolveOAuthDir } from "../config/paths.js";
@@ -130,7 +130,7 @@ async function listInstalledPluginDirs(params: {
 }
 
 function resolveToolPolicies(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentTools?: AgentToolsConfig;
   sandboxMode?: "off" | "non-main" | "all";
   agentId?: string | null;
@@ -153,7 +153,7 @@ function normalizePluginIdSet(entries: string[]): Set<string> {
 }
 
 function resolveEnabledExtensionPluginIds(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   pluginDirs: string[];
 }): string[] {
   const normalized = normalizePluginsConfig(params.cfg.plugins);
@@ -524,7 +524,7 @@ export async function collectSandboxBrowserHashLabelFindings(params?: {
 }
 
 export async function collectPluginsTrustFindings(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   stateDir: string;
 }): Promise<SecurityAuditFinding[]> {
   const findings: SecurityAuditFinding[] = [];
@@ -821,7 +821,7 @@ export async function collectPluginsTrustFindings(params: {
 }
 
 export async function collectWorkspaceSkillSymlinkEscapeFindings(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
 }): Promise<SecurityAuditFinding[]> {
   const findings: SecurityAuditFinding[] = [];
   const workspaceDirs = listAgentWorkspaceDirs(params.cfg);
@@ -971,7 +971,7 @@ export async function collectIncludeFilePermFindings(params: {
 }
 
 export async function collectStateDeepFilesystemFindings(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   env: NodeJS.ProcessEnv;
   stateDir: string;
   platform?: NodeJS.Platform;
@@ -1239,7 +1239,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
 }
 
 export async function collectInstalledSkillsCodeSafetyFindings(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   stateDir: string;
   summaryCache?: CodeSafetySummaryCache;
 }): Promise<SecurityAuditFinding[]> {

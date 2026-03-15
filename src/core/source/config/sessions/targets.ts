@@ -8,7 +8,7 @@ import {
 } from "../../agents/session-dirs.js";
 import { DEFAULT_AGENT_ID, normalizeAgentId } from "../../routing/session-key.js";
 import { resolveStateDir } from "../paths.js";
-import type { Must-bConfig } from "../types.must-b.js";
+import type { MustBonfig } from "../types.must-b.js";
 import { resolveAgentsDirFromSessionStorePath, resolveStorePath } from "./paths.js";
 
 export type SessionStoreSelectionOptions = {
@@ -102,7 +102,7 @@ async function resolveValidatedDiscoveredStorePath(params: {
 }
 
 function resolveSessionStoreDiscoveryState(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv,
 ): {
   configuredTargets: SessionStoreTarget[];
@@ -141,7 +141,7 @@ function toDiscoveredSessionStoreTarget(
 }
 
 export function resolveAllAgentSessionStoreTargetsSync(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params: { env?: NodeJS.ProcessEnv } = {},
 ): SessionStoreTarget[] {
   const env = params.env ?? process.env;
@@ -207,7 +207,7 @@ export function resolveAllAgentSessionStoreTargetsSync(
 }
 
 export async function resolveAllAgentSessionStoreTargets(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   params: { env?: NodeJS.ProcessEnv } = {},
 ): Promise<SessionStoreTarget[]> {
   const env = params.env ?? process.env;
@@ -287,7 +287,7 @@ export async function resolveAllAgentSessionStoreTargets(
 }
 
 export function resolveSessionStoreTargets(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   opts: SessionStoreSelectionOptions,
   params: { env?: NodeJS.ProcessEnv } = {},
 ): SessionStoreTarget[] {

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { expectGeneratedTokenPersistedToGatewayAuth } from "../test-utils/auth-token-assertions.js";
 
 const mocks = vi.hoisted(() => ({
-  loadConfig: vi.fn<() => Must-bConfig>(),
-  writeConfigFile: vi.fn(async (_cfg: Must-bConfig) => {}),
+  loadConfig: vi.fn<() => MustBonfig>(),
+  writeConfigFile: vi.fn(async (_cfg: MustBonfig) => {}),
 }));
 
 vi.mock("../config/config.js", async (importOriginal) => {
@@ -20,7 +20,7 @@ import { ensureBrowserControlAuth } from "./control-auth.js";
 
 describe("ensureBrowserControlAuth", () => {
   const expectExplicitModeSkipsAutoAuth = async (mode: "password" | "none") => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         auth: { mode },
       },
@@ -54,7 +54,7 @@ describe("ensureBrowserControlAuth", () => {
   });
 
   it("returns existing auth and skips writes", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         auth: {
           token: "already-set",
@@ -70,7 +70,7 @@ describe("ensureBrowserControlAuth", () => {
   });
 
   it("auto-generates and persists a token when auth is missing", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       browser: {
         enabled: true,
       },
@@ -86,7 +86,7 @@ describe("ensureBrowserControlAuth", () => {
   });
 
   it("skips auto-generation in test env", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       browser: {
         enabled: true,
       },
@@ -111,7 +111,7 @@ describe("ensureBrowserControlAuth", () => {
   });
 
   it("reuses auth from latest config snapshot", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       browser: {
         enabled: true,
       },
@@ -134,7 +134,7 @@ describe("ensureBrowserControlAuth", () => {
   });
 
   it("fails when gateway.auth.token SecretRef is unresolved", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         auth: {
           mode: "token",

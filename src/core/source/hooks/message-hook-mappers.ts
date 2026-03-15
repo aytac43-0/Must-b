@@ -1,5 +1,5 @@
 import type { FinalizedMsgContext } from "../auto-reply/templating.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type {
   PluginHookMessageContext,
   PluginHookMessageReceivedEvent,
@@ -211,8 +211,8 @@ export function toInternalMessageReceivedContext(
 
 export function toInternalMessageTranscribedContext(
   canonical: CanonicalInboundMessageHookContext,
-  cfg: Must-bConfig,
-): MessageTranscribedHookContext & { cfg: Must-bConfig } {
+  cfg: MustBonfig,
+): MessageTranscribedHookContext & { cfg: MustBonfig } {
   const shared = toInternalInboundMessageHookContextBase(canonical);
   return {
     ...shared,
@@ -223,8 +223,8 @@ export function toInternalMessageTranscribedContext(
 
 export function toInternalMessagePreprocessedContext(
   canonical: CanonicalInboundMessageHookContext,
-  cfg: Must-bConfig,
-): MessagePreprocessedHookContext & { cfg: Must-bConfig } {
+  cfg: MustBonfig,
+): MessagePreprocessedHookContext & { cfg: MustBonfig } {
   const shared = toInternalInboundMessageHookContextBase(canonical);
   return {
     ...shared,

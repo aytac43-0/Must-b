@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 
 vi.mock("../../infra/session-cost-usage.js", async () => {
   const actual = await vi.importActual<typeof import("../../infra/session-cost-usage.js")>(
@@ -142,7 +142,7 @@ describe("gateway usage helpers", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-02-05T00:00:00.000Z"));
 
-    const config = {} as Must-bConfig;
+    const config = {} as MustBonfig;
     const a = await __test.loadCostUsageSummaryCached({
       startMs: 1,
       endMs: 2,

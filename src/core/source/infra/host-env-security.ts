@@ -1,5 +1,5 @@
 import HOST_ENV_SECURITY_POLICY_JSON from "./host-env-security-policy.json" with { type: "json" };
-import { markMust-bExecEnv } from "./must-b-exec-env.js";
+import { markMustBxecEnv } from "./must-b-exec-env.js";
 
 const PORTABLE_ENV_VAR_KEY = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
@@ -102,7 +102,7 @@ export function sanitizeHostExecEnv(params?: {
   }
 
   if (!overrides) {
-    return markMust-bExecEnv(merged);
+    return markMustBxecEnv(merged);
   }
 
   for (const [rawKey, value] of Object.entries(overrides)) {
@@ -125,7 +125,7 @@ export function sanitizeHostExecEnv(params?: {
     merged[key] = value;
   }
 
-  return markMust-bExecEnv(merged);
+  return markMustBxecEnv(merged);
 }
 
 export function sanitizeSystemRunEnvOverrides(params?: {

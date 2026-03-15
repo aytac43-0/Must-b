@@ -1,5 +1,5 @@
 import { Type } from "@sinclair/typebox";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { MemoryCitationsMode } from "../../config/types.memory.js";
 import { resolveMemoryBackendConfig } from "../../memory/backend-config.js";
 import { getMemorySearchManager } from "../../memory/index.js";
@@ -22,7 +22,7 @@ const MemoryGetSchema = Type.Object({
   lines: Type.Optional(Type.Number()),
 });
 
-function resolveMemoryToolContext(options: { config?: Must-bConfig; agentSessionKey?: string }) {
+function resolveMemoryToolContext(options: { config?: MustBonfig; agentSessionKey?: string }) {
   const cfg = options.config;
   if (!cfg) {
     return null;
@@ -38,7 +38,7 @@ function resolveMemoryToolContext(options: { config?: Must-bConfig; agentSession
 }
 
 export function createMemorySearchTool(options: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   agentSessionKey?: string;
 }): AnyAgentTool | null {
   const ctx = resolveMemoryToolContext(options);
@@ -99,7 +99,7 @@ export function createMemorySearchTool(options: {
 }
 
 export function createMemoryGetTool(options: {
-  config?: Must-bConfig;
+  config?: MustBonfig;
   agentSessionKey?: string;
 }): AnyAgentTool | null {
   const ctx = resolveMemoryToolContext(options);
@@ -139,7 +139,7 @@ export function createMemoryGetTool(options: {
   };
 }
 
-function resolveMemoryCitationsMode(cfg: Must-bConfig): MemoryCitationsMode {
+function resolveMemoryCitationsMode(cfg: MustBonfig): MemoryCitationsMode {
   const mode = cfg.memory?.citations;
   if (mode === "on" || mode === "off" || mode === "auto") {
     return mode;

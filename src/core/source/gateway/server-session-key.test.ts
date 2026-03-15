@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resetAgentRunContextForTest } from "../infra/agent-events.js";
 
 const hoisted = vi.hoisted(() => ({
-  loadConfigMock: vi.fn<() => Must-bConfig>(),
+  loadConfigMock: vi.fn<() => MustBonfig>(),
   loadCombinedSessionStoreForGatewayMock: vi.fn(),
 }));
 
@@ -15,7 +15,7 @@ vi.mock("./session-utils.js", async () => {
   const actual = await vi.importActual<typeof import("./session-utils.js")>("./session-utils.js");
   return {
     ...actual,
-    loadCombinedSessionStoreForGateway: (cfg: Must-bConfig) =>
+    loadCombinedSessionStoreForGateway: (cfg: MustBonfig) =>
       hoisted.loadCombinedSessionStoreForGatewayMock(cfg),
   };
 });
@@ -37,7 +37,7 @@ describe("resolveSessionKeyForRun", () => {
   });
 
   it("resolves run ids from the combined gateway store and caches the result", () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       session: {
         store: "/custom/root/agents/{agentId}/sessions/sessions.json",
       },

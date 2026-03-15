@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Must-bConfig, DEFAULT_GATEWAY_PORT } from "../config/config.js";
+import { type MustBonfig, DEFAULT_GATEWAY_PORT } from "../config/config.js";
 import {
   buildDefaultHookUrl,
   buildTopicPath,
@@ -16,11 +16,11 @@ const baseConfig = {
       pushToken: "push-token",
     },
   },
-} satisfies Must-bConfig;
+} satisfies MustBonfig;
 
 describe("gmail hook config", () => {
   function resolveWithGmailOverrides(
-    overrides: Partial<NonNullable<Must-bConfig["hooks"]>["gmail"]>,
+    overrides: Partial<NonNullable<MustBonfig["hooks"]>["gmail"]>,
   ) {
     return resolveGmailHookRuntimeConfig(
       {

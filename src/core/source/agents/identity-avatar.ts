@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   AVATAR_MAX_BYTES,
   isAvatarDataUrl,
@@ -24,7 +24,7 @@ function normalizeAvatarValue(value: string | undefined | null): string | null {
   return trimmed ? trimmed : null;
 }
 
-function resolveAvatarSource(cfg: Must-bConfig, agentId: string): string | null {
+function resolveAvatarSource(cfg: MustBonfig, agentId: string): string | null {
   const fromConfig = normalizeAvatarValue(resolveAgentIdentity(cfg, agentId)?.avatar);
   if (fromConfig) {
     return fromConfig;
@@ -73,7 +73,7 @@ function resolveLocalAvatarPath(params: {
   return { ok: true, filePath: realPath };
 }
 
-export function resolveAgentAvatar(cfg: Must-bConfig, agentId: string): AgentAvatarResolution {
+export function resolveAgentAvatar(cfg: MustBonfig, agentId: string): AgentAvatarResolution {
   const source = resolveAvatarSource(cfg, agentId);
   if (!source) {
     return { kind: "none", reason: "missing" };

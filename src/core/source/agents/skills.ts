@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SkillsInstallPreferences } from "./skills/types.js";
 
 export {
@@ -15,7 +15,7 @@ export {
   applySkillEnvOverridesFromSnapshot,
 } from "./skills/env-overrides.js";
 export type {
-  Must-bSkillMetadata,
+  MustBkillMetadata,
   SkillEligibilityContext,
   SkillCommandSpec,
   SkillEntry,
@@ -33,7 +33,7 @@ export {
   syncSkillsToWorkspace,
 } from "./skills/workspace.js";
 
-export function resolveSkillsInstallPreferences(config?: Must-bConfig): SkillsInstallPreferences {
+export function resolveSkillsInstallPreferences(config?: MustBonfig): SkillsInstallPreferences {
   const raw = config?.skills?.install;
   const preferBrew = raw?.preferBrew ?? true;
   const managerRaw = typeof raw?.nodeManager === "string" ? raw.nodeManager.trim() : "";

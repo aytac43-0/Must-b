@@ -15,7 +15,7 @@ import {
   resolveNativeCommandsEnabled,
   resolveNativeSkillsEnabled,
 } from "../config/commands.js";
-import type { Must-bConfig, ReplyToMode } from "../config/config.js";
+import type { MustBonfig, ReplyToMode } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import {
   resolveChannelGroupPolicy,
@@ -54,7 +54,7 @@ export type TelegramBotOptions = {
   mediaMaxMb?: number;
   replyToMode?: ReplyToMode;
   proxyFetch?: typeof fetch;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   /** Signal to abort in-flight Telegram API fetch requests (e.g. getUpdates) on shutdown. */
   fetchAbortSignal?: AbortSignal;
   updateOffset?: {

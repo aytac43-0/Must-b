@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import {
   resolveLineAccount,
   resolveDefaultLineAccountId,
@@ -25,7 +25,7 @@ describe("LINE accounts", () => {
 
   describe("resolveLineAccount", () => {
     it("resolves account from config", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           line: {
             enabled: true,
@@ -50,7 +50,7 @@ describe("LINE accounts", () => {
       process.env.LINE_CHANNEL_ACCESS_TOKEN = "env-token";
       process.env.LINE_CHANNEL_SECRET = "env-secret";
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           line: {
             enabled: true,
@@ -66,7 +66,7 @@ describe("LINE accounts", () => {
     });
 
     it("resolves named account", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           line: {
             enabled: true,
@@ -92,7 +92,7 @@ describe("LINE accounts", () => {
     });
 
     it("returns empty token when not configured", () => {
-      const cfg: Must-bConfig = {};
+      const cfg: MustBonfig = {};
 
       const account = resolveLineAccount({ cfg });
 
@@ -112,7 +112,7 @@ describe("LINE accounts", () => {
       fs.symlinkSync(tokenFile, tokenLink);
       fs.symlinkSync(secretFile, secretLink);
 
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           line: {
             tokenFile: tokenLink,
@@ -131,7 +131,7 @@ describe("LINE accounts", () => {
 
   describe("resolveDefaultLineAccountId", () => {
     it("prefers channels.line.defaultAccount when configured", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           line: {
             defaultAccount: "business",
@@ -148,7 +148,7 @@ describe("LINE accounts", () => {
     });
 
     it("normalizes channels.line.defaultAccount before lookup", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           line: {
             defaultAccount: "Business Ops",
@@ -164,7 +164,7 @@ describe("LINE accounts", () => {
     });
 
     it("returns first named account when default not configured", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           line: {
             accounts: {
@@ -180,7 +180,7 @@ describe("LINE accounts", () => {
     });
 
     it("falls back when channels.line.defaultAccount is missing", () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           line: {
             defaultAccount: "missing",

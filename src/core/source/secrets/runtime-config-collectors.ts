@@ -1,10 +1,10 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { collectChannelConfigAssignments } from "./runtime-config-collectors-channels.js";
 import { collectCoreConfigAssignments } from "./runtime-config-collectors-core.js";
 import type { ResolverContext } from "./runtime-shared.js";
 
 export function collectConfigAssignments(params: {
-  config: Must-bConfig;
+  config: MustBonfig;
   context: ResolverContext;
 }): void {
   const defaults = params.context.sourceConfig.secrets?.defaults;

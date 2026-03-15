@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, afterEach, describe, expect, it } from "vitest";
-import { clearPluginDiscoveryCache, discoverMust-bPlugins } from "./discovery.js";
+import { clearPluginDiscoveryCache, discoverMustBlugins } from "./discovery.js";
 
 const tempDirs: string[] = [];
 const previousUmask = process.umask(0o022);
@@ -38,9 +38,9 @@ function buildDiscoveryEnv(stateDir: string): NodeJS.ProcessEnv {
 
 async function discoverWithStateDir(
   stateDir: string,
-  params: Parameters<typeof discoverMust-bPlugins>[0],
+  params: Parameters<typeof discoverMustBlugins>[0],
 ) {
-  return discoverMust-bPlugins({ ...params, env: buildDiscoveryEnv(stateDir) });
+  return discoverMustBlugins({ ...params, env: buildDiscoveryEnv(stateDir) });
 }
 
 function writePluginPackageManifest(params: {
@@ -79,7 +79,7 @@ afterAll(() => {
   process.umask(previousUmask);
 });
 
-describe("discoverMust-bPlugins", () => {
+describe("discoverMustBlugins", () => {
   it("discovers global and workspace extensions", async () => {
     const stateDir = makeTempDir();
     const workspaceDir = path.join(stateDir, "workspace");
@@ -107,7 +107,7 @@ describe("discoverMust-bPlugins", () => {
     mkdirSafe(workspaceExt);
     fs.writeFileSync(path.join(workspaceExt, "tilde-workspace.ts"), "export default {}", "utf-8");
 
-    const result = discoverMust-bPlugins({
+    const result = discoverMustBlugins({
       workspaceDir: "~/workspace",
       env: {
         ...buildDiscoveryEnv(stateDir),
@@ -378,7 +378,7 @@ describe("discoverMust-bPlugins", () => {
       fs.writeFileSync(path.join(packDir, "index.ts"), "export default function () {}", "utf-8");
       fs.chmodSync(packDir, 0o777);
 
-      const result = discoverMust-bPlugins({
+      const result = discoverMustBlugins({
         env: {
           ...process.env,
           MUSTB_STATE_DIR: stateDir,
@@ -426,7 +426,7 @@ describe("discoverMust-bPlugins", () => {
     const pluginPath = path.join(globalExt, "cached.ts");
     fs.writeFileSync(pluginPath, "export default function () {}", "utf-8");
 
-    const first = discoverMust-bPlugins({
+    const first = discoverMustBlugins({
       env: {
         ...buildDiscoveryEnv(stateDir),
         MUSTB_PLUGIN_DISCOVERY_CACHE_MS: "5000",
@@ -436,7 +436,7 @@ describe("discoverMust-bPlugins", () => {
 
     fs.rmSync(pluginPath, { force: true });
 
-    const second = discoverMust-bPlugins({
+    const second = discoverMustBlugins({
       env: {
         ...buildDiscoveryEnv(stateDir),
         MUSTB_PLUGIN_DISCOVERY_CACHE_MS: "5000",
@@ -446,7 +446,7 @@ describe("discoverMust-bPlugins", () => {
 
     clearPluginDiscoveryCache();
 
-    const third = discoverMust-bPlugins({
+    const third = discoverMustBlugins({
       env: {
         ...buildDiscoveryEnv(stateDir),
         MUSTB_PLUGIN_DISCOVERY_CACHE_MS: "5000",
@@ -465,13 +465,13 @@ describe("discoverMust-bPlugins", () => {
     fs.writeFileSync(path.join(globalExtA, "alpha.ts"), "export default function () {}", "utf-8");
     fs.writeFileSync(path.join(globalExtB, "beta.ts"), "export default function () {}", "utf-8");
 
-    const first = discoverMust-bPlugins({
+    const first = discoverMustBlugins({
       env: {
         ...buildDiscoveryEnv(stateDirA),
         MUSTB_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
-    const second = discoverMust-bPlugins({
+    const second = discoverMustBlugins({
       env: {
         ...buildDiscoveryEnv(stateDirB),
         MUSTB_PLUGIN_DISCOVERY_CACHE_MS: "5000",
@@ -495,7 +495,7 @@ describe("discoverMust-bPlugins", () => {
     fs.writeFileSync(pluginA, "export default {}", "utf-8");
     fs.writeFileSync(pluginB, "export default {}", "utf-8");
 
-    const first = discoverMust-bPlugins({
+    const first = discoverMustBlugins({
       extraPaths: ["~/plugins/demo.ts"],
       env: {
         ...buildDiscoveryEnv(stateDir),
@@ -503,7 +503,7 @@ describe("discoverMust-bPlugins", () => {
         MUSTB_PLUGIN_DISCOVERY_CACHE_MS: "5000",
       },
     });
-    const second = discoverMust-bPlugins({
+    const second = discoverMustBlugins({
       extraPaths: ["~/plugins/demo.ts"],
       env: {
         ...buildDiscoveryEnv(stateDir),
@@ -531,11 +531,11 @@ describe("discoverMust-bPlugins", () => {
       MUSTB_PLUGIN_DISCOVERY_CACHE_MS: "5000",
     };
 
-    const first = discoverMust-bPlugins({
+    const first = discoverMustBlugins({
       extraPaths: [pluginA, pluginB],
       env,
     });
-    const second = discoverMust-bPlugins({
+    const second = discoverMustBlugins({
       extraPaths: [pluginB, pluginA],
       env,
     });

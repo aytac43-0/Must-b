@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveChannelMediaMaxBytes, type Must-bConfig } from "must-b/plugin-sdk/bluebubbles";
+import { resolveChannelMediaMaxBytes, type MustBConfig } from "must-b/plugin-sdk/bluebubbles";
 import { resolveBlueBubblesAccount } from "./accounts.js";
 import { sendBlueBubblesAttachment } from "./attachments.js";
 import { resolveBlueBubblesMessageId } from "./monitor.js";
@@ -85,7 +85,7 @@ function isPathInsideRoot(candidate: string, root: string): boolean {
   return normalizedCandidate === normalizedRoot || normalizedCandidate.startsWith(rootWithSep);
 }
 
-function resolveMediaLocalRoots(params: { cfg: Must-bConfig; accountId?: string }): string[] {
+function resolveMediaLocalRoots(params: { cfg: MustBConfig; accountId?: string }): string[] {
   const account = resolveBlueBubblesAccount({
     cfg: params.cfg,
     accountId: params.accountId,
@@ -194,7 +194,7 @@ function resolveFilenameFromSource(source?: string): string | undefined {
 }
 
 export async function sendBlueBubblesMedia(params: {
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   to: string;
   mediaUrl?: string;
   mediaPath?: string;

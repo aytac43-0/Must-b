@@ -9,7 +9,7 @@ import {
   resolveShellFromEnv,
   usesSlowDynamicCompletion,
 } from "../cli/completion-cli.js";
-import { resolveMust-bPackageRoot } from "../infra/must-b-root.js";
+import { resolveMustBackageRoot } from "../infra/must-b-root.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { note } from "../terminal/note.js";
 import type { DoctorPrompter } from "./doctor-prompter.js";
@@ -18,7 +18,7 @@ type CompletionShell = "zsh" | "bash" | "fish" | "powershell";
 
 /** Generate the completion cache by spawning the CLI. */
 async function generateCompletionCache(): Promise<boolean> {
-  const root = await resolveMust-bPackageRoot({
+  const root = await resolveMustBackageRoot({
     moduleUrl: import.meta.url,
     argv1: process.argv[1],
     cwd: process.cwd(),

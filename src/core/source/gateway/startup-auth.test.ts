@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { expectGeneratedTokenPersistedToGatewayAuth } from "../test-utils/auth-token-assertions.js";
 
 const mocks = vi.hoisted(() => ({
-  writeConfigFile: vi.fn(async (_cfg: Must-bConfig) => {}),
+  writeConfigFile: vi.fn(async (_cfg: MustBonfig) => {}),
 }));
 
 vi.mock("../config/config.js", async (importOriginal) => {
@@ -20,7 +20,7 @@ import {
 } from "./startup-auth.js";
 
 describe("ensureGatewayStartupAuth", () => {
-  async function expectEphemeralGeneratedTokenWhenOverridden(cfg: Must-bConfig) {
+  async function expectEphemeralGeneratedTokenWhenOverridden(cfg: MustBonfig) {
     const result = await ensureGatewayStartupAuth({
       cfg,
       env: {} as NodeJS.ProcessEnv,
@@ -40,7 +40,7 @@ describe("ensureGatewayStartupAuth", () => {
     mocks.writeConfigFile.mockClear();
   });
 
-  async function expectNoTokenGeneration(cfg: Must-bConfig, mode: string) {
+  async function expectNoTokenGeneration(cfg: MustBonfig, mode: string) {
     const result = await ensureGatewayStartupAuth({
       cfg,
       env: {} as NodeJS.ProcessEnv,
@@ -72,7 +72,7 @@ describe("ensureGatewayStartupAuth", () => {
   });
 
   it("does not generate when token already exists", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         auth: {
           mode: "token",
@@ -290,7 +290,7 @@ describe("ensureGatewayStartupAuth", () => {
   });
 
   it("does not resolve gateway.auth.password SecretRef when token mode is explicit", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         auth: {
           mode: "token",
@@ -344,7 +344,7 @@ describe("ensureGatewayStartupAuth", () => {
   });
 
   it("treats undefined token override as no override", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         auth: {
           mode: "token",

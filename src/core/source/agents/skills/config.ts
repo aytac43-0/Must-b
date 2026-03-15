@@ -1,4 +1,4 @@
-import type { Must-bConfig, SkillConfig } from "../../config/config.js";
+import type { MustBonfig, SkillConfig } from "../../config/config.js";
 import {
   evaluateRuntimeEligibility,
   hasBinary,
@@ -17,12 +17,12 @@ const DEFAULT_CONFIG_VALUES: Record<string, boolean> = {
 
 export { hasBinary, resolveConfigPath, resolveRuntimePlatform };
 
-export function isConfigPathTruthy(config: Must-bConfig | undefined, pathStr: string): boolean {
+export function isConfigPathTruthy(config: MustBonfig | undefined, pathStr: string): boolean {
   return isConfigPathTruthyWithDefaults(config, pathStr, DEFAULT_CONFIG_VALUES);
 }
 
 export function resolveSkillConfig(
-  config: Must-bConfig | undefined,
+  config: MustBonfig | undefined,
   skillKey: string,
 ): SkillConfig | undefined {
   const skills = config?.skills?.entries;
@@ -53,7 +53,7 @@ function isBundledSkill(entry: SkillEntry): boolean {
   return BUNDLED_SOURCES.has(entry.skill.source);
 }
 
-export function resolveBundledAllowlist(config?: Must-bConfig): string[] | undefined {
+export function resolveBundledAllowlist(config?: MustBonfig): string[] | undefined {
   return normalizeAllowlist(config?.skills?.allowBundled);
 }
 
@@ -70,7 +70,7 @@ export function isBundledSkillAllowed(entry: SkillEntry, allowlist?: string[]): 
 
 export function shouldIncludeSkill(params: {
   entry: SkillEntry;
-  config?: Must-bConfig;
+  config?: MustBonfig;
   eligibility?: SkillEligibilityContext;
 }): boolean {
   const { entry, config, eligibility } = params;

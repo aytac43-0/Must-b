@@ -1,11 +1,11 @@
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 
 export const DEFAULT_AGENT_MAX_CONCURRENT = 4;
 export const DEFAULT_SUBAGENT_MAX_CONCURRENT = 8;
 // Keep depth-1 subagents as leaves unless config explicitly opts into nesting.
 export const DEFAULT_SUBAGENT_MAX_SPAWN_DEPTH = 1;
 
-export function resolveAgentMaxConcurrent(cfg?: Must-bConfig): number {
+export function resolveAgentMaxConcurrent(cfg?: MustBonfig): number {
   const raw = cfg?.agents?.defaults?.maxConcurrent;
   if (typeof raw === "number" && Number.isFinite(raw)) {
     return Math.max(1, Math.floor(raw));
@@ -13,7 +13,7 @@ export function resolveAgentMaxConcurrent(cfg?: Must-bConfig): number {
   return DEFAULT_AGENT_MAX_CONCURRENT;
 }
 
-export function resolveSubagentMaxConcurrent(cfg?: Must-bConfig): number {
+export function resolveSubagentMaxConcurrent(cfg?: MustBonfig): number {
   const raw = cfg?.agents?.defaults?.subagents?.maxConcurrent;
   if (typeof raw === "number" && Number.isFinite(raw)) {
     return Math.max(1, Math.floor(raw));

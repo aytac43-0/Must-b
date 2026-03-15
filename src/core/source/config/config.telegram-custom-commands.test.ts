@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { Must-bSchema } from "./zod-schema.js";
+import { MustBchema } from "./zod-schema.js";
 
 describe("telegram custom commands schema", () => {
   it("normalizes custom commands", () => {
-    const res = Must-bSchema.safeParse({
+    const res = MustBchema.safeParse({
       channels: {
         telegram: {
           customCommands: [{ command: "/Backup", description: "  Git backup  " }],
@@ -22,7 +22,7 @@ describe("telegram custom commands schema", () => {
   });
 
   it("normalizes hyphens in custom command names", () => {
-    const res = Must-bSchema.safeParse({
+    const res = MustBchema.safeParse({
       channels: {
         telegram: {
           customCommands: [{ command: "Bad-Name", description: "Override status" }],

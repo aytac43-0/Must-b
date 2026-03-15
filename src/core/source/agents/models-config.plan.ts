@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { isRecord } from "../utils.js";
 import {
   mergeProviders,
@@ -12,7 +12,7 @@ import {
   type ProviderConfig,
 } from "./models-config.providers.js";
 
-type ModelsConfig = NonNullable<Must-bConfig["models"]>;
+type ModelsConfig = NonNullable<MustBonfig["models"]>;
 
 export type ModelsJsonPlan =
   | {
@@ -27,7 +27,7 @@ export type ModelsJsonPlan =
     };
 
 async function resolveProvidersForModelsJson(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   agentDir: string;
   env: NodeJS.ProcessEnv;
 }): Promise<Record<string, ProviderConfig>> {
@@ -46,7 +46,7 @@ async function resolveProvidersForModelsJson(params: {
 }
 
 function resolveExplicitBaseUrlProviders(
-  providers: Must-bConfig["models"] | undefined,
+  providers: MustBonfig["models"] | undefined,
 ): ReadonlySet<string> {
   return new Set(
     Object.entries(providers?.providers ?? {})
@@ -85,9 +85,9 @@ async function resolveProvidersForMode(params: {
   });
 }
 
-export async function planMust-bModelsJson(params: {
-  cfg: Must-bConfig;
-  sourceConfigForSecrets?: Must-bConfig;
+export async function planMustBodelsJson(params: {
+  cfg: MustBonfig;
+  sourceConfigForSecrets?: MustBonfig;
   agentDir: string;
   env: NodeJS.ProcessEnv;
   existingRaw: string;

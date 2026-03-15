@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createConfigIO } from "./io.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 
 describe("config io write", () => {
   let fixtureRoot = "";
@@ -172,14 +172,14 @@ describe("config io write", () => {
         logger: silentLogger,
       });
 
-      const invalidConfig: Must-bConfig = {
+      const invalidConfig: MustBonfig = {
         channels: {
           telegram: {
             dmPolicy: "open",
             allowFrom: [],
           },
         },
-      } satisfies Must-bConfig;
+      } satisfies MustBonfig;
 
       await expect(io.writeConfigFile(invalidConfig)).rejects.toThrow(
         "must-b config set channels.telegram.allowFrom '[\"*\"]'",

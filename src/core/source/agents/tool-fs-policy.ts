@@ -1,4 +1,4 @@
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { resolveAgentConfig } from "./agent-scope.js";
 
 export type ToolFsPolicy = {
@@ -11,7 +11,7 @@ export function createToolFsPolicy(params: { workspaceOnly?: boolean }): ToolFsP
   };
 }
 
-export function resolveToolFsConfig(params: { cfg?: Must-bConfig; agentId?: string }): {
+export function resolveToolFsConfig(params: { cfg?: MustBonfig; agentId?: string }): {
   workspaceOnly?: boolean;
 } {
   const cfg = params.cfg;
@@ -24,7 +24,7 @@ export function resolveToolFsConfig(params: { cfg?: Must-bConfig; agentId?: stri
 }
 
 export function resolveEffectiveToolFsWorkspaceOnly(params: {
-  cfg?: Must-bConfig;
+  cfg?: MustBonfig;
   agentId?: string;
 }): boolean {
   return resolveToolFsConfig(params).workspaceOnly === true;

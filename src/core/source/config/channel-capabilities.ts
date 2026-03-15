@@ -1,7 +1,7 @@
 import { normalizeChannelId } from "../channels/plugins/index.js";
 import { resolveAccountEntry } from "../routing/account-lookup.js";
 import { normalizeAccountId } from "../routing/session-key.js";
-import type { Must-bConfig } from "./config.js";
+import type { MustBonfig } from "./config.js";
 import type { TelegramCapabilitiesConfig } from "./types.telegram.js";
 
 type CapabilitiesConfig = TelegramCapabilitiesConfig;
@@ -43,7 +43,7 @@ function resolveAccountCapabilities(params: {
 }
 
 export function resolveChannelCapabilities(params: {
-  cfg?: Partial<Must-bConfig>;
+  cfg?: Partial<MustBonfig>;
   channel?: string | null;
   accountId?: string | null;
 }): string[] | undefined {

@@ -4,13 +4,13 @@ import {
   normalizeEnvVarKey,
 } from "../infra/host-env-security.js";
 import { containsEnvVarReference } from "./env-substitution.js";
-import type { Must-bConfig } from "./types.js";
+import type { MustBonfig } from "./types.js";
 
 function isBlockedConfigEnvVar(key: string): boolean {
   return isDangerousHostEnvVarName(key) || isDangerousHostEnvOverrideVarName(key);
 }
 
-function collectConfigEnvVarsByTarget(cfg?: Must-bConfig): Record<string, string> {
+function collectConfigEnvVarsByTarget(cfg?: MustBonfig): Record<string, string> {
   const envConfig = cfg?.env;
   if (!envConfig) {
     return {};
@@ -54,21 +54,21 @@ function collectConfigEnvVarsByTarget(cfg?: Must-bConfig): Record<string, string
   return entries;
 }
 
-export function collectConfigRuntimeEnvVars(cfg?: Must-bConfig): Record<string, string> {
+export function collectConfigRuntimeEnvVars(cfg?: MustBonfig): Record<string, string> {
   return collectConfigEnvVarsByTarget(cfg);
 }
 
-export function collectConfigServiceEnvVars(cfg?: Must-bConfig): Record<string, string> {
+export function collectConfigServiceEnvVars(cfg?: MustBonfig): Record<string, string> {
   return collectConfigEnvVarsByTarget(cfg);
 }
 
 /** @deprecated Use `collectConfigRuntimeEnvVars` or `collectConfigServiceEnvVars`. */
-export function collectConfigEnvVars(cfg?: Must-bConfig): Record<string, string> {
+export function collectConfigEnvVars(cfg?: MustBonfig): Record<string, string> {
   return collectConfigRuntimeEnvVars(cfg);
 }
 
 export function createConfigRuntimeEnv(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   baseEnv: NodeJS.ProcessEnv = process.env,
 ): NodeJS.ProcessEnv {
   const env = { ...baseEnv };
@@ -77,7 +77,7 @@ export function createConfigRuntimeEnv(
 }
 
 export function applyConfigEnvVars(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   env: NodeJS.ProcessEnv = process.env,
 ): void {
   const entries = collectConfigRuntimeEnvVars(cfg);

@@ -2,7 +2,7 @@ import { ChannelType } from "discord-api-types/v10";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NativeCommandSpec } from "../../auto-reply/commands-registry.js";
 import * as dispatcherModule from "../../auto-reply/reply/provider-dispatcher.js";
-import type { Must-bConfig } from "../../config/config.js";
+import type { MustBonfig } from "../../config/config.js";
 import type { DiscordAccountConfig } from "../../config/types.discord.js";
 import * as pluginCommandsModule from "../../plugins/commands.js";
 import { createDiscordNativeCommand } from "./native-command.js";
@@ -25,7 +25,7 @@ function createInteraction(params?: { userId?: string }): MockCommandInteraction
   });
 }
 
-function createConfig(): Must-bConfig {
+function createConfig(): MustBonfig {
   return {
     commands: {
       allowFrom: {
@@ -47,10 +47,10 @@ function createConfig(): Must-bConfig {
         },
       },
     },
-  } as Must-bConfig;
+  } as MustBonfig;
 }
 
-function createCommand(cfg: Must-bConfig, discordConfig?: DiscordAccountConfig) {
+function createCommand(cfg: MustBonfig, discordConfig?: DiscordAccountConfig) {
   const commandSpec: NativeCommandSpec = {
     name: "status",
     description: "Status",
@@ -79,7 +79,7 @@ function createDispatchSpy() {
 
 async function runGuildSlashCommand(params?: {
   userId?: string;
-  mutateConfig?: (cfg: Must-bConfig) => void;
+  mutateConfig?: (cfg: MustBonfig) => void;
   runtimeDiscordConfig?: DiscordAccountConfig;
 }) {
   const cfg = createConfig();

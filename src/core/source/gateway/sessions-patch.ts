@@ -17,7 +17,7 @@ import {
   normalizeUsageDisplay,
   supportsXHighThinking,
 } from "../auto-reply/thinking.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import {
   isAcpSessionKey,
@@ -85,7 +85,7 @@ function normalizeSubagentControlScope(raw: string): "children" | "none" | undef
 }
 
 export async function applySessionsPatchToStore(params: {
-  cfg: Must-bConfig;
+  cfg: MustBonfig;
   store: Record<string, SessionEntry>;
   storeKey: string;
   patch: SessionsPatchParams;

@@ -1,7 +1,7 @@
 import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { Must-bConfig } from "must-b/plugin-sdk/diffs";
+import type { MustBConfig } from "must-b/plugin-sdk/diffs";
 import { chromium } from "playwright-core";
 import type { DiffRenderOptions, DiffTheme } from "./types.js";
 import { VIEWER_ASSET_PREFIX, getServedViewerAsset } from "./viewer-assets.js";
@@ -45,10 +45,10 @@ let sharedBrowserState: SharedBrowserState | null = null;
 let executablePathCache: ExecutablePathCache | null = null;
 
 export class PlaywrightDiffScreenshotter implements DiffScreenshotter {
-  private readonly config: Must-bConfig;
+  private readonly config: MustBConfig;
   private readonly browserIdleMs: number;
 
-  constructor(params: { config: Must-bConfig; browserIdleMs?: number }) {
+  constructor(params: { config: MustBConfig; browserIdleMs?: number }) {
     this.config = params.config;
     this.browserIdleMs = params.browserIdleMs ?? DEFAULT_BROWSER_IDLE_MS;
   }
@@ -277,7 +277,7 @@ function injectBaseHref(html: string): string {
   return html.replace("<head>", '<head><base href="http://127.0.0.1/" />');
 }
 
-async function resolveBrowserExecutablePath(config: Must-bConfig): Promise<string | undefined> {
+async function resolveBrowserExecutablePath(config: MustBConfig): Promise<string | undefined> {
   const cacheKey = JSON.stringify({
     configPath: config.browser?.executablePath?.trim() || "",
     env: [
@@ -306,7 +306,7 @@ async function resolveBrowserExecutablePath(config: Must-bConfig): Promise<strin
 }
 
 async function resolveBrowserExecutablePathUncached(
-  config: Must-bConfig,
+  config: MustBConfig,
 ): Promise<string | undefined> {
   const configPath = config.browser?.executablePath?.trim();
   if (configPath) {
@@ -338,7 +338,7 @@ async function resolveBrowserExecutablePathUncached(
 }
 
 async function acquireSharedBrowser(params: {
-  config: Must-bConfig;
+  config: MustBConfig;
   idleMs: number;
 }): Promise<BrowserLease> {
   const executablePath = await resolveBrowserExecutablePath(params.config);

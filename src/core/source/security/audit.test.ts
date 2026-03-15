@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { ChannelPlugin } from "../channels/plugins/types.js";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { withEnvAsync } from "../test-utils/env.js";
 import {
   collectInstalledSkillsCodeSafetyFindings,
@@ -29,11 +29,11 @@ const execDockerRawUnavailable: NonNullable<SecurityAuditOptions["execDockerRawF
 function stubChannelPlugin(params: {
   id: "discord" | "slack" | "telegram" | "zalouser";
   label: string;
-  resolveAccount: (cfg: Must-bConfig, accountId: string | null | undefined) => unknown;
-  inspectAccount?: (cfg: Must-bConfig, accountId: string | null | undefined) => unknown;
-  listAccountIds?: (cfg: Must-bConfig) => string[];
-  isConfigured?: (account: unknown, cfg: Must-bConfig) => boolean;
-  isEnabled?: (account: unknown, cfg: Must-bConfig) => boolean;
+  resolveAccount: (cfg: MustBonfig, accountId: string | null | undefined) => unknown;
+  inspectAccount?: (cfg: MustBonfig, accountId: string | null | undefined) => unknown;
+  listAccountIds?: (cfg: MustBonfig) => string[];
+  isConfigured?: (account: unknown, cfg: MustBonfig) => boolean;
+  isEnabled?: (account: unknown, cfg: MustBonfig) => boolean;
 }): ChannelPlugin {
   return {
     id: params.id,
@@ -146,7 +146,7 @@ function successfulProbeResult(url: string) {
 }
 
 async function audit(
-  cfg: Must-bConfig,
+  cfg: MustBonfig,
   extra?: Omit<SecurityAuditOptions, "config">,
 ): Promise<SecurityAuditReport> {
   return runSecurityAudit({
@@ -277,7 +277,7 @@ description: test skill
   });
 
   it("includes an attack surface summary (info)", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: { whatsapp: { groupPolicy: "open" }, telegram: { groupPolicy: "allowlist" } },
       tools: { elevated: { enabled: true, allowFrom: { whatsapp: ["+1"] } } },
       hooks: { enabled: true },
@@ -303,7 +303,7 @@ description: test skill
     delete process.env.MUSTB_GATEWAY_PASSWORD;
 
     try {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         gateway: {
           bind: "lan",
           auth: {},
@@ -329,7 +329,7 @@ description: test skill
   });
 
   it("does not flag non-loopback bind without auth when gateway password uses SecretRef", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         bind: "lan",
         auth: {
@@ -349,7 +349,7 @@ description: test skill
   it("evaluates gateway auth rate-limit warning based on configuration", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectWarn: boolean;
     }> = [
       {
@@ -389,7 +389,7 @@ description: test skill
   it("scores dangerous gateway.tools.allow over HTTP by exposure", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedSeverity: "warn" | "critical";
     }> = [
       {
@@ -429,7 +429,7 @@ description: test skill
   it("warns when sandbox exec host is selected while sandbox mode is off", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       checkId:
         | "tools.exec.host_sandbox_no_sandbox_defaults"
         | "tools.exec.host_sandbox_no_sandbox_agents";
@@ -492,7 +492,7 @@ description: test skill
   it("warns for interpreter safeBins only when explicit profiles are missing", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expected: boolean;
     }> = [
       {
@@ -568,7 +568,7 @@ description: test skill
       process.platform === "win32"
         ? [String.raw`C:\Users\ci-user\bin`, String.raw`C:\Users\ci-user\.local\bin`]
         : ["/usr/local/bin", "/tmp/must-b-safe-bins"];
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         exec: {
           safeBinTrustedDirs: riskyGlobalTrustedDirs,
@@ -599,7 +599,7 @@ description: test skill
   });
 
   it("does not warn for non-risky absolute safeBinTrustedDirs entries", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         exec: {
           safeBinTrustedDirs: ["/usr/libexec"],
@@ -614,7 +614,7 @@ description: test skill
   it("evaluates loopback control UI and logging exposure findings", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       checkId:
         | "gateway.trusted_proxies_missing"
         | "gateway.loopback_no_auth"
@@ -960,7 +960,7 @@ description: test skill
   it("scores small-model risk by tool/sandbox exposure", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedSeverity: "info" | "critical";
       detailIncludes: string[];
     }> = [
@@ -1002,7 +1002,7 @@ description: test skill
   it("checks sandbox docker mode-off findings with/without agent override", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedPresent: boolean;
     }> = [
       {
@@ -1046,7 +1046,7 @@ description: test skill
   });
 
   it("flags dangerous sandbox docker config (binds/network/seccomp/apparmor)", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: {
@@ -1084,7 +1084,7 @@ description: test skill
   });
 
   it("flags container namespace join network mode in sandbox config", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: {
         defaults: {
           sandbox: {
@@ -1111,7 +1111,7 @@ description: test skill
   it("checks sandbox browser bridge-network restrictions", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedPresent: boolean;
       expectedSeverity?: "warn";
       detailIncludes?: string;
@@ -1165,7 +1165,7 @@ description: test skill
   });
 
   it("flags ineffective gateway.nodes.denyCommands entries", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         nodes: {
           denyCommands: ["system.*", "system.runx"],
@@ -1186,7 +1186,7 @@ description: test skill
   });
 
   it("suggests prefix-matching commands for unknown denyCommands entries", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         nodes: {
           denyCommands: ["system.run.prep"],
@@ -1205,7 +1205,7 @@ description: test skill
   });
 
   it("keeps unknown denyCommands entries without suggestions when no close command exists", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         nodes: {
           denyCommands: ["zzzzzzzzzzzzzz"],
@@ -1225,7 +1225,7 @@ description: test skill
   it("scores dangerous gateway.nodes.allowCommands by exposure", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedSeverity: "warn" | "critical";
     }> = [
       {
@@ -1264,7 +1264,7 @@ description: test skill
   });
 
   it("does not flag dangerous allowCommands entries when denied again", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         nodes: {
           allowCommands: ["camera.snap", "screen.record"],
@@ -1278,7 +1278,7 @@ description: test skill
   });
 
   it("flags agent profile overrides when global tools.profile is minimal", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         profile: "minimal",
       },
@@ -1298,7 +1298,7 @@ description: test skill
   });
 
   it("flags tools.elevated allowFrom wildcard as critical", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: {
         elevated: {
           allowFrom: { whatsapp: ["*"] },
@@ -1312,7 +1312,7 @@ description: test skill
   });
 
   it("flags browser control without auth when browser is enabled", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         controlUi: { enabled: false },
         auth: {},
@@ -1328,7 +1328,7 @@ description: test skill
   });
 
   it("does not flag browser control auth when gateway token is configured", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         controlUi: { enabled: false },
         auth: { token: "very-long-browser-token-0123456789" },
@@ -1344,7 +1344,7 @@ description: test skill
   });
 
   it("does not flag browser control auth when gateway password uses SecretRef", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         controlUi: { enabled: false },
         auth: {
@@ -1365,7 +1365,7 @@ description: test skill
   });
 
   it("warns when remote CDP uses HTTP", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       browser: {
         profiles: {
           remote: { cdpUrl: "http://example.com:9222", color: "#0066CC" },
@@ -1379,7 +1379,7 @@ description: test skill
   });
 
   it("warns when control UI allows insecure auth", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         controlUi: { allowInsecureAuth: true },
       },
@@ -1403,7 +1403,7 @@ description: test skill
   });
 
   it("warns when control UI device auth is disabled", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         controlUi: { dangerouslyDisableDeviceAuth: true },
       },
@@ -1427,7 +1427,7 @@ description: test skill
   });
 
   it("warns when insecure/dangerous debug flags are enabled", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       hooks: {
         gmail: { allowUnsafeExternalContent: true },
         mappings: [{ allowUnsafeExternalContent: true }],
@@ -1452,7 +1452,7 @@ description: test skill
   });
 
   it("flags non-loopback Control UI without allowed origins", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         bind: "lan",
         auth: { mode: "token", token: "very-long-browser-token-0123456789" },
@@ -1464,13 +1464,13 @@ description: test skill
   });
 
   it("flags wildcard Control UI origins by exposure level", async () => {
-    const loopbackCfg: Must-bConfig = {
+    const loopbackCfg: MustBonfig = {
       gateway: {
         bind: "loopback",
         controlUi: { allowedOrigins: ["*"] },
       },
     };
-    const exposedCfg: Must-bConfig = {
+    const exposedCfg: MustBonfig = {
       gateway: {
         bind: "lan",
         auth: { mode: "token", token: "very-long-browser-token-0123456789" },
@@ -1487,7 +1487,7 @@ description: test skill
   });
 
   it("flags dangerous host-header origin fallback and suppresses missing allowed-origins finding", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         bind: "lan",
         auth: { mode: "token", token: "very-long-browser-token-0123456789" },
@@ -1507,7 +1507,7 @@ description: test skill
   });
 
   it("warns when Feishu doc tool is enabled because create can grant requester access", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         feishu: {
           appId: "cli_test",
@@ -1521,7 +1521,7 @@ description: test skill
   });
 
   it("treats Feishu SecretRef appSecret as configured for doc tool risk detection", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         feishu: {
           appId: "cli_test",
@@ -1539,7 +1539,7 @@ description: test skill
   });
 
   it("does not warn for Feishu doc grant risk when doc tools are disabled", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         feishu: {
           appId: "cli_test",
@@ -1554,7 +1554,7 @@ description: test skill
   });
 
   it("scores X-Real-IP fallback risk by gateway exposure", async () => {
-    const trustedProxyCfg = (trustedProxies: string[]): Must-bConfig => ({
+    const trustedProxyCfg = (trustedProxies: string[]): MustBonfig => ({
       gateway: {
         bind: "loopback",
         allowRealIpFallback: true,
@@ -1570,7 +1570,7 @@ description: test skill
 
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedSeverity: "warn" | "critical";
     }> = [
       {
@@ -1639,7 +1639,7 @@ description: test skill
   it("scores mDNS full mode risk by gateway bind mode", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedSeverity: "warn" | "critical";
     }> = [
       {
@@ -1690,7 +1690,7 @@ description: test skill
   it("evaluates trusted-proxy auth guardrails", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedCheckId: string;
       expectedSeverity: "warn" | "critical";
       suppressesGenericSharedSecretFindings?: boolean;
@@ -1777,7 +1777,7 @@ description: test skill
   });
 
   it("warns when multiple DM senders share the main session", async () => {
-    const cfg: Must-bConfig = { session: { dmScope: "main" } };
+    const cfg: MustBonfig = { session: { dmScope: "main" } };
     const plugins: ChannelPlugin[] = [
       {
         id: "whatsapp",
@@ -1827,7 +1827,7 @@ description: test skill
 
   it("flags Discord native commands without a guild user allowlist", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -1864,7 +1864,7 @@ description: test skill
 
   it("keeps channel security findings when SecretRef credentials are configured but unavailable", async () => {
     await withChannelSecurityStateDir(async () => {
-      const sourceConfig: Must-bConfig = {
+      const sourceConfig: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -1880,7 +1880,7 @@ description: test skill
           },
         },
       };
-      const resolvedConfig: Must-bConfig = {
+      const resolvedConfig: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -1953,7 +1953,7 @@ description: test skill
 
   it("keeps Slack HTTP slash-command findings when resolved inspection only exposes signingSecret status", async () => {
     await withChannelSecurityStateDir(async () => {
-      const sourceConfig: Must-bConfig = {
+      const sourceConfig: MustBonfig = {
         channels: {
           slack: {
             enabled: true,
@@ -1963,7 +1963,7 @@ description: test skill
           },
         },
       };
-      const resolvedConfig: Must-bConfig = {
+      const resolvedConfig: MustBonfig = {
         channels: {
           slack: {
             enabled: true,
@@ -2029,7 +2029,7 @@ description: test skill
 
   it("keeps source-configured Slack HTTP findings when resolved inspection is unconfigured", async () => {
     await withChannelSecurityStateDir(async () => {
-      const sourceConfig: Must-bConfig = {
+      const sourceConfig: MustBonfig = {
         channels: {
           slack: {
             enabled: true,
@@ -2039,7 +2039,7 @@ description: test skill
           },
         },
       };
-      const resolvedConfig: Must-bConfig = {
+      const resolvedConfig: MustBonfig = {
         channels: {
           slack: {
             enabled: true,
@@ -2105,7 +2105,7 @@ description: test skill
 
   it("does not flag Discord slash commands when dm.allowFrom includes a Discord snowflake id", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -2146,7 +2146,7 @@ description: test skill
         path.join(tmp, "credentials", "discord-allowFrom.json"),
         JSON.stringify({ version: 1, allowFrom: ["team.owner"] }),
       );
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -2192,7 +2192,7 @@ description: test skill
 
   it("marks Discord name-based allowlists as break-glass when dangerous matching is enabled", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -2229,7 +2229,7 @@ description: test skill
 
   it("audits non-default Discord accounts for dangerous name matching", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -2266,7 +2266,7 @@ description: test skill
 
   it("does not treat prototype properties as explicit Discord account config paths", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -2311,7 +2311,7 @@ description: test skill
 
   it("audits name-based allowlists on non-default Discord accounts", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -2347,7 +2347,7 @@ description: test skill
 
   it("warns when Zalouser group routing contains mutable group entries", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           zalouser: {
             enabled: true,
@@ -2378,7 +2378,7 @@ description: test skill
 
   it("marks Zalouser mutable group routing as break-glass when dangerous matching is enabled", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           zalouser: {
             enabled: true,
@@ -2416,7 +2416,7 @@ description: test skill
 
   it("does not warn when Discord allowlists use ID-style entries only", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -2459,7 +2459,7 @@ description: test skill
 
   it("flags Discord slash commands when access-group enforcement is disabled and no users allowlist exists", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         commands: { useAccessGroups: false },
         channels: {
           discord: {
@@ -2497,7 +2497,7 @@ description: test skill
 
   it("flags Slack slash commands without a channel users allowlist", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           slack: {
             enabled: true,
@@ -2529,7 +2529,7 @@ description: test skill
 
   it("flags Slack slash commands when access-group enforcement is disabled", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         commands: { useAccessGroups: false },
         channels: {
           slack: {
@@ -2562,7 +2562,7 @@ description: test skill
 
   it("flags Telegram group commands without a sender allowlist", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           telegram: {
             enabled: true,
@@ -2593,7 +2593,7 @@ description: test skill
 
   it("warns when Telegram allowFrom entries are non-numeric (legacy @username configs)", async () => {
     await withChannelSecurityStateDir(async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           telegram: {
             enabled: true,
@@ -2624,7 +2624,7 @@ description: test skill
   });
 
   it("adds probe_failed warnings for deep probe failure modes", async () => {
-    const cfg: Must-bConfig = { gateway: { mode: "local" } };
+    const cfg: MustBonfig = { gateway: { mode: "local" } };
     const cases: Array<{
       name: string;
       probeGatewayFn: NonNullable<SecurityAuditOptions["probeGatewayFn"]>;
@@ -2708,7 +2708,7 @@ description: test skill
   });
 
   it("warns when hooks token looks short", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       hooks: { enabled: true, token: "short" },
     };
 
@@ -2720,7 +2720,7 @@ description: test skill
   it("flags hooks token reuse of the gateway env token as critical", async () => {
     const prevToken = process.env.MUSTB_GATEWAY_TOKEN;
     process.env.MUSTB_GATEWAY_TOKEN = "shared-gateway-token-1234567890";
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       hooks: { enabled: true, token: "shared-gateway-token-1234567890" },
     };
 
@@ -2737,7 +2737,7 @@ description: test skill
   });
 
   it("warns when hooks.defaultSessionKey is unset", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       hooks: { enabled: true, token: "shared-gateway-token-1234567890" },
     };
 
@@ -2751,10 +2751,10 @@ description: test skill
       enabled: true,
       token: "shared-gateway-token-1234567890",
       defaultSessionKey: "hook:ingress",
-    } satisfies NonNullable<Must-bConfig["hooks"]>;
+    } satisfies NonNullable<MustBonfig["hooks"]>;
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedSeverity: "warn" | "critical";
     }> = [
       {
@@ -2798,10 +2798,10 @@ description: test skill
       token: "shared-gateway-token-1234567890",
       defaultSessionKey: "hook:ingress",
       allowRequestSessionKey: true,
-    } satisfies NonNullable<Must-bConfig["hooks"]>;
+    } satisfies NonNullable<MustBonfig["hooks"]>;
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedSeverity: "warn" | "critical";
       expectsPrefixesMissing?: boolean;
     }> = [
@@ -2834,7 +2834,7 @@ description: test skill
   it("scores gateway HTTP no-auth findings by exposure", async () => {
     const cases: Array<{
       name: string;
-      cfg: Must-bConfig;
+      cfg: MustBonfig;
       expectedSeverity: "warn" | "critical";
       detailIncludes?: string[];
     }> = [
@@ -2878,7 +2878,7 @@ description: test skill
   });
 
   it("does not report gateway.http.no_auth when auth mode is token", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         bind: "loopback",
         auth: { mode: "token", token: "secret" },
@@ -2896,7 +2896,7 @@ description: test skill
   });
 
   it("reports HTTP API session-key override surfaces when enabled", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       gateway: {
         http: {
           endpoints: {
@@ -2913,7 +2913,7 @@ description: test skill
   });
 
   it("warns when state/config look like a synced folder", async () => {
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
 
     const res = await audit(cfg, {
       stateDir: "/Users/test/Dropbox/.must-b",
@@ -2942,7 +2942,7 @@ description: test skill
     await fs.writeFile(configPath, `{ "$include": "./extra.json5" }\n`, "utf-8");
     await fs.chmod(configPath, 0o600);
 
-    const cfg: Must-bConfig = { logging: { redactSensitive: "off" } };
+    const cfg: MustBonfig = { logging: { redactSensitive: "off" } };
     const user = "DESKTOP-TEST\\Tester";
     const execIcacls = isWindows
       ? async (_cmd: string, args: string[]) => {
@@ -2996,7 +2996,7 @@ description: test skill
     const stateDir = sharedExtensionsStateDir;
 
     try {
-      const cfg: Must-bConfig = {};
+      const cfg: MustBonfig = {};
       const res = await runSecurityAudit({
         config: cfg,
         includeFilesystem: true,
@@ -3036,7 +3036,7 @@ description: test skill
   });
 
   it("warns on unpinned npm install specs and missing integrity metadata", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       plugins: {
         installs: {
           "voice-call": {
@@ -3073,7 +3073,7 @@ description: test skill
   });
 
   it("does not warn on pinned npm install specs with integrity metadata", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       plugins: {
         installs: {
           "voice-call": {
@@ -3129,7 +3129,7 @@ description: test skill
       "utf-8",
     );
 
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       plugins: {
         installs: {
           "voice-call": {
@@ -3170,7 +3170,7 @@ description: test skill
   it("flags enabled extensions when tool policy can expose plugin tools", async () => {
     const stateDir = sharedExtensionsStateDir;
 
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       plugins: { allow: ["some-plugin"] },
     };
     const res = await runSecurityAudit({
@@ -3195,7 +3195,7 @@ description: test skill
   it("does not flag plugin tool reachability when profile is restrictive", async () => {
     const stateDir = sharedExtensionsStateDir;
 
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       plugins: { allow: ["some-plugin"] },
       tools: { profile: "coding" },
     };
@@ -3219,7 +3219,7 @@ description: test skill
     const stateDir = sharedExtensionsStateDir;
 
     try {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: { enabled: true, token: "t" },
         },
@@ -3256,7 +3256,7 @@ description: test skill
     const stateDir = sharedExtensionsStateDir;
 
     try {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         channels: {
           discord: {
             enabled: true,
@@ -3295,7 +3295,7 @@ description: test skill
   });
 
   it("does not scan plugin code safety findings when deep audit is disabled", async () => {
-    const cfg: Must-bConfig = {};
+    const cfg: MustBonfig = {};
     const nonDeepRes = await runSecurityAudit({
       config: cfg,
       includeFilesystem: true,
@@ -3310,7 +3310,7 @@ description: test skill
   });
 
   it("reports detailed code-safety issues for both plugins and skills", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       agents: { defaults: { workspace: sharedCodeSafetyWorkspaceDir } },
     };
     const [pluginFindings, skillFindings] = await Promise.all([
@@ -3376,7 +3376,7 @@ description: test skill
   });
 
   it("flags open groupPolicy when tools.elevated is enabled", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       tools: { elevated: { enabled: true, allowFrom: { whatsapp: ["+1"] } } },
       channels: { whatsapp: { groupPolicy: "open" } },
     };
@@ -3394,7 +3394,7 @@ description: test skill
   });
 
   it("flags open groupPolicy when runtime/filesystem tools are exposed without guards", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: { whatsapp: { groupPolicy: "open" } },
       tools: { elevated: { enabled: false } },
     };
@@ -3412,7 +3412,7 @@ description: test skill
   });
 
   it("does not flag runtime/filesystem exposure for open groups when sandbox mode is all", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: { whatsapp: { groupPolicy: "open" } },
       tools: {
         elevated: { enabled: false },
@@ -3433,7 +3433,7 @@ description: test skill
   });
 
   it("does not flag runtime/filesystem exposure for open groups when runtime is denied and fs is workspace-only", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: { whatsapp: { groupPolicy: "open" } },
       tools: {
         elevated: { enabled: false },
@@ -3451,7 +3451,7 @@ description: test skill
   });
 
   it("warns when config heuristics suggest a likely multi-user setup", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         discord: {
           groupPolicy: "allowlist",
@@ -3481,7 +3481,7 @@ description: test skill
   });
 
   it("does not warn for multi-user heuristic when no shared-user signals are configured", async () => {
-    const cfg: Must-bConfig = {
+    const cfg: MustBonfig = {
       channels: {
         discord: {
           groupPolicy: "allowlist",
@@ -3524,7 +3524,7 @@ description: test skill
     it("applies token precedence across local/remote gateway modes", async () => {
       const cases: Array<{
         name: string;
-        cfg: Must-bConfig;
+        cfg: MustBonfig;
         env?: { token?: string };
         expectedToken: string;
       }> = [
@@ -3597,7 +3597,7 @@ description: test skill
     it("applies password precedence for remote gateways", async () => {
       const cases: Array<{
         name: string;
-        cfg: Must-bConfig;
+        cfg: MustBonfig;
         env?: { password?: string };
         expectedPassword: string;
       }> = [
@@ -3639,7 +3639,7 @@ description: test skill
     });
 
     it("adds warning finding when probe auth SecretRef is unavailable", async () => {
-      const cfg: Must-bConfig = {
+      const cfg: MustBonfig = {
         gateway: {
           mode: "local",
           auth: {

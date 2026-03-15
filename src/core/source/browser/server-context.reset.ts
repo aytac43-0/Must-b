@@ -11,7 +11,7 @@ type ResetDeps = {
   getProfileState: () => ProfileRuntimeState;
   stopRunningBrowser: () => Promise<{ stopped: boolean }>;
   isHttpReachable: (timeoutMs?: number) => Promise<boolean>;
-  resolveMust-bUserDataDir: (profileName: string) => string;
+  resolveMustBserDataDir: (profileName: string) => string;
 };
 
 type ResetOps = {
@@ -32,7 +32,7 @@ export function createProfileResetOps({
   getProfileState,
   stopRunningBrowser,
   isHttpReachable,
-  resolveMust-bUserDataDir,
+  resolveMustBserDataDir,
 }: ResetDeps): ResetOps {
   const capabilities = getBrowserProfileCapabilities(profile);
   const resetProfile = async () => {
@@ -46,7 +46,7 @@ export function createProfileResetOps({
       );
     }
 
-    const userDataDir = resolveMust-bUserDataDir(profile.name);
+    const userDataDir = resolveMustBserDataDir(profile.name);
     const profileState = getProfileState();
     const httpReachable = await isHttpReachable(300);
     if (httpReachable && !profileState.running) {

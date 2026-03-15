@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 
 const readConfigFileSnapshotForWrite = vi.fn();
 const writeConfigFile = vi.fn();
@@ -40,7 +40,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
 
   it("skips writeback when target is already numeric", async () => {
     await maybePersistResolvedTelegramTarget({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       rawTarget: "-100123",
       resolvedChatId: "-100123",
     });
@@ -78,7 +78,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
     await maybePersistResolvedTelegramTarget({
       cfg: {
         cron: { store: "/tmp/cron/jobs.json" },
-      } as Must-bConfig,
+      } as MustBonfig,
       rawTarget: "t.me/mychannel",
       resolvedChatId: "-100123",
     });
@@ -127,7 +127,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
     loadCronStore.mockResolvedValue({ version: 1, jobs: [] });
 
     await maybePersistResolvedTelegramTarget({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       rawTarget: "t.me/mychannel:topic:9",
       resolvedChatId: "-100123",
     });
@@ -163,7 +163,7 @@ describe("maybePersistResolvedTelegramTarget", () => {
     });
 
     await maybePersistResolvedTelegramTarget({
-      cfg: {} as Must-bConfig,
+      cfg: {} as MustBonfig,
       rawTarget: "@MyChannel",
       resolvedChatId: "-100123",
     });

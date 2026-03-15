@@ -1,4 +1,4 @@
-import type { Must-bConfig, PluginRuntime, ReplyPayload } from "must-b/plugin-sdk/mattermost";
+import type { MustBConfig, PluginRuntime, ReplyPayload } from "must-b/plugin-sdk/mattermost";
 import { getAgentScopedMediaLocalRoots } from "must-b/plugin-sdk/mattermost";
 
 type MarkdownTableMode = Parameters<PluginRuntime["channel"]["text"]["convertMarkdownTables"]>[1];
@@ -16,7 +16,7 @@ type SendMattermostMessage = (
 
 export async function deliverMattermostReplyPayload(params: {
   core: PluginRuntime;
-  cfg: Must-bConfig;
+  cfg: MustBConfig;
   payload: ReplyPayload;
   to: string;
   accountId: string;

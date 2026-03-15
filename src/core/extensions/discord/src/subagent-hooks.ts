@@ -1,4 +1,4 @@
-import type { Must-bPluginApi } from "must-b/plugin-sdk/discord";
+import type { MustBPluginApi } from "must-b/plugin-sdk/discord";
 import {
   autoBindSpawnedDiscordSubagent,
   listThreadBindingsBySessionKey,
@@ -16,7 +16,7 @@ function summarizeError(err: unknown): string {
   return "error";
 }
 
-export function registerDiscordSubagentHooks(api: Must-bPluginApi) {
+export function registerDiscordSubagentHooks(api: MustBPluginApi) {
   const resolveThreadBindingFlags = (accountId?: string) => {
     const account = resolveDiscordAccount({
       cfg: api.config,

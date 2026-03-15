@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Must-bConfig } from "../config/config.js";
+import type { MustBonfig } from "../config/config.js";
 import { registerLogTransport, resetLogger, setLoggerOverride } from "../logging/logger.js";
 import type { AuthProfileStore } from "./auth-profiles.js";
 import { makeModelFallbackCfg } from "./test-helpers/model-fallback-config-fixture.js";
@@ -77,7 +77,7 @@ async function expectProbeFailureFallsBack({
         },
       },
     },
-  } as Partial<Must-bConfig>);
+  } as Partial<MustBonfig>);
 
   mockedIsProfileInCooldown.mockReturnValue(true);
   mockedGetSoonestCooldownExpiry.mockReturnValue(1_700_000_000_000 + 30 * 1000);
@@ -107,7 +107,7 @@ describe("runWithModelFallback – probe logic", () => {
   const NOW = 1_700_000_000_000;
 
   const runPrimaryCandidate = (
-    cfg: Must-bConfig,
+    cfg: MustBonfig,
     run: (provider: string, model: string) => Promise<unknown>,
   ) =>
     runWithModelFallback({
@@ -232,7 +232,7 @@ describe("runWithModelFallback – probe logic", () => {
           },
         },
       },
-    } as Partial<Must-bConfig>);
+    } as Partial<MustBonfig>);
     mockedGetSoonestCooldownExpiry.mockReturnValue(NOW + 60 * 1000);
     const fallbackRun = vi
       .fn()
@@ -426,7 +426,7 @@ describe("runWithModelFallback – probe logic", () => {
           },
         },
       },
-    } as Partial<Must-bConfig>);
+    } as Partial<MustBonfig>);
 
     const almostExpired = NOW + 30 * 1000;
     mockedGetSoonestCooldownExpiry.mockReturnValue(almostExpired);
@@ -487,7 +487,7 @@ describe("runWithModelFallback – probe logic", () => {
           },
         },
       },
-    } as Partial<Must-bConfig>);
+    } as Partial<MustBonfig>);
 
     // Single-provider setups need periodic probes even when the billing
     // cooldown is far from expiry, otherwise topping up credits never recovers

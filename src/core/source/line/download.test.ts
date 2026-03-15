@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { resolvePreferredMust-bTmpDir } from "../infra/tmp-must-b-dir.js";
+import { resolvePreferredMustBmpDir } from "../infra/tmp-must-b-dir.js";
 
 const getMessageContentMock = vi.hoisted(() => vi.fn());
 
@@ -54,7 +54,7 @@ describe("downloadLineMedia", () => {
     expect(writtenPath).not.toContain(messageId);
     expect(writtenPath).not.toContain("..");
 
-    const tmpRoot = path.resolve(resolvePreferredMust-bTmpDir());
+    const tmpRoot = path.resolve(resolvePreferredMustBmpDir());
     const rel = path.relative(tmpRoot, path.resolve(writtenPath));
     expect(rel === ".." || rel.startsWith(`..${path.sep}`)).toBe(false);
   });
