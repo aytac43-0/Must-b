@@ -20,6 +20,7 @@ export interface PlanStep {
     | 'browser_close'
     | 'memory_search'
     | 'memory_write'
+    | 'web_search'
     | 'log';
   parameters: Record<string, any>;
 }
@@ -70,8 +71,11 @@ MEMORY (SQLite FTS5 + Temporal Decay):
 14. memory_search      { query: string, limit?: number }         – Search past conversations and memory files.
 15. memory_write       { content: string, summary?: string }     – Save an important note to long-term memory.
 
+WEB SEARCH:
+16. web_search         { query: string, maxResults?: number }    – DuckDuckGo search via Playwright. Returns { query, snippets }.
+
 UTILITY:
-16. log                { message: string }                       – Log a message or observation.
+17. log                { message: string }                       – Log a message or observation.
 
 Rules:
 - Return ONLY a valid JSON object with no markdown, no backticks, no explanation.
@@ -119,6 +123,37 @@ Example Output:
           },
         },
       ];
+    }
+  }
+
+  /**
+   * After all steps complete, synthesize a final human-readable answer
+   * from the collected step results using the LLM.
+   */
+  async synthesize(goal: string, stepResults: Array<{ description: string; result: any }>): Promise<string> {
+    const resultSummary = stepResults
+      .map((s, i) => `Step ${i + 1} (${s.description}): ${JSON.stringify(s.result).slice(0, 500)}`)
+      .join('\n');
+
+    const messages: CompletionMessage[] = [
+      {
+        role: 'system',
+        content: `You are Must-b, a helpful AI agent. The user gave you a goal and you executed a plan.
+Now synthesize all step results into a single clear, concise, and helpful final answer for the user.
+Be direct and human-friendly. Use markdown if helpful. Do NOT re-list every step — just give the answer.`,
+      },
+      {
+        role: 'user',
+        content: `Goal: "${goal}"\n\nExecution results:\n${resultSummary}\n\nProvide a clear final answer:`,
+      },
+    ];
+
+    try {
+      const answer = await this.provider.chat(messages, { jsonMode: false });
+      return answer.trim();
+    } catch (err: any) {
+      this.logger.warn(`Planner: Synthesis failed — ${err.message}`);
+      return `Goal completed. ${stepResults.length} step(s) executed successfully.`;
     }
   }
 }

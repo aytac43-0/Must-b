@@ -153,11 +153,11 @@ export function Sidebar() {
             href={comingSoon ? "#" : href}
             className={clsx(
                 "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-[13px] font-medium group",
-                active ? "bg-white/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5",
+                active ? "bg-orange-500/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5",
                 comingSoon && "opacity-60 cursor-not-allowed"
             )}
         >
-            <Icon size={18} className={clsx(active ? "text-blue-500" : "text-gray-500 group-hover:text-gray-300")} />
+            <Icon size={18} className={clsx(active ? "text-orange-500" : "text-gray-500 group-hover:text-gray-300")} />
             <span className="flex-1">{label}</span>
         </Link>
     );
@@ -171,7 +171,7 @@ export function Sidebar() {
             {/* Header / Logo */}
             <div className="p-6 flex items-center gap-3">
                 <div className="relative w-8 h-8">
-                    <div className="absolute inset-0 bg-blue-500 rounded-full blur-md opacity-50" />
+                    <div className="absolute inset-0 bg-orange-500 rounded-full blur-md opacity-50" />
                     <Image src="/logo.png" alt="Must-b Logo" fill className="object-contain relative z-10" />
                 </div>
                 <span className="text-xl font-bold tracking-tight text-white">Must-b</span>
@@ -181,7 +181,7 @@ export function Sidebar() {
             <div className="px-4 mb-4">
                 <button
                     onClick={handleNewChat}
-                    className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center gap-3 font-semibold transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                    className="w-full h-11 bg-orange-600 hover:bg-orange-500 text-white rounded-xl flex items-center justify-center gap-3 font-semibold transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98]"
                 >
                     <Plus size={18} strokeWidth={2.5} />
                     <span>New Chat</span>
@@ -221,7 +221,7 @@ export function Sidebar() {
                                             pathname.includes(chat.id) ? "bg-white/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
                                         )}
                                     >
-                                        <History size={16} className={pathname.includes(chat.id) ? "text-blue-500" : "text-gray-500"} />
+                                        <History size={16} className={pathname.includes(chat.id) ? "text-orange-500" : "text-gray-500"} />
                                         <span className="flex-1 truncate">{chat.title}</span>
                                     </Link>
 
@@ -274,7 +274,7 @@ export function Sidebar() {
             <div className="p-4 border-t border-white/5 bg-black/20">
                 <div className="mb-4">
                     <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-1">Powered by</p>
-                    <p className="text-blue-500 text-xs font-bold">Auto Step Platform</p>
+                    <p className="text-orange-500 text-xs font-bold">Auto Step Platform</p>
                 </div>
                 <div className="flex items-center gap-2 pt-2">
                     <button

@@ -3,10 +3,14 @@ import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import dotenv from 'dotenv';
 import path from 'path';
+import crypto from 'crypto';
 import winston from 'winston';
 
 import { Orchestrator, type PlanStep } from '../core/orchestrator.js';
 import { SessionHistory } from '../memory/history.js';
+
+/** One-time random local auth token — valid for this process lifetime */
+const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
 
 export class ApiServer {
   private app: express.Application;
@@ -55,10 +59,28 @@ export class ApiServer {
       res.json({ status: 'online', gateway: 'Must-b', port: this.port, timestamp: Date.now() });
     });
 
-    this.app.post('/api/goal', async (req, res) => {
+    // Local-Auth handshake — only available from localhost
+    // Frontend calls this once on init to get a bearer token
+    this.app.get('/api/auth/local', (req, res) => {
+      const ip = req.socket.remoteAddress ?? '';
+      const isLocal = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+      if (!isLocal) return res.status(403).json({ error: 'local access only' });
+      res.json({ token: LOCAL_TOKEN, mode: 'local' });
+    });
+
+    // Token validation middleware for sensitive endpoints
+    const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      const ip = req.socket.remoteAddress ?? '';
+      const isLocal = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+      if (isLocal) return next(); // localhost always trusted
+      const auth = req.headers.authorization ?? '';
+      if (auth === `Bearer ${LOCAL_TOKEN}`) return next();
+      res.status(401).json({ error: 'Unauthorized — get token from /api/auth/local' });
+    };
+
+    this.app.post('/api/goal', requireAuth, async (req, res) => {
       const { goal } = req.body;
       if (!goal) return res.status(400).json({ error: 'goal required' });
-      // Trigger orchestrator (fire-and-forget for gateway stability)
       this.orchestrator.run(goal).catch(err => {
         this.logger.error(`Gateway: failed to run goal: ${err?.message}`);
       });
@@ -66,7 +88,6 @@ export class ApiServer {
     });
 
     this.app.get('/api/logs', async (req, res) => {
-      // Simple placeholder; real-time logs come via socket.io
       res.json({ logs: [] });
     });
   }
@@ -80,11 +101,12 @@ export class ApiServer {
 
   private setupOrchestratorListeners() {
     // Forward orchestration events to dashboard
-    this.orchestrator.on('planStart', (d) => this.io.emit('agentUpdate', { type: 'planStart', ...d }));
-    this.orchestrator.on('planGenerated', (d) => this.io.emit('agentUpdate', { type: 'planGenerated', ...d }));
-    this.orchestrator.on('stepStart', (d) => this.io.emit('agentUpdate', { type: 'stepStart', ...d }));
-    this.orchestrator.on('stepFinish', (d) => this.io.emit('agentUpdate', { type: 'stepFinish', ...d }));
-    this.orchestrator.on('planFinish', (d) => this.io.emit('agentUpdate', { type: 'planFinish', ...d }));
+    this.orchestrator.on('planStart',    (d) => this.io.emit('agentUpdate', { type: 'planStart',    ...d }));
+    this.orchestrator.on('planGenerated',(d) => this.io.emit('agentUpdate', { type: 'planGenerated',...d }));
+    this.orchestrator.on('stepStart',    (d) => this.io.emit('agentUpdate', { type: 'stepStart',    ...d }));
+    this.orchestrator.on('stepFinish',   (d) => this.io.emit('agentUpdate', { type: 'stepFinish',   ...d }));
+    this.orchestrator.on('finalAnswer',  (d) => this.io.emit('agentUpdate', { type: 'finalAnswer',  ...d }));
+    this.orchestrator.on('planFinish',   (d) => this.io.emit('agentUpdate', { type: 'planFinish',   ...d }));
   }
 
   start() {

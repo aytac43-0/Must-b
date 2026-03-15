@@ -115,6 +115,20 @@ export class Executor {
           break;
         }
 
+        // ── Web Search (DuckDuckGo via Playwright) ───────────────────────────
+        case 'web_search': {
+          const query = String(step.parameters.query ?? '');
+          const maxResults = Number(step.parameters.maxResults ?? 5);
+          if (!query) { result = { results: [] }; break; }
+          const searchUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+          await this.browserTools.navigate({ url: searchUrl, waitFor: 'domcontentloaded' });
+          const raw = await this.browserTools.extract({ selector: '.result__snippet' });
+          const titles = await this.browserTools.extract({ selector: '.result__title' });
+          const snippets = (raw.text ?? '').split('\n').filter(Boolean).slice(0, maxResults);
+          result = { query, snippets };
+          break;
+        }
+
         // ── Utility ─────────────────────────────────────────────────────────
         case 'log':
           this.logger.info(`> ${step.parameters.message}`);

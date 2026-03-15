@@ -42,11 +42,17 @@ export class Orchestrator extends EventEmitter {
         }
 
         // Execute each step
+        const stepResults: Array<{ description: string; result: any }> = [];
         for (const step of steps) {
           this.emit('stepStart', { step, timestamp: Date.now() });
           const result = await this.executor.executeStep(step);
+          stepResults.push({ description: step.description, result });
           this.emit('stepFinish', { step, status: 'success', result, timestamp: Date.now() });
         }
+
+        // Synthesize final human-readable answer from all step results
+        const answer = await this.planner.synthesize(goal, stepResults);
+        this.emit('finalAnswer', { goal, answer, timestamp: Date.now() });
 
         // All steps passed
         this.logger.info(`Orchestrator: Goal completed — "${goal}"`);

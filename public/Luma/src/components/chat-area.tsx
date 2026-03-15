@@ -35,8 +35,11 @@ function eventToMessage(type: string, data: Record<string, unknown>): Message | 
             const result = (data.result as string) ?? `✓ ${step?.description ?? "Step complete"}`;
             return { id, role: "assistant", content: result, timestamp };
         }
+        case "finalAnswer":
+            return { id, role: "assistant", content: String(data.answer ?? "Done."), timestamp };
         case "planFinish":
-            return { id, role: "system", content: `◼ ${data.status === "completed" ? "Done." : `Finished (${data.status})`}`, timestamp };
+            if (data.status === "completed") return null; // finalAnswer already shown
+            return { id, role: "system", content: `◼ Finished (${data.status})`, timestamp };
         default:
             return null;
     }
@@ -47,6 +50,15 @@ export function ChatArea() {
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const socketRef = useRef<Socket | null>(null);
+    const tokenRef = useRef<string | null>(null);
+
+    // Fetch local auth token once on mount
+    useEffect(() => {
+        fetch("/api/auth/local")
+            .then(r => r.ok ? r.json() : null)
+            .then((d: any) => { if (d?.token) tokenRef.current = d.token; })
+            .catch(() => {}); // non-critical — localhost access always works
+    }, []);
 
     useEffect(() => {
         const socket = io(window.location.origin, { transports: ["websocket", "polling"] });
@@ -72,9 +84,11 @@ export function ChatArea() {
         setMessages((prev) => [...prev, userMsg]);
         setIsTyping(true);
         try {
+            const headers: Record<string, string> = { "Content-Type": "application/json" };
+            if (tokenRef.current) headers["Authorization"] = `Bearer ${tokenRef.current}`;
             await fetch("/api/goal", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 body: JSON.stringify({ goal: text }),
             });
         } catch {
@@ -93,14 +107,14 @@ export function ChatArea() {
                     {!hasMessages ? (
                         <div className="flex flex-col items-center justify-center min-h-[70vh] text-center animate-in fade-in zoom-in duration-1000">
                             <div className="relative w-48 h-48 mb-8 group cursor-pointer">
-                                <div className="absolute inset-0 bg-blue-500 rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity animate-pulse" />
-                                <div className="absolute inset-4 bg-cyan-400 rounded-full blur-[30px] opacity-20 group-hover:opacity-40 transition-opacity" />
+                                <div className="absolute inset-0 bg-orange-500 rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity animate-pulse" />
+                                <div className="absolute inset-4 bg-amber-400 rounded-full blur-[30px] opacity-20 group-hover:opacity-40 transition-opacity" />
                                 <div className="relative w-full h-full p-2">
-                                    <Image src="/logo.png" alt="Must-b Orb" fill className="object-contain relative z-10 drop-shadow-[0_0_30px_rgba(59,130,246,0.5)]" />
+                                    <Image src="/logo.png" alt="Must-b Orb" fill className="object-contain relative z-10 drop-shadow-[0_0_30px_rgba(234,88,12,0.6)]" />
                                 </div>
                             </div>
                             <h1 className="text-5xl font-extrabold text-white tracking-tight mb-4 drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                                Must-b — <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Your Personal AI Brain</span>
+                                Must-b — <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">Your Personal AI Brain</span>
                             </h1>
                             <p className="text-gray-400 text-xl font-medium max-w-2xl">
                                 Ask questions, manage automations, explore your data, and control your AI workflows — all in one place.
@@ -113,7 +127,7 @@ export function ChatArea() {
                                     {message.role === "assistant" && (
                                         <div className="flex-shrink-0 mr-4 mt-2">
                                             <div className="relative w-8 h-8">
-                                                <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-md" />
+                                                <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-md" />
                                                 <Image src="/logo.png" alt="Must-b" fill className="object-contain relative z-10" />
                                             </div>
                                         </div>
@@ -121,7 +135,7 @@ export function ChatArea() {
                                     <div className={clsx(
                                         "max-w-[80%] rounded-2xl px-6 py-4 text-[15px] leading-relaxed transition-all shadow-xl",
                                         message.role === "user"
-                                            ? "bg-blue-600/10 border border-blue-500/20 text-white selection:bg-blue-500/40"
+                                            ? "bg-orange-600/10 border border-orange-500/20 text-white selection:bg-orange-500/40"
                                             : message.role === "system"
                                             ? "bg-white/5 border border-white/10 text-gray-400 text-xs font-mono"
                                             : "glass border-white/5 text-gray-200"
@@ -135,14 +149,14 @@ export function ChatArea() {
                                 <div className="flex w-full justify-start animate-pulse">
                                     <div className="flex-shrink-0 mr-4 mt-2">
                                         <div className="relative w-8 h-8">
-                                            <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-md" />
+                                            <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-md" />
                                             <Image src="/logo.png" alt="Must-b" fill className="object-contain relative z-10" />
                                         </div>
                                     </div>
                                     <div className="glass border-white/5 rounded-2xl px-6 py-4 inline-flex items-center gap-1.5 shadow-xl">
-                                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" />
+                                        <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                        <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                        <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" />
                                     </div>
                                 </div>
                             )}
