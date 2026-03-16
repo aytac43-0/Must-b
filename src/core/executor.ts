@@ -1,3 +1,6 @@
+import net from 'net';
+import os from 'os';
+import path from 'path';
 import winston from 'winston';
 import { FilesystemTools } from '../tools/filesystem.js';
 import { TerminalTools } from '../tools/terminal.js';
@@ -9,6 +12,41 @@ export interface PlanStep {
   description: string;
   tool: string;
   parameters: Record<string, any>;
+}
+
+// ── Device IPC Client ─────────────────────────────────────────────────────
+// Communicates with the MustB macOS companion app via a Unix socket.
+// The macOS app exposes a JSONL protocol on ~/.mustb/device.sock.
+// On non-macOS platforms commands gracefully return a "not available" result.
+
+const DEVICE_SOCK = path.join(os.homedir(), '.mustb', 'device.sock');
+const DEVICE_IPC_TIMEOUT_MS = 8_000;
+
+async function sendDeviceCommand(command: string, params: Record<string, unknown> = {}): Promise<unknown> {
+  if (process.platform !== 'darwin') {
+    return { ok: false, error: 'Device IPC requires the MustB macOS companion app.' };
+  }
+  return new Promise((resolve) => {
+    const socket = net.createConnection(DEVICE_SOCK);
+    let buf = '';
+    const timer = setTimeout(() => {
+      socket.destroy();
+      resolve({ ok: false, error: 'Device IPC timeout — is the MustB app running?' });
+    }, DEVICE_IPC_TIMEOUT_MS);
+
+    socket.on('connect', () => {
+      socket.write(JSON.stringify({ command, params }) + '\n');
+    });
+    socket.on('data', (chunk) => { buf += chunk.toString(); });
+    socket.on('end', () => {
+      clearTimeout(timer);
+      try { resolve(JSON.parse(buf.trim())); } catch { resolve({ ok: false, raw: buf }); }
+    });
+    socket.on('error', (err) => {
+      clearTimeout(timer);
+      resolve({ ok: false, error: `IPC error: ${err.message}` });
+    });
+  });
 }
 
 export class Executor {
@@ -126,6 +164,41 @@ export class Executor {
           const titles = await this.browserTools.extract({ selector: '.result__title' });
           const snippets = (raw.text ?? '').split('\n').filter(Boolean).slice(0, maxResults);
           result = { query, snippets };
+          break;
+        }
+
+        // ── Device Skills (MustBKit IPC — requires macOS companion app) ─────
+        case 'device_camera': {
+          // params: { quality?: 'low'|'medium'|'high', camera?: 'front'|'back' }
+          result = await sendDeviceCommand('camera.capture', {
+            quality: step.parameters.quality ?? 'medium',
+            camera:  step.parameters.camera  ?? 'back',
+          });
+          break;
+        }
+
+        case 'device_calendar': {
+          // params: { action: 'list'|'create', title?, startDate?, endDate?, notes? }
+          const action = String(step.parameters.action ?? 'list');
+          result = await sendDeviceCommand(`calendar.${action}`, step.parameters);
+          break;
+        }
+
+        case 'device_screen': {
+          // params: { format?: 'png'|'jpeg', rect?: {x,y,width,height} }
+          result = await sendDeviceCommand('screen.capture', {
+            format: step.parameters.format ?? 'png',
+            rect:   step.parameters.rect   ?? null,
+          });
+          break;
+        }
+
+        case 'device_system': {
+          // params: { action: 'volume'|'brightness'|'battery'|'wifi', value?: number }
+          result = await sendDeviceCommand('system.control', {
+            action: String(step.parameters.action ?? 'battery'),
+            value:  step.parameters.value ?? null,
+          });
           break;
         }
 

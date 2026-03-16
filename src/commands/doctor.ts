@@ -1,6 +1,8 @@
 import { execSync, spawnSync } from 'child_process';
 import fs from 'fs';
+import https from 'https';
 import path from 'path';
+import readline from 'readline';
 import dotenv from 'dotenv';
 
 const cyan   = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
@@ -19,9 +21,56 @@ interface CheckResult {
   ok: boolean;
   detail: string;
   fix?: string;
+  /** If true, gateway startup is blocked when this check fails and cannot be auto-fixed */
+  critical?: boolean;
+  /** If true, skip auto-apply in pre-flight silent mode (e.g. heavy ~2GB installs) */
+  heavy?: boolean;
+  autoFix?: () => Promise<boolean>;
 }
 
-// ── Core system checks ────────────────────────────────────────────────────
+export interface DoctorResult {
+  failed: number;
+  healed: number;
+  remaining: number;
+  /** True when at least one critical check failed and could not be auto-fixed */
+  criticalBlock: boolean;
+}
+
+// ── Interactive Y/n prompt ─────────────────────────────────────────────────
+
+function askYN(question: string): Promise<boolean> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(`  ${yellow('?')} ${question} ${dim('(Y/n)')} `, (answer) => {
+      rl.close();
+      resolve(answer.trim().toLowerCase() !== 'n');
+    });
+  });
+}
+
+// ── OS-aware install command helper ───────────────────────────────────────
+
+function getInstallCmd(cmds: { win32?: string; darwin?: string; linux?: string }): string | undefined {
+  return cmds[process.platform as 'win32' | 'darwin' | 'linux'];
+}
+
+// ── Shadow Config: .env ↔ .env.bak ────────────────────────────────────────
+
+function shadowEnv(root: string): void {
+  const envPath = path.join(root, '.env');
+  const bakPath = path.join(root, '.env.bak');
+
+  if (fs.existsSync(envPath)) {
+    try { fs.copyFileSync(envPath, bakPath); } catch { /* best-effort */ }
+  } else if (fs.existsSync(bakPath)) {
+    try {
+      fs.copyFileSync(bakPath, envPath);
+      console.log(green('  ↻  .env dosyası .env.bak\'tan geri yüklendi!'));
+    } catch { /* best-effort */ }
+  }
+}
+
+// ── Core checks ───────────────────────────────────────────────────────────
 
 function checkNode(): CheckResult {
   const version = process.version;
@@ -30,8 +79,19 @@ function checkNode(): CheckResult {
   return {
     label: 'Node.js',
     ok,
+    critical: true,
     detail: `${version} ${ok ? '(>= 18 required)' : '(upgrade to Node 18+)'}`,
     fix: ok ? undefined : 'Install Node 18+ from https://nodejs.org',
+    autoFix: ok ? undefined : async () => {
+      const cmd = getInstallCmd({
+        win32:  'winget install OpenJS.NodeJS.LTS',
+        darwin: 'brew install node@20',
+        linux:  'curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs',
+      });
+      if (!cmd) return false;
+      console.log(dim(`  → ${cmd}`));
+      try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
+    },
   };
 }
 
@@ -45,6 +105,16 @@ function checkGit(): CheckResult {
       ok: false,
       detail: 'not found',
       fix: 'Install Git from https://git-scm.com',
+      autoFix: async () => {
+        const cmd = getInstallCmd({
+          win32:  'winget install Git.Git',
+          darwin: 'brew install git',
+          linux:  'sudo apt-get install -y git',
+        });
+        if (!cmd) return false;
+        console.log(dim(`  → ${cmd}`));
+        try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
+      },
     };
   }
 }
@@ -62,21 +132,59 @@ function checkPython(): CheckResult {
     ok: false,
     detail: 'not found (optional but recommended for some tools)',
     fix: 'Install Python 3 from https://python.org',
+    autoFix: async () => {
+      if (process.platform === 'win32') {
+        // Try Python 3.12 specifically first (more stable winget ID), then generic
+        for (const cmd of ['winget install Python.Python.3.12', 'winget install Python.Python.3']) {
+          console.log(dim(`  → ${cmd}`));
+          try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { /* try next */ }
+        }
+        console.log(yellow('  ⚠  Otomatik kurulum başarısız oldu.'));
+        console.log(yellow('     Manuel indirme: https://www.python.org/downloads/windows/'));
+        return false;
+      }
+      const cmd = getInstallCmd({ darwin: 'brew install python3', linux: 'sudo apt-get install -y python3' });
+      if (!cmd) {
+        console.log(yellow('  ⚠  Manuel indirme: https://www.python.org/downloads/'));
+        return false;
+      }
+      console.log(dim(`  → ${cmd}`));
+      try { execSync(cmd, { stdio: 'inherit' }); return true; }
+      catch {
+        console.log(yellow('  ⚠  Manuel indirme: https://www.python.org/downloads/'));
+        return false;
+      }
+    },
   };
 }
 
 function checkEnvFile(root: string): CheckResult {
   const envPath = path.join(root, '.env');
-  const exists = fs.existsSync(envPath);
-  if (!exists) {
-    return {
-      label: '.env file',
-      ok: false,
-      detail: 'missing',
-      fix: 'Copy .env.example to .env and fill in your API keys:\n    cp .env.example .env',
-    };
+  const bakPath = path.join(root, '.env.bak');
+  const exPath  = path.join(root, '.env.example');
+  if (fs.existsSync(envPath)) {
+    return { label: '.env file', ok: true, detail: envPath };
   }
-  return { label: '.env file', ok: true, detail: envPath };
+  return {
+    label: '.env file',
+    ok: false,
+    critical: true,
+    detail: 'missing',
+    fix: 'Copy .env.example to .env and fill in your API keys:\n    cp .env.example .env',
+    autoFix: async () => {
+      if (fs.existsSync(bakPath)) {
+        fs.copyFileSync(bakPath, envPath);
+        console.log(green('  ↻  .env.bak\'tan geri yüklendi'));
+        return true;
+      }
+      if (fs.existsSync(exPath)) {
+        fs.copyFileSync(exPath, envPath);
+        console.log(green('  ↻  .env.example\'dan oluşturuldu'));
+        return true;
+      }
+      return false;
+    },
+  };
 }
 
 function checkApiKey(): CheckResult {
@@ -86,6 +194,7 @@ function checkApiKey(): CheckResult {
     return {
       label: 'OPENROUTER_API_KEY',
       ok: false,
+      critical: true,
       detail: 'not set or is placeholder',
       fix: 'Get a key at https://openrouter.ai and set it in .env',
     };
@@ -94,7 +203,7 @@ function checkApiKey(): CheckResult {
   return { label: 'OPENROUTER_API_KEY', ok: true, detail: masked };
 }
 
-function checkMode(): CheckResult {
+function checkMode(root: string): CheckResult {
   const mode = process.env.MUSTB_MODE ?? '';
   if (!mode) {
     return {
@@ -102,6 +211,13 @@ function checkMode(): CheckResult {
       ok: false,
       detail: 'not set (defaulting to local)',
       fix: 'Add MUSTB_MODE=local or MUSTB_MODE=world to .env',
+      autoFix: async () => {
+        const envPath = path.join(root, '.env');
+        if (!fs.existsSync(envPath)) return false;
+        fs.appendFileSync(envPath, '\nMUSTB_MODE=local\n', 'utf-8');
+        console.log(green('  ↻  MUSTB_MODE=local .env dosyasına eklendi'));
+        return true;
+      },
     };
   }
   return { label: 'MUSTB_MODE', ok: true, detail: mode };
@@ -123,32 +239,71 @@ function checkMemoryDir(root: string): CheckResult {
   }
 }
 
+function checkNodeModules(root: string): CheckResult {
+  const rootMod = path.join(root, 'node_modules');
+  const uiDir   = path.join(root, 'public', 'must-b-ui');
+  const uiMod   = path.join(uiDir, 'node_modules');
+
+  const rootOk = fs.existsSync(rootMod);
+  const uiOk   = !fs.existsSync(uiDir) || fs.existsSync(uiMod);
+
+  if (rootOk && uiOk) {
+    return { label: 'node_modules', ok: true, detail: 'root + must-b-ui present' };
+  }
+
+  const missing = [!rootOk && 'root', !uiOk && 'must-b-ui'].filter(Boolean).join(', ');
+  return {
+    label: 'node_modules',
+    ok: false,
+    detail: `missing: ${missing}`,
+    fix: 'Run: npm install (root & public/must-b-ui)',
+    autoFix: async () => {
+      try {
+        if (!rootOk) {
+          console.log(dim('  → npm install (root)...'));
+          execSync('npm install', { cwd: root, stdio: 'inherit' });
+        }
+        if (!uiOk && fs.existsSync(uiDir)) {
+          console.log(dim('  → npm install (must-b-ui)...'));
+          execSync('npm install', { cwd: uiDir, stdio: 'inherit' });
+        }
+        return true;
+      } catch { return false; }
+    },
+  };
+}
+
 // ── Capability checks ─────────────────────────────────────────────────────
 
 async function checkPlaywright(): Promise<CheckResult> {
   try {
     const { chromium } = await import('playwright');
     const executablePath = chromium.executablePath();
-    const exists = fs.existsSync(executablePath);
-    if (!exists) {
+    if (!fs.existsSync(executablePath)) {
       return {
         label: 'Playwright (Chromium)',
         ok: false,
         detail: 'browser not installed',
         fix: 'Run: npx playwright install chromium',
+        autoFix: async () => {
+          try { execSync('npx playwright install chromium', { stdio: 'inherit' }); return true; }
+          catch { return false; }
+        },
       };
     }
-    return {
-      label: 'Playwright (Chromium)',
-      ok: true,
-      detail: 'executable found — browser ready',
-    };
+    return { label: 'Playwright (Chromium)', ok: true, detail: 'executable found — browser ready' };
   } catch {
     return {
       label: 'Playwright (Chromium)',
       ok: false,
       detail: 'package not installed',
-      fix: 'Run: npm install && npx playwright install chromium',
+      fix: 'Run: npm install playwright && npx playwright install chromium',
+      autoFix: async () => {
+        try {
+          execSync('npm install playwright && npx playwright install chromium', { stdio: 'inherit' });
+          return true;
+        } catch { return false; }
+      },
     };
   }
 }
@@ -184,6 +339,10 @@ async function checkChokidar(): Promise<CheckResult> {
       ok: false,
       detail: 'not installed',
       fix: 'Run: npm install chokidar',
+      autoFix: async () => {
+        try { execSync('npm install chokidar', { stdio: 'inherit' }); return true; }
+        catch { return false; }
+      },
     };
   }
 }
@@ -192,24 +351,376 @@ async function checkSharp(): Promise<CheckResult> {
   try {
     const sharp = (await import('sharp')).default;
     const vipsVersion = (sharp as any).versions?.vips ?? 'unknown';
-    return {
-      label: 'sharp (image processing)',
-      ok: true,
-      detail: `vips ${vipsVersion}`,
-    };
+    return { label: 'sharp (image processing)', ok: true, detail: `vips ${vipsVersion}` };
   } catch {
     return {
       label: 'sharp (image processing)',
       ok: false,
       detail: 'not installed',
       fix: 'Run: npm install sharp',
+      autoFix: async () => {
+        try { execSync('npm install sharp', { stdio: 'inherit' }); return true; }
+        catch { return false; }
+      },
     };
   }
 }
 
+// ── Build Tool checks ─────────────────────────────────────────────────────
+
+function checkCMake(): CheckResult {
+  const result = spawnSync('cmake', ['--version'], { encoding: 'utf-8', stdio: 'pipe' });
+  if (result.status === 0) {
+    const version = (result.stdout ?? '').split('\n')[0].trim();
+    return { label: 'CMake', ok: true, detail: version };
+  }
+  return {
+    label: 'CMake',
+    ok: false,
+    detail: 'not found (required for native node modules)',
+    fix: process.platform === 'win32'
+      ? 'Run: winget install Kitware.CMake'
+      : process.platform === 'darwin'
+      ? 'Run: brew install cmake'
+      : 'Run: sudo apt-get install -y cmake',
+    autoFix: async () => {
+      const cmd = getInstallCmd({
+        win32:  'winget install Kitware.CMake',
+        darwin: 'brew install cmake',
+        linux:  'sudo apt-get install -y cmake',
+      });
+      if (!cmd) return false;
+      console.log(dim(`  → ${cmd}`));
+      try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
+    },
+  };
+}
+
+/** Locate cl.exe in typical Visual Studio / Build Tools installations on Windows */
+function findMsvcCompiler(): string | null {
+  // Fast path: cl.exe already on PATH
+  const whereResult = spawnSync('where', ['cl'], { encoding: 'utf-8', stdio: 'pipe' });
+  if (whereResult.status === 0 && whereResult.stdout.trim()) {
+    return whereResult.stdout.split('\n')[0].trim();
+  }
+
+  // Deep search in standard VS installation directories
+  const roots = [
+    process.env['ProgramFiles(x86)'] ?? 'C:\\Program Files (x86)',
+    process.env['ProgramFiles']      ?? 'C:\\Program Files',
+  ];
+  const vsVersions = ['2022', '2019', '2017'];
+  const vsEditions = ['BuildTools', 'Community', 'Professional', 'Enterprise'];
+
+  for (const root of roots) {
+    for (const ver of vsVersions) {
+      for (const ed of vsEditions) {
+        const msvcBase = path.join(root, 'Microsoft Visual Studio', ver, ed, 'VC', 'Tools', 'MSVC');
+        if (!fs.existsSync(msvcBase)) continue;
+        try {
+          const versions = fs.readdirSync(msvcBase).sort().reverse();
+          for (const v of versions) {
+            const clPath = path.join(msvcBase, v, 'bin', 'Hostx64', 'x64', 'cl.exe');
+            if (fs.existsSync(clPath)) return clPath;
+          }
+        } catch { /* skip */ }
+      }
+    }
+  }
+
+  // Last resort: check vcvarsall.bat existence as presence indicator
+  for (const root of roots) {
+    for (const ver of vsVersions) {
+      for (const ed of vsEditions) {
+        const vcvars = path.join(root, 'Microsoft Visual Studio', ver, ed, 'VC', 'Auxiliary', 'Build', 'vcvarsall.bat');
+        if (fs.existsSync(vcvars)) return vcvars; // not cl.exe but confirms VS installed
+      }
+    }
+  }
+  return null;
+}
+
+function checkCppBuildTools(): CheckResult {
+  if (process.platform === 'win32') {
+    const clPath = findMsvcCompiler();
+    if (clPath) {
+      // Get compiler version from stderr (cl.exe banner)
+      const result = spawnSync(clPath, [], { encoding: 'utf-8', stdio: 'pipe' });
+      const banner = (result.stderr ?? '').split('\n')[0].trim();
+      return {
+        label: 'C++ Build Tools (MSVC)',
+        ok: true,
+        detail: banner || `cl.exe → ${path.basename(path.dirname(clPath))}`,
+      };
+    }
+    return {
+      label: 'C++ Build Tools (MSVC)',
+      ok: false,
+      heavy: true, // ~2GB — skip in silent auto-mode
+      detail: 'cl.exe not found — native modules cannot be compiled',
+      fix: 'winget install Microsoft.VisualStudio.2022.BuildTools (~2GB)',
+      autoFix: async () => {
+        console.log('');
+        console.log(yellow('  ⚠  Sisteminde C++ derleyiciler (MSVC) eksik.'));
+        console.log(yellow('     Bu, Must-b\'nin yerel modüllerini tam derleyebilmesi için gereklidir.'));
+        console.log(yellow('     Kurulum yaklaşık 2GB indirir ve birkaç dakika sürer.'));
+        const yes = await askYN('Visual Studio 2022 Build Tools kurulumunu başlatmamı ister misin?');
+        if (!yes) {
+          console.log(dim('     Manuel: https://visualstudio.microsoft.com/visual-cpp-build-tools/'));
+          return false;
+        }
+        const cmd = [
+          'winget install',
+          '--id Microsoft.VisualStudio.2022.BuildTools',
+          '--silent',
+          '--override',
+          '"--quiet --wait',
+          '--add Microsoft.VisualStudio.Workload.VCTools',
+          '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+          '--includeRecommended"',
+        ].join(' ');
+        console.log(dim(`  → ${cmd}`));
+        try {
+          execSync(cmd, { stdio: 'inherit' });
+          return true;
+        } catch {
+          console.log(yellow('  ⚠  Kurulum başarısız. Manuel:'));
+          console.log(yellow('     https://visualstudio.microsoft.com/visual-cpp-build-tools/'));
+          return false;
+        }
+      },
+    };
+  }
+
+  // macOS / Linux — check clang++ or g++
+  for (const compiler of ['clang++', 'g++', 'c++']) {
+    const result = spawnSync(compiler, ['--version'], { encoding: 'utf-8', stdio: 'pipe' });
+    if (result.status === 0) {
+      const ver = (result.stdout ?? result.stderr ?? '').split('\n')[0].trim();
+      return { label: 'C++ Compiler', ok: true, detail: `${compiler}: ${ver}` };
+    }
+  }
+
+  if (process.platform === 'darwin') {
+    return {
+      label: 'C++ Compiler',
+      ok: false,
+      detail: 'clang++ not found — Xcode Command Line Tools required',
+      fix: 'Run: xcode-select --install',
+      autoFix: async () => {
+        console.log(dim('  → xcode-select --install'));
+        try { execSync('xcode-select --install', { stdio: 'inherit' }); return true; }
+        catch { return false; }
+      },
+    };
+  }
+  return {
+    label: 'C++ Compiler',
+    ok: false,
+    detail: 'g++ not found — build-essential package required',
+    fix: 'Run: sudo apt-get install -y build-essential',
+    autoFix: async () => {
+      console.log(dim('  → sudo apt-get install -y build-essential'));
+      try { execSync('sudo apt-get install -y build-essential', { stdio: 'inherit' }); return true; }
+      catch { return false; }
+    },
+  };
+}
+
+// ── Python Headers ────────────────────────────────────────────────────────
+
+function checkPythonHeaders(): CheckResult {
+  // Find the active python executable
+  let pyCmd: string | null = null;
+  for (const cmd of ['python3', 'python']) {
+    const r = spawnSync(cmd, ['--version'], { encoding: 'utf-8', stdio: 'pipe' });
+    if (r.status === 0) { pyCmd = cmd; break; }
+  }
+
+  if (!pyCmd) {
+    return {
+      label: 'Python Headers',
+      ok: false,
+      detail: 'Python not found — headers unavailable',
+    };
+  }
+
+  if (process.platform === 'win32') {
+    // On Windows, headers ship with the standard Python installer under Include/
+    const pyExe = spawnSync('where', [pyCmd], { encoding: 'utf-8', stdio: 'pipe' });
+    const pyPath = pyExe.stdout?.split('\n')[0].trim();
+    if (pyPath) {
+      const includeDir = path.join(path.dirname(pyPath), 'Include');
+      const headerFile = path.join(includeDir, 'Python.h');
+      if (fs.existsSync(headerFile)) {
+        return { label: 'Python Headers', ok: true, detail: headerFile };
+      }
+    }
+    return {
+      label: 'Python Headers',
+      ok: false,
+      detail: 'Python.h not found — reinstall Python with "Add to PATH" checked',
+      fix: 'Reinstall Python from https://python.org (check "Add Python to PATH")',
+    };
+  }
+
+  // macOS / Linux — python3-config is the authoritative test
+  const configResult = spawnSync(`${pyCmd}-config`, ['--includes'], { encoding: 'utf-8', stdio: 'pipe' });
+  if (configResult.status === 0 && configResult.stdout.trim()) {
+    return { label: 'Python Headers', ok: true, detail: configResult.stdout.trim() };
+  }
+
+  const pkg = process.platform === 'darwin' ? 'python3' : 'python3-dev';
+  return {
+    label: 'Python Headers',
+    ok: false,
+    detail: `${pyCmd}-config not found — dev headers missing`,
+    fix: process.platform === 'darwin'
+      ? 'Run: brew install python3  (headers included)'
+      : 'Run: sudo apt-get install -y python3-dev',
+    autoFix: async () => {
+      const cmd = process.platform === 'darwin'
+        ? `brew reinstall ${pkg}`
+        : `sudo apt-get install -y ${pkg}`;
+      console.log(dim(`  → ${cmd}`));
+      try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
+    },
+  };
+}
+
+// ── Network Access ────────────────────────────────────────────────────────
+
+interface NetworkTarget { label: string; host: string; path: string; }
+
+function probeUrl(target: NetworkTarget, timeoutMs = 4000): Promise<boolean> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => { req.destroy(); resolve(false); }, timeoutMs);
+    const req = https.request(
+      { hostname: target.host, path: target.path, method: 'HEAD', timeout: timeoutMs },
+      (res) => { clearTimeout(timer); resolve((res.statusCode ?? 0) < 500); }
+    );
+    req.on('error', () => { clearTimeout(timer); resolve(false); });
+    req.end();
+  });
+}
+
+async function checkNetworkAccess(): Promise<CheckResult> {
+  const targets: NetworkTarget[] = [
+    { label: 'OpenRouter API', host: 'openrouter.ai',      path: '/api/v1/models' },
+    { label: 'npm registry',   host: 'registry.npmjs.org', path: '/'              },
+  ];
+
+  const results = await Promise.all(targets.map(async (t) => ({
+    ...t,
+    reachable: await probeUrl(t),
+  })));
+
+  const failed = results.filter(r => !r.reachable);
+  if (failed.length === 0) {
+    return {
+      label: 'Network Access',
+      ok: true,
+      detail: results.map(r => r.label).join(' · ') + ' — reachable',
+    };
+  }
+
+  return {
+    label: 'Network Access',
+    ok: false,
+    detail: `unreachable: ${failed.map(r => r.label).join(', ')}`,
+    fix: 'Check your internet connection or firewall/proxy settings',
+  };
+}
+
+// ── TypeScript Auto-Repair ────────────────────────────────────────────────
+
+async function fixImports(root: string): Promise<void> {
+  console.log('');
+  console.log(cyan('  ── TypeScript Auto-Repair ──────────────────────────────'));
+
+  let tscOutput = '';
+  try {
+    execSync('npx tsc --noEmit', { cwd: root, encoding: 'utf-8', stdio: 'pipe' });
+    console.log(green('  ✓  TypeScript hatası bulunamadı.'));
+    return;
+  } catch (e: any) {
+    tscOutput = ((e.stdout ?? '') + (e.stderr ?? '')) as string;
+  }
+
+  const errorLines = tscOutput.split('\n').filter(l => l.includes('error TS'));
+  if (errorLines.length === 0) {
+    console.log(green('  ✓  TypeScript hatası bulunamadı.'));
+    return;
+  }
+
+  console.log(yellow(`  ⚠  ${errorLines.length} hata tespit edildi. Otomatik onarım deneniyor...`));
+
+  let fixedCount = 0;
+
+  const missingJsMods = errorLines
+    .filter(l => l.includes('Cannot find module') && l.includes("'./") && !l.includes('.js'))
+    .map(l => l.match(/Cannot find module '([^']+)'/)?.[1])
+    .filter((m): m is string => !!m && !m.endsWith('.js'));
+
+  if (missingJsMods.length > 0) {
+    console.log(dim(`  → ${missingJsMods.length} eksik .js uzantısı düzeltiliyor...`));
+    const srcDir = path.join(root, 'src');
+    if (fs.existsSync(srcDir)) {
+      for (const file of getAllTsFiles(srcDir)) {
+        let content = fs.readFileSync(file, 'utf-8');
+        let changed = false;
+        for (const mod of missingJsMods) {
+          const escaped = mod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const updated = content.replace(
+            new RegExp(`(from\\s+['"])(${escaped})(['"])`, 'g'),
+            (_, prefix, m, suffix) => `${prefix}${m}.js${suffix}`
+          );
+          if (updated !== content) { content = updated; changed = true; }
+        }
+        if (changed) { fs.writeFileSync(file, content, 'utf-8'); fixedCount++; }
+      }
+    }
+  }
+
+  const tsconfigPath = path.join(root, 'tsconfig.json');
+  if (fs.existsSync(tsconfigPath)) {
+    try {
+      const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf-8'));
+      tsconfig.compilerOptions ??= {};
+      if (!tsconfig.compilerOptions.moduleResolution) {
+        tsconfig.compilerOptions.moduleResolution = 'node16';
+        fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2) + '\n', 'utf-8');
+        console.log(green('  ↻  tsconfig.json güncellendi (moduleResolution: node16)'));
+        fixedCount++;
+      }
+    } catch { /* skip */ }
+  }
+
+  if (fixedCount > 0) {
+    console.log(green(`  ✓  ${fixedCount} dosya/config onarıldı.`));
+  } else {
+    console.log(yellow('  ⚠  Otomatik düzeltilemedi. Manuel inceleme gerekiyor.'));
+    errorLines.slice(0, 5).forEach(l => console.log(dim(`     ${l.trim()}`)));
+  }
+}
+
+function getAllTsFiles(dir: string): string[] {
+  const results: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory() && entry.name !== 'node_modules') {
+      results.push(...getAllTsFiles(full));
+    } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
 // ── Render helpers ────────────────────────────────────────────────────────
 
-function printResult(r: CheckResult) {
+function printResult(r: CheckResult, silent: boolean) {
+  if (silent && r.ok) return; // suppress passing checks in silent mode
   const icon = r.ok ? PASS : r.fix ? FAIL : WARN;
   console.log(`  ${icon}  ${bold(r.label.padEnd(28))} ${dim(r.detail)}`);
   if (!r.ok && r.fix) {
@@ -217,54 +728,158 @@ function printResult(r: CheckResult) {
   }
 }
 
+// ── Self-Healing loop ─────────────────────────────────────────────────────
+
+async function selfHeal(
+  failed: CheckResult[],
+  /** If true, auto-apply all fixes without Y/n prompts (used in gateway pre-flight) */
+  autoApply: boolean,
+  silent: boolean
+): Promise<number> {
+  let healed = 0;
+  for (const check of failed) {
+    if (!check.autoFix) continue;
+
+    // Heavy installs (e.g. MSVC ~2GB) are never auto-applied without user consent
+    if (autoApply && check.heavy) continue;
+
+    let shouldFix = autoApply;
+    if (!autoApply) {
+      shouldFix = await askYN(`${bold(check.label)} sorununu otomatik onarmamı ister misin?`);
+    }
+    if (!shouldFix) continue;
+
+    if (!silent) process.stdout.write(`  ${cyan('⟳')}  ${check.label} onarılıyor...`);
+    const success = await check.autoFix();
+    if (!silent) process.stdout.write('\r' + ' '.repeat(60) + '\r');
+
+    if (success) {
+      console.log(`  ${PASS}  ${bold(check.label.padEnd(28))} ${green('onarıldı!')}`);
+      healed++;
+    } else {
+      console.log(`  ${FAIL}  ${bold(check.label.padEnd(28))} ${red('onarım başarısız — manuel müdahale gerekli')}`);
+    }
+  }
+  return healed;
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────
 
-export async function runDoctor(root: string) {
-  console.log('');
-  console.log(cyan('  ══════════════════════════════════════════════'));
-  console.log(cyan('    Must-b Doctor — System Health Check'));
-  console.log(cyan('  ══════════════════════════════════════════════'));
-  console.log('');
+export async function runDoctor(
+  root: string,
+  fix = false,
+  silent = false
+): Promise<DoctorResult> {
 
-  console.log(dim('  [ Core ]'));
+  if (!silent) {
+    console.log('');
+    console.log(cyan('  ══════════════════════════════════════════════════════'));
+    console.log(cyan('    Must-b Doctor — System Health Check'));
+    if (fix) console.log(cyan('    ⚡ Mod: Self-Healing  (--fix)'));
+    console.log(cyan('  ══════════════════════════════════════════════════════'));
+    console.log('');
+  }
+
+  // Shadow .env backup/restore runs every time
+  shadowEnv(root);
+
+  if (!silent) console.log(dim('  [ Core ]'));
   const coreChecks: CheckResult[] = [
     checkNode(),
     checkGit(),
     checkPython(),
     checkEnvFile(root),
     checkApiKey(),
-    checkMode(),
+    checkMode(root),
     checkMemoryDir(root),
+    checkNodeModules(root),
   ];
-  for (const c of coreChecks) printResult(c);
+  for (const c of coreChecks) printResult(c, silent);
 
-  console.log('');
-  console.log(dim('  [ Capabilities ]'));
+  if (!silent) { console.log(''); console.log(dim('  [ Build Tools ]')); }
+  const buildChecks: CheckResult[] = [
+    checkCMake(),
+    checkCppBuildTools(),
+  ];
+  for (const c of buildChecks) printResult(c, silent);
+
+  if (!silent) { console.log(''); console.log(dim('  [ Capabilities ]')); }
   const capChecks = await Promise.all([
     checkPlaywright(),
     checkSQLite(),
     checkChokidar(),
     checkSharp(),
   ]);
-  for (const c of capChecks) printResult(c);
+  for (const c of capChecks) printResult(c, silent);
 
-  const allChecks = [...coreChecks, ...capChecks];
-  const failed = allChecks.filter((c) => !c.ok && c.fix);
-  const warned  = allChecks.filter((c) => !c.ok && !c.fix);
+  if (!silent) { console.log(''); console.log(dim('  [ LLM Runtime ]')); }
+  const llmChecks: CheckResult[] = [checkPythonHeaders()];
+  for (const c of llmChecks) printResult(c, silent);
 
-  console.log('');
+  if (!silent) { console.log(''); console.log(dim('  [ Network ]')); }
+  const netChecks: CheckResult[] = [await checkNetworkAccess()];
+  for (const c of netChecks) printResult(c, silent);
+
+  const allChecks = [...coreChecks, ...buildChecks, ...capChecks, ...llmChecks, ...netChecks];
+  const failed    = allChecks.filter(c => !c.ok && c.fix);
+  const warned    = allChecks.filter(c => !c.ok && !c.fix);
+
+  if (!silent) console.log('');
+
+  let healedCount = 0;
+
   if (failed.length === 0 && warned.length === 0) {
-    console.log(green('  ✔  All checks passed. Must-b is fully operational.'));
-    console.log(dim('     Browser: Playwright  |  Memory: SQLite FTS5  |  Watcher: chokidar'));
+    if (!silent) {
+      console.log(green('  ✔  Tüm kontroller geçti. Must-b tam olarak çalışıyor!'));
+      console.log(dim('     Browser: Playwright  |  Memory: SQLite FTS5  |  Watcher: chokidar'));
+    }
   } else {
-    if (failed.length > 0) {
-      console.log(red(`  ${failed.length} issue(s) need your attention (see → hints above).`));
+    if (!silent) {
+      if (failed.length > 0) console.log(red(`  ${failed.length} sorun tespit edildi (yukarıdaki → ipuçlarına bak).`));
+      if (warned.length > 0) console.log(yellow(`  ${warned.length} uyarı — isteğe bağlı bileşenler yapılandırılmamış.`));
     }
-    if (warned.length > 0) {
-      console.log(yellow(`  ${warned.length} warning(s) — optional items not configured.`));
+
+    if (fix) {
+      if (!silent) {
+        console.log('');
+        console.log(cyan('  ── Self-Healing ────────────────────────────────────────'));
+      }
+
+      const fixable = failed.filter(c => c.autoFix);
+      if (fixable.length > 0) {
+        // silent+fix → gateway pre-flight: auto-apply without Y/n
+        // fix only   → interactive mode: ask Y/n
+        healedCount = await selfHeal(fixable, silent, silent);
+        if (!silent) {
+          console.log('');
+          console.log(healedCount > 0
+            ? green(`  ✔  ${healedCount} sorun onarıldı.`)
+            : yellow('  Hiçbir sorun otomatik onarılamadı.'));
+        }
+      } else if (!silent) {
+        console.log(yellow('  Otomatik onarılabilir sorun yok. Manuel müdahale gerekli.'));
+      }
+
+      // TypeScript repair — only in interactive (non-silent) mode
+      if (!silent) {
+        console.log('');
+        const doTsFix = await askYN('TypeScript hatalarını kontrol edip otomatik onarmamı ister misin?');
+        if (doTsFix) await fixImports(root);
+      }
+
+    } else if (!silent) {
+      console.log('');
+      console.log(dim('  Sorunları düzelttikten sonra tekrar çalıştır: must-b doctor'));
+      console.log(dim(`  ${bold('İpucu:')} must-b doctor --fix  →  otomatik onarım modu`));
     }
-    console.log('');
-    console.log(dim('  Fix the issues above, then re-run: must-b doctor'));
   }
-  console.log('');
+
+  if (!silent) console.log('');
+
+  const remaining = Math.max(0, failed.length - healedCount);
+  // criticalBlock: at least one critical check is still broken AND has no autoFix
+  // (autoFix-able criticals were attempted; if they failed they are already counted in `remaining`)
+  const criticalBlock = allChecks.some(c => !c.ok && c.critical);
+
+  return { failed: failed.length, healed: healedCount, remaining, criticalBlock };
 }
