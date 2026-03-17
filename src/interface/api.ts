@@ -751,7 +751,7 @@ export class ApiServer {
       const cloudUrl  = process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com';
       const body      = Buffer.from(JSON.stringify({ recipientUid, payload }));
       const https     = await import('https');
-      const relayUrl  = new URL('/api/v1/world/task', cloudUrl);
+      const relayUrl  = new URL('/api/v1/world/relay', cloudUrl);
 
       try {
         await new Promise<void>((resolve, reject) => {
@@ -802,7 +802,7 @@ export class ApiServer {
       const myCaps    = getAgentRole();
       const cloudUrl  = process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com';
       const https     = await import('https');
-      const fetchUrl  = new URL(`/api/v1/world/task/${identity.uid}`, cloudUrl);
+      const fetchUrl  = new URL(`/api/v1/world/relay/${identity.uid}`, cloudUrl);
 
       try {
         const raw = await new Promise<string>((resolve, reject) => {
@@ -850,7 +850,7 @@ export class ApiServer {
 
     /**
      * GET /api/v1/skills/market
-     * Browse the global Must-b Skills Hub (skills-mustb.com via Supabase).
+     * Browse the global Must-b Skills Hub (must-b.com/api/v1/market).
      * Open to all agents regardless of tier.
      */
     this.app.get('/api/v1/skills/market', async (req, res) => {

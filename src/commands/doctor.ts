@@ -1173,7 +1173,7 @@ export async function ensureModel(modelName: string): Promise<EnsureModelResult>
   return result;
 }
 
-// ── Skills Hub (skills-mustb.com / Supabase) ──────────────────────────────
+// ── Skills Hub (must-b.com/api/v1/market) ─────────────────────────────────
 
 export interface SkillMarketEntry {
   id: string;
@@ -1201,7 +1201,7 @@ export interface PublishSkillResult {
   error?: string;
 }
 
-const SKILLS_HUB_URL = process.env.SKILLS_HUB_URL ?? 'https://skills-mustb.com';
+const SKILLS_HUB_URL = process.env.SKILLS_HUB_URL ?? 'https://must-b.com';
 
 /**
  * Fetch the global skills market listing.
@@ -1209,7 +1209,7 @@ const SKILLS_HUB_URL = process.env.SKILLS_HUB_URL ?? 'https://skills-mustb.com';
  */
 export async function getSkillsMarket(opts: { query?: string; limit?: number } = {}): Promise<SkillsMarketResult> {
   const { query = '', limit = 20 } = opts;
-  const fetch_url = new URL('/api/v1/skills', SKILLS_HUB_URL);
+  const fetch_url = new URL('/api/v1/market', SKILLS_HUB_URL);
   if (query) fetch_url.searchParams.set('q', query);
   fetch_url.searchParams.set('limit', String(limit));
 
@@ -1263,7 +1263,7 @@ export async function publishSkill(opts: {
     publishedBy: { role: caps.role, tier: caps.tier },
   }));
 
-  const pub_url = new URL('/api/v1/skills/publish', SKILLS_HUB_URL);
+  const pub_url = new URL('/api/v1/market/publish', SKILLS_HUB_URL);
 
   return new Promise((resolve) => {
     const mod = pub_url.protocol === 'https:' ? https : http;
