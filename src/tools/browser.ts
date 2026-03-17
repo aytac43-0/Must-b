@@ -207,4 +207,54 @@ export class BrowserTools {
     }
     return capture;
   }
+
+  // ── OS-Level Input (Precision Hands v4.2) ─────────────────────────────
+
+  /** Move the OS cursor to absolute screen coordinates (x, y). */
+  async mouseMove(params: { x: number; y: number }): Promise<{ ok: boolean }> {
+    const { osMouseMove } = await import('./input.js');
+    await osMouseMove(params.x, params.y);
+    return { ok: true };
+  }
+
+  /**
+   * Move the OS cursor to (x, y) and click a mouse button.
+   * button: 'left' (default) | 'right' | 'middle'
+   */
+  async mouseClick(params: {
+    x:       number;
+    y:       number;
+    button?: 'left' | 'right' | 'middle';
+  }): Promise<{ ok: boolean }> {
+    const { osMouseClick } = await import('./input.js');
+    await osMouseClick(params.x, params.y, params.button ?? 'left');
+    return { ok: true };
+  }
+
+  /**
+   * Type text into the focused OS input at a human pace.
+   * delayMs: ms per keystroke (default 60, ±40% jitter).
+   * Uses clipboard-paste technique for reliability on Windows/macOS.
+   */
+  async typeText(params: { text: string; delayMs?: number }): Promise<{ ok: boolean }> {
+    const { osTypeText } = await import('./input.js');
+    await osTypeText(params.text, params.delayMs ?? 60);
+    return { ok: true };
+  }
+
+  /**
+   * Vision integration: detect UI elements in a base64 PNG then click the
+   * first element matching elementType (default 'button') at the given index.
+   * Returns coordinates and matched element, or { ok: false } if none found.
+   */
+  async clickDetectedElement(params: {
+    base64:       string;
+    elementType?: 'button' | 'input' | 'image' | 'unknown';
+    index?:       number;
+    label?:       string;
+  }): Promise<{ ok: boolean; x?: number; y?: number; element?: object }> {
+    const { osVisionClick } = await import('./input.js');
+    const result = await osVisionClick(params);
+    return result ?? { ok: false };
+  }
 }

@@ -123,6 +123,7 @@ export class ApiServer {
     this.setupRoutes();
     this.setupSocketIO();
     this.setupOrchestratorListeners();
+    this.setupInputEventBridge();
   }
 
   private setupMiddleware() {
@@ -433,6 +434,62 @@ export class ApiServer {
         });
       } catch {
         res.json({ warn: false, message: null });
+      }
+    });
+
+    // ── Precision Input: Mouse & Keyboard (v4.2) ─────────────────────────
+
+    /** POST /api/system/mouse/move  { x, y } */
+    this.app.post('/api/system/mouse/move', requireAuth, async (req, res) => {
+      const { x, y } = req.body ?? {};
+      if (typeof x !== 'number' || typeof y !== 'number')
+        return res.status(400).json({ error: 'x and y (numbers) required' });
+      try {
+        const { osMouseMove } = await import('../tools/input.js');
+        await osMouseMove(x, y);
+        res.json({ ok: true, x, y });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /** POST /api/system/mouse/click  { x, y, button? } */
+    this.app.post('/api/system/mouse/click', requireAuth, async (req, res) => {
+      const { x, y, button = 'left' } = req.body ?? {};
+      if (typeof x !== 'number' || typeof y !== 'number')
+        return res.status(400).json({ error: 'x and y (numbers) required' });
+      try {
+        const { osMouseClick } = await import('../tools/input.js');
+        await osMouseClick(x, y, button);
+        res.json({ ok: true, x, y, button });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /** POST /api/system/keyboard/type  { text, delayMs? } */
+    this.app.post('/api/system/keyboard/type', requireAuth, async (req, res) => {
+      const { text, delayMs = 60 } = req.body ?? {};
+      if (!text) return res.status(400).json({ error: 'text required' });
+      try {
+        const { osTypeText } = await import('../tools/input.js');
+        await osTypeText(String(text), Number(delayMs));
+        res.json({ ok: true, chars: String(text).length });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /** POST /api/system/vision/click  { base64, elementType?, index?, label? } */
+    this.app.post('/api/system/vision/click', requireAuth, async (req, res) => {
+      const { base64, elementType, index = 0, label } = req.body ?? {};
+      if (!base64) return res.status(400).json({ error: 'base64 PNG required' });
+      try {
+        const { osVisionClick } = await import('../tools/input.js');
+        const result = await osVisionClick({ base64, elementType, index, label });
+        res.json(result ?? { ok: false });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
       }
     });
 
@@ -1290,6 +1347,61 @@ export class ApiServer {
     this.orchestrator.on('planFinish',   (d) => this.io.emit('agentUpdate', { type: 'planFinish',   ...d }));
     // Auto-repair events surfaced to the dashboard
     this.orchestrator.on('agentRepair',  (d) => this.io.emit('agentUpdate', { type: 'agentRepair',  ...d }));
+  }
+
+  /**
+   * Bridge inputEvents (from input.ts) → socket.io → Dashboard.
+   * This is what makes "Clicking at 450, 210…" appear in the ActiveWorkflow feed.
+   */
+  private async setupInputEventBridge() {
+    try {
+      const { inputEvents } = await import('../tools/input.js');
+
+      inputEvents.on('mouseMove', (d: { x: number; y: number }) => {
+        this.io.emit('agentUpdate', {
+          type:   'inputAction',
+          action: 'mouseMove',
+          label:  `Moving to ${d.x}, ${d.y}`,
+          ...d,
+          timestamp: Date.now(),
+        });
+      });
+
+      inputEvents.on('mouseClick', (d: { x: number; y: number; button: string }) => {
+        this.io.emit('agentUpdate', {
+          type:   'inputAction',
+          action: 'mouseClick',
+          label:  `Clicking at ${d.x}, ${d.y} (${d.button})`,
+          ...d,
+          timestamp: Date.now(),
+        });
+        this.logger.info(`[Input] Click at (${d.x}, ${d.y}) btn=${d.button}`);
+      });
+
+      inputEvents.on('typeText', (d: { preview: string }) => {
+        this.io.emit('agentUpdate', {
+          type:   'inputAction',
+          action: 'typeText',
+          label:  `Typing: "${d.preview}${d.preview.length >= 60 ? '…' : ''}"`,
+          ...d,
+          timestamp: Date.now(),
+        });
+        this.logger.info(`[Input] Type: "${d.preview}"`);
+      });
+
+      inputEvents.on('visionClick', (d: { x: number; y: number; type: string; label: string }) => {
+        this.io.emit('agentUpdate', {
+          type:   'inputAction',
+          action: 'visionClick',
+          label:  `Vision → ${d.label} (${d.type}) at ${d.x}, ${d.y}`,
+          ...d,
+          timestamp: Date.now(),
+        });
+        this.logger.info(`[Input] VisionClick ${d.label} at (${d.x}, ${d.y})`);
+      });
+    } catch (err: any) {
+      this.logger.warn(`[Input] Bridge setup failed: ${err?.message}`);
+    }
   }
 
   start() {
