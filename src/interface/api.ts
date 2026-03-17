@@ -126,7 +126,9 @@ export class ApiServer {
   }
 
   private setupMiddleware() {
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: '10mb' }));
+    // Multipart raw body for /api/memory/import (handled inline, no heavy dep needed)
+    this.app.use('/api/memory/import', express.raw({ type: '*/*', limit: '10mb' }));
     const frontendOut = path.join(process.cwd(), 'public', 'must-b-ui', 'out');
     this.app.use(express.static(frontendOut));
     // SPA fallback
@@ -976,6 +978,66 @@ export class ApiServer {
         res.json({ ok: true, name: safeName, provider: safeProvider, mode: safeMode });
       } catch (err: any) {
         this.logger.error(`Setup: ${err.message}`);
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    // ── Memory File Import ──────────────────────────────────────────────────
+    /**
+     * POST /api/memory/import
+     * Accepts a multipart/form-data body with a single 'file' field (.md or .json).
+     * Writes the file into the memory/ directory, naming it by the original filename.
+     * Allows the CloudSyncButton "Drag memory file" flow to land without cloud credentials.
+     */
+    this.app.post('/api/memory/import', requireAuth, (req, res) => {
+      try {
+        const contentType = String(req.headers['content-type'] ?? '');
+        const raw = req.body as Buffer;
+
+        // Extract filename from X-Filename header if present, else fallback
+        const disposition = String(req.headers['x-filename'] ?? '');
+        let filename = disposition || 'imported-memory.md';
+
+        // Parse multipart boundary to extract real filename + content
+        let fileContent: Buffer = raw;
+
+        if (contentType.includes('multipart/form-data')) {
+          const boundaryMatch = contentType.match(/boundary=([^\s;]+)/);
+          if (boundaryMatch) {
+            const boundary = '--' + boundaryMatch[1];
+            const rawStr = raw.toString('binary');
+            const parts = rawStr.split(boundary);
+            for (const part of parts) {
+              const fnMatch = part.match(/filename="([^"]+)"/);
+              if (fnMatch) {
+                filename = fnMatch[1];
+                const bodyStart = part.indexOf('\r\n\r\n');
+                if (bodyStart >= 0) {
+                  const bodyStr = part.slice(bodyStart + 4).replace(/\r\n--$/, '');
+                  fileContent = Buffer.from(bodyStr, 'binary');
+                }
+                break;
+              }
+            }
+          }
+        }
+
+        // Safety: only allow .md and .json, strip path traversal
+        const safeName = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, '_');
+        if (!safeName.endsWith('.md') && !safeName.endsWith('.json')) {
+          return res.status(400).json({ error: 'Only .md and .json files are accepted' });
+        }
+
+        const root   = process.cwd();
+        const memDir = path.join(root, 'memory');
+        fs.mkdirSync(memDir, { recursive: true });
+        fs.writeFileSync(path.join(memDir, safeName), fileContent);
+
+        this.logger.info(`[MemoryImport] ${safeName} imported (${fileContent.length} bytes)`);
+        this.io.emit('agentUpdate', { type: 'memoryImported', filename: safeName, bytes: fileContent.length });
+        res.json({ ok: true, filename: safeName, bytes: fileContent.length });
+      } catch (err: any) {
+        this.logger.error(`[MemoryImport] Failed: ${err.message}`);
         res.status(500).json({ error: err.message });
       }
     });

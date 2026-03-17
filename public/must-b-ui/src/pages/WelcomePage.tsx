@@ -1,28 +1,27 @@
 import { useNavigate, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings } from "lucide-react";
 
 export default function WelcomePage() {
   const navigate = useNavigate();
-  const [waking, setWaking]           = useState(false);
-  const [awake, setAwake]             = useState(false);
-  const [setupNeeded, setSetupNeeded] = useState(false);
+  const [waking, setWaking] = useState(false);
+  const [awake, setAwake]   = useState(false);
 
-  // Check if first-time setup is required
-  useEffect(() => {
-    fetch("/api/setup/status")
-      .then(r => r.ok ? r.json() : null)
-      .then((d: { configured?: boolean } | null) => {
-        if (d && !d.configured) setSetupNeeded(true);
-      })
-      .catch(() => { /* server not ready yet — ignore */ });
-  }, []);
-
+  // No API calls on mount — the sleeping fox renders fully offline.
+  // All gateway communication starts only when the user clicks "Uyandır".
   const handleWake = async () => {
-    if (setupNeeded) { navigate("/setup"); return; }
     setWaking(true);
-    try { await fetch("/api/auth/local"); } catch { /* local — always available */ }
+    try {
+      // First check setup; redirect to wizard if gateway hasn't been configured yet
+      const statusRes = await fetch("/api/setup/status");
+      if (statusRes.ok) {
+        const status = await statusRes.json() as { configured?: boolean };
+        if (!status.configured) { navigate("/setup"); return; }
+      }
+      // Acquire local auth token
+      await fetch("/api/auth/local");
+    } catch { /* gateway not ready — try to continue anyway */ }
     setTimeout(() => setAwake(true), 600);
     setTimeout(() => navigate("/app"), 1800);
   };
@@ -72,7 +71,7 @@ export default function WelcomePage() {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-white/5 transition-all text-xs font-medium"
         >
           <Settings size={13} />
-          {setupNeeded ? <span className="text-orange-400">Setup required</span> : "Reconfigure"}
+          Reconfigure
         </Link>
       </motion.div>
 
@@ -166,7 +165,7 @@ export default function WelcomePage() {
           transition={{ delay: 0.8 }}
           className="text-gray-500 text-sm font-medium tracking-wide"
         >
-          {awake ? "Uyanıyor..." : waking ? "Uyandırılıyor..." : setupNeeded ? "Kurulum bekleniyor..." : "Uyuyor..."}
+          {awake ? "Uyanıyor..." : waking ? "Uyandırılıyor..." : "Uyuyor..."}
         </motion.p>
 
         {/* Wake / Setup button */}
@@ -191,8 +190,6 @@ export default function WelcomePage() {
             <span className="relative z-10 flex items-center gap-3">
               {waking ? (
                 <><span className="w-4 h-4 border-2 border-orange-300/60 border-t-orange-300 rounded-full animate-spin" />Uyanıyor...</>
-              ) : setupNeeded ? (
-                <><Settings size={20} />Kurulumu Başlat</>
               ) : (
                 <><span className="text-xl">🦊</span>Must-b&apos;yi Uyandır</>
               )}
