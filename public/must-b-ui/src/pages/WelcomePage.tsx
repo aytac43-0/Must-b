@@ -104,16 +104,27 @@ export default function WelcomePage() {
             }`}
           />
 
-          {/* Avatar */}
+          {/* Avatar — sleep.png uyurken, awake.png uyanınca */}
           <motion.div
             animate={awake ? { scale: 1.12, rotate: [0, -3, 3, 0] } : waking ? { scale: 1.05 } : {}}
             transition={{ duration: 0.5 }}
             className="relative w-52 h-52 animate-float-slow"
           >
-            <img
+            {/* Sleeping state */}
+            <motion.img
               src="/avatar/sleep.png"
-              alt="Must-b sleeping red panda"
-              className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(234,88,12,0.4)]"
+              alt="Must-b uyuyor"
+              className="absolute inset-0 w-full h-full object-contain drop-shadow-[0_0_30px_rgba(234,88,12,0.4)]"
+              animate={{ opacity: waking || awake ? 0 : 1 }}
+              transition={{ duration: 0.4 }}
+            />
+            {/* Awake state */}
+            <motion.img
+              src="/avatar/awake.png"
+              alt="Must-b uyanık"
+              className="absolute inset-0 w-full h-full object-contain drop-shadow-[0_0_40px_rgba(234,88,12,0.6)]"
+              animate={{ opacity: waking || awake ? 1 : 0 }}
+              transition={{ duration: 0.4, delay: waking ? 0.2 : 0 }}
             />
           </motion.div>
 
