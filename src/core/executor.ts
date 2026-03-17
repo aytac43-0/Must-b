@@ -228,3 +228,139 @@ export class Executor {
     }
   }
 }
+
+// ── Idling Self-Improvement Loop ─────────────────────────────────────────
+
+/**
+ * Starts a background idling inference loop.
+ *
+ * When no user activity is detected and a local Ollama model is reachable,
+ * Must-b scans the extensions/ directory for installed plugins, analyses
+ * each plugin manifest and source for potential issues or improvements, and
+ * writes a Markdown report to memory/idling-report.md.
+ *
+ * Suggestions are never auto-applied — they are saved for human review.
+ * The loop sleeps for `intervalMinutes` between passes.
+ *
+ * @param root             Project root directory
+ * @param logger           Winston logger instance
+ * @param intervalMinutes  Minutes between scans (default 30)
+ * @returns NodeJS.Timeout handle — call clearInterval to stop
+ */
+export function startIdlingInference(
+  root: string,
+  logger: winston.Logger,
+  intervalMinutes = 30
+): NodeJS.Timeout {
+  const fs   = require('fs') as typeof import('fs');
+  const path = require('path') as typeof import('path');
+  const http = require('http') as typeof import('http');
+
+  const OLLAMA_BASE = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
+  const EXT_DIR     = path.join(root, 'src', 'core', 'extensions');
+  const REPORT_PATH = path.join(root, 'memory', 'idling-report.md');
+  const MODEL       = process.env.OLLAMA_IDLE_MODEL ?? 'phi3:mini';
+
+  /** Check if Ollama daemon is reachable */
+  function isOllamaReachable(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const url = new URL('/api/tags', OLLAMA_BASE);
+      http.get({ hostname: url.hostname, port: Number(url.port || 11434), path: url.pathname }, (r) => {
+        resolve((r.statusCode ?? 0) < 400);
+      }).on('error', () => resolve(false));
+    });
+  }
+
+  /** Ask Ollama to analyse a plugin snippet */
+  function ollamaPrompt(prompt: string): Promise<string> {
+    return new Promise((resolve) => {
+      const body = Buffer.from(JSON.stringify({ model: MODEL, prompt, stream: false }));
+      const url  = new URL('/api/generate', OLLAMA_BASE);
+      const req  = http.request({
+        hostname: url.hostname,
+        port:     Number(url.port || 11434),
+        path:     url.pathname,
+        method:   'POST',
+        headers:  { 'Content-Type': 'application/json', 'Content-Length': body.byteLength },
+      }, (r) => {
+        let raw = '';
+        r.on('data', c => { raw += c; });
+        r.on('end', () => {
+          try { resolve(JSON.parse(raw).response ?? ''); } catch { resolve(''); }
+        });
+      });
+      req.on('error', () => resolve(''));
+      req.write(body);
+      req.end();
+    });
+  }
+
+  /** Scan extensions/ and collect plugin manifests */
+  function collectPlugins(): Array<{ id: string; dir: string; manifest: Record<string, unknown> }> {
+    const plugins: Array<{ id: string; dir: string; manifest: Record<string, unknown> }> = [];
+    if (!fs.existsSync(EXT_DIR)) return plugins;
+
+    for (const entry of fs.readdirSync(EXT_DIR, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const pluginJson = path.join(EXT_DIR, entry.name, 'must-b.plugin.json');
+      if (!fs.existsSync(pluginJson)) continue;
+      try {
+        const manifest = JSON.parse(fs.readFileSync(pluginJson, 'utf-8')) as Record<string, unknown>;
+        plugins.push({ id: String(manifest.id ?? entry.name), dir: path.join(EXT_DIR, entry.name), manifest });
+      } catch { /* malformed JSON — skip */ }
+    }
+    return plugins;
+  }
+
+  const run = async () => {
+    if (!(await isOllamaReachable())) {
+      logger.debug('[Idling] Ollama not reachable — skipping inference pass.');
+      return;
+    }
+
+    const plugins = collectPlugins();
+    if (plugins.length === 0) {
+      logger.debug('[Idling] No plugins found — skipping pass.');
+      return;
+    }
+
+    logger.info(`[Idling] Starting inference pass — ${plugins.length} plugin(s) to analyse.`);
+
+    const sections: string[] = [
+      `# Must-b Idling Report\n_Generated: ${new Date().toISOString()}_\n`,
+    ];
+
+    for (const plugin of plugins) {
+      const pkgPath = path.join(plugin.dir, 'package.json');
+      let pkgSnippet = '';
+      try { pkgSnippet = fs.readFileSync(pkgPath, 'utf-8').slice(0, 600); } catch { /* no package.json */ }
+
+      const prompt = [
+        `You are a code quality assistant reviewing a Must-b plugin.`,
+        `Plugin ID: ${plugin.id}`,
+        `Manifest: ${JSON.stringify(plugin.manifest, null, 2).slice(0, 400)}`,
+        pkgSnippet ? `package.json (truncated):\n${pkgSnippet}` : '',
+        `Task: In 3–5 bullet points, identify any obvious issues (missing fields, deprecated patterns, security risks) and suggest improvements. Be concise.`,
+      ].filter(Boolean).join('\n');
+
+      const suggestion = await ollamaPrompt(prompt);
+
+      sections.push(
+        `## Plugin: \`${plugin.id}\`\n\n${suggestion.trim() || '_No suggestions generated._'}\n`
+      );
+    }
+
+    try {
+      fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+      fs.writeFileSync(REPORT_PATH, sections.join('\n'), 'utf-8');
+      logger.info(`[Idling] Report written → ${REPORT_PATH}`);
+    } catch (err: any) {
+      logger.warn(`[Idling] Could not write report: ${err.message}`);
+    }
+  };
+
+  const handle = setInterval(run, intervalMinutes * 60_000);
+  handle.unref(); // don't block process exit
+  logger.info(`[Idling] Self-improvement loop active (every ${intervalMinutes} min, model: ${MODEL}).`);
+  return handle;
+}

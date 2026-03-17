@@ -1158,3 +1158,130 @@ export async function ensureModel(modelName: string): Promise<EnsureModelResult>
 
   return result;
 }
+
+// ── Skills Hub (skills-mustb.com / Supabase) ──────────────────────────────
+
+export interface SkillMarketEntry {
+  id: string;
+  name: string;
+  description: string;
+  author: string;
+  version: string;
+  tier: string;
+  downloads: number;
+  tags: string[];
+  publishedAt: string;
+}
+
+export interface SkillsMarketResult {
+  ok: boolean;
+  skills: SkillMarketEntry[];
+  total: number;
+  error?: string;
+}
+
+export interface PublishSkillResult {
+  ok: boolean;
+  skillId: string;
+  marketUrl?: string;
+  error?: string;
+}
+
+const SKILLS_HUB_URL = process.env.SKILLS_HUB_URL ?? 'https://skills-mustb.com';
+
+/**
+ * Fetch the global skills market listing.
+ * All agents can browse; no auth required.
+ */
+export async function getSkillsMarket(opts: { query?: string; limit?: number } = {}): Promise<SkillsMarketResult> {
+  const { query = '', limit = 20 } = opts;
+  const fetch_url = new URL('/api/v1/skills', SKILLS_HUB_URL);
+  if (query) fetch_url.searchParams.set('q', query);
+  fetch_url.searchParams.set('limit', String(limit));
+
+  return new Promise((resolve) => {
+    const mod = fetch_url.protocol === 'https:' ? https : http;
+    mod.get({
+      hostname: fetch_url.hostname,
+      port:     fetch_url.port ? Number(fetch_url.port) : (fetch_url.protocol === 'https:' ? 443 : 80),
+      path:     fetch_url.pathname + fetch_url.search,
+      headers:  { 'Accept': 'application/json', 'User-Agent': 'Must-b/2.0' },
+    }, (res) => {
+      let raw = '';
+      res.on('data', c => { raw += c; });
+      res.on('end', () => {
+        try {
+          const data = JSON.parse(raw);
+          resolve({ ok: true, skills: data.skills ?? [], total: data.total ?? 0 });
+        } catch {
+          resolve({ ok: false, skills: [], total: 0, error: 'Invalid JSON from Skills Hub' });
+        }
+      });
+    }).on('error', (err) => {
+      resolve({ ok: false, skills: [], total: 0, error: err.message });
+    });
+  });
+}
+
+/**
+ * Publish a local skill package to the global Must-b Skills Hub.
+ * Requires Pro+ tier (enforced by the API route before this is called).
+ *
+ * @param opts.skillId   The skill ID (must match must-b.plugin.json)
+ * @param opts.manifest  The parsed plugin manifest object
+ * @param opts.readme    Markdown readme text
+ * @param opts.token     MUSTB_CLOUD_TOKEN for auth
+ * @param opts.caps      Caller's role capabilities (for tier metadata)
+ */
+export async function publishSkill(opts: {
+  skillId: string;
+  manifest: object;
+  readme: string;
+  token: string;
+  caps: { role: string; tier: string; score: number };
+}): Promise<PublishSkillResult> {
+  const { skillId, manifest, readme, token, caps } = opts;
+
+  const body = Buffer.from(JSON.stringify({
+    skillId,
+    manifest,
+    readme,
+    publishedBy: { role: caps.role, tier: caps.tier },
+  }));
+
+  const pub_url = new URL('/api/v1/skills/publish', SKILLS_HUB_URL);
+
+  return new Promise((resolve) => {
+    const mod = pub_url.protocol === 'https:' ? https : http;
+    const req = mod.request({
+      hostname: pub_url.hostname,
+      port:     pub_url.port ? Number(pub_url.port) : (pub_url.protocol === 'https:' ? 443 : 80),
+      path:     pub_url.pathname,
+      method:   'POST',
+      headers: {
+        'Content-Type':   'application/json',
+        'Content-Length': body.byteLength,
+        'Authorization':  `Bearer ${token}`,
+        'User-Agent':     'Must-b/2.0',
+      },
+    }, (res) => {
+      let raw = '';
+      res.on('data', c => { raw += c; });
+      res.on('end', () => {
+        try {
+          const data = JSON.parse(raw);
+          if ((res.statusCode ?? 0) >= 400) {
+            resolve({ ok: false, skillId, error: data.error ?? `HTTP ${res.statusCode}` });
+          } else {
+            resolve({ ok: true, skillId, marketUrl: data.url });
+          }
+        } catch {
+          resolve({ ok: false, skillId, error: `HTTP ${res.statusCode} — invalid JSON` });
+        }
+      });
+    });
+    req.on('error', (err) => resolve({ ok: false, skillId, error: err.message }));
+    req.write(body);
+    req.end();
+  });
+}

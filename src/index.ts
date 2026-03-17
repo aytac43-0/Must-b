@@ -16,6 +16,8 @@ import { SessionHistory } from './memory/history.js';
 import { LongTermMemory } from './memory/long-term.js';
 import { runDoctor } from './commands/doctor.js';
 import { runOnboard } from './commands/onboard.js';
+import { startIdlingInference } from './core/executor.js';
+import { getAgentRole } from './core/hierarchy.js';
 
 dotenv.config();
 
@@ -221,6 +223,16 @@ async function bootServer(arg: string) {
     startHealthMonitor(ROOT, logger);
     // Dashboard modunda tarayıcıyı otomatik aç
     setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
+
+    // Idling self-improvement loop — only for Planner/Master tier agents
+    const caps = getAgentRole();
+    if (caps.canIdleInfer) {
+      logger.info(`[Hierarchy] Role: ${caps.role} (${caps.tier}, score=${caps.score}) — idling loop enabled.`);
+      startIdlingInference(ROOT, logger, 30);
+    } else {
+      logger.info(`[Hierarchy] Role: ${caps.role} (${caps.tier}, score=${caps.score}) — Worker tier, idling loop skipped.`);
+    }
+
     return;
   }
 

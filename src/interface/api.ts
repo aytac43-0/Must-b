@@ -16,6 +16,8 @@ import { MODELS_LIST, CLOUD_MODELS_LIST } from '../core/models-catalog.js';
 import { recommendModels } from '../utils/hardware.js';
 import { ensureModel } from '../commands/doctor.js';
 import { CloudSync, type SyncDecision } from '../core/cloud-sync.js';
+import { getAgentRole, getNodeCard, canRouteTo } from '../core/hierarchy.js';
+import { getSkillsMarket, publishSkill } from '../commands/doctor.js';
 
 /** One-time random local auth token — valid for this process lifetime */
 const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
@@ -589,6 +591,230 @@ export class ApiServer {
         this.logger.error(`[Models] ensureModel failed: ${err.message}`);
         this.io.emit('agentUpdate', { type: 'modelPullFinish', modelId, ok: false, error: err.message });
         res.status(500).json({ ok: false, modelId, error: err.message });
+      }
+    });
+
+    // ── Agent Hierarchy ────────────────────────────────────────────────────
+
+    /** GET /api/world/node-card — returns this node's identity + role */
+    this.app.get('/api/world/node-card', (_req, res) => {
+      res.json(getNodeCard());
+    });
+
+    /** GET /api/world/capabilities — full role capability set */
+    this.app.get('/api/world/capabilities', (_req, res) => {
+      res.json(getAgentRole());
+    });
+
+    // ── P2P Task Bridge ───────────────────────────────────────────────────
+    // Tasks are relayed through the Must-b cloud (must-b.com/api/v1/world/*).
+    // Each task payload is AES-256-GCM encrypted with the sender's key before
+    // it leaves the machine.  The cloud stores only opaque ciphertext.
+
+    /**
+     * POST /api/world/send-task
+     * Body: { recipientUid: string, task: string, taskMinScore?: number }
+     *
+     * Encrypts the task string and sends it to the cloud relay addressed
+     * to recipientUid.  The recipient must have a score ≥ taskMinScore
+     * (default 0) to accept the task.
+     */
+    this.app.post('/api/world/send-task', requireAuth, async (req, res) => {
+      const { recipientUid, task, taskMinScore = 0 } = req.body as {
+        recipientUid?: string;
+        task?: string;
+        taskMinScore?: number;
+      };
+
+      if (!recipientUid || !task) {
+        return res.status(400).json({ error: 'recipientUid and task are required' });
+      }
+
+      const senderCaps = getAgentRole();
+      if (!senderCaps.canDelegate) {
+        return res.status(403).json({
+          error: `Role '${senderCaps.role}' cannot delegate tasks. Upgrade your hardware tier.`,
+          senderRole: senderCaps.role,
+        });
+      }
+
+      const token = process.env.MUSTB_CLOUD_TOKEN;
+      if (!token) {
+        return res.status(403).json({ error: 'Cloud token required. Run must-b cloud-connect first.' });
+      }
+
+      const { encrypt } = await import('../core/identity.js');
+      const payload = encrypt(JSON.stringify({
+        task,
+        senderUid:    getNodeCard().uid,
+        senderRole:   senderCaps.role,
+        senderTier:   senderCaps.tier,
+        taskMinScore,
+        sentAt:       new Date().toISOString(),
+      }));
+
+      // Relay to cloud
+      const cloudUrl  = process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com';
+      const body      = Buffer.from(JSON.stringify({ recipientUid, payload }));
+      const https     = await import('https');
+      const relayUrl  = new URL('/api/v1/world/task', cloudUrl);
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const req = https.default.request({
+            hostname: relayUrl.hostname,
+            port:     relayUrl.port ? Number(relayUrl.port) : 443,
+            path:     relayUrl.pathname,
+            method:   'POST',
+            headers: {
+              'Content-Type':   'application/json',
+              'Content-Length': body.byteLength,
+              'Authorization':  `Bearer ${token}`,
+            },
+          }, (r) => {
+            let raw = '';
+            r.on('data', c => { raw += c; });
+            r.on('end', () => {
+              (r.statusCode ?? 0) >= 400 ? reject(new Error(`Cloud: ${r.statusCode} ${raw.slice(0,120)}`)) : resolve();
+            });
+          });
+          req.on('error', reject);
+          req.write(body);
+          req.end();
+        });
+
+        this.logger.info(`[World] Task sent to ${recipientUid} (minScore=${taskMinScore})`);
+        this.io.emit('agentUpdate', { type: 'taskSent', recipientUid, taskMinScore });
+        res.json({ ok: true, recipientUid, taskMinScore });
+      } catch (err: any) {
+        this.logger.warn(`[World] send-task failed: ${err.message}`);
+        res.status(502).json({ ok: false, error: err.message });
+      }
+    });
+
+    /**
+     * GET /api/world/receive-task
+     * Polls the cloud relay for tasks addressed to this node's UID.
+     * Decrypts each packet and returns only those where this node's
+     * score meets taskMinScore.  Accepted tasks are auto-queued.
+     */
+    this.app.get('/api/world/receive-task', requireAuth, async (_req, res) => {
+      const token = process.env.MUSTB_CLOUD_TOKEN;
+      if (!token) {
+        return res.status(403).json({ error: 'Cloud token required.' });
+      }
+
+      const identity  = loadOrCreateIdentity();
+      const myCaps    = getAgentRole();
+      const cloudUrl  = process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com';
+      const https     = await import('https');
+      const fetchUrl  = new URL(`/api/v1/world/task/${identity.uid}`, cloudUrl);
+
+      try {
+        const raw = await new Promise<string>((resolve, reject) => {
+          https.default.get({
+            hostname: fetchUrl.hostname,
+            port:     fetchUrl.port ? Number(fetchUrl.port) : 443,
+            path:     fetchUrl.pathname,
+            headers:  { 'Authorization': `Bearer ${token}` },
+          }, (r) => {
+            let buf = '';
+            r.on('data', c => { buf += c; });
+            r.on('end', () => ((r.statusCode ?? 0) >= 400 ? reject(new Error(`${r.statusCode}`)) : resolve(buf)));
+          }).on('error', reject);
+        });
+
+        const packets: Array<{ payload: { iv: string; tag: string; ciphertext: string } }> = JSON.parse(raw);
+        const { decrypt } = await import('../core/identity.js');
+
+        const accepted: unknown[] = [];
+        const rejected: unknown[] = [];
+
+        for (const pkt of packets ?? []) {
+          try {
+            const plain   = JSON.parse(decrypt(pkt.payload));
+            const minScore = Number(plain.taskMinScore ?? 0);
+            if (myCaps.score >= minScore) {
+              accepted.push(plain);
+              // Kick off the goal in the background
+              this.orchestrator.run(String(plain.task)).catch(() => {});
+              this.io.emit('agentUpdate', { type: 'taskReceived', from: plain.senderUid, task: plain.task });
+            } else {
+              rejected.push({ senderUid: plain.senderUid, taskMinScore: minScore, myScore: myCaps.score });
+            }
+          } catch { /* skip packets we can't decrypt */ }
+        }
+
+        res.json({ accepted: accepted.length, rejected: rejected.length, myRole: myCaps.role, myScore: myCaps.score });
+      } catch (err: any) {
+        this.logger.warn(`[World] receive-task failed: ${err.message}`);
+        res.status(502).json({ ok: false, error: err.message });
+      }
+    });
+
+    // ── Skills Hub ────────────────────────────────────────────────────────
+
+    /**
+     * GET /api/v1/skills/market
+     * Browse the global Must-b Skills Hub (skills-mustb.com via Supabase).
+     * Open to all agents regardless of tier.
+     */
+    this.app.get('/api/v1/skills/market', async (req, res) => {
+      const query  = String(req.query.q ?? '');
+      const limit  = Math.min(Number(req.query.limit ?? 20), 100);
+      try {
+        const result = await getSkillsMarket({ query, limit });
+        res.json(result);
+      } catch (err: any) {
+        this.logger.warn(`[Skills] Market fetch failed: ${err.message}`);
+        res.status(502).json({ ok: false, error: err.message });
+      }
+    });
+
+    /**
+     * POST /api/v1/skills/publish
+     * Body: { skillId: string, manifest: object, readme: string }
+     *
+     * Publishes a local skill to the global market.
+     * Requires Pro tier or higher (canPublishSkills = true).
+     */
+    this.app.post('/api/v1/skills/publish', requireAuth, async (req, res) => {
+      const caps = getAgentRole();
+      if (!caps.canPublishSkills) {
+        return res.status(403).json({
+          error: `Only Pro+ agents can publish skills. Your tier: ${caps.tier} (${caps.role}).`,
+          tier:  caps.tier,
+          role:  caps.role,
+        });
+      }
+
+      const token = process.env.MUSTB_CLOUD_TOKEN;
+      if (!token) {
+        return res.status(403).json({ error: 'Cloud token required. Run must-b cloud-connect first.' });
+      }
+
+      const { skillId, manifest, readme } = req.body as {
+        skillId?: string;
+        manifest?: object;
+        readme?: string;
+      };
+
+      if (!skillId || !manifest) {
+        return res.status(400).json({ error: 'skillId and manifest are required' });
+      }
+
+      try {
+        const result = await publishSkill({ skillId, manifest, readme: readme ?? '', token, caps });
+        if (result.ok) {
+          this.logger.info(`[Skills] Published: ${skillId}`);
+          this.io.emit('agentUpdate', { type: 'skillPublished', skillId });
+          res.json(result);
+        } else {
+          res.status(500).json(result);
+        }
+      } catch (err: any) {
+        this.logger.error(`[Skills] Publish failed: ${err.message}`);
+        res.status(500).json({ ok: false, error: err.message });
       }
     });
 
