@@ -15,6 +15,7 @@ import { loadOrCreateIdentity, sign, getHardwareScore } from '../core/identity.j
 import { MODELS_LIST, CLOUD_MODELS_LIST } from '../core/models-catalog.js';
 import { recommendModels } from '../utils/hardware.js';
 import { ensureModel } from '../commands/doctor.js';
+import { CloudSync, type SyncDecision } from '../core/cloud-sync.js';
 
 /** One-time random local auth token — valid for this process lifetime */
 const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
@@ -378,8 +379,9 @@ export class ApiServer {
     });
 
     // ── Setup Wizard ──────────────────────────────────────────────────────
-    /** Check if first-time setup is needed, memory presence, and hardware tier */
-    this.app.get('/api/setup/status', (_req, res) => {
+    /** Check if first-time setup is needed, memory presence, hardware tier,
+     *  cloud agent name and sync status for the Dashboard. */
+    this.app.get('/api/setup/status', async (_req, res) => {
       const root = process.cwd();
       const envPath = path.join(root, '.env');
 
@@ -398,13 +400,113 @@ export class ApiServer {
       // Donanım puanı (önbelleğe alınır, identity.json'a kaydedilir)
       const hw = getHardwareScore();
 
+      // Cloud sync durumu ve agent adı (hızlı metadata kontrolü)
+      const cloudSync = new CloudSync(root, this.logger);
+      let syncStatus: string = 'unknown';
+      let cloudAgentName: string | null = null;
+      let localAgentName: string | null = null;
+
+      try {
+        const conflict = await cloudSync.checkConflicts();
+        syncStatus      = conflict.state;
+        cloudAgentName  = conflict.cloudAgentName;
+        localAgentName  = conflict.localAgentName;
+
+        // Auto-resolve non-conflict states and emit event
+        if (conflict.state === 'local_only') {
+          cloudSync.backup().then(r => {
+            if (r.ok) this.io.emit('agentUpdate', { type: 'syncAutoUpload', files: r.files });
+          }).catch(() => {});
+        } else if (conflict.state === 'cloud_only') {
+          cloudSync.restore().then(r => {
+            if (r.ok) this.io.emit('agentUpdate', { type: 'syncAutoRestore', files: r.files });
+          }).catch(() => {});
+        } else if (conflict.state === 'conflict') {
+          // Broadcast conflict to Dashboard — user must decide
+          this.io.emit('agentUpdate', {
+            type:           'CONFLICT_DETECTED',
+            localAgentName,
+            cloudAgentName,
+            localMtime:     conflict.localMtime,
+            cloudTimestamp: conflict.cloudTimestamp,
+          });
+        }
+      } catch { /* cloud unreachable or no token — non-fatal */ }
+
       res.json({
         configured,
         hasMemory,
-        memoryPath: hasMemory ? memoryMdPath : null,
-        hardware: { score: hw.score, tier: hw.tier },
+        memoryPath:     hasMemory ? memoryMdPath : null,
+        hardware:       { score: hw.score, tier: hw.tier },
+        syncStatus,
+        cloudAgentName,
+        localAgentName,
         version: '2.0',
       });
+    });
+
+    /**
+     * POST /api/setup/sync-resolve
+     * Body: { decision: 'upload' | 'restore' | 'duplicate' }
+     *
+     * Resolves a CONFLICT_DETECTED state based on the user's choice:
+     *   upload    → push local memory to cloud (local wins)
+     *   restore   → pull cloud memory to local (cloud wins)
+     *   duplicate → keep local, copy cloud into memory/cloud-restore/
+     *
+     * Also handles auto-flow when called without a prior conflict:
+     * the checkConflicts() result is re-evaluated and used to pick the right action.
+     */
+    this.app.post('/api/setup/sync-resolve', requireAuth, async (req, res) => {
+      const { decision } = req.body as { decision?: string };
+      if (!decision || !['upload', 'restore', 'duplicate'].includes(decision)) {
+        return res.status(400).json({ error: "decision must be 'upload', 'restore', or 'duplicate'" });
+      }
+
+      const root = process.cwd();
+      const sync = new CloudSync(root, this.logger);
+
+      this.logger.info(`[SyncResolve] User decision: ${decision}`);
+      this.io.emit('agentUpdate', { type: 'syncResolveStart', decision });
+
+      try {
+        const result = await sync.resolveConflict(decision as SyncDecision);
+
+        this.io.emit('agentUpdate', {
+          type:     'syncResolveFinish',
+          decision,
+          ok:       result.ok,
+          files:    result.files,
+          bytes:    result.bytes,
+          error:    result.error,
+        });
+
+        if (result.ok) {
+          res.json({ ok: true, decision, files: result.files, bytes: result.bytes });
+        } else {
+          res.status(500).json({ ok: false, decision, error: result.error });
+        }
+      } catch (err: any) {
+        this.logger.error(`[SyncResolve] Failed: ${err.message}`);
+        this.io.emit('agentUpdate', { type: 'syncResolveFinish', decision, ok: false, error: err.message });
+        res.status(500).json({ ok: false, error: err.message });
+      }
+    });
+
+    /**
+     * GET /api/setup/sync-status
+     * Returns current conflict state without triggering auto-resolve.
+     * Lightweight — just the metadata check.
+     */
+    this.app.get('/api/setup/sync-status', requireAuth, async (_req, res) => {
+      const root   = process.cwd();
+      const sync   = new CloudSync(root, this.logger);
+      try {
+        const result = await sync.checkConflicts();
+        res.json(result);
+      } catch (err: any) {
+        res.status(500).json({ error: err.message });
+      }
     });
 
     /**
