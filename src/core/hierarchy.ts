@@ -12,6 +12,7 @@
  */
 
 import { getHardwareScore, loadOrCreateIdentity, type HardwareTier } from './identity.js';
+import { MODELS_LIST } from './models-catalog.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -108,14 +109,35 @@ const ROLE_META: Record<AgentRole, Omit<RoleCapabilities, 'role' | 'tier' | 'sco
 // ── Core functions ─────────────────────────────────────────────────────────
 
 /**
- * Compute this agent's role capabilities from its current hardware score.
- * Caches the identity/score so repeated calls are cheap.
+ * Minimum model minScore to qualify for Planner-level operations.
+ * Models below this threshold are considered Worker-tier regardless of hardware.
+ * (phi3:mini minScore=4, phi3:medium minScore=8 → threshold is 8)
  */
-export function getAgentRole(): RoleCapabilities {
-  const { score, tier } = getHardwareScore();
-  const role = TIER_ROLES[tier];
-  const meta = ROLE_META[role];
+const WORKER_MODEL_THRESHOLD = 8;
 
+/**
+ * Compute this agent's role capabilities from its current hardware score.
+ *
+ * @param activeModelId  Optional: the currently selected model's id or modelId.
+ *                       If the model's minScore is below WORKER_MODEL_THRESHOLD
+ *                       the returned role is capped to 'Worker', regardless of
+ *                       hardware tier — a weak model limits what the agent can do.
+ */
+export function getAgentRole(activeModelId?: string): RoleCapabilities {
+  const { score, tier } = getHardwareScore();
+  let role = TIER_ROLES[tier];
+
+  // Hierarchy lock: if the active model is below Worker threshold, cap to Worker
+  if (activeModelId) {
+    const activeModel = MODELS_LIST.find(
+      m => m.id === activeModelId || m.modelId === activeModelId
+    );
+    if (activeModel && activeModel.category === 'local' && activeModel.minScore < WORKER_MODEL_THRESHOLD) {
+      role = 'Worker';
+    }
+  }
+
+  const meta = ROLE_META[role];
   return { role, tier, score, ...meta };
 }
 

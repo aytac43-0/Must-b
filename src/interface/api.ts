@@ -13,7 +13,7 @@ import { LongTermMemory } from '../memory/long-term.js';
 import { runDoctor } from '../commands/doctor.js';
 import { loadOrCreateIdentity, sign, getHardwareScore } from '../core/identity.js';
 import { MODELS_LIST, CLOUD_MODELS_LIST } from '../core/models-catalog.js';
-import { recommendModels } from '../utils/hardware.js';
+import { recommendModels, getPerformancePrediction } from '../utils/hardware.js';
 import { ensureModel } from '../commands/doctor.js';
 import { CloudSync, type SyncDecision } from '../core/cloud-sync.js';
 import { getAgentRole, getNodeCard, canRouteTo } from '../core/hierarchy.js';
@@ -592,6 +592,98 @@ export class ApiServer {
         this.io.emit('agentUpdate', { type: 'modelPullFinish', modelId, ok: false, error: err.message });
         res.status(500).json({ ok: false, modelId, error: err.message });
       }
+    });
+
+    /**
+     * GET /api/setup/model-progress?modelId=<id>
+     *
+     * Spawns `ollama pull <modelId>` and streams real-time progress via Socket.IO.
+     * Emits 'modelProgress' events: { modelId, percent, totalGb, downloadedGb, status }
+     * Emits 'modelPullFinish' on completion or error.
+     *
+     * The HTTP response returns immediately with { ok: true, modelId } — progress
+     * is delivered exclusively through Socket.IO to avoid long-polling.
+     */
+    this.app.get('/api/setup/model-progress', requireAuth, (req, res) => {
+      const modelId = String(req.query.modelId ?? '').trim();
+      if (!modelId) {
+        return res.status(400).json({ error: 'modelId query param required' });
+      }
+
+      const catalogEntry = MODELS_LIST.find(m => m.modelId === modelId && m.category === 'local');
+      if (!catalogEntry) {
+        return res.status(400).json({ error: `Model '${modelId}' not found in local catalog` });
+      }
+
+      const { spawn: spawnProc } = require('child_process') as typeof import('child_process');
+      const child = spawnProc('ollama', ['pull', modelId], { stdio: ['ignore', 'pipe', 'pipe'] });
+
+      this.logger.info(`[ModelProgress] Starting: ollama pull ${modelId}`);
+      this.io.emit('agentUpdate', { type: 'modelPullStart', modelId });
+
+      // Parse progress lines like:
+      //   "pulling manifest"
+      //   "pulling abc123... 42% ▕████      ▏  1.3 GB/3.1 GB"
+      const parseProgress = (line: string) => {
+        // Try to extract percentage and GB values
+        const pctMatch  = line.match(/(\d+)%/);
+        const gbMatch   = line.match(/([\d.]+)\s*GB\s*\/\s*([\d.]+)\s*GB/i);
+        const percent   = pctMatch  ? Number(pctMatch[1])  : null;
+        const downloadedGb = gbMatch ? Number(gbMatch[1])  : null;
+        const totalGb      = gbMatch ? Number(gbMatch[2])  : null;
+        const status    = line.replace(/\x1b\[[0-9;]*m/g, '').trim(); // strip ANSI
+
+        if (percent !== null || downloadedGb !== null) {
+          this.io.emit('agentUpdate', {
+            type: 'modelProgress',
+            modelId,
+            percent:      percent ?? 0,
+            downloadedGb: downloadedGb ?? 0,
+            totalGb:      totalGb ?? catalogEntry.ramGb,
+            status,
+          });
+        }
+      };
+
+      let stdout = '';
+      child.stdout?.on('data', (chunk: Buffer) => {
+        const lines = (stdout + chunk.toString()).split('\n');
+        stdout = lines.pop() ?? '';
+        for (const line of lines) { if (line.trim()) parseProgress(line); }
+      });
+      child.stderr?.on('data', (chunk: Buffer) => {
+        const lines = chunk.toString().split('\n');
+        for (const line of lines) { if (line.trim()) parseProgress(line); }
+      });
+
+      child.on('close', (code) => {
+        const ok = code === 0;
+        this.logger.info(`[ModelProgress] ollama pull ${modelId} exited with code ${code}`);
+        this.io.emit('agentUpdate', {
+          type:    'modelPullFinish',
+          modelId,
+          ok,
+          error:   ok ? undefined : `ollama pull exited with code ${code}`,
+        });
+      });
+
+      // Respond immediately — client listens for progress via Socket.IO
+      res.json({ ok: true, modelId, message: 'Pull started — listen for modelProgress events via Socket.IO' });
+    });
+
+    /**
+     * GET /api/setup/performance?modelId=<id>
+     *
+     * Returns a performance prediction for how well the given model will run
+     * on the current machine (RAM ratio analysis).
+     */
+    this.app.get('/api/setup/performance', (_req, res) => {
+      const modelId = String((_req.query.modelId as string) ?? '').trim();
+      if (!modelId) {
+        return res.status(400).json({ error: 'modelId query param required' });
+      }
+      const prediction = getPerformancePrediction(modelId);
+      res.json(prediction);
     });
 
     // ── Agent Hierarchy ────────────────────────────────────────────────────

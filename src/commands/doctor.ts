@@ -1,4 +1,4 @@
-import { execSync, spawnSync } from 'child_process';
+import { execSync, spawnSync, spawn } from 'child_process';
 import fs from 'fs';
 import https from 'https';
 import http from 'http';
@@ -1115,6 +1115,20 @@ export async function ensureModel(modelName: string): Promise<EnsureModelResult>
       console.error(dim('     Manuel kurulum: https://ollama.com/download'));
       return result;
     }
+
+    // Start the Ollama daemon after fresh install so subsequent pulls work
+    console.log(dim('  → ollama serve başlatılıyor...'));
+    try {
+      const daemon = spawn('ollama', ['serve'], {
+        detached:    true,
+        stdio:       'ignore',
+        windowsHide: true,
+      });
+      daemon.unref();
+      // Give the daemon 2 seconds to bind its port before we pull
+      await new Promise<void>(r => setTimeout(r, 2000));
+      console.log(green('  ✓  Ollama servisi başlatıldı.'));
+    } catch { /* non-fatal — pull will fail on its own if daemon isn't up */ }
   } else {
     const ver = (ollamaCheck.stdout ?? '').split('\n')[0].trim();
     console.log(green(`  ✓  Ollama mevcut — ${ver}`));
