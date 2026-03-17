@@ -19,6 +19,7 @@ import { runOnboard } from './commands/onboard.js';
 import { startIdlingInference, attemptSelfRepair } from './core/executor.js';
 import { getAgentRole } from './core/hierarchy.js';
 import { ErrorObserver } from './core/observer.js';
+import { initWorkspace } from './core/paths.js';
 
 dotenv.config();
 
@@ -200,6 +201,10 @@ async function bootServer(arg: string) {
     logger.error(`Workspace access failed: ${err.message}`);
     process.exit(1);
   }
+
+  // ── Workspace isolation — all agent output goes under workspace/ ──────────
+  initWorkspace();
+  logger.info('[Paths] Workspace directories initialised.');
 
   // ── Error Observer — autonomous runtime error capture + self-repair ───────
   const observer = new ErrorObserver({
