@@ -184,4 +184,27 @@ export class BrowserTools {
   get isOpen(): boolean {
     return this.browser !== null && this.browser.isConnected();
   }
+
+  /**
+   * Capture the primary OS screen — available on ALL ranks, no hierarchy restriction.
+   * Uses native platform tools (PowerShell / screencapture / scrot).
+   * Falls back to Playwright viewport screenshot if native capture fails.
+   * If detect:true, also runs Sobel-based UI element detection on the image.
+   */
+  async captureScreen(params?: { detect?: boolean }): Promise<{
+    base64:     string;
+    width:      number;
+    height:     number;
+    source:     string;
+    elements?:  import('./vision.js').UIElement[];
+    durationMs?: number;
+  }> {
+    const { captureScreen, detectUIElements } = await import('./vision.js');
+    const capture = await captureScreen();
+    if (params?.detect) {
+      const detection = await detectUIElements(capture.base64);
+      return { ...capture, elements: detection.elements, durationMs: detection.durationMs };
+    }
+    return capture;
+  }
 }

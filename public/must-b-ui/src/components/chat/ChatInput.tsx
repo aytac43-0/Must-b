@@ -1,6 +1,7 @@
 import { Send, Mic, MicOff } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import clsx from "clsx";
+import { apiFetch } from "@/lib/api";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -28,9 +29,25 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     setSpeechSupported(!!SR);
   }, []);
 
+  // Model guidance: warn once per session if a weak model is active
+  const warnedRef = useRef(false);
+  const checkModelGuidance = useCallback(async () => {
+    if (warnedRef.current) return;
+    try {
+      const r = await apiFetch("/api/system/vision-guidance");
+      if (!r.ok) return;
+      const g = await r.json() as { warn: boolean; message: string | null };
+      if (g.warn && g.message) {
+        warnedRef.current = true;
+        onSend("__GUIDANCE__" + g.message);  // prefix stripped by ChatArea
+      }
+    } catch { /* silent */ }
+  }, [onSend]);
+
   const startListening = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
+    checkModelGuidance();
 
     const rec = new SR();
     rec.continuous = false;

@@ -377,6 +377,65 @@ export class ApiServer {
       res.json({ ok: true, channel: ch.id });
     });
 
+    // ── Vision: OS screen capture (no rank restriction) ───────────────────
+    this.app.post('/api/system/screenshot', requireAuth, async (req, res) => {
+      const detect = req.body?.detect === true;
+      try {
+        // Broadcast capture-start so Dashboard can show "Scanning…" overlay
+        this.io.emit('agentUpdate', { type: 'SCREEN_CAPTURE_START', timestamp: Date.now() });
+        this.logger.info('[Vision] Screen capture requested');
+
+        const { captureScreen } = await import('../tools/vision.js');
+        const { detectUIElements } = await import('../tools/vision.js');
+        const capture = await captureScreen();
+
+        let elements;
+        if (detect) {
+          const det = await detectUIElements(capture.base64);
+          elements = det.elements;
+        }
+
+        // Broadcast result so Dashboard shows thumbnail
+        this.io.emit('agentUpdate', {
+          type:   'SCREEN_CAPTURED',
+          base64: capture.base64,
+          width:  capture.width,
+          height: capture.height,
+          source: capture.source,
+          elements,
+          timestamp: Date.now(),
+        });
+
+        this.logger.info(`[Vision] Captured ${capture.width}×${capture.height} via ${capture.source}`);
+        res.json({ ok: true, ...capture, elements });
+      } catch (err: any) {
+        this.io.emit('agentUpdate', { type: 'SCREEN_CAPTURE_END', timestamp: Date.now() });
+        this.logger.error(`[Vision] Screen capture failed: ${err?.message}`);
+        res.status(500).json({ error: err?.message ?? 'Screen capture failed' });
+      }
+    });
+
+    // ── Vision: model guidance — warn if weak model is active ─────────────
+    this.app.get('/api/system/vision-guidance', requireAuth, async (_req, res) => {
+      try {
+        const { getAgentRole } = await import('../core/hierarchy.js');
+        const role  = await getAgentRole();
+        const model = (process.env.OLLAMA_MODEL ?? process.env.MUSTB_MODEL ?? '').toLowerCase();
+        const weakPatterns = ['phi', 'phi-3', 'phi3', 'tinyllama', 'smollm', 'gemma:2b', 'qwen:0.5'];
+        const isWeak = weakPatterns.some(p => model.includes(p));
+        res.json({
+          warn: isWeak,
+          message: isWeak
+            ? "I've opened my eyes and ears, but the mind you've selected may struggle to process this data. For the best experience, I recommend switching to Llama 3 or above."
+            : null,
+          model,
+          role,
+        });
+      } catch {
+        res.json({ warn: false, message: null });
+      }
+    });
+
     // ── Goal execution ────────────────────────────────────────────────────
     this.app.post('/api/goal', requireAuth, (req, res) => {
       const { goal, chatId } = req.body;
