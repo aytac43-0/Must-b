@@ -846,6 +846,168 @@ export class ApiServer {
       }
     });
 
+    // ── P2P File Exchange ──────────────────────────────────────────────────
+
+    /**
+     * POST /api/world/send-file
+     * Body: { recipientUid: string, filename: string, content: string (base64), mimeType?: string }
+     *
+     * Encrypts the base64-encoded file payload (AES-256-GCM via identity.encrypt) and
+     * relays it to the Must-b cloud relay addressed to recipientUid.
+     * Max accepted content size: 10 MB (base64-encoded).
+     */
+    this.app.post('/api/world/send-file', requireAuth, async (req, res) => {
+      const { recipientUid, filename, content, mimeType = 'application/octet-stream' } = req.body as {
+        recipientUid?: string;
+        filename?:     string;
+        content?:      string;   // base64-encoded file bytes
+        mimeType?:     string;
+      };
+
+      if (!recipientUid || !filename || !content) {
+        return res.status(400).json({ error: 'recipientUid, filename and content (base64) are required.' });
+      }
+
+      // Enforce 10 MB limit (base64 ≈ 4/3× raw, so 10 MB raw → ~13.3 MB base64)
+      const MAX_B64_BYTES = Math.ceil(10 * 1024 * 1024 * (4 / 3));
+      if (Buffer.byteLength(content, 'utf-8') > MAX_B64_BYTES) {
+        return res.status(413).json({ error: 'File exceeds 10 MB limit.' });
+      }
+
+      const token = process.env.MUSTB_CLOUD_TOKEN;
+      if (!token) {
+        return res.status(403).json({ error: 'Cloud token required. Run must-b cloud-connect first.' });
+      }
+
+      const { encrypt } = await import('../core/identity.js');
+      const payload = encrypt(JSON.stringify({
+        filename,
+        mimeType,
+        content,       // base64 blob
+        senderUid: getNodeCard().uid,
+        sentAt:    new Date().toISOString(),
+      }));
+
+      const cloudUrl  = process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com';
+      const relayUrl  = new URL('/api/v1/world/relay/file', cloudUrl);
+      const body      = Buffer.from(JSON.stringify({ recipientUid, payload, type: 'file' }));
+      const httpsLib  = await import('https');
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const r = httpsLib.default.request({
+            hostname: relayUrl.hostname,
+            port:     relayUrl.port ? Number(relayUrl.port) : 443,
+            path:     relayUrl.pathname,
+            method:   'POST',
+            headers: {
+              'Content-Type':   'application/json',
+              'Content-Length': body.byteLength,
+              'Authorization':  `Bearer ${token}`,
+            },
+          }, (res) => {
+            let raw = '';
+            res.on('data', (c) => { raw += c; });
+            res.on('end', () =>
+              (res.statusCode ?? 0) >= 400
+                ? reject(new Error(`Cloud: ${res.statusCode} ${raw.slice(0, 120)}`))
+                : resolve()
+            );
+          });
+          r.on('error', reject);
+          r.write(body);
+          r.end();
+        });
+
+        this.logger.info(`[World/File] Sent "${filename}" to ${recipientUid}`);
+        this.io.emit('agentUpdate', { type: 'fileSent', recipientUid, filename });
+        res.json({ ok: true, recipientUid, filename });
+      } catch (err: any) {
+        this.logger.warn(`[World/File] send-file failed: ${err.message}`);
+        res.status(502).json({ ok: false, error: err.message });
+      }
+    });
+
+    /**
+     * GET /api/world/receive-file
+     *
+     * Polls the cloud relay for file packets addressed to this node's UID.
+     * Each packet is decrypted and written to  memory/received-files/<filename>.
+     * Returns a list of received filenames and byte sizes.
+     */
+    this.app.get('/api/world/receive-file', requireAuth, async (_req, res) => {
+      const token = process.env.MUSTB_CLOUD_TOKEN;
+      if (!token) {
+        return res.status(403).json({ error: 'Cloud token required.' });
+      }
+
+      const identity   = loadOrCreateIdentity();
+      const cloudUrl   = process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com';
+      const fetchUrl   = new URL(`/api/v1/world/relay/file/${identity.uid}`, cloudUrl);
+      const httpsLib   = await import('https');
+
+      try {
+        const raw = await new Promise<string>((resolve, reject) => {
+          httpsLib.default.get({
+            hostname: fetchUrl.hostname,
+            port:     fetchUrl.port ? Number(fetchUrl.port) : 443,
+            path:     fetchUrl.pathname,
+            headers:  { 'Authorization': `Bearer ${token}` },
+          }, (r) => {
+            let buf = '';
+            r.on('data', (c) => { buf += c; });
+            r.on('end', () =>
+              (r.statusCode ?? 0) >= 400
+                ? reject(new Error(`Cloud: ${r.statusCode}`))
+                : resolve(buf)
+            );
+          }).on('error', reject);
+        });
+
+        const packets: Array<{ payload: { iv: string; tag: string; ciphertext: string } }> = JSON.parse(raw);
+        const { decrypt } = await import('../core/identity.js');
+
+        const root     = process.cwd();
+        const saveDir  = path.join(root, 'memory', 'received-files');
+        fs.mkdirSync(saveDir, { recursive: true });
+
+        const saved: Array<{ filename: string; bytes: number }> = [];
+
+        for (const pkt of packets ?? []) {
+          try {
+            const plain    = JSON.parse(decrypt(pkt.payload)) as {
+              filename: string;
+              mimeType: string;
+              content:  string;  // base64
+              senderUid: string;
+            };
+
+            // Safety: strip path traversal from filename
+            const safeName = path.basename(plain.filename).replace(/[^a-zA-Z0-9._-]/g, '_');
+            if (!safeName) continue;
+
+            const fileBytes = Buffer.from(plain.content, 'base64');
+            const dest      = path.join(saveDir, safeName);
+            fs.writeFileSync(dest, fileBytes);
+
+            saved.push({ filename: safeName, bytes: fileBytes.length });
+            this.io.emit('agentUpdate', {
+              type:      'fileReceived',
+              filename:  safeName,
+              bytes:     fileBytes.length,
+              senderUid: plain.senderUid,
+            });
+            this.logger.info(`[World/File] Received "${safeName}" (${fileBytes.length} bytes) from ${plain.senderUid}`);
+          } catch { /* skip undecryptable packets */ }
+        }
+
+        res.json({ ok: true, received: saved.length, files: saved });
+      } catch (err: any) {
+        this.logger.warn(`[World/File] receive-file failed: ${err.message}`);
+        res.status(502).json({ ok: false, error: err.message });
+      }
+    });
+
     // ── Skills Hub ────────────────────────────────────────────────────────
 
     /**

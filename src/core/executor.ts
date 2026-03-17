@@ -1,6 +1,9 @@
 import net from 'net';
 import os from 'os';
 import path from 'path';
+import fs from 'fs';
+import { spawnSync } from 'child_process';
+import http from 'http';
 import winston from 'winston';
 import { FilesystemTools } from '../tools/filesystem.js';
 import { TerminalTools } from '../tools/terminal.js';
@@ -363,4 +366,190 @@ export function startIdlingInference(
   handle.unref(); // don't block process exit
   logger.info(`[Idling] Self-improvement loop active (every ${intervalMinutes} min, model: ${MODEL}).`);
   return handle;
+}
+
+// ── Self-Repair Loop ──────────────────────────────────────────────────────
+
+export interface SelfRepairResult {
+  success:  boolean;
+  report:   string;
+  filePath: string;
+  model:    string;
+}
+
+/**
+ * attemptSelfRepair
+ *
+ * Autonomous error recovery pipeline:
+ *  1. Reads the faulty source file (if accessible)
+ *  2. Sends error context + source code to the local Ollama model
+ *  3. Extracts the patched code from the LLM response
+ *  4. Writes the patch to disk
+ *  5. Runs `must-b doctor --fix` silently (spawnSync) to verify build + deps
+ *  6a. SUCCESS → schedules a gateway restart via a detached child process
+ *  6b. FAILURE → writes a "Kritik Hata" report to memory/logs/
+ *
+ * @param error      The observed error (message + optional stack)
+ * @param filePath   Absolute path of the source file to repair
+ * @param logger     Winston logger instance
+ * @param root       Project root directory (process.cwd() at startup)
+ */
+export async function attemptSelfRepair(
+  error:    { message: string; stack?: string },
+  filePath: string,
+  logger:   winston.Logger,
+  root:     string,
+): Promise<SelfRepairResult> {
+  const OLLAMA_BASE  = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
+  const MODEL        = process.env.OLLAMA_REPAIR_MODEL ?? process.env.OLLAMA_IDLE_MODEL ?? 'phi3:mini';
+  const REPORT_DIR   = path.join(root, 'memory', 'logs');
+
+  fs.mkdirSync(REPORT_DIR, { recursive: true });
+
+  // ── 1. Read source file ─────────────────────────────────────────────────
+  let sourceCode = '';
+  try {
+    sourceCode = fs.readFileSync(filePath, 'utf-8');
+  } catch {
+    logger.warn(`[SelfRepair] Cannot read ${filePath} — skipping LLM patch.`);
+  }
+
+  // ── 2. Ask Ollama for a patch ───────────────────────────────────────────
+  logger.info(`[SelfRepair] Querying ${MODEL} for patch of ${path.basename(filePath)}…`);
+
+  const prompt = [
+    `You are an autonomous code repair agent for the Must-b AI platform.`,
+    `A runtime error occurred in the following TypeScript/JavaScript file.`,
+    ``,
+    `Error message: ${error.message}`,
+    error.stack ? `Stack trace:\n${error.stack.slice(0, 800)}` : '',
+    ``,
+    `Source file (${path.basename(filePath)}):`,
+    `\`\`\`typescript`,
+    sourceCode.slice(0, 3000),
+    `\`\`\``,
+    ``,
+    `Task: Provide ONLY the corrected file content (no explanation, no markdown fences). ` +
+    `Fix the error while preserving all existing functionality.`,
+  ].filter(Boolean).join('\n');
+
+  const patchedCode = await new Promise<string>((resolve) => {
+    const body = Buffer.from(JSON.stringify({ model: MODEL, prompt, stream: false }));
+    const url  = new URL('/api/generate', OLLAMA_BASE);
+    const req  = http.request({
+      hostname: url.hostname,
+      port:     Number(url.port || 11434),
+      path:     url.pathname,
+      method:   'POST',
+      headers:  { 'Content-Type': 'application/json', 'Content-Length': body.byteLength },
+    }, (r) => {
+      let raw = '';
+      r.on('data', (c) => { raw += c; });
+      r.on('end', () => {
+        try { resolve(JSON.parse(raw).response ?? ''); } catch { resolve(''); }
+      });
+    });
+    req.on('error', () => resolve(''));
+    req.write(body);
+    req.end();
+  });
+
+  if (!patchedCode.trim() || !sourceCode) {
+    const report = buildCriticalReport(error, filePath, 'Ollama returned empty patch or source unreadable.');
+    writeCriticalReport(REPORT_DIR, report);
+    logger.error('[SelfRepair] ✗ No patch generated — Kritik Hata raporu hazırlandı.');
+    return { success: false, report, filePath, model: MODEL };
+  }
+
+  // ── 3. Apply patch ──────────────────────────────────────────────────────
+  const backupPath = filePath + '.repair-backup';
+  try {
+    fs.copyFileSync(filePath, backupPath);   // keep original as safety backup
+    fs.writeFileSync(filePath, patchedCode, 'utf-8');
+    logger.info(`[SelfRepair] Patch written to ${path.basename(filePath)} (backup → .repair-backup).`);
+  } catch (writeErr: any) {
+    const report = buildCriticalReport(error, filePath, `File write failed: ${writeErr.message}`);
+    writeCriticalReport(REPORT_DIR, report);
+    return { success: false, report, filePath, model: MODEL };
+  }
+
+  // ── 4. Run doctor --fix silently ────────────────────────────────────────
+  logger.info('[SelfRepair] Running doctor --fix…');
+  const doctorResult = spawnSync(
+    process.execPath,
+    [path.join(root, 'src', 'index.ts'), 'doctor', '--fix'],
+    { cwd: root, stdio: 'pipe', timeout: 60_000, env: process.env },
+  );
+
+  const doctorOk = doctorResult.status === 0;
+
+  if (!doctorOk) {
+    // Restore backup on failure
+    try { fs.copyFileSync(backupPath, filePath); } catch { /* best-effort */ }
+    const stderr  = doctorResult.stderr?.toString().slice(0, 400) ?? '(no stderr)';
+    const report  = buildCriticalReport(error, filePath, `doctor --fix exited ${doctorResult.status}: ${stderr}`);
+    writeCriticalReport(REPORT_DIR, report);
+    logger.error('[SelfRepair] ✗ doctor --fix failed — Kritik Hata raporu hazırlandı.');
+    return { success: false, report, filePath, model: MODEL };
+  }
+
+  // ── 5a. Success — schedule gateway restart ──────────────────────────────
+  logger.info('[SelfRepair] ✓ Patch verified. Scheduling safe restart…');
+
+  // Write a restart flag; the watchdog / process manager picks it up.
+  // On systems where Must-b is managed by systemd / pm2 / launchd this file
+  // triggers a restart.  We also attempt SIGTERM so the supervisor restarts us.
+  const flagPath = path.join(root, 'memory', '.restart-flag');
+  try { fs.writeFileSync(flagPath, new Date().toISOString(), 'utf-8'); } catch { /* best-effort */ }
+
+  // Allow current event-loop tick to drain before exiting
+  setTimeout(() => {
+    logger.info('[SelfRepair] Exiting for supervised restart.');
+    process.exit(0);
+  }, 1500);
+
+  const report = `[SelfRepair] ✓ Onarım başarılı. Gateway yeniden başlatılıyor. (model: ${MODEL}, file: ${filePath})`;
+  return { success: true, report, filePath, model: MODEL };
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+function buildCriticalReport(
+  error:    { message: string; stack?: string },
+  filePath: string,
+  reason:   string,
+): string {
+  return [
+    `# Kritik Hata: Manuel Müdahale Gerekli`,
+    ``,
+    `**Zaman:** \`${new Date().toISOString()}\``,
+    `**Dosya:** \`${filePath}\``,
+    `**Onarım Sonucu:** Başarısız`,
+    ``,
+    `## Hata`,
+    `\`\`\``,
+    error.message,
+    `\`\`\``,
+    ``,
+    `## Neden Onarılamadı`,
+    reason,
+    ``,
+    `## Stack`,
+    `\`\`\``,
+    error.stack ?? '(yok)',
+    `\`\`\``,
+    ``,
+    `## Önerilen Adımlar`,
+    `1. Yukarıdaki hatayı manuel olarak düzeltin.`,
+    `2. \`must-b doctor --fix\` komutunu çalıştırın.`,
+    `3. Gateway'i yeniden başlatın: \`must-b gateway\``,
+  ].join('\n');
+}
+
+function writeCriticalReport(dir: string, content: string): void {
+  try {
+    const ts   = new Date().toISOString().replace(/[:.]/g, '-');
+    const dest = path.join(dir, `${ts}-kritik-hata.md`);
+    fs.writeFileSync(dest, content, 'utf-8');
+  } catch { /* best-effort */ }
 }

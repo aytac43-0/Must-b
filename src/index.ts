@@ -16,8 +16,9 @@ import { SessionHistory } from './memory/history.js';
 import { LongTermMemory } from './memory/long-term.js';
 import { runDoctor } from './commands/doctor.js';
 import { runOnboard } from './commands/onboard.js';
-import { startIdlingInference } from './core/executor.js';
+import { startIdlingInference, attemptSelfRepair } from './core/executor.js';
 import { getAgentRole } from './core/hierarchy.js';
+import { ErrorObserver } from './core/observer.js';
 
 dotenv.config();
 
@@ -199,6 +200,23 @@ async function bootServer(arg: string) {
     logger.error(`Workspace access failed: ${err.message}`);
     process.exit(1);
   }
+
+  // ── Error Observer — autonomous runtime error capture + self-repair ───────
+  const observer = new ErrorObserver({
+    logger,
+    root: ROOT,
+    onError: (observed) => {
+      if (observed.filePath) {
+        attemptSelfRepair(
+          { message: observed.message, stack: observed.stack },
+          observed.filePath,
+          logger,
+          ROOT,
+        ).catch((e: any) => logger.error(`[SelfRepair] Uncaught: ${e.message}`));
+      }
+    },
+  });
+  observer.start();
 
   // Greet returning users via long-term memory + start semantic engine
   const mem = new LongTermMemory(ROOT);
