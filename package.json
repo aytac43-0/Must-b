@@ -16,7 +16,8 @@
     "memory-sync": "tsx src/index.ts memory-sync",
     "build:frontend": "cd public/must-b-ui && npm install && npx vite build",
     "dev:frontend": "cd public/must-b-ui && npm install && npx vite",
-    "push": "git add . && git commit -m \"Auto-update by Claude\" && git push"
+    "push": "git add . && git commit -m \"Auto-update by Claude\" && git push",
+    "build:prod": "node scripts/build-prod.mjs"
   },
   "dependencies": {
     "chalk": "^5.0.0",

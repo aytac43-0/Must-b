@@ -146,6 +146,16 @@ export class ApiServer {
       res.json({ status: 'online', gateway: 'Must-b', port: this.port, timestamp: Date.now() });
     });
 
+    // ── Identity — expose agent name for voice wake-word ─────────────────
+    this.app.get('/api/identity', async (_req, res) => {
+      try {
+        const identity = await loadOrCreateIdentity();
+        res.json({ name: identity.name, id: identity.id });
+      } catch {
+        res.json({ name: 'Must-b', id: '' });
+      }
+    });
+
     // ── Local-Auth handshake (localhost only) ─────────────────────────────
     this.app.get('/api/auth/local', (req, res) => {
       const ip = req.socket.remoteAddress ?? '';
