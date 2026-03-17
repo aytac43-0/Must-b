@@ -84,7 +84,7 @@ async function main() {
       console.log(`  ${cyan('web')}         ${dim('Start web UI + API gateway (default)')}`);
       console.log(`  ${cyan('cli')}         ${dim('Interactive terminal chat')}`);
       console.log(`  ${cyan('doctor')}      ${dim('System health check (Node, Git, Python, API keys)')}`);
-      console.log(`  ${cyan('doctor --fix')} ${dim('Self-Healing mode — otomatik onarım')}`);
+      console.log(`  ${cyan('doctor --fix')} ${dim('Self-Healing mode — auto-repair issues')}`);
       console.log(`  ${cyan('onboard')}     ${dim('First-time setup wizard')}`);
       console.log(`  ${cyan('memory-sync')} ${dim('View / sync long-term memory')}`);
       console.log(`  ${cyan('help')}        ${dim('Show this help')}\n`);
@@ -108,17 +108,17 @@ async function runPreFlight(): Promise<void> {
   const result = await runDoctor(ROOT, true, true);
 
   if (result.healed > 0) {
-    console.log(green(`  [pre-flight] ${result.healed} sorun otomatik onarıldı.`));
+    console.log(green(`  [pre-flight] ${result.healed} issue(s) auto-repaired.`));
   }
 
   if (result.criticalBlock) {
     console.error(red('\n  ══════════════════════════════════════════════════'));
-    console.error(red('  [pre-flight] KRİTİK HATA — Gateway başlatılamıyor!'));
+    console.error(red('  [pre-flight] CRITICAL ERROR — Gateway cannot start!'));
     console.error(red('  ══════════════════════════════════════════════════'));
-    console.error(yellow('  Sisteminizde gateway\'in çalışması için gereken'));
-    console.error(yellow('  bileşenler eksik veya bozuk.'));
+    console.error(yellow('  Required components are missing or corrupted.'));
+    console.error(yellow('  The gateway cannot start until these are resolved.'));
     console.error('');
-    console.error(dim('  Tanı ve onarım için: must-b doctor --fix'));
+    console.error(dim('  Run diagnostics and repair: must-b doctor --fix'));
     console.error('');
     process.exit(1);
   }
@@ -131,11 +131,11 @@ function openBrowser(url: string): void {
     process.platform === 'darwin' ? `open "${url}"` :
                                      `xdg-open "${url}"`;
   exec(cmd, (err) => {
-    if (err) console.warn(`  [browser] Tarayıcı açılamadı: ${err.message}`);
+    if (err) console.warn(`  [browser] Could not open browser: ${err.message}`);
   });
 }
 
-// ── Terminal / Dashboard seçim ekranı ──────────────────────────────────────
+// ── Terminal / Dashboard launch mode selector ──────────────────────────────
 function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
   return new Promise((resolve) => {
     const cyan  = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
@@ -143,14 +143,14 @@ function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
     const dim   = (s: string) => `\x1b[2m${s}\x1b[0m`;
 
     console.log('');
-    console.log(bold('  Nasıl başlatmak istiyorsunuz?'));
+    console.log(bold('  How would you like to start?'));
     console.log('');
-    console.log(`  ${cyan('[1]')} Terminal   ${dim('— kurulum sihirbazı & CLI akışı')}`);
-    console.log(`  ${cyan('[2]')} Dashboard  ${dim('— web arayüzü + tarayıcı açar')}`);
+    console.log(`  ${cyan('[1]')} Terminal   ${dim('— setup wizard & CLI flow')}`);
+    console.log(`  ${cyan('[2]')} Dashboard  ${dim('— web UI + opens browser')}`);
     console.log('');
 
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    rl.question('  Seçiminiz (1/2): ', (answer) => {
+    rl.question('  Your choice (1/2): ', (answer) => {
       rl.close();
       const choice = answer.trim();
       resolve(choice === '1' || choice.toLowerCase() === 'terminal' ? 'terminal' : 'dashboard');
@@ -163,7 +163,7 @@ async function bootServer(arg: string) {
   ensureWorldUid();
   await runPreFlight(); // Deep pre-flight: self-heal silently, block on critical failures
 
-  // Eğer arg açıkça 'cli' veya 'gateway' ise seçim ekranını atla
+  // If arg is explicitly 'cli' or 'gateway', skip the selection prompt
   let resolvedMode: 'terminal' | 'dashboard';
   if (arg === 'cli') {
     resolvedMode = 'terminal';

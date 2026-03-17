@@ -22,14 +22,12 @@ export function printBanner(mode: string, port: number) {
   console.log(orange(ASCII));
   console.log('');
   console.log(center(bold(white('Must-b')) + amber('  —  Your Personal AI Brain')));
-  console.log(center(orange('⚡ AI SYSTEM')));
-  console.log(center(dim('Created by Mustafa Aytaç ÖZTAN  —  Auto Step Edition')));
+  console.log(center(orange('⚡ Autonomous AI Platform')));
+  console.log(center(dim('Built by Auto Step')));
   console.log('');
   console.log(center(dim(`Node ${process.version}  ·  Mode: ${mode}  ·  PID: ${process.pid}`)));
   if (mode === 'web') {
     console.log(center(orange(`→ http://localhost:${port}`)));
   }
-  console.log('');
-  console.log(center(dim('Must-b is a proprietary AI platform developed by Mustafa Aytaç ÖZTAN under the Auto Step brand.')));
   console.log('');
 }

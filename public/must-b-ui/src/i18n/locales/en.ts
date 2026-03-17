@@ -1,0 +1,59 @@
+export const en = {
+  welcome: {
+    tagline: "Your AI Brain",
+    title: "Must-b",
+    sleeping: "Sleeping...",
+    waking: "Waking up...",
+    awake: "Awakening...",
+    wakeBtn: "Wake Must-b",
+    reconfigure: "Reconfigure",
+    footer: "© 2026 Must-b — Auto Step Platform",
+  },
+  sidebar: {
+    newChat: "New Chat",
+    recentChats: "Recent Chats",
+    platform: "Platform",
+    system: "System",
+    automations: "My Automations",
+    activeWorkflows: "Active Workflows",
+    products: "Products & Services",
+    clients: "Client Management",
+    integrations: "Integrations",
+    logs: "Logs & Activity",
+    settings: "Settings",
+    logout: "Logout",
+    poweredBy: "Powered by",
+    deleteChat: "Delete Chat?",
+    deleteConfirm: "This action cannot be undone.",
+    cancel: "Cancel",
+    delete: "Delete",
+  },
+  rightPanel: {
+    agentRole: "Agent Role",
+    hardware: "Hardware Score",
+    model: "Active Model",
+    connected: "Gateway Connected",
+    rank: {
+      master: "Master",
+      planner: "Planner",
+      worker: "Worker",
+    },
+  },
+  workflow: {
+    title: "Active Workflow",
+    idle: "Idle — awaiting task",
+    goal: "Goal",
+    steps: {
+      browse: "Opening browser",
+      write: "Writing file",
+      think: "Thinking",
+      exec: "Executing command",
+    },
+  },
+  dashboard: {
+    placeholder: "Send a message to Must-b...",
+    thinking: "Must-b is thinking...",
+  },
+} as const;
+
+export type Translations = typeof en;
