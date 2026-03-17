@@ -11,6 +11,10 @@ import { Orchestrator, type PlanStep } from '../core/orchestrator.js';
 import { SessionHistory } from '../memory/history.js';
 import { LongTermMemory } from '../memory/long-term.js';
 import { runDoctor } from '../commands/doctor.js';
+import { loadOrCreateIdentity, sign, getHardwareScore } from '../core/identity.js';
+import { MODELS_LIST, CLOUD_MODELS_LIST } from '../core/models-catalog.js';
+import { recommendModels } from '../utils/hardware.js';
+import { ensureModel } from '../commands/doctor.js';
 
 /** One-time random local auth token — valid for this process lifetime */
 const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
@@ -86,6 +90,9 @@ const CHANNEL_REGISTRY: ChannelDef[] = [
   },
 ];
 
+/** Pending OAuth state tokens — map of state → { timestamp, resolve } */
+const _pendingCloudStates = new Map<string, { ts: number; resolve: (token: string) => void }>();
+
 export class ApiServer {
   private app: express.Application;
   private server: http.Server;
@@ -142,6 +149,80 @@ export class ApiServer {
       res.json({ token: LOCAL_TOKEN, mode: 'local' });
     });
 
+    // ── Cloud Auth Bridge ─────────────────────────────────────────────────
+    const CLOUD_URL = process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com';
+
+    /**
+     * GET /api/auth/cloud-connect
+     * Initiates the Must-b Worlds OAuth handshake.
+     * - Generates a CSRF state token and signs it with this node's Ed25519 key
+     * - Redirects the browser to CLOUD_URL/auth/connect with uid, state, sig, callback
+     * - Resolves when the cloud calls back with a bearer token
+     */
+    this.app.get('/api/auth/cloud-connect', (req, res) => {
+      const identity = loadOrCreateIdentity();
+      const state    = crypto.randomBytes(24).toString('hex');
+      const sig      = sign(state);
+      const callback = `http://localhost:${this.port}/api/auth/cloud-callback`;
+
+      // Store state with 10-minute TTL
+      _pendingCloudStates.set(state, {
+        ts: Date.now(),
+        resolve: (token: string) => {
+          // Persist cloud token to .env
+          const root    = process.cwd();
+          const envPath = path.join(root, '.env');
+          let envContent = '';
+          try { envContent = fs.readFileSync(envPath, 'utf-8'); } catch { envContent = ''; }
+          const lines = envContent.split('\n');
+          const idx   = lines.findIndex(l => l.startsWith('MUSTB_CLOUD_TOKEN='));
+          if (idx >= 0) lines[idx] = `MUSTB_CLOUD_TOKEN=${token}`;
+          else lines.push(`MUSTB_CLOUD_TOKEN=${token}`);
+          fs.writeFileSync(envPath, lines.join('\n').trim() + '\n', 'utf-8');
+          dotenv.config({ path: envPath, override: true });
+          this.logger.info('[CloudAuth] Cloud token received and persisted.');
+          this.io.emit('agentUpdate', { type: 'cloudConnected', uid: identity.uid });
+        },
+      });
+
+      // Expire stale states after 10 minutes
+      setTimeout(() => _pendingCloudStates.delete(state), 10 * 60 * 1000);
+
+      const redirectUrl = new URL(`${CLOUD_URL}/auth/connect`);
+      redirectUrl.searchParams.set('uid',      identity.uid);
+      redirectUrl.searchParams.set('pub',      identity.publicKey);
+      redirectUrl.searchParams.set('state',    state);
+      redirectUrl.searchParams.set('sig',      sig);
+      redirectUrl.searchParams.set('callback', callback);
+
+      this.logger.info(`[CloudAuth] Redirecting to ${redirectUrl.hostname} for uid=${identity.uid}`);
+      res.redirect(302, redirectUrl.toString());
+    });
+
+    /**
+     * GET /api/auth/cloud-callback?state=...&token=...
+     * Receives the OAuth callback from must-b.com.
+     * Validates the state token, persists the cloud bearer token, and closes the browser tab.
+     */
+    this.app.get('/api/auth/cloud-callback', (req, res) => {
+      const { state, token, error } = req.query as Record<string, string>;
+
+      if (error) {
+        this.logger.warn(`[CloudAuth] Callback error: ${error}`);
+        return res.status(400).send(`<html><body><p>Auth failed: ${error}</p><script>setTimeout(()=>window.close(),2000)</script></body></html>`);
+      }
+
+      const pending = _pendingCloudStates.get(state);
+      if (!pending) {
+        return res.status(400).send('<html><body><p>Invalid or expired state.</p></body></html>');
+      }
+
+      _pendingCloudStates.delete(state);
+      if (token) pending.resolve(token);
+
+      res.send('<html><body><p>Must-b Worlds bağlantısı kuruldu! Bu sekmeyi kapatabilirsin.</p><script>setTimeout(()=>window.close(),1500)</script></body></html>');
+    });
+
     // ── Auth middleware: localhost always passes, others need Bearer token ─
     const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
       const ip = req.socket.remoteAddress ?? '';
@@ -149,6 +230,17 @@ export class ApiServer {
       if (req.headers.authorization === `Bearer ${LOCAL_TOKEN}`) return next();
       res.status(401).json({ error: 'Unauthorized — call /api/auth/local first' });
     };
+
+    /** GET /api/auth/cloud-status — returns cloud connection state for dashboard */
+    this.app.get('/api/auth/cloud-status', requireAuth, (_req, res) => {
+      const identity = loadOrCreateIdentity();
+      res.json({
+        uid:       identity.uid,
+        publicKey: identity.publicKey,
+        connected: Boolean(process.env.MUSTB_CLOUD_TOKEN),
+        cloudUrl:  process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com',
+      });
+    });
 
     // ── Chats (local store — no Supabase needed) ──────────────────────────
     this.app.get('/api/chats', requireAuth, (_req, res) => {
@@ -286,17 +378,116 @@ export class ApiServer {
     });
 
     // ── Setup Wizard ──────────────────────────────────────────────────────
-    /** Check if first-time setup is needed */
+    /** Check if first-time setup is needed, memory presence, and hardware tier */
     this.app.get('/api/setup/status', (_req, res) => {
       const root = process.cwd();
       const envPath = path.join(root, '.env');
+
+      // LLM yapılandırması kontrolü
       let configured = false;
       if (fs.existsSync(envPath)) {
         const env = dotenv.parse(fs.readFileSync(envPath, 'utf-8'));
         const key = env.OPENROUTER_API_KEY ?? env.OPENAI_API_KEY ?? env.ANTHROPIC_API_KEY ?? env.OLLAMA_BASE_URL ?? '';
         configured = key.length > 0 && !key.includes('...');
       }
-      res.json({ configured, version: '2.0' });
+
+      // memory/must-b.md varlık kontrolü → "Giriş yap veya dosyanı yükle" butonu için
+      const memoryMdPath = path.join(root, 'memory', 'must-b.md');
+      const hasMemory = fs.existsSync(memoryMdPath);
+
+      // Donanım puanı (önbelleğe alınır, identity.json'a kaydedilir)
+      const hw = getHardwareScore();
+
+      res.json({
+        configured,
+        hasMemory,
+        memoryPath: hasMemory ? memoryMdPath : null,
+        hardware: { score: hw.score, tier: hw.tier },
+        version: '2.0',
+      });
+    });
+
+    /**
+     * GET /api/setup/models
+     * Returns hardware-aware model recommendations for the Dashboard.
+     *
+     * Response shape:
+     * {
+     *   score: number,
+     *   tier: string,
+     *   recommended: ModelRecommendation[],   // comfortable local models
+     *   marginal: ModelRecommendation[],       // may work but slow
+     *   cloud: ModelRecommendation[],          // all cloud options
+     *   all: ModelRecommendation[],            // every model with fit label
+     * }
+     */
+    this.app.get('/api/setup/models', (_req, res) => {
+      const hw   = getHardwareScore();
+      const recs = recommendModels(hw.score);
+
+      // Strip heavy fields (privateKey etc.) — only send catalog data
+      const strip = (list: typeof recs.recommended) =>
+        list.map(r => ({
+          id:            r.model.id,
+          name:          r.model.name,
+          provider:      r.model.provider,
+          category:      r.model.category,
+          modelId:       r.model.modelId,
+          ramGb:         r.model.ramGb,
+          params:        r.model.params,
+          description:   r.model.description,
+          requiresApiKey: r.model.requiresApiKey,
+          tags:          r.model.tags,
+          fit:           r.fit,
+        }));
+
+      res.json({
+        score:       hw.score,
+        tier:        hw.tier,
+        recommended: strip(recs.recommended),
+        marginal:    strip(recs.marginal),
+        cloudOnly:   strip(recs.cloudOnly),
+        cloud:       strip(recs.cloud),
+        all:         strip(recs.all),
+      });
+    });
+
+    /**
+     * POST /api/setup/ensure-model
+     * Body: { modelId: string }  — e.g. "llama3.2:latest"
+     *
+     * Ensures Ollama is installed and the model is pulled.
+     * Streams progress via 'agentUpdate' Socket.IO events.
+     */
+    this.app.post('/api/setup/ensure-model', requireAuth, async (req, res) => {
+      const { modelId } = req.body as { modelId?: string };
+      if (!modelId || typeof modelId !== 'string') {
+        return res.status(400).json({ error: 'modelId is required' });
+      }
+
+      // Validate modelId is in catalog
+      const catalogEntry = MODELS_LIST.find(m => m.modelId === modelId && m.category === 'local');
+      if (!catalogEntry) {
+        return res.status(400).json({ error: `Model '${modelId}' not found in local catalog` });
+      }
+
+      this.io.emit('agentUpdate', { type: 'modelPullStart', modelId });
+      this.logger.info(`[Models] Ensuring local model: ${modelId}`);
+
+      try {
+        const result = await ensureModel(modelId);
+        this.io.emit('agentUpdate', { type: 'modelPullFinish', modelId, ok: result.ok, error: result.error });
+
+        if (result.ok) {
+          res.json({ ok: true, modelId, ollamaInstalled: result.ollamaInstalled, modelPulled: result.modelPulled });
+        } else {
+          res.status(500).json({ ok: false, modelId, error: result.error });
+        }
+      } catch (err: any) {
+        this.logger.error(`[Models] ensureModel failed: ${err.message}`);
+        this.io.emit('agentUpdate', { type: 'modelPullFinish', modelId, ok: false, error: err.message });
+        res.status(500).json({ ok: false, modelId, error: err.message });
+      }
     });
 
     /** Save setup wizard results — writes .env and persists memory profile */

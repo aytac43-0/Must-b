@@ -1,6 +1,8 @@
 import { execSync, spawnSync } from 'child_process';
 import fs from 'fs';
 import https from 'https';
+import http from 'http';
+import os from 'os';
 import path from 'path';
 import readline from 'readline';
 import dotenv from 'dotenv';
@@ -882,4 +884,277 @@ export async function runDoctor(
   const criticalBlock = allChecks.some(c => !c.ok && c.critical);
 
   return { failed: failed.length, healed: healedCount, remaining, criticalBlock };
+}
+
+// ── Remote Skill Downloader ───────────────────────────────────────────────
+
+export interface SkillInstallResult {
+  ok: boolean;
+  skillId: string;
+  installPath: string;
+  error?: string;
+}
+
+/**
+ * Download a Must-b skill package from a URL (or a local .zip path),
+ * validate its structure, run a doctor-style safety check, then extract
+ * it into the local extensions/ directory.
+ *
+ * @param source   HTTPS URL or absolute local path to a .zip file
+ * @param root     Project root (defaults to process.cwd())
+ */
+export async function downloadSkill(source: string, root = process.cwd()): Promise<SkillInstallResult> {
+  const isLocal = !source.startsWith('http://') && !source.startsWith('https://');
+  const tmpDir  = path.join(os.tmpdir(), `mustb-skill-${Date.now()}`);
+  const zipPath = path.join(tmpDir, 'skill.zip');
+
+  fs.mkdirSync(tmpDir, { recursive: true });
+
+  // ── Step 1: Acquire the zip ──────────────────────────────────────────
+  if (isLocal) {
+    if (!fs.existsSync(source)) {
+      return { ok: false, skillId: '', installPath: '', error: `Local file not found: ${source}` };
+    }
+    fs.copyFileSync(source, zipPath);
+  } else {
+    console.log(cyan(`  ⬇  Skill indiriliyor: ${source}`));
+    try {
+      await downloadFile(source, zipPath);
+    } catch (err: any) {
+      return { ok: false, skillId: '', installPath: '', error: `Download failed: ${err.message}` };
+    }
+  }
+
+  // ── Step 2: Extract to a temp staging directory ──────────────────────
+  const stagingDir = path.join(tmpDir, 'staging');
+  fs.mkdirSync(stagingDir, { recursive: true });
+
+  try {
+    extractZip(zipPath, stagingDir);
+  } catch (err: any) {
+    cleanup(tmpDir);
+    return { ok: false, skillId: '', installPath: '', error: `Extraction failed: ${err.message}` };
+  }
+
+  // ── Step 3: Validate package structure ──────────────────────────────
+  // Expected layout: <skillId>/must-b.plugin.json  (or plugin.json at root)
+  const rootEntries = fs.readdirSync(stagingDir);
+  let skillDir = stagingDir;
+  if (rootEntries.length === 1 && fs.statSync(path.join(stagingDir, rootEntries[0])).isDirectory()) {
+    skillDir = path.join(stagingDir, rootEntries[0]);
+  }
+
+  const pluginJson = path.join(skillDir, 'must-b.plugin.json');
+  if (!fs.existsSync(pluginJson)) {
+    cleanup(tmpDir);
+    return { ok: false, skillId: '', installPath: '', error: 'Invalid skill package: missing must-b.plugin.json' };
+  }
+
+  let plugin: { id?: string } = {};
+  try {
+    plugin = JSON.parse(fs.readFileSync(pluginJson, 'utf-8'));
+  } catch {
+    cleanup(tmpDir);
+    return { ok: false, skillId: '', installPath: '', error: 'Invalid must-b.plugin.json — could not parse JSON' };
+  }
+
+  const skillId = (plugin.id ?? path.basename(skillDir)).replace(/[^a-zA-Z0-9_-]/g, '');
+  if (!skillId) {
+    cleanup(tmpDir);
+    return { ok: false, skillId: '', installPath: '', error: 'Skill plugin.json missing "id" field' };
+  }
+
+  // ── Step 4: Safety check — refuse dangerous file patterns ────────────
+  const dangerPatterns = [/\.\.[\\/]/, /node_modules/, /\.(exe|bat|cmd|sh|ps1)$/i];
+  const allFiles = walkDir(skillDir);
+  for (const f of allFiles) {
+    const rel = path.relative(skillDir, f);
+    if (dangerPatterns.some(p => p.test(rel))) {
+      cleanup(tmpDir);
+      return { ok: false, skillId, installPath: '', error: `Security: suspicious file in package: ${rel}` };
+    }
+  }
+
+  // ── Step 5: Install into extensions/ ────────────────────────────────
+  const extDir     = path.join(root, 'src', 'core', 'extensions');
+  const installPath = path.join(extDir, skillId);
+
+  if (fs.existsSync(installPath)) {
+    // Back up existing version
+    const bakPath = `${installPath}.bak-${Date.now()}`;
+    fs.renameSync(installPath, bakPath);
+    console.log(dim(`  ↻  Mevcut versiyon yedeklendi: ${path.basename(bakPath)}`));
+  }
+
+  copyDir(skillDir, installPath);
+  cleanup(tmpDir);
+
+  console.log(green(`  ✔  Skill kuruldu: ${skillId}  →  ${installPath}`));
+
+  // ── Step 6: Install npm dependencies if package.json present ────────
+  const pkgJson = path.join(installPath, 'package.json');
+  if (fs.existsSync(pkgJson)) {
+    console.log(dim('  → npm install (skill bağımlılıkları)...'));
+    try { execSync('npm install --omit=dev', { cwd: installPath, stdio: 'pipe' }); }
+    catch { console.log(yellow('  ⚠  npm install başarısız — skill çalışabilir ama bazı özellikler eksik olabilir.')); }
+  }
+
+  return { ok: true, skillId, installPath };
+}
+
+// ── downloadSkill helpers ─────────────────────────────────────────────────
+
+function downloadFile(url: string, dest: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(dest);
+    const mod  = url.startsWith('https://') ? https : http;
+    mod.get(url, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302) {
+        file.close();
+        return downloadFile(res.headers.location!, dest).then(resolve).catch(reject);
+      }
+      if ((res.statusCode ?? 0) >= 400) {
+        file.close();
+        return reject(new Error(`HTTP ${res.statusCode}`));
+      }
+      res.pipe(file);
+      file.on('finish', () => file.close(() => resolve()));
+    }).on('error', (err) => { file.close(); reject(err); });
+  });
+}
+
+function extractZip(zipPath: string, destDir: string): void {
+  if (process.platform === 'win32') {
+    execSync(
+      `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${destDir}' -Force"`,
+      { stdio: 'pipe' }
+    );
+  } else {
+    execSync(`unzip -q "${zipPath}" -d "${destDir}"`, { stdio: 'pipe' });
+  }
+}
+
+function walkDir(dir: string): string[] {
+  const results: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) results.push(...walkDir(full));
+    else results.push(full);
+  }
+  return results;
+}
+
+function copyDir(src: string, dest: string): void {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dest, entry.name);
+    if (entry.isDirectory()) copyDir(s, d);
+    else fs.copyFileSync(s, d);
+  }
+}
+
+function cleanup(dir: string): void {
+  try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
+}
+
+// ── Ollama Bridge ─────────────────────────────────────────────────────────
+
+export interface EnsureModelResult {
+  ok: boolean;
+  ollamaInstalled: boolean;
+  modelPulled: boolean;
+  modelName: string;
+  error?: string;
+}
+
+/**
+ * Ensure a local Ollama model is available for use.
+ *
+ * Steps:
+ *   1. Check if Ollama is installed; if not, install it via doctor-style fix.
+ *   2. Check if the model is already present (`ollama list`).
+ *   3. If not present, run `ollama pull <modelName>` to download it.
+ *
+ * @param modelName  Ollama model tag, e.g. 'llama3.2:latest' or 'phi3:mini'
+ */
+export async function ensureModel(modelName: string): Promise<EnsureModelResult> {
+  const result: EnsureModelResult = {
+    ok: false,
+    ollamaInstalled: false,
+    modelPulled: false,
+    modelName,
+  };
+
+  // ── Step 1: Is Ollama installed? ────────────────────────────────────
+  const ollamaCheck = spawnSync('ollama', ['--version'], { encoding: 'utf-8', stdio: 'pipe' });
+  const installed   = ollamaCheck.status === 0;
+
+  if (!installed) {
+    console.log(yellow(`  ⚠  Ollama bulunamadı. Kurulum deneniyor...`));
+
+    const installCmd = getInstallCmd({
+      win32:  'winget install Ollama.Ollama',
+      darwin: 'brew install ollama',
+      linux:  'curl -fsSL https://ollama.com/install.sh | sh',
+    });
+
+    if (!installCmd) {
+      result.error = 'Ollama kurulumu bu platformda desteklenmiyor. Lütfen https://ollama.com adresinden manuel kurun.';
+      console.error(red(`  ✗  ${result.error}`));
+      return result;
+    }
+
+    console.log(dim(`  → ${installCmd}`));
+    try {
+      execSync(installCmd, { stdio: 'inherit' });
+      console.log(green('  ✓  Ollama kuruldu.'));
+    } catch (err: any) {
+      result.error = `Ollama kurulum komutu başarısız: ${err.message}`;
+      console.error(red(`  ✗  ${result.error}`));
+      console.error(dim('     Manuel kurulum: https://ollama.com/download'));
+      return result;
+    }
+  } else {
+    const ver = (ollamaCheck.stdout ?? '').split('\n')[0].trim();
+    console.log(green(`  ✓  Ollama mevcut — ${ver}`));
+  }
+  result.ollamaInstalled = true;
+
+  // ── Step 2: Is the model already pulled? ────────────────────────────
+  try {
+    const listOut = execSync('ollama list', { encoding: 'utf-8', stdio: 'pipe' });
+    const baseName = modelName.split(':')[0].toLowerCase();
+    const tag      = (modelName.split(':')[1] ?? 'latest').toLowerCase();
+    const alreadyPresent = listOut
+      .split('\n')
+      .slice(1)                     // skip header row
+      .some(line => {
+        const col = line.trim().split(/\s+/)[0]?.toLowerCase() ?? '';
+        return col === modelName.toLowerCase() ||
+               col === `${baseName}:${tag}` ||
+               col.startsWith(baseName + ':');
+      });
+
+    if (alreadyPresent) {
+      console.log(green(`  ✓  Model zaten mevcut: ${modelName}`));
+      result.modelPulled = true;
+      result.ok = true;
+      return result;
+    }
+  } catch { /* ollama list may fail if daemon isn't running yet — proceed to pull */ }
+
+  // ── Step 3: Pull the model ───────────────────────────────────────────
+  console.log(cyan(`  ⬇  Model indiriliyor: ${modelName}  (bu birkaç dakika sürebilir...)`));
+  try {
+    execSync(`ollama pull ${modelName}`, { stdio: 'inherit' });
+    console.log(green(`  ✓  Model hazır: ${modelName}`));
+    result.modelPulled = true;
+    result.ok = true;
+  } catch (err: any) {
+    result.error = `ollama pull başarısız: ${err.message}`;
+    console.error(red(`  ✗  ${result.error}`));
+  }
+
+  return result;
 }

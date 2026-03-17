@@ -4,13 +4,14 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import crypto from 'crypto';
 import readline from 'readline';
+import { exec } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { printBanner } from './utils/banner.js';
 import { Orchestrator } from './core/orchestrator.js';
 import { Planner } from './core/planner.js';
 import { Executor } from './core/executor.js';
-import { ApiServer } from './interface/api.js';
+import { ApiServer, startHealthMonitor } from './interface/api.js';
 import { SessionHistory } from './memory/history.js';
 import { LongTermMemory } from './memory/long-term.js';
 import { runDoctor } from './commands/doctor.js';
@@ -43,9 +44,11 @@ const rawArg = process.argv[2]?.toLowerCase().trim() ?? '';
 
 async function main() {
   switch (rawArg) {
-    case 'doctor':
-      await runDoctor(ROOT);
+    case 'doctor': {
+      const fix = process.argv.includes('--fix');
+      await runDoctor(ROOT, fix);
       process.exit(0);
+    }
 
     case 'onboard':
       await runOnboard(ROOT);
@@ -78,6 +81,7 @@ async function main() {
       console.log(`  ${cyan('web')}         ${dim('Start web UI + API gateway (default)')}`);
       console.log(`  ${cyan('cli')}         ${dim('Interactive terminal chat')}`);
       console.log(`  ${cyan('doctor')}      ${dim('System health check (Node, Git, Python, API keys)')}`);
+      console.log(`  ${cyan('doctor --fix')} ${dim('Self-Healing mode — otomatik onarım')}`);
       console.log(`  ${cyan('onboard')}     ${dim('First-time setup wizard')}`);
       console.log(`  ${cyan('memory-sync')} ${dim('View / sync long-term memory')}`);
       console.log(`  ${cyan('help')}        ${dim('Show this help')}\n`);
@@ -90,36 +94,88 @@ async function main() {
   }
 }
 
-// ── Silent pre-boot health check (auto-doctor) ────────────────────────────
-function quickHealthCheck(): void {
-  const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
+// ── Gateway Pre-Flight: silent self-healing doctor ────────────────────────
+async function runPreFlight(): Promise<void> {
   const red    = (s: string) => `\x1b[31m${s}\x1b[0m`;
+  const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
+  const green  = (s: string) => `\x1b[32m${s}\x1b[0m`;
+  const dim    = (s: string) => `\x1b[2m${s}\x1b[0m`;
 
-  // Node version — hard block
-  const major = parseInt(process.version.replace('v', '').split('.')[0], 10);
-  if (major < 18) {
-    console.error(red(`\n  [must-b] Node ${process.version} is unsupported. Requires 18+.\n`));
+  // Run doctor with fix=true, silent=true → auto-repairs fast issues, skips heavy (~2GB) installs
+  const result = await runDoctor(ROOT, true, true);
+
+  if (result.healed > 0) {
+    console.log(green(`  [pre-flight] ${result.healed} sorun otomatik onarıldı.`));
+  }
+
+  if (result.criticalBlock) {
+    console.error(red('\n  ══════════════════════════════════════════════════'));
+    console.error(red('  [pre-flight] KRİTİK HATA — Gateway başlatılamıyor!'));
+    console.error(red('  ══════════════════════════════════════════════════'));
+    console.error(yellow('  Sisteminizde gateway\'in çalışması için gereken'));
+    console.error(yellow('  bileşenler eksik veya bozuk.'));
+    console.error('');
+    console.error(dim('  Tanı ve onarım için: must-b doctor --fix'));
+    console.error('');
     process.exit(1);
   }
+}
 
-  // .env missing — soft warning
-  if (!fs.existsSync(path.join(ROOT, '.env'))) {
-    console.warn(yellow('  [must-b] No .env file found. Run: must-b onboard'));
-  }
+// ── Launch URL in default browser (cross-platform) ─────────────────────────
+function openBrowser(url: string): void {
+  const cmd =
+    process.platform === 'win32'  ? `start "" "${url}"` :
+    process.platform === 'darwin' ? `open "${url}"` :
+                                     `xdg-open "${url}"`;
+  exec(cmd, (err) => {
+    if (err) console.warn(`  [browser] Tarayıcı açılamadı: ${err.message}`);
+  });
+}
 
-  // API key missing — soft warning
-  const key = process.env.OPENROUTER_API_KEY ?? '';
-  if (!key || key.startsWith('sk-or-v1-...')) {
-    console.warn(yellow('  [must-b] OPENROUTER_API_KEY not set — AI calls will fail. Run: must-b onboard'));
-  }
+// ── Terminal / Dashboard seçim ekranı ──────────────────────────────────────
+function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
+  return new Promise((resolve) => {
+    const cyan  = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
+    const bold  = (s: string) => `\x1b[1m${s}\x1b[0m`;
+    const dim   = (s: string) => `\x1b[2m${s}\x1b[0m`;
+
+    console.log('');
+    console.log(bold('  Nasıl başlatmak istiyorsunuz?'));
+    console.log('');
+    console.log(`  ${cyan('[1]')} Terminal   ${dim('— kurulum sihirbazı & CLI akışı')}`);
+    console.log(`  ${cyan('[2]')} Dashboard  ${dim('— web arayüzü + tarayıcı açar')}`);
+    console.log('');
+
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question('  Seçiminiz (1/2): ', (answer) => {
+      rl.close();
+      const choice = answer.trim();
+      resolve(choice === '1' || choice.toLowerCase() === 'terminal' ? 'terminal' : 'dashboard');
+    });
+  });
 }
 
 // ── Server / CLI boot ──────────────────────────────────────────────────────
 async function bootServer(arg: string) {
   ensureWorldUid();
-  quickHealthCheck();
+  await runPreFlight(); // Deep pre-flight: self-heal silently, block on critical failures
 
-  const mode = arg === 'cli' ? 'cli' : 'web';
+  // Eğer arg açıkça 'cli' veya 'gateway' ise seçim ekranını atla
+  let resolvedMode: 'terminal' | 'dashboard';
+  if (arg === 'cli') {
+    resolvedMode = 'terminal';
+  } else if (arg === 'gateway') {
+    resolvedMode = 'dashboard';
+  } else {
+    resolvedMode = await askLaunchMode();
+  }
+
+  if (resolvedMode === 'terminal') {
+    await runOnboard(ROOT);
+    process.exit(0);
+  }
+
+  const mode = 'web';
   const PORT = parseInt(process.env.PORT || '4309', 10);
 
   printBanner(mode, PORT);
@@ -161,10 +217,14 @@ async function bootServer(arg: string) {
     const history = new SessionHistory(logger, path.join(ROOT, 'memory'));
     const apiServer = new ApiServer(logger, orchestrator, history, PORT);
     apiServer.start();
+    // Background health watcher: silent checks every 30 minutes
+    startHealthMonitor(ROOT, logger);
+    // Dashboard modunda tarayıcıyı otomatik aç
+    setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
     return;
   }
 
-  // CLI mode — interactive loop
+  // CLI mode — interactive loop (legacy, kept for direct 'cli' arg)
   logger.info('CLI mode. Type a goal and press Enter. "exit" to quit.');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const prompt = () => rl.question('\x1b[38;2;0;204;255mMust-b > \x1b[0m', async (line) => {
