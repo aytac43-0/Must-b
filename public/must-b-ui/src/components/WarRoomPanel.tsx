@@ -16,7 +16,7 @@ import {
   Eye, EyeOff, Scan, Globe, FileText, Brain, Terminal,
   CheckCircle2, Loader2,
   MousePointerClick, MousePointer2, Keyboard,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Ghost,
 } from "lucide-react";
 import { getSocket }  from "@/lib/socket";
 import { apiFetch }   from "@/lib/api";
@@ -88,6 +88,10 @@ export default function WarRoomPanel() {
   const [expanded,  setExpanded]  = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Shadow Mode mirror (v4.8)
+  const [shadowFrame,  setShadowFrame]  = useState<string | null>(null);
+  const [shadowActive, setShadowActive] = useState(false);
+
   // Workflow
   const [steps, setSteps] = useState<WorkflowStep[]>([]);
   const [goal,  setGoal]  = useState<string | null>(null);
@@ -157,6 +161,17 @@ export default function WarRoomPanel() {
         setTimeout(() => { setSteps([]); setGoal(null); }, 2500);
       }
 
+      // Shadow Mode frames (v4.8)
+      if (data.type === "shadowFrame") {
+        setShadowFrame(data.base64 as string);
+        setShadowActive(true);
+        setCollapsed(false);
+      }
+      if (data.type === "shadowToggle") {
+        setShadowActive(data.enabled as boolean);
+        if (!data.enabled) setShadowFrame(null);
+      }
+
       // Input actions
       if (data.type === "inputAction") {
         const entry: ActionLog = {
@@ -194,7 +209,7 @@ export default function WarRoomPanel() {
     }).catch(() => {});
   };
 
-  const isVisible = capture || steps.length > 0 || actions.length > 0 || scanning;
+  const isVisible = capture || steps.length > 0 || actions.length > 0 || scanning || shadowActive;
   if (!isVisible) return null;
 
   return (
@@ -216,6 +231,12 @@ export default function WarRoomPanel() {
             {capture && (
               <span className="text-[10px] text-gray-600 font-mono">
                 {capture.width}×{capture.height}
+              </span>
+            )}
+            {shadowActive && (
+              <span className="flex items-center gap-1 text-[10px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/25 px-2 py-0.5 rounded-full">
+                <Ghost size={9} className="animate-pulse" />
+                Shadow Active
               </span>
             )}
           </div>
@@ -276,9 +297,24 @@ export default function WarRoomPanel() {
               )}
 
               <div className="flex gap-0 divide-x divide-white/5">
-                {/* ── LEFT: Vision thumbnail ─────────────────────────────── */}
+                {/* ── LEFT: Vision thumbnail / Shadow Mirror ──────────── */}
                 <div className="w-1/2 shrink-0">
-                  {capture ? (
+                  {shadowActive && shadowFrame ? (
+                    /* Shadow browser live mirror */
+                    <div className={`relative overflow-hidden transition-all duration-300 ${expanded ? "max-h-[300px]" : "max-h-[120px]"}`}>
+                      <img
+                        src={`data:image/jpeg;base64,${shadowFrame}`}
+                        alt="Shadow browser"
+                        className="w-full object-contain"
+                      />
+                      <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-2 py-0.5 bg-black/75 rounded-lg text-[9px] font-bold text-purple-400 border border-purple-500/30">
+                        <Ghost size={8} className="animate-pulse" /> SHADOW
+                      </div>
+                      <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 bg-black/70 rounded text-[8px] font-mono text-purple-300 border border-purple-500/20">
+                        LIVE
+                      </div>
+                    </div>
+                  ) : capture ? (
                     <div className={`relative overflow-hidden transition-all duration-300 ${expanded ? "max-h-[300px]" : "max-h-[120px]"}`}>
                       <canvas
                         ref={canvasRef}

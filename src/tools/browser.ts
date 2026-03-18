@@ -1,5 +1,6 @@
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 import winston from 'winston';
+import { shadowBridge, getShadowState, setShadowState } from './shadow-bridge.js';
 
 export interface NavigateResult {
   url: string;
@@ -24,6 +25,70 @@ export interface SnapshotResult {
 
 export interface EvaluateResult {
   result: unknown;
+}
+
+// ── Shadow Mode (v4.8) ────────────────────────────────────────────────────────
+
+let _mirrorInterval: ReturnType<typeof setInterval> | null = null;
+
+/**
+ * Enable or disable Shadow Mode — a headless Playwright browser that:
+ *   • runs invisibly in the background
+ *   • streams JPEG screenshots to the dashboard every 500 ms via shadowBridge
+ *   • intercepts osMouseMove/osMouseClick/osTypeText and routes them to its Page
+ */
+export async function toggleShadowMode(enabled: boolean): Promise<void> {
+  const state = getShadowState();
+  if (enabled === state.enabled) return;
+
+  if (enabled) {
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+        '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      viewport: { width: 1280, height: 800 },
+    });
+    const page = await context.newPage();
+    await page.goto('about:blank').catch(() => {});
+
+    setShadowState({ enabled: true, page, browser, url: 'about:blank' });
+
+    // Navigate event — keep URL in sync
+    page.on('framenavigated', (frame: any) => {
+      if (frame === page.mainFrame()) setShadowState({ url: frame.url() });
+    });
+
+    // Start 500ms mirror loop
+    _mirrorInterval = setInterval(async () => {
+      const s = getShadowState();
+      if (!s.enabled || !s.page) return;
+      try {
+        const buf = await (s.page as Page).screenshot({ type: 'jpeg', quality: 55 });
+        shadowBridge.emit('shadowFrame', { base64: buf.toString('base64'), ts: Date.now() });
+      } catch { /* page closed — will auto-disable */ }
+    }, 500);
+
+    shadowBridge.emit('shadowToggle', { enabled: true });
+  } else {
+    // Stop mirror loop
+    if (_mirrorInterval) { clearInterval(_mirrorInterval); _mirrorInterval = null; }
+
+    const { browser } = getShadowState();
+    try { await (browser as Browser | null)?.close(); } catch { /* best-effort */ }
+
+    setShadowState({ enabled: false, page: null, browser: null, url: 'about:blank' });
+    shadowBridge.emit('shadowToggle', { enabled: false });
+  }
+}
+
+/**
+ * Navigate the shadow browser to a URL (no-op when shadow mode is off).
+ */
+export async function shadowNavigate(url: string): Promise<void> {
+  const { enabled, page } = getShadowState();
+  if (!enabled || !page) return;
+  await (page as Page).goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
 }
 
 /**

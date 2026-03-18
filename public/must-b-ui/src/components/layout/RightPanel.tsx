@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cpu, Zap, Crown, Brain, Wrench, BarChart2, Database, CheckCircle2, Smartphone } from "lucide-react";
+import { Cpu, Zap, Crown, Brain, Wrench, BarChart2, Database, CheckCircle2, Smartphone, Ghost, Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useI18n }  from "@/i18n";
 import QRPairingModal from "@/components/QRPairingModal";
@@ -66,9 +66,11 @@ function shortModel(name: string): string {
 
 export default function RightPanel() {
   const { t } = useI18n();
-  const [status,   setStatus]   = useState<AgentStatus | null>(null);
-  const [models,   setModels]   = useState<OllamaModel[]>([]);
-  const [showQR,   setShowQR]   = useState(false);
+  const [status,       setStatus]       = useState<AgentStatus | null>(null);
+  const [models,       setModels]       = useState<OllamaModel[]>([]);
+  const [showQR,       setShowQR]       = useState(false);
+  const [shadowOn,     setShadowOn]     = useState(false);
+  const [shadowBusy,   setShadowBusy]   = useState(false);
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -216,6 +218,46 @@ export default function RightPanel() {
             </div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* ── Shadow Mode Toggle (v4.8) ───────────────────────────────────── */}
+      <div className="px-4 pb-3 border-b border-white/5">
+        <button
+          onClick={async () => {
+            setShadowBusy(true);
+            try {
+              const next = !shadowOn;
+              const r = await apiFetch("/api/shadow/toggle", {
+                method: "POST",
+                body:   JSON.stringify({ enabled: next }),
+              });
+              if (r.ok) setShadowOn(next);
+            } catch { /* silent */ }
+            setShadowBusy(false);
+          }}
+          disabled={shadowBusy}
+          className={`w-full flex items-center justify-between gap-2 py-2 px-3 rounded-xl border text-[11px] font-semibold transition-all ${
+            shadowOn
+              ? "bg-purple-500/12 border-purple-500/30 text-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.12)]"
+              : "bg-white/4 border-white/8 text-gray-500 hover:text-gray-300 hover:bg-white/8"
+          } disabled:opacity-50`}
+          title="Toggle Shadow Mode — routes input to a headless browser"
+        >
+          <div className="flex items-center gap-1.5">
+            {shadowBusy
+              ? <Loader2 size={12} className="animate-spin" />
+              : <Ghost size={12} className={shadowOn ? "animate-pulse" : ""} />}
+            Shadow Mode
+          </div>
+          {/* Toggle pill */}
+          <div className={`w-8 h-4 rounded-full border transition-all relative ${
+            shadowOn ? "bg-purple-500/40 border-purple-500/50" : "bg-white/8 border-white/10"
+          }`}>
+            <div className={`absolute top-0.5 w-3 h-3 rounded-full transition-all ${
+              shadowOn ? "left-4 bg-purple-400" : "left-0.5 bg-gray-600"
+            }`} />
+          </div>
+        </button>
       </div>
 
       {/* ── Connect Mobile ──────────────────────────────────────────────── */}

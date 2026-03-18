@@ -1335,6 +1335,58 @@ export class ApiServer {
       }
     });
 
+    // ── Shadow Mode (v4.8) ────────────────────────────────────────────────
+
+    /**
+     * POST /api/shadow/toggle
+     * Body: { enabled: boolean, url?: string }
+     */
+    this.app.post('/api/shadow/toggle', requireAuth, async (req, res) => {
+      const { enabled, url } = req.body as { enabled?: boolean; url?: string };
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ error: 'enabled (boolean) is required' });
+      }
+      try {
+        const { toggleShadowMode, shadowNavigate } = await import('../tools/browser.js');
+        await toggleShadowMode(enabled);
+        if (enabled && url) await shadowNavigate(url).catch(() => {});
+        const { getShadowState } = await import('../tools/shadow-bridge.js');
+        const state = getShadowState();
+        this.logger.info(`[Shadow] Mode ${enabled ? 'enabled' : 'disabled'}`);
+        this.io.emit('agentUpdate', { type: 'shadowToggle', enabled, url: state.url });
+        res.json({ ok: true, enabled, url: state.url });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /** GET /api/shadow/status */
+    this.app.get('/api/shadow/status', requireAuth, async (_req, res) => {
+      try {
+        const { getShadowState } = await import('../tools/shadow-bridge.js');
+        const { enabled, url } = getShadowState();
+        res.json({ enabled, url });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/shadow/navigate
+     * Body: { url: string }
+     */
+    this.app.post('/api/shadow/navigate', requireAuth, async (req, res) => {
+      const { url } = req.body as { url?: string };
+      if (!url) return res.status(400).json({ error: 'url is required' });
+      try {
+        const { shadowNavigate } = await import('../tools/browser.js');
+        await shadowNavigate(url);
+        res.json({ ok: true, url });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
     // ── Memory Index / Semantic Search (v4.7) ────────────────────────────
 
     /**
@@ -1690,6 +1742,23 @@ export class ApiServer {
    * This is what makes "Clicking at 450, 210…" appear in the ActiveWorkflow feed.
    */
   private async setupInputEventBridge() {
+    try {
+      // Wire Shadow Mode frame events → socket.io (v4.8)
+      const { shadowBridge } = await import('../tools/shadow-bridge.js');
+      shadowBridge.on('shadowFrame', (d: { base64: string; ts: number }) => {
+        this.io.emit('agentUpdate', {
+          type:      'shadowFrame',
+          base64:    d.base64,
+          timestamp: d.ts,
+        });
+      });
+      shadowBridge.on('shadowToggle', (d: { enabled: boolean }) => {
+        this.io.emit('agentUpdate', { type: 'shadowToggle', enabled: d.enabled });
+      });
+    } catch (err: any) {
+      this.logger.warn(`[Shadow] Bridge setup failed: ${err?.message}`);
+    }
+
     try {
       const { inputEvents } = await import('../tools/input.js');
 

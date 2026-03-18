@@ -17,6 +17,7 @@ import { writeFile, unlink }  from 'fs/promises';
 import { tmpdir }             from 'os';
 import { join }               from 'path';
 import { EventEmitter }       from 'events';
+import { getShadowState }     from './shadow-bridge.js';
 
 export const inputEvents = new EventEmitter();
 
@@ -50,6 +51,13 @@ async function sh(cmd: string, args: string[]): Promise<void> {
  */
 export async function osMouseMove(x: number, y: number): Promise<void> {
   inputEvents.emit('mouseMove', { x, y });
+
+  // Shadow Mode: route to Playwright instead of OS
+  const shadow = getShadowState();
+  if (shadow.enabled && shadow.page) {
+    await shadow.page.mouse.move(x, y);
+    return;
+  }
 
   switch (process.platform) {
     case 'win32':
@@ -92,6 +100,13 @@ export async function osMouseClick(
   button: 'left' | 'right' | 'middle' = 'left',
 ): Promise<void> {
   inputEvents.emit('mouseClick', { x, y, button });
+
+  // Shadow Mode: route to Playwright instead of OS
+  const shadow = getShadowState();
+  if (shadow.enabled && shadow.page) {
+    await shadow.page.mouse.click(x, y, { button });
+    return;
+  }
 
   switch (process.platform) {
     case 'win32': {
@@ -136,6 +151,13 @@ $type::mouse_event(${up}, 0, 0, 0, [UIntPtr]::Zero)
  */
 export async function osTypeText(text: string, delayMs = 60): Promise<void> {
   inputEvents.emit('typeText', { preview: text.slice(0, 60) });
+
+  // Shadow Mode: route to Playwright instead of OS
+  const shadow = getShadowState();
+  if (shadow.enabled && shadow.page) {
+    await shadow.page.keyboard.type(text, { delay: delayMs });
+    return;
+  }
 
   switch (process.platform) {
     case 'win32':
