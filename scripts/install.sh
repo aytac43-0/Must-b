@@ -7,7 +7,7 @@
 # ────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
-REPO="https://github.com/autostep-ai/must-b"
+REPO="https://github.com/aytac43-0/Must-b"
 INSTALL_DIR="$HOME/.must-b"
 NODE_MIN_MAJOR=20
 BOLD="\033[1m"

@@ -11,7 +11,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$REPO       = "https://github.com/autostep-ai/must-b"
+$REPO       = "https://github.com/aytac43-0/Must-b"
 $INSTALL_DIR = Join-Path $env:USERPROFILE ".must-b"
 $NODE_MIN    = 20
 
