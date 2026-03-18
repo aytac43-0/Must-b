@@ -91,8 +91,8 @@ export default function WarRoomPanel() {
   // Shadow Mode mirror (v4.8)
   const [shadowFrame,  setShadowFrame]  = useState<string | null>(null);
   const [shadowActive, setShadowActive] = useState(false);
-  // Parallel ghost mirrors (v4.9) — slot 0..2
-  const [ghostFrames,  setGhostFrames]  = useState<(string | null)[]>([null, null, null]);
+  // Parallel ghost mirrors (v4.9) — slot 0..2 (lazy init for stable array)
+  const [ghostFrames,  setGhostFrames]  = useState<(string | null)[]>(() => new Array(3).fill(null) as (string | null)[]);
   const [activeGhostSlot, setActiveGhostSlot] = useState(0);
 
   // Workflow
@@ -175,22 +175,25 @@ export default function WarRoomPanel() {
         if (!data.enabled) setShadowFrame(null);
       }
       // Parallel Ghost frames (v4.9 — multi-context)
-      if (data.type === "ghostFrame" && typeof data.slot === "number") {
-        const slot = data.slot as number;
-        setGhostFrames(prev => {
-          const next = [...prev];
-          next[slot] = data.base64 as string;
-          return next;
-        });
-        setCollapsed(false);
+      if (data.type === "ghostFrame") {
+        const slot = typeof data.slot === "number" ? data.slot : -1;
+        if (slot >= 0 && slot <= 2 && typeof data.base64 === "string") {
+          setGhostFrames(prev => {
+            const next = [...prev] as (string | null)[];
+            next[slot] = data.base64 as string;
+            return next;
+          });
+          setCollapsed(false);
+        }
       }
-      if (data.type === "ghostSlot" && typeof data.slot === "number") {
-        setActiveGhostSlot(data.slot as number);
+      if (data.type === "ghostSlot") {
+        const slot = typeof data.slot === "number" ? data.slot : -1;
+        if (slot >= 0 && slot <= 2) setActiveGhostSlot(slot);
       }
       if (data.type === "shadowToggle" && typeof data.slot === "number") {
-        const slot = data.slot as number;
-        if (!(data.enabled as boolean)) {
-          setGhostFrames(prev => { const n = [...prev]; n[slot] = null; return n; });
+        const slot = data.slot;
+        if (slot >= 0 && slot <= 2 && !(data.enabled as boolean)) {
+          setGhostFrames(prev => { const n = [...prev] as (string | null)[]; n[slot] = null; return n; });
         }
       }
 

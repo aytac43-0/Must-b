@@ -10,8 +10,12 @@ export function getSocket(): Socket {
     });
     // Forward all agentUpdate events as window CustomEvents so any component
     // can listen without importing socket directly (v4.9)
-    socket.on("agentUpdate", (data: Record<string, unknown>) => {
-      window.dispatchEvent(new CustomEvent("mustb:agentUpdate", { detail: data }));
+    socket.on("agentUpdate", (data: unknown) => {
+      try {
+        if (data != null) {
+          window.dispatchEvent(new CustomEvent("mustb:agentUpdate", { detail: data }));
+        }
+      } catch { /* ignore dispatch errors */ }
     });
   }
   return socket;

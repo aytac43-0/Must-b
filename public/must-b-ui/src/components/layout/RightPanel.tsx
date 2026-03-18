@@ -71,9 +71,9 @@ export default function RightPanel() {
   const [showQR,       setShowQR]       = useState(false);
   const [shadowOn,     setShadowOn]     = useState(false);
   const [shadowBusy,   setShadowBusy]   = useState(false);
-  // Parallel ghost slots (v4.9)
-  const [ghostSlots,   setGhostSlots]   = useState<boolean[]>([false, false, false]);
-  const [ghostBusy,    setGhostBusy]    = useState<boolean[]>([false, false, false]);
+  // Parallel ghost slots (v4.9) — lazy init for stable arrays
+  const [ghostSlots,   setGhostSlots]   = useState<boolean[]>(() => [false, false, false]);
+  const [ghostBusy,    setGhostBusy]    = useState<boolean[]>(() => [false, false, false]);
   // Tone observer (v4.9)
   const [tone, setTone] = useState<{ tone: string; score: number; badgeClass: string; badgeLabel: string } | null>(null);
 
@@ -111,12 +111,24 @@ export default function RightPanel() {
   // Listen for tone changes via socket.io agentUpdate
   useEffect(() => {
     const handler = (ev: CustomEvent) => {
-      const d = ev.detail;
-      if (d?.type === "toneChange" && d.tone !== "normal") {
-        setTone({ tone: d.tone, score: d.score, badgeClass: d.theme?.badgeClass ?? "", badgeLabel: d.theme?.badgeLabel ?? d.tone });
-        // Auto-clear after 8 s
-        setTimeout(() => setTone(null), 8000);
-      }
+      try {
+        const d = ev.detail;
+        if (
+          d != null &&
+          typeof d === "object" &&
+          d.type === "toneChange" &&
+          typeof d.tone === "string" &&
+          d.tone !== "normal"
+        ) {
+          setTone({
+            tone:       String(d.tone),
+            score:      typeof d.score === "number" ? d.score : 0,
+            badgeClass: typeof d.theme?.badgeClass === "string" ? d.theme.badgeClass : "",
+            badgeLabel: typeof d.theme?.badgeLabel === "string" ? d.theme.badgeLabel : String(d.tone),
+          });
+          setTimeout(() => setTone(null), 8000);
+        }
+      } catch { /* ignore malformed events */ }
     };
     window.addEventListener("mustb:agentUpdate" as any, handler as EventListener);
     return () => window.removeEventListener("mustb:agentUpdate" as any, handler as EventListener);
