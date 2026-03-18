@@ -11,21 +11,23 @@
  *   └──────────────────────────────────────────────────────────────────────┘
  */
 
-import { useState, useEffect }           from "react";
-import { MessageSquare, FolderOpen, Zap } from "lucide-react";
+import { useState, useEffect }                    from "react";
+import { MessageSquare, FolderOpen, Zap, Brain }  from "lucide-react";
 import { ChatArea }          from "@/components/chat/ChatArea";
 import WarRoomPanel          from "@/components/WarRoomPanel";
 import ScreenScanOverlay     from "@/components/ScreenScanOverlay";
 import WorkspacePreview      from "@/components/WorkspacePreview";
 import SkillsPanel           from "@/components/SkillsPanel";
+import MemoryPanel           from "@/components/MemoryPanel";
 import { getSocket }         from "@/lib/socket";
 
-type Tab = "chat" | "workspace" | "skills";
+type Tab = "chat" | "workspace" | "skills" | "memory";
 
 const TABS: { id: Tab; icon: React.ElementType; label: string }[] = [
   { id: "chat",      icon: MessageSquare, label: "Chat"      },
   { id: "workspace", icon: FolderOpen,    label: "Workspace" },
   { id: "skills",    icon: Zap,           label: "Skills"    },
+  { id: "memory",    icon: Brain,         label: "Memory"    },
 ];
 
 export default function DashboardPage() {
@@ -69,6 +71,7 @@ export default function DashboardPage() {
         {tab === "chat"      && <ChatArea />}
         {tab === "workspace" && <WorkspacePreview />}
         {tab === "skills"    && <SkillsPanel />}
+        {tab === "memory"    && <MemoryPanel />}
       </div>
     </div>
   );

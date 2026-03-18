@@ -1335,6 +1335,103 @@ export class ApiServer {
       }
     });
 
+    // ── Memory Index / Semantic Search (v4.7) ────────────────────────────
+
+    /**
+     * GET /api/memory/search?q=<text>&limit=<n>
+     * Runs a semantic similarity search over the local memory index.
+     */
+    this.app.get('/api/memory/search', requireAuth, async (req, res) => {
+      const q     = String(req.query.q     ?? '').trim();
+      const limit = Math.min(Number(req.query.limit ?? 8), 20);
+      if (!q) return res.status(400).json({ error: 'q is required' });
+      try {
+        const { queryMemory } = await import('../core/memory-index.js');
+        const results = await queryMemory(q, limit);
+        res.json({ results });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/memory/index
+     * Body: { text, metadata: { source, title, id?, path?, tags? } }
+     * Indexes a document into the local vector store.
+     */
+    this.app.post('/api/memory/index', requireAuth, async (req, res) => {
+      const { text, metadata } = req.body ?? {};
+      if (!text || !metadata) {
+        return res.status(400).json({ error: 'text and metadata are required' });
+      }
+      try {
+        const { indexDocument } = await import('../core/memory-index.js');
+        await indexDocument(String(text), metadata);
+        res.json({ ok: true });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/memory/index-skills
+     * Re-indexes all saved skills into the vector store.
+     */
+    this.app.post('/api/memory/index-skills', requireAuth, async (_req, res) => {
+      try {
+        const { autoIndexSkills } = await import('../core/memory-index.js');
+        const count = await autoIndexSkills();
+        this.logger.info(`[Memory] Indexed ${count} skills`);
+        res.json({ ok: true, indexed: count });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/memory/index-workspace
+     * Re-indexes workspace text files into the vector store.
+     */
+    this.app.post('/api/memory/index-workspace', requireAuth, async (_req, res) => {
+      try {
+        const { autoIndexWorkspace } = await import('../core/memory-index.js');
+        const count = await autoIndexWorkspace();
+        this.logger.info(`[Memory] Indexed ${count} workspace files`);
+        res.json({ ok: true, indexed: count });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * GET /api/memory/stats
+     * Returns item count and index directory.
+     */
+    this.app.get('/api/memory/stats', requireAuth, async (_req, res) => {
+      try {
+        const { getIndexStats } = await import('../core/memory-index.js');
+        const stats = await getIndexStats();
+        res.json(stats);
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * DELETE /api/memory/clear-index
+     * Wipes and recreates the vector index.
+     */
+    this.app.delete('/api/memory/clear-index', requireAuth, async (_req, res) => {
+      try {
+        const { clearIndex } = await import('../core/memory-index.js');
+        await clearIndex();
+        this.logger.info('[Memory] Index cleared');
+        res.json({ ok: true });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
     // ── Companion / Mobile (v4.6) ─────────────────────────────────────────
 
     /**
@@ -1570,7 +1667,20 @@ export class ApiServer {
     this.orchestrator.on('stepStart',    (d) => this.io.emit('agentUpdate', { type: 'stepStart',    ...d }));
     this.orchestrator.on('stepFinish',   (d) => this.io.emit('agentUpdate', { type: 'stepFinish',   ...d }));
     this.orchestrator.on('finalAnswer',  (d) => this.io.emit('agentUpdate', { type: 'finalAnswer',  ...d }));
-    this.orchestrator.on('planFinish',   (d) => this.io.emit('agentUpdate', { type: 'planFinish',   ...d }));
+    this.orchestrator.on('planFinish',   (d) => {
+      this.io.emit('agentUpdate', { type: 'planFinish', ...d });
+      // Auto-index completed conversations into the memory index (v4.7)
+      if (d.status === 'completed' && d.goal && d.answer) {
+        const text = `Goal: ${d.goal}\nAnswer: ${d.answer}`;
+        import('../core/memory-index.js').then(({ indexDocument }) => {
+          indexDocument(text, {
+            source:  'conversation',
+            title:   String(d.goal).slice(0, 80),
+            savedAt: new Date().toISOString(),
+          }).catch(() => {});
+        }).catch(() => {});
+      }
+    });
     // Auto-repair events surfaced to the dashboard
     this.orchestrator.on('agentRepair',  (d) => this.io.emit('agentUpdate', { type: 'agentRepair',  ...d }));
   }
