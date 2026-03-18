@@ -1335,6 +1335,68 @@ export class ApiServer {
       }
     });
 
+    // ── Companion / Mobile (v4.6) ─────────────────────────────────────────
+
+    /**
+     * GET /api/companion/pair
+     * Generates a short-lived mobile pairing token + QR-ready URL.
+     * Response: { token, url, expiresAt }
+     */
+    this.app.get('/api/companion/pair', requireAuth, async (_req, res) => {
+      try {
+        const { generateMobileToken } = await import('./remote-access.js');
+        const pair = generateMobileToken(this.port);
+        this.logger.info(`[Companion] Pair token generated — expires ${new Date(pair.expiresAt).toISOString()}`);
+        res.json(pair);
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * GET /api/stream/file?p=<rel>&token=<mobileToken>
+     * Streams a workspace file for mobile viewing (PDF/HTML/JSON/txt).
+     * The mobile pairing token is accepted in lieu of the local auth token.
+     */
+    this.app.get('/api/stream/file', async (req, res) => {
+      const relPath  = String(req.query.p     ?? '').trim();
+      const reqToken = String(req.query.token ?? '').trim();
+
+      // Validate mobile token
+      try {
+        const { validateMobileToken } = await import('./remote-access.js');
+        if (!validateMobileToken(reqToken)) {
+          return res.status(403).json({ error: 'Invalid or expired mobile token' });
+        }
+      } catch {
+        return res.status(403).json({ error: 'Token validation unavailable' });
+      }
+
+      if (!relPath) return res.status(400).json({ error: 'p (path) is required' });
+
+      // Path guard — block traversal
+      const { WORKSPACE_ROOT } = await import('../core/paths.js');
+      const abs = path.resolve(WORKSPACE_ROOT, relPath);
+      if (!abs.startsWith(WORKSPACE_ROOT + path.sep) && abs !== WORKSPACE_ROOT) {
+        return res.status(403).json({ error: 'Path traversal blocked' });
+      }
+
+      if (!fs.existsSync(abs)) return res.status(404).json({ error: 'File not found' });
+
+      const ext = path.extname(abs).toLowerCase();
+      const MIME: Record<string, string> = {
+        '.pdf':  'application/pdf',
+        '.html': 'text/html',
+        '.htm':  'text/html',
+        '.json': 'application/json',
+        '.txt':  'text/plain',
+        '.md':   'text/markdown',
+      };
+      const contentType = MIME[ext] ?? 'application/octet-stream';
+      res.setHeader('Content-Type', contentType);
+      fs.createReadStream(abs).pipe(res);
+    });
+
     /** Save setup wizard results — writes .env and persists memory profile */
     this.app.post('/api/setup', async (req, res) => {
       try {
@@ -1467,10 +1529,39 @@ export class ApiServer {
   }
 
   private setupSocketIO() {
+    // ── Desktop clients ────────────────────────────────────────────────────
     this.io.on('connection', (socket) => {
       this.logger.info(`Gateway: client connected ${socket.id}`);
       socket.on('disconnect', () => this.logger.info(`Gateway: client disconnected ${socket.id}`));
     });
+
+    // ── Mobile companion namespace ─────────────────────────────────────────
+    // Mobile clients authenticate via a short-lived pairing token passed as
+    // a query param: io('/mobile?token=<hex>').
+    const mobileNS = this.io.of('/mobile');
+
+    mobileNS.use(async (socket, next) => {
+      const token = String(socket.handshake.query.token ?? '');
+      try {
+        const { validateMobileToken } = await import('./remote-access.js');
+        if (validateMobileToken(token)) return next();
+      } catch { /* fall through */ }
+      socket.emit('authError', { error: 'Invalid or expired token' });
+      next(new Error('Unauthorized'));
+    });
+
+    mobileNS.on('connection', (socket) => {
+      this.logger.info(`[Companion] Mobile connected ${socket.id}`);
+      socket.on('disconnect', () => this.logger.info(`[Companion] Mobile disconnected ${socket.id}`));
+    });
+
+    // Forward all orchestrator + skill events to mobile clients
+    this.orchestrator.on('planStart',    (d) => mobileNS.emit('agentUpdate', { type: 'planStart',    ...d }));
+    this.orchestrator.on('planGenerated',(d) => mobileNS.emit('agentUpdate', { type: 'planGenerated',...d }));
+    this.orchestrator.on('stepStart',    (d) => mobileNS.emit('agentUpdate', { type: 'stepStart',    ...d }));
+    this.orchestrator.on('stepFinish',   (d) => mobileNS.emit('agentUpdate', { type: 'stepFinish',   ...d }));
+    this.orchestrator.on('finalAnswer',  (d) => mobileNS.emit('agentUpdate', { type: 'finalAnswer',  ...d }));
+    this.orchestrator.on('planFinish',   (d) => mobileNS.emit('agentUpdate', { type: 'planFinish',   ...d }));
   }
 
   private setupOrchestratorListeners() {

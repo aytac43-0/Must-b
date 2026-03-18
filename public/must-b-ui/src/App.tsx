@@ -10,6 +10,7 @@ import ClientsPage      from "@/pages/ClientsPage";
 import IntegrationsPage from "@/pages/IntegrationsPage";
 import LogsPage         from "@/pages/LogsPage";
 import SettingsPage     from "@/pages/SettingsPage";
+import MobilePage       from "@/pages/MobilePage";
 import AppLayout        from "@/components/layout/AppLayout";
 import ConflictModal    from "@/components/ConflictModal";
 import { I18nProvider } from "@/i18n";
@@ -40,6 +41,9 @@ export default function App() {
             <Route path="logs"        element={<LogsPage />} />
             <Route path="settings"    element={<SettingsPage />} />
           </Route>
+
+          {/* Mobile Companion — standalone page, no AppLayout */}
+          <Route path="/mobile" element={<MobilePage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

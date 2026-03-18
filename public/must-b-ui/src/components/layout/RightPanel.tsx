@@ -11,9 +11,10 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cpu, Zap, Crown, Brain, Wrench, BarChart2, Database, CheckCircle2 } from "lucide-react";
+import { Cpu, Zap, Crown, Brain, Wrench, BarChart2, Database, CheckCircle2, Smartphone } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useI18n }  from "@/i18n";
+import QRPairingModal from "@/components/QRPairingModal";
 
 interface AgentStatus {
   role:   string;
@@ -65,8 +66,9 @@ function shortModel(name: string): string {
 
 export default function RightPanel() {
   const { t } = useI18n();
-  const [status, setStatus]   = useState<AgentStatus | null>(null);
-  const [models, setModels]   = useState<OllamaModel[]>([]);
+  const [status,   setStatus]   = useState<AgentStatus | null>(null);
+  const [models,   setModels]   = useState<OllamaModel[]>([]);
+  const [showQR,   setShowQR]   = useState(false);
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -216,6 +218,17 @@ export default function RightPanel() {
         </AnimatePresence>
       </div>
 
+      {/* ── Connect Mobile ──────────────────────────────────────────────── */}
+      <div className="px-4 pb-3 border-b border-white/5">
+        <button
+          onClick={() => setShowQR(true)}
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-orange-500/8 border border-orange-500/18 text-orange-400 text-[11px] font-semibold hover:bg-orange-500/15 hover:border-orange-500/30 transition-all"
+        >
+          <Smartphone size={12} />
+          Connect Mobile
+        </button>
+      </div>
+
       {/* ── Live indicator ──────────────────────────────────────────────── */}
       <div className="p-4 border-t border-white/5">
         <div className="flex items-center gap-2">
@@ -226,6 +239,9 @@ export default function RightPanel() {
           <span className="text-[10px] text-gray-600 font-medium">{t.rightPanel.connected}</span>
         </div>
       </div>
+
+      {/* QR Pairing Modal */}
+      {showQR && <QRPairingModal onClose={() => setShowQR(false)} />}
     </aside>
   );
 }
