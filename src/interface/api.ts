@@ -1271,6 +1271,70 @@ export class ApiServer {
       }
     });
 
+    // ── Skill Library (v4.5) ───────────────────────────────────────────────
+
+    /** GET /api/skills/list — all saved skills, newest first */
+    this.app.get('/api/skills/list', requireAuth, async (_req, res) => {
+      try {
+        const { listSkills } = await import('../core/skills-hub.js');
+        res.json({ skills: listSkills() });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /** POST /api/skills/save — record a completed workflow as a skill */
+    this.app.post('/api/skills/save', requireAuth, async (req, res) => {
+      const { goal, answer, steps, name, tags } = req.body ?? {};
+      if (!goal) return res.status(400).json({ error: 'goal required' });
+      try {
+        const { saveSkill } = await import('../core/skills-hub.js');
+        const skill = saveSkill({ goal, answer: answer ?? '', steps: steps ?? [], name, tags });
+        this.logger.info(`[Skills] Saved: "${skill.name}" (${skill.id})`);
+        res.json({ ok: true, skill });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /** POST /api/skills/run — replay a saved skill by re-submitting its goal */
+    this.app.post('/api/skills/run', requireAuth, async (req, res) => {
+      const { id } = req.body ?? {};
+      if (!id) return res.status(400).json({ error: 'id required' });
+      try {
+        const { getSkill, bumpRunCount } = await import('../core/skills-hub.js');
+        const skill = getSkill(id);
+        if (!skill) return res.status(404).json({ error: 'Skill not found' });
+
+        bumpRunCount(id);
+        this.logger.info(`[Skills] Running: "${skill.name}" — "${skill.goal}"`);
+        this.io.emit('agentUpdate', { type: 'skillRunStart', skillId: id, skillName: skill.name, goal: skill.goal });
+
+        // Run the goal through the live orchestrator (non-blocking)
+        this.orchestrator.run(skill.goal).catch((err: any) => {
+          this.logger.error(`[Skills] Run failed for ${id}: ${err?.message}`);
+        });
+
+        res.json({ ok: true, skillId: id, goal: skill.goal });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /** DELETE /api/skills/:id — remove a saved skill */
+    this.app.delete('/api/skills/:id', requireAuth, async (req, res) => {
+      const { id } = req.params;
+      try {
+        const { deleteSkill } = await import('../core/skills-hub.js');
+        const deleted = deleteSkill(id);
+        if (!deleted) return res.status(404).json({ error: 'Skill not found' });
+        this.logger.info(`[Skills] Deleted: ${id}`);
+        res.json({ ok: true });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
     /** Save setup wizard results — writes .env and persists memory profile */
     this.app.post('/api/setup', async (req, res) => {
       try {

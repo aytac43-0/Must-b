@@ -115,7 +115,14 @@ export class Orchestrator extends EventEmitter {
 
         this._errorSignatures.clear();
         this.logger.info(`Orchestrator: Goal completed — "${goal}"`);
-        this.emit('planFinish', { goal, status: 'completed', timestamp: Date.now() });
+        // Include minimal step shapes + answer so the frontend can offer "Save as Skill"
+        this.emit('planFinish', {
+          goal,
+          status:    'completed',
+          answer,
+          steps:     steps.map(s => ({ description: s.description, tool: s.tool })),
+          timestamp: Date.now(),
+        });
         break;
 
       } catch (err: any) {

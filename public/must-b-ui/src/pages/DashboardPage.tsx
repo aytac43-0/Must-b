@@ -1,41 +1,49 @@
 /**
- * DashboardPage — War Room Center (v4.3)
+ * DashboardPage — War Room Center (v4.5)
  *
  * Layout:
  *   ┌──────────────────────────────────────────────────────────────────────┐
  *   │ WarRoomPanel  (vision thumbnail | workflow steps + action feed)      │ shrink-0
  *   ├──────────────────────────────────────────────────────────────────────┤
- *   │  [💬 Chat]   [📁 Workspace]                                  tab bar │ shrink-0
+ *   │  [💬 Chat]   [📁 Workspace]   [⚡ Skills]                  tab bar  │ shrink-0
  *   ├──────────────────────────────────────────────────────────────────────┤
- *   │                                                                      │
- *   │   ChatArea  ─OR─  WorkspacePreview                                  │ flex-1
- *   │                                                                      │
+ *   │   ChatArea  ─OR─  WorkspacePreview  ─OR─  SkillsPanel               │ flex-1
  *   └──────────────────────────────────────────────────────────────────────┘
  */
 
-import { useState }          from "react";
-import { MessageSquare, FolderOpen } from "lucide-react";
+import { useState, useEffect }           from "react";
+import { MessageSquare, FolderOpen, Zap } from "lucide-react";
 import { ChatArea }          from "@/components/chat/ChatArea";
 import WarRoomPanel          from "@/components/WarRoomPanel";
 import ScreenScanOverlay     from "@/components/ScreenScanOverlay";
 import WorkspacePreview      from "@/components/WorkspacePreview";
+import SkillsPanel           from "@/components/SkillsPanel";
+import { getSocket }         from "@/lib/socket";
 
-type Tab = "chat" | "workspace";
+type Tab = "chat" | "workspace" | "skills";
 
 const TABS: { id: Tab; icon: React.ElementType; label: string }[] = [
   { id: "chat",      icon: MessageSquare, label: "Chat"      },
   { id: "workspace", icon: FolderOpen,    label: "Workspace" },
+  { id: "skills",    icon: Zap,           label: "Skills"    },
 ];
 
 export default function DashboardPage() {
   const [tab, setTab] = useState<Tab>("chat");
 
+  // Auto-switch to Chat when any workflow starts (manual or skill replay)
+  useEffect(() => {
+    const socket = getSocket();
+    const handler = (data: { type: string }) => {
+      if (data.type === "planStart" || data.type === "skillRunStart") setTab("chat");
+    };
+    socket.on("agentUpdate", handler);
+    return () => { socket.off("agentUpdate", handler); };
+  }, []);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Full-viewport scan overlay */}
       <ScreenScanOverlay />
-
-      {/* Unified war room — vision + workflow + action log */}
       <WarRoomPanel />
 
       {/* Tab bar */}
@@ -60,6 +68,7 @@ export default function DashboardPage() {
       <div className="flex-1 min-h-0 overflow-hidden">
         {tab === "chat"      && <ChatArea />}
         {tab === "workspace" && <WorkspacePreview />}
+        {tab === "skills"    && <SkillsPanel />}
       </div>
     </div>
   );
