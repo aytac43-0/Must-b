@@ -1,8 +1,11 @@
 /**
- * Must-b Vision Tools
+ * Must-b Vision Tools (v4.9 upgrade)
  *
- * captureScreen()     — OS-level primary screen capture → base64 PNG
- * detectUIElements()  — Sobel edge + bounding-box heuristics on a PNG
+ * captureScreen()       — OS-level primary screen capture → base64 PNG
+ * detectUIElements()    — Sobel edge + bounding-box heuristics on a PNG
+ * startVideoStream()    — 15 FPS capture loop with frame-diff change detection
+ * stopVideoStream()     — stop a running stream
+ * getVideoStreamEvents()— EventEmitter: 'frame' | 'change' | 'stopped'
  */
 
 import { exec }            from 'child_process';
@@ -11,8 +14,125 @@ import { tmpdir }          from 'os';
 import { join }            from 'path';
 import { readFile, unlink } from 'fs/promises';
 import { chromium }        from 'playwright';
+import { EventEmitter }    from 'events';
 
 const execAsync = promisify(exec);
+
+// ── Video Stream ──────────────────────────────────────────────────────────
+
+const _videoEvents = new EventEmitter();
+_videoEvents.setMaxListeners(20);
+
+let _streamInterval: ReturnType<typeof setInterval> | null = null;
+let _prevFrameHash: string | null = null;
+
+export interface VideoFrame {
+  base64:     string;
+  width:      number;
+  height:     number;
+  ts:         number;
+  fps:        number;
+  changed:    boolean;
+  /** Approx % of pixels that changed vs previous frame (0–100) */
+  changePct:  number;
+}
+
+/** Simple 32-bit FNV-1a hash for fast frame diff detection */
+function hashSample(base64: string): string {
+  // Sample every 128th char of the base64 string for speed
+  let h = 2166136261;
+  for (let i = 0; i < base64.length; i += 128) {
+    h ^= base64.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h.toString(16);
+}
+
+/**
+ * Estimate change percentage by comparing sampled base64 char codes.
+ * Very fast — doesn't decode the full image.
+ */
+function estimateChangePct(a: string, b: string): number {
+  const step     = Math.max(1, Math.floor(a.length / 200));
+  let   diffBits = 0;
+  let   total    = 0;
+  for (let i = 0; i < Math.min(a.length, b.length); i += step) {
+    diffBits += Math.abs(a.charCodeAt(i) - b.charCodeAt(i));
+    total++;
+  }
+  // Normalize: max possible diff per char is ~90 (printable ASCII spread)
+  return Math.min(100, (diffBits / (total * 90)) * 100);
+}
+
+/**
+ * Start a continuous screen capture stream.
+ *
+ * @param fps          Target frames per second (1–15, default 15)
+ * @param onlyChanges  If true, emit 'frame' events only when screen changed
+ */
+export function startVideoStream(fps: number = 15, onlyChanges = false): void {
+  if (_streamInterval) return; // already running
+
+  const clampedFps = Math.max(1, Math.min(15, fps));
+  const intervalMs = Math.round(1000 / clampedFps);
+  let   lastBase64 = '';
+
+  _streamInterval = setInterval(async () => {
+    try {
+      const cap  = await captureScreen();
+      const hash = hashSample(cap.base64);
+      const changed     = hash !== _prevFrameHash;
+      const changePct   = lastBase64 ? estimateChangePct(lastBase64, cap.base64) : 100;
+
+      _prevFrameHash = hash;
+
+      const frame: VideoFrame = {
+        base64:   cap.base64,
+        width:    cap.width,
+        height:   cap.height,
+        ts:       Date.now(),
+        fps:      clampedFps,
+        changed,
+        changePct,
+      };
+
+      // Always emit 'frame'
+      _videoEvents.emit('frame', frame);
+
+      // Emit 'change' when significant movement detected (>5% pixel diff)
+      if (changed && changePct > 5) {
+        _videoEvents.emit('change', frame);
+      }
+
+      lastBase64 = cap.base64;
+    } catch (err: any) {
+      _videoEvents.emit('error', err);
+    }
+  }, intervalMs);
+}
+
+/**
+ * Stop the video stream.
+ */
+export function stopVideoStream(): void {
+  if (_streamInterval) {
+    clearInterval(_streamInterval);
+    _streamInterval = null;
+    _prevFrameHash  = null;
+    _videoEvents.emit('stopped', { ts: Date.now() });
+  }
+}
+
+/**
+ * Returns the EventEmitter for the video stream.
+ *   'frame'   (VideoFrame) — every captured frame
+ *   'change'  (VideoFrame) — only when significant change detected
+ *   'error'   (Error)      — capture error
+ *   'stopped' ({ ts })     — stream stopped
+ */
+export function getVideoStreamEvents(): EventEmitter {
+  return _videoEvents;
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────
 

@@ -1,33 +1,35 @@
 /**
- * DashboardPage — War Room Center (v4.5)
+ * DashboardPage — War Room Center (v4.9)
  *
  * Layout:
  *   ┌──────────────────────────────────────────────────────────────────────┐
  *   │ WarRoomPanel  (vision thumbnail | workflow steps + action feed)      │ shrink-0
  *   ├──────────────────────────────────────────────────────────────────────┤
- *   │  [💬 Chat]   [📁 Workspace]   [⚡ Skills]                  tab bar  │ shrink-0
+ *   │  [💬 Chat]  [📁 Workspace]  [⚡ Skills]  [🧠 Memory]  [🧩 Plugins] │ shrink-0
  *   ├──────────────────────────────────────────────────────────────────────┤
- *   │   ChatArea  ─OR─  WorkspacePreview  ─OR─  SkillsPanel               │ flex-1
+ *   │   ChatArea  ─OR─  WorkspacePreview  ─OR─  SkillsPanel  ─OR─  ...   │ flex-1
  *   └──────────────────────────────────────────────────────────────────────┘
  */
 
-import { useState, useEffect }                    from "react";
-import { MessageSquare, FolderOpen, Zap, Brain }  from "lucide-react";
+import { useState, useEffect }                         from "react";
+import { MessageSquare, FolderOpen, Zap, Brain, Puzzle } from "lucide-react";
 import { ChatArea }          from "@/components/chat/ChatArea";
 import WarRoomPanel          from "@/components/WarRoomPanel";
 import ScreenScanOverlay     from "@/components/ScreenScanOverlay";
 import WorkspacePreview      from "@/components/WorkspacePreview";
 import SkillsPanel           from "@/components/SkillsPanel";
 import MemoryPanel           from "@/components/MemoryPanel";
+import PluginsPanel          from "@/components/PluginsPanel";
 import { getSocket }         from "@/lib/socket";
 
-type Tab = "chat" | "workspace" | "skills" | "memory";
+type Tab = "chat" | "workspace" | "skills" | "memory" | "plugins";
 
 const TABS: { id: Tab; icon: React.ElementType; label: string }[] = [
   { id: "chat",      icon: MessageSquare, label: "Chat"      },
   { id: "workspace", icon: FolderOpen,    label: "Workspace" },
   { id: "skills",    icon: Zap,           label: "Skills"    },
   { id: "memory",    icon: Brain,         label: "Memory"    },
+  { id: "plugins",   icon: Puzzle,        label: "Plugins"   },
 ];
 
 export default function DashboardPage() {
@@ -72,6 +74,7 @@ export default function DashboardPage() {
         {tab === "workspace" && <WorkspacePreview />}
         {tab === "skills"    && <SkillsPanel />}
         {tab === "memory"    && <MemoryPanel />}
+        {tab === "plugins"   && <PluginsPanel />}
       </div>
     </div>
   );

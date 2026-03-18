@@ -1,0 +1,7 @@
+Feature: Plugin Architect — Empty State
+Version: Must-b v2.0 (v4.9)
+Description: The Plugins tab in DashboardPage shows the empty state before any plugins
+  have been installed. Orange 'New Plugin' button in header; puzzle icon placeholder
+  with instructions. Connects to GET /api/plugins/list.
+Component: PluginsPanel
+Added: v4.9 Synthetic Consciousness

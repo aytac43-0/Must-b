@@ -91,6 +91,9 @@ export default function WarRoomPanel() {
   // Shadow Mode mirror (v4.8)
   const [shadowFrame,  setShadowFrame]  = useState<string | null>(null);
   const [shadowActive, setShadowActive] = useState(false);
+  // Parallel ghost mirrors (v4.9) — slot 0..2
+  const [ghostFrames,  setGhostFrames]  = useState<(string | null)[]>([null, null, null]);
+  const [activeGhostSlot, setActiveGhostSlot] = useState(0);
 
   // Workflow
   const [steps, setSteps] = useState<WorkflowStep[]>([]);
@@ -161,15 +164,34 @@ export default function WarRoomPanel() {
         setTimeout(() => { setSteps([]); setGoal(null); }, 2500);
       }
 
-      // Shadow Mode frames (v4.8)
-      if (data.type === "shadowFrame") {
+      // Shadow Mode frames (v4.8 — single context)
+      if (data.type === "shadowFrame" && typeof data.slot !== "number") {
         setShadowFrame(data.base64 as string);
         setShadowActive(true);
         setCollapsed(false);
       }
-      if (data.type === "shadowToggle") {
+      if (data.type === "shadowToggle" && typeof data.slot !== "number") {
         setShadowActive(data.enabled as boolean);
         if (!data.enabled) setShadowFrame(null);
+      }
+      // Parallel Ghost frames (v4.9 — multi-context)
+      if (data.type === "ghostFrame" && typeof data.slot === "number") {
+        const slot = data.slot as number;
+        setGhostFrames(prev => {
+          const next = [...prev];
+          next[slot] = data.base64 as string;
+          return next;
+        });
+        setCollapsed(false);
+      }
+      if (data.type === "ghostSlot" && typeof data.slot === "number") {
+        setActiveGhostSlot(data.slot as number);
+      }
+      if (data.type === "shadowToggle" && typeof data.slot === "number") {
+        const slot = data.slot as number;
+        if (!(data.enabled as boolean)) {
+          setGhostFrames(prev => { const n = [...prev]; n[slot] = null; return n; });
+        }
       }
 
       // Input actions
@@ -209,7 +231,8 @@ export default function WarRoomPanel() {
     }).catch(() => {});
   };
 
-  const isVisible = capture || steps.length > 0 || actions.length > 0 || scanning || shadowActive;
+  const hasActiveGhost = ghostFrames.some(f => f !== null);
+  const isVisible = capture || steps.length > 0 || actions.length > 0 || scanning || shadowActive || hasActiveGhost;
   if (!isVisible) return null;
 
   return (
@@ -299,8 +322,41 @@ export default function WarRoomPanel() {
               <div className="flex gap-0 divide-x divide-white/5">
                 {/* ── LEFT: Vision thumbnail / Shadow Mirror ──────────── */}
                 <div className="w-1/2 shrink-0">
-                  {shadowActive && shadowFrame ? (
-                    /* Shadow browser live mirror */
+                  {hasActiveGhost && ghostFrames[activeGhostSlot] ? (
+                    /* Parallel Ghost multi-context mirror (v4.9) */
+                    <div className="flex flex-col">
+                      {/* Slot selector tabs */}
+                      <div className="flex border-b border-white/5">
+                        {[0, 1, 2].map(s => ghostFrames[s] !== null && (
+                          <button
+                            key={s}
+                            onClick={() => setActiveGhostSlot(s)}
+                            className={`flex items-center gap-0.5 px-2 py-1 text-[9px] font-bold transition-colors ${
+                              activeGhostSlot === s
+                                ? "text-purple-400 border-b-2 border-purple-500"
+                                : "text-gray-600 hover:text-gray-400"
+                            }`}
+                          >
+                            <Ghost size={7} /> G{s + 1}
+                          </button>
+                        ))}
+                      </div>
+                      <div className={`relative overflow-hidden transition-all duration-300 ${expanded ? "max-h-[300px]" : "max-h-[110px]"}`}>
+                        <img
+                          src={`data:image/jpeg;base64,${ghostFrames[activeGhostSlot]}`}
+                          alt={`Ghost ${activeGhostSlot + 1}`}
+                          className="w-full object-contain"
+                        />
+                        <div className="absolute top-1.5 left-1.5 flex items-center gap-1 px-2 py-0.5 bg-black/75 rounded-lg text-[9px] font-bold text-purple-400 border border-purple-500/30">
+                          <Ghost size={8} className="animate-pulse" /> G{activeGhostSlot + 1}
+                        </div>
+                        <div className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 bg-black/70 rounded text-[8px] font-mono text-purple-300 border border-purple-500/20">
+                          LIVE
+                        </div>
+                      </div>
+                    </div>
+                  ) : shadowActive && shadowFrame ? (
+                    /* Shadow browser live mirror (v4.8 single context) */
                     <div className={`relative overflow-hidden transition-all duration-300 ${expanded ? "max-h-[300px]" : "max-h-[120px]"}`}>
                       <img
                         src={`data:image/jpeg;base64,${shadowFrame}`}

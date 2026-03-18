@@ -568,6 +568,16 @@ export class ApiServer {
     this.app.post('/api/goal', requireAuth, (req, res) => {
       const { goal, chatId } = req.body;
       if (!goal) return res.status(400).json({ error: 'goal required' });
+      // Emotional Tone Observer (v4.9) — analyze tone on every user message
+      import('../core/tone-observer.js').then(({ analyzeTone, getToneTheme, emitTone }) => {
+        const result = analyzeTone(String(goal));
+        emitTone(result);
+        if (result.tone !== 'normal') {
+          this.io.emit('agentUpdate', {
+            type: 'toneChange', ...result, theme: getToneTheme(result.tone),
+          });
+        }
+      }).catch(() => {});
       this.orchestrator.run(goal).catch(err => {
         this.logger.error(`Gateway: failed to run goal: ${err?.message}`);
       });
@@ -1387,6 +1397,246 @@ export class ApiServer {
       }
     });
 
+    // ── Parallel Ghosting v2 (v4.9) ──────────────────────────────────────
+
+    /**
+     * POST /api/ghost/toggle
+     * Body: { slot: 0|1|2, enabled: boolean, url?: string }
+     * Enable or disable a specific ghost browser slot.
+     */
+    this.app.post('/api/ghost/toggle', requireAuth, async (req, res) => {
+      const { slot, enabled, url } = req.body as { slot?: number; enabled?: boolean; url?: string };
+      if (typeof slot !== 'number' || typeof enabled !== 'boolean') {
+        return res.status(400).json({ error: 'slot (0-2) and enabled (boolean) required' });
+      }
+      try {
+        const { toggleGhostSlot, ghostNavigate } = await import('../tools/browser.js');
+        await toggleGhostSlot(slot, enabled);
+        if (enabled && url) await ghostNavigate(slot, url).catch(() => {});
+        const { getGhostContext } = await import('../tools/shadow-bridge.js');
+        const ctx = getGhostContext(slot);
+        res.json({ ok: true, slot, enabled: ctx?.enabled, url: ctx?.url });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/ghost/navigate
+     * Body: { slot: 0|1|2, url: string }
+     */
+    this.app.post('/api/ghost/navigate', requireAuth, async (req, res) => {
+      const { slot, url } = req.body as { slot?: number; url?: string };
+      if (typeof slot !== 'number' || !url) {
+        return res.status(400).json({ error: 'slot and url are required' });
+      }
+      try {
+        const { ghostNavigate } = await import('../tools/browser.js');
+        await ghostNavigate(slot, url);
+        res.json({ ok: true, slot, url });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/ghost/active-slot
+     * Body: { slot: 0|1|2 }
+     * Switch which ghost slot receives OS input routing.
+     */
+    this.app.post('/api/ghost/active-slot', requireAuth, async (req, res) => {
+      const { slot } = req.body as { slot?: number };
+      if (typeof slot !== 'number') {
+        return res.status(400).json({ error: 'slot (0-2) required' });
+      }
+      try {
+        const { setActiveSlot, getGhostPool } = await import('../tools/shadow-bridge.js');
+        setActiveSlot(slot);
+        res.json({ ok: true, activeSlot: slot, pool: getGhostPool() });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * GET /api/ghost/status
+     * Returns the state of all 3 ghost slots.
+     */
+    this.app.get('/api/ghost/status', requireAuth, async (_req, res) => {
+      try {
+        const { getGhostPool, getActiveSlot } = await import('../tools/shadow-bridge.js');
+        const pool = getGhostPool().map(g => ({
+          slot: g.slot, enabled: g.enabled, url: g.url,
+        }));
+        res.json({ pool, activeSlot: getActiveSlot() });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/ghost/stop-all
+     * Kill all running ghost slots.
+     */
+    this.app.post('/api/ghost/stop-all', requireAuth, async (_req, res) => {
+      try {
+        const { stopAllGhosts } = await import('../tools/browser.js');
+        await stopAllGhosts();
+        res.json({ ok: true });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    // ── Plugin Architect (v4.9) ───────────────────────────────────────────
+
+    /**
+     * GET /api/plugins/list
+     * Returns all installed plugins with running status.
+     */
+    this.app.get('/api/plugins/list', requireAuth, async (_req, res) => {
+      try {
+        const { listPlugins } = await import('../core/plugin-architect.js');
+        res.json({ plugins: listPlugins() });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/plugins/build
+     * Body: { name, goal, lang?, context?, customCode? }
+     * Generate and write a new plugin file.
+     */
+    this.app.post('/api/plugins/build', requireAuth, async (req, res) => {
+      const { name, goal, lang, context, customCode } = req.body as {
+        name?: string; goal?: string; lang?: 'node' | 'python';
+        context?: string; customCode?: string;
+      };
+      if (!name || !goal) return res.status(400).json({ error: 'name and goal are required' });
+      try {
+        const { buildPlugin } = await import('../core/plugin-architect.js');
+        const info = buildPlugin({ name, goal, lang, context, customCode });
+        res.json({ ok: true, plugin: info });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/plugins/run
+     * Body: { name: string }
+     * Spawn a plugin process.
+     */
+    this.app.post('/api/plugins/run', requireAuth, async (req, res) => {
+      const { name } = req.body as { name?: string };
+      if (!name) return res.status(400).json({ error: 'name is required' });
+      try {
+        const { runPlugin, getPluginEvents } = await import('../core/plugin-architect.js');
+        const proc = runPlugin(name);
+        if (!proc) return res.status(404).json({ error: 'Plugin not found or already running' });
+        // Wire plugin output to socket.io
+        getPluginEvents().on('pluginOutput', (d) => {
+          if (d.plugin === name) this.io.emit('agentUpdate', { type: 'pluginOutput', ...d });
+        });
+        res.json({ ok: true, name, pid: proc.pid });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/plugins/stop
+     * Body: { name: string }
+     */
+    this.app.post('/api/plugins/stop', requireAuth, async (req, res) => {
+      const { name } = req.body as { name?: string };
+      if (!name) return res.status(400).json({ error: 'name is required' });
+      try {
+        const { stopPlugin } = await import('../core/plugin-architect.js');
+        const stopped = stopPlugin(name);
+        res.json({ ok: stopped, name });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    // ── Video Stream Vision (v4.9) ────────────────────────────────────────
+
+    /**
+     * POST /api/vision/stream/start
+     * Body: { fps?: number, onlyChanges?: boolean }
+     * Start 15 FPS screen capture stream; frames forwarded via socket.io.
+     */
+    this.app.post('/api/vision/stream/start', requireAuth, async (req, res) => {
+      const fps         = Math.min(15, Math.max(1, Number(req.body?.fps ?? 15)));
+      const onlyChanges = Boolean(req.body?.onlyChanges ?? false);
+      try {
+        const { startVideoStream, getVideoStreamEvents } = await import('../tools/vision.js');
+        startVideoStream(fps, onlyChanges);
+        getVideoStreamEvents().on('frame', (frame) => {
+          this.io.emit('agentUpdate', { type: 'videoFrame', ...frame });
+        });
+        getVideoStreamEvents().on('change', (frame) => {
+          this.io.emit('agentUpdate', { type: 'videoChange', ...frame });
+        });
+        res.json({ ok: true, fps, onlyChanges });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/vision/stream/stop
+     */
+    this.app.post('/api/vision/stream/stop', requireAuth, async (_req, res) => {
+      try {
+        const { stopVideoStream } = await import('../tools/vision.js');
+        stopVideoStream();
+        res.json({ ok: true });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    // ── Emotional Tone Observer (v4.9) ────────────────────────────────────
+
+    /**
+     * POST /api/tone/analyze
+     * Body: { text: string }
+     * Returns tone analysis for a single message.
+     */
+    this.app.post('/api/tone/analyze', requireAuth, async (req, res) => {
+      const { text } = req.body as { text?: string };
+      if (!text) return res.status(400).json({ error: 'text is required' });
+      try {
+        const { analyzeTone, getToneTheme } = await import('../core/tone-observer.js');
+        const result = analyzeTone(text);
+        const theme  = getToneTheme(result.tone);
+        res.json({ ...result, theme });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/tone/history
+     * Body: { messages: string[] }
+     * Returns aggregated tone over conversation history.
+     */
+    this.app.post('/api/tone/history', requireAuth, async (req, res) => {
+      const { messages } = req.body as { messages?: string[] };
+      if (!Array.isArray(messages)) return res.status(400).json({ error: 'messages array required' });
+      try {
+        const { observeHistory, getToneTheme } = await import('../core/tone-observer.js');
+        const result = observeHistory(messages);
+        const theme  = getToneTheme(result.tone);
+        res.json({ ...result, theme });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
     // ── Memory Index / Semantic Search (v4.7) ────────────────────────────
 
     /**
@@ -1752,9 +2002,27 @@ export class ApiServer {
           timestamp: d.ts,
         });
       });
-      shadowBridge.on('shadowToggle', (d: { enabled: boolean }) => {
-        this.io.emit('agentUpdate', { type: 'shadowToggle', enabled: d.enabled });
+      shadowBridge.on('shadowToggle', (d: { enabled: boolean; slot?: number }) => {
+        this.io.emit('agentUpdate', { type: 'shadowToggle', enabled: d.enabled, slot: d.slot });
       });
+      // Parallel ghost frames (v4.9) — include slot index
+      shadowBridge.on('shadowFrame', (d: { base64: string; ts: number; slot?: number }) => {
+        if (typeof d.slot === 'number') {
+          this.io.emit('agentUpdate', { type: 'ghostFrame', base64: d.base64, timestamp: d.ts, slot: d.slot });
+        }
+      });
+      shadowBridge.on('shadowNav', (d: { url: string; slot: number }) => {
+        this.io.emit('agentUpdate', { type: 'ghostNav', url: d.url, slot: d.slot });
+      });
+      shadowBridge.on('ghostSlot', (d: { slot: number; active: boolean }) => {
+        this.io.emit('agentUpdate', { type: 'ghostSlot', slot: d.slot, active: d.active });
+      });
+      // Tone observer — wire plugin events (v4.9)
+      import('../core/tone-observer.js').then(({ onToneChange }) => {
+        onToneChange((result) => {
+          this.io.emit('agentUpdate', { type: 'toneChange', ...result });
+        });
+      }).catch(() => {});
     } catch (err: any) {
       this.logger.warn(`[Shadow] Bridge setup failed: ${err?.message}`);
     }

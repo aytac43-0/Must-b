@@ -1,0 +1,9 @@
+Feature: Skill Builder — Autonomous Task Library
+Version: Must-b v1.0 (v4.5)
+Description: The Skills tab displays all saved skills from GET /api/skills/list.
+  Each card shows: name, goal preview, step tool badges (browser/terminal/etc.),
+  run count, timestamps. Run button shows live socket state (Loader2 → CheckCircle2).
+  Delete with two-step confirmation. SaveSkillBanner in ChatArea offers one-click
+  recording after any completed workflow (planFinish event).
+Component: SkillsPanel, skills-hub.ts
+Added: v4.5 Skill Builder

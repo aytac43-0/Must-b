@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cpu, Zap, Crown, Brain, Wrench, BarChart2, Database, CheckCircle2, Smartphone, Ghost, Loader2 } from "lucide-react";
+import { Cpu, Zap, Crown, Brain, Wrench, BarChart2, Database, CheckCircle2, Smartphone, Ghost, Loader2, Layers, Activity, Puzzle } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useI18n }  from "@/i18n";
 import QRPairingModal from "@/components/QRPairingModal";
@@ -71,6 +71,11 @@ export default function RightPanel() {
   const [showQR,       setShowQR]       = useState(false);
   const [shadowOn,     setShadowOn]     = useState(false);
   const [shadowBusy,   setShadowBusy]   = useState(false);
+  // Parallel ghost slots (v4.9)
+  const [ghostSlots,   setGhostSlots]   = useState<boolean[]>([false, false, false]);
+  const [ghostBusy,    setGhostBusy]    = useState<boolean[]>([false, false, false]);
+  // Tone observer (v4.9)
+  const [tone, setTone] = useState<{ tone: string; score: number; badgeClass: string; badgeLabel: string } | null>(null);
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -90,8 +95,31 @@ export default function RightPanel() {
     };
 
     loadStatus(); loadModels();
+
+    // Load ghost slot status (v4.9)
+    apiFetch("/api/ghost/status").then(async r => {
+      if (r.ok) {
+        const d = await r.json() as { pool: { slot: number; enabled: boolean }[] };
+        setGhostSlots(d.pool.map(g => g.enabled));
+      }
+    }).catch(() => {});
+
     const iv = setInterval(() => { loadStatus(); loadModels(); }, 20_000);
     return () => clearInterval(iv);
+  }, []);
+
+  // Listen for tone changes via socket.io agentUpdate
+  useEffect(() => {
+    const handler = (ev: CustomEvent) => {
+      const d = ev.detail;
+      if (d?.type === "toneChange" && d.tone !== "normal") {
+        setTone({ tone: d.tone, score: d.score, badgeClass: d.theme?.badgeClass ?? "", badgeLabel: d.theme?.badgeLabel ?? d.tone });
+        // Auto-clear after 8 s
+        setTimeout(() => setTone(null), 8000);
+      }
+    };
+    window.addEventListener("mustb:agentUpdate" as any, handler as EventListener);
+    return () => window.removeEventListener("mustb:agentUpdate" as any, handler as EventListener);
   }, []);
 
   const tier      = status?.tier?.toLowerCase() ?? "worker";
@@ -259,6 +287,62 @@ export default function RightPanel() {
           </div>
         </button>
       </div>
+
+      {/* ── Parallel Ghost Slots (v4.9) ─────────────────────────────────── */}
+      <div className="px-4 pb-3 border-b border-white/5">
+        <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1">
+          <Layers size={8} /> Ghost Slots
+        </p>
+        <div className="flex gap-1.5">
+          {[0, 1, 2].map((slot) => (
+            <button
+              key={slot}
+              disabled={ghostBusy[slot]}
+              onClick={async () => {
+                const next = !ghostSlots[slot];
+                setGhostBusy(b => { const c = [...b]; c[slot] = true; return c; });
+                try {
+                  const r = await apiFetch("/api/ghost/toggle", {
+                    method: "POST",
+                    body: JSON.stringify({ slot, enabled: next }),
+                  });
+                  if (r.ok) setGhostSlots(s => { const c = [...s]; c[slot] = next; return c; });
+                } catch { /* silent */ }
+                setGhostBusy(b => { const c = [...b]; c[slot] = false; return c; });
+              }}
+              className={`flex-1 flex flex-col items-center py-1.5 rounded-lg border text-[9px] font-bold transition-all ${
+                ghostSlots[slot]
+                  ? "bg-purple-500/15 border-purple-500/30 text-purple-300"
+                  : "bg-white/4 border-white/8 text-gray-600 hover:text-gray-400"
+              } disabled:opacity-40`}
+              title={`Ghost ${slot + 1} — ${ghostSlots[slot] ? "active" : "inactive"}`}
+            >
+              {ghostBusy[slot]
+                ? <Loader2 size={9} className="animate-spin" />
+                : <Ghost size={9} className={ghostSlots[slot] ? "animate-pulse" : ""} />}
+              G{slot + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Tone Observer (v4.9) ────────────────────────────────────────── */}
+      {tone && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="px-4 pb-2"
+          >
+            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[10px] font-semibold ${tone.badgeClass}`}>
+              <Activity size={9} className="animate-pulse" />
+              {tone.badgeLabel}
+              <span className="ml-auto text-[9px] opacity-60">{Math.round(tone.score * 100)}%</span>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      )}
 
       {/* ── Connect Mobile ──────────────────────────────────────────────── */}
       <div className="px-4 pb-3 border-b border-white/5">

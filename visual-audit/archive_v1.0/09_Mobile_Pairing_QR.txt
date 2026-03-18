@@ -1,0 +1,12 @@
+Feature: Mobile Companion — QR Pairing System
+Version: Must-b v1.0 (v4.6)
+Description: Clicking 'Connect Mobile' in the RightPanel opens QRPairingModal.
+  It calls GET /api/companion/pair which generates a 32-byte hex token (15-min TTL)
+  using generateMobileToken() from remote-access.ts. The modal shows:
+  • QR code encoding http://<LAN-IP>:<port>/mobile?token=<hex>
+  • Countdown timer (expires in MM:SS)
+  • Refresh button for a new code
+  Scanning opens /mobile — a standalone React page with voice push-to-talk,
+  live workflow monitor, and skills runner connected to /mobile socket.io namespace.
+Components: QRPairingModal, remote-access.ts, MobilePage
+Added: v4.6 Must-b Companion

@@ -1,6 +1,9 @@
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 import winston from 'winston';
-import { shadowBridge, getShadowState, setShadowState } from './shadow-bridge.js';
+import {
+  shadowBridge, getShadowState, setShadowState,
+  getGhostContext, setGhostContext, MAX_GHOST_SLOTS,
+} from './shadow-bridge.js';
 
 export interface NavigateResult {
   url: string;
@@ -89,6 +92,77 @@ export async function shadowNavigate(url: string): Promise<void> {
   const { enabled, page } = getShadowState();
   if (!enabled || !page) return;
   await (page as Page).goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+}
+
+// ── Parallel Ghosting v2 (v4.9) ───────────────────────────────────────────
+
+/**
+ * Enable or disable a specific ghost slot (0–2).
+ * Each slot runs its own headless Chromium + 500ms JPEG mirror loop.
+ */
+export async function toggleGhostSlot(slot: number, enabled: boolean): Promise<void> {
+  if (slot < 0 || slot >= MAX_GHOST_SLOTS) return;
+  const ctx = getGhostContext(slot);
+  if (!ctx || ctx.enabled === enabled) return;
+
+  if (enabled) {
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+        '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      viewport: { width: 1280, height: 800 },
+    });
+    const page = await context.newPage();
+    await page.goto('about:blank').catch(() => {});
+
+    page.on('framenavigated', (frame: any) => {
+      if (frame === page.mainFrame()) setGhostContext(slot, { url: frame.url() });
+    });
+
+    const interval = setInterval(async () => {
+      const ghost = getGhostContext(slot);
+      if (!ghost?.enabled || !ghost.page) return;
+      try {
+        const buf = await (ghost.page as Page).screenshot({ type: 'jpeg', quality: 55 });
+        shadowBridge.emit('shadowFrame', {
+          base64: buf.toString('base64'),
+          ts:     Date.now(),
+          slot,
+        });
+      } catch { /* page closed */ }
+    }, 500);
+
+    setGhostContext(slot, { enabled: true, page, browser, url: 'about:blank', interval });
+    shadowBridge.emit('shadowToggle', { enabled: true, slot });
+
+  } else {
+    const ghost = getGhostContext(slot);
+    if (ghost?.interval) clearInterval(ghost.interval);
+    try { await (ghost?.browser as Browser | null)?.close(); } catch { /* best-effort */ }
+    setGhostContext(slot, { enabled: false, page: null, browser: null, url: 'about:blank', interval: null });
+    shadowBridge.emit('shadowToggle', { enabled: false, slot });
+  }
+}
+
+/**
+ * Navigate a specific ghost slot to a URL.
+ */
+export async function ghostNavigate(slot: number, url: string): Promise<void> {
+  const ctx = getGhostContext(slot);
+  if (!ctx?.enabled || !ctx.page) return;
+  await (ctx.page as Page).goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  setGhostContext(slot, { url });
+  shadowBridge.emit('shadowNav', { url, slot });
+}
+
+/**
+ * Stop all ghost slots (emergency shutdown).
+ */
+export async function stopAllGhosts(): Promise<void> {
+  for (let i = 0; i < MAX_GHOST_SLOTS; i++) {
+    await toggleGhostSlot(i, false).catch(() => {});
+  }
 }
 
 /**
