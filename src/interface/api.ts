@@ -22,6 +22,34 @@ import { getSkillsMarket, publishSkill } from '../commands/doctor.js';
 /** One-time random local auth token — valid for this process lifetime */
 const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
 
+// ── Workspace file listing helper (v4.3) ─────────────────────────────────
+
+interface WsFile { name: string; rel: string; ext: string; size: number; mtime: string; }
+
+async function listWorkspaceFiles(
+  root: string, dir: string, depth: number, maxDepth: number,
+): Promise<WsFile[]> {
+  if (depth > maxDepth) return [];
+  let entries: import('fs').Dirent[];
+  try { entries = await fs.promises.readdir(dir, { withFileTypes: true }); }
+  catch { return []; }
+
+  const results: WsFile[] = [];
+  for (const e of entries) {
+    if (e.name.startsWith('.')) continue;
+    const abs = path.join(dir, e.name);
+    const rel = path.relative(root, abs).replace(/\\/g, '/');
+    if (e.isDirectory()) {
+      results.push(...await listWorkspaceFiles(root, abs, depth + 1, maxDepth));
+    } else if (e.isFile()) {
+      const st  = await fs.promises.stat(abs).catch(() => null);
+      const ext = path.extname(e.name).toLowerCase().slice(1);
+      results.push({ name: e.name, rel, ext, size: st?.size ?? 0, mtime: st?.mtime.toISOString() ?? '' });
+    }
+  }
+  return results;
+}
+
 /** In-memory local chat store (replaces Supabase dependency) */
 interface LocalChat {
   id: string;
@@ -434,6 +462,49 @@ export class ApiServer {
         });
       } catch {
         res.json({ warn: false, message: null });
+      }
+    });
+
+    // ── Workspace file browser (v4.3) ─────────────────────────────────────
+
+    /** GET /api/workspace/files — list files in WORKSPACE_ROOT (2 levels deep) */
+    this.app.get('/api/workspace/files', requireAuth, async (_req, res) => {
+      try {
+        const { WORKSPACE_ROOT } = await import('../core/paths.js');
+        const files = await listWorkspaceFiles(WORKSPACE_ROOT, WORKSPACE_ROOT, 0, 2);
+        res.json({ files });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /** GET /api/workspace/file?p=relative/path — serve file content as JSON */
+    this.app.get('/api/workspace/file', requireAuth, async (req, res) => {
+      try {
+        const { WORKSPACE_ROOT, workspacePath } = await import('../core/paths.js');
+        const rel = String(req.query.p ?? '');
+        if (!rel) return res.status(400).json({ error: 'p (relative path) required' });
+        const abs = workspacePath(rel);
+        const raw = await fs.promises.readFile(abs, 'utf8');
+        const truncated = raw.length > 1_500_000;
+        res.json({ content: raw.slice(0, 1_500_000), truncated });
+      } catch (err: any) {
+        const status = err?.message?.includes('traversal') ? 403 : 500;
+        res.status(status).json({ error: err?.message });
+      }
+    });
+
+    // ── Ollama model roster (v4.3) ─────────────────────────────────────────
+
+    /** GET /api/models — list models available in the local Ollama instance */
+    this.app.get('/api/models', async (_req, res) => {
+      try {
+        const r = await fetch('http://localhost:11434/api/tags');
+        if (!r.ok) throw new Error(`Ollama HTTP ${r.status}`);
+        const data = await r.json() as { models?: { name: string; size: number; modified_at: string }[] };
+        res.json({ models: data.models ?? [] });
+      } catch {
+        res.json({ models: [] });
       }
     });
 

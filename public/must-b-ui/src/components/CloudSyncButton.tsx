@@ -3,8 +3,8 @@
  *
  * Fixed bottom-right button available on setup/onboarding screens.
  * Offers two data-ingestion paths:
- *   1. "Giriş Yap" — OAuth handshake with Must-b Worlds cloud
- *   2. "Hafıza Dosyası Yükle" — drag-and-drop or file-picker for .md memory files
+ *   1. "Sign In" — OAuth handshake with Must-b Worlds cloud
+ *   2. "Upload Memory File" — drag-and-drop or file-picker for .md memory files
  *
  * The component manages its own expanded/collapsed state and handles the
  * file upload to POST /api/memory/import with multipart form data.
@@ -26,7 +26,6 @@ export default function CloudSyncButton() {
   // ── Cloud Login ─────────────────────────────────────────────────────────
 
   const handleCloudLogin = () => {
-    // Redirect to the backend OAuth initiator; it will redirect back after auth
     window.location.href = "/api/auth/cloud-connect";
   };
 
@@ -35,13 +34,13 @@ export default function CloudSyncButton() {
   const uploadFile = async (file: File) => {
     if (!file.name.endsWith(".md") && !file.name.endsWith(".json")) {
       setUploadState("error");
-      setUploadMsg("Yalnızca .md veya .json dosyaları kabul edilir.");
+      setUploadMsg("Only .md or .json files are accepted.");
       setTimeout(() => setUploadState("idle"), 3000);
       return;
     }
 
     setUploadState("uploading");
-    setUploadMsg(`${file.name} yükleniyor...`);
+    setUploadMsg(`Uploading ${file.name}…`);
 
     const form = new FormData();
     form.append("file", file);
@@ -54,11 +53,11 @@ export default function CloudSyncButton() {
       }
       const d = await res.json() as { ok: boolean; bytes?: number };
       setUploadState("success");
-      setUploadMsg(`Hafıza içe aktarıldı${d.bytes ? ` (${(d.bytes / 1024).toFixed(1)} KB)` : ""}`);
+      setUploadMsg(`Memory imported${d.bytes ? ` (${(d.bytes / 1024).toFixed(1)} KB)` : ""}`);
       setTimeout(() => { setUploadState("idle"); setOpen(false); }, 2500);
     } catch (e: unknown) {
       setUploadState("error");
-      setUploadMsg(e instanceof Error ? e.message : "Yükleme başarısız");
+      setUploadMsg(e instanceof Error ? e.message : "Upload failed");
       setTimeout(() => setUploadState("idle"), 3500);
     }
   };
@@ -92,7 +91,7 @@ export default function CloudSyncButton() {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
-              <p className="text-xs font-bold text-white uppercase tracking-widest">Veri Girişi</p>
+              <p className="text-xs font-bold text-white uppercase tracking-widest">Data Ingestion</p>
               <button
                 onClick={() => setOpen(false)}
                 className="text-gray-600 hover:text-white transition-colors"
@@ -109,8 +108,8 @@ export default function CloudSyncButton() {
               >
                 <LogIn size={16} />
                 <div className="text-left">
-                  <p className="font-semibold">Must-b Worlds Girişi</p>
-                  <p className="text-[11px] text-orange-400/60 font-normal">Bulut hafızanı bu cihazla eşitle</p>
+                  <p className="font-semibold">Must-b Worlds Sign In</p>
+                  <p className="text-[11px] text-orange-400/60 font-normal">Sync cloud memory to this device</p>
                 </div>
               </button>
 
@@ -136,8 +135,8 @@ export default function CloudSyncButton() {
                 {uploadState === "idle" && (
                   <>
                     <Upload size={20} className="mx-auto mb-2 text-gray-500" />
-                    <p className="text-xs text-gray-400 font-medium">Hafıza dosyasını sürükle</p>
-                    <p className="text-[11px] text-gray-600 mt-1">.md veya .json — must-b hafıza formatı</p>
+                    <p className="text-xs text-gray-400 font-medium">Drop memory file here</p>
+                    <p className="text-[11px] text-gray-600 mt-1">.md or .json — must-b memory format</p>
                   </>
                 )}
                 {uploadState === "uploading" && (
@@ -161,7 +160,7 @@ export default function CloudSyncButton() {
               </div>
 
               <p className="text-[10px] text-gray-700 text-center">
-                Tüm veriler uçtan uca şifrelenerek saklanır
+                All data is stored end-to-end encrypted
               </p>
             </div>
           </motion.div>
@@ -180,7 +179,7 @@ export default function CloudSyncButton() {
         }`}
       >
         <Cloud size={16} />
-        {open ? "Kapat" : "Giriş Yap / Yükle"}
+        {open ? "Close" : "Sign In / Upload"}
       </motion.button>
     </div>
   );

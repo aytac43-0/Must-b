@@ -1,25 +1,65 @@
-import { ChatArea }         from "@/components/chat/ChatArea";
-import ActiveWorkflow       from "@/components/ActiveWorkflow";
-import LiveSightPanel       from "@/components/LiveSightPanel";
-import ScreenScanOverlay    from "@/components/ScreenScanOverlay";
+/**
+ * DashboardPage — War Room Center (v4.3)
+ *
+ * Layout:
+ *   ┌──────────────────────────────────────────────────────────────────────┐
+ *   │ WarRoomPanel  (vision thumbnail | workflow steps + action feed)      │ shrink-0
+ *   ├──────────────────────────────────────────────────────────────────────┤
+ *   │  [💬 Chat]   [📁 Workspace]                                  tab bar │ shrink-0
+ *   ├──────────────────────────────────────────────────────────────────────┤
+ *   │                                                                      │
+ *   │   ChatArea  ─OR─  WorkspacePreview                                  │ flex-1
+ *   │                                                                      │
+ *   └──────────────────────────────────────────────────────────────────────┘
+ */
+
+import { useState }          from "react";
+import { MessageSquare, FolderOpen } from "lucide-react";
+import { ChatArea }          from "@/components/chat/ChatArea";
+import WarRoomPanel          from "@/components/WarRoomPanel";
+import ScreenScanOverlay     from "@/components/ScreenScanOverlay";
+import WorkspacePreview      from "@/components/WorkspacePreview";
+
+type Tab = "chat" | "workspace";
+
+const TABS: { id: Tab; icon: React.ElementType; label: string }[] = [
+  { id: "chat",      icon: MessageSquare, label: "Chat"      },
+  { id: "workspace", icon: FolderOpen,    label: "Workspace" },
+];
 
 export default function DashboardPage() {
+  const [tab, setTab] = useState<Tab>("chat");
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Full-viewport scan overlay — shown when Must-b captures the screen */}
+      {/* Full-viewport scan overlay */}
       <ScreenScanOverlay />
 
-      {/* Live workflow progress card */}
-      <ActiveWorkflow />
+      {/* Unified war room — vision + workflow + action log */}
+      <WarRoomPanel />
 
-      {/* Live Sight — thumbnail of what Must-b sees, with element detection */}
-      <div className="mx-4 mb-3 shrink-0">
-        <LiveSightPanel />
+      {/* Tab bar */}
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-white/5 bg-black/10 shrink-0">
+        {TABS.map(({ id, icon: Icon, label }) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all ${
+              tab === id
+                ? "bg-orange-500/12 text-orange-400 border border-orange-500/20"
+                : "text-gray-600 hover:text-gray-300 hover:bg-white/4"
+            }`}
+          >
+            <Icon size={13} />
+            {label}
+          </button>
+        ))}
       </div>
 
-      {/* Main chat area */}
+      {/* Tab content */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        <ChatArea />
+        {tab === "chat"      && <ChatArea />}
+        {tab === "workspace" && <WorkspacePreview />}
       </div>
     </div>
   );

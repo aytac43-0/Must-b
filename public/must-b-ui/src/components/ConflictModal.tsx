@@ -5,9 +5,9 @@
  * When a conflict is detected between the local agent (e.g. "Alex") and the
  * cloud agent (e.g. "Max"), this modal surfaces three resolution options:
  *
- *   1. "Yeni Ajan Oluştur"    → duplicate  (keep local, copy cloud to cloud-restore/)
- *   2. "Bulutu Kullan (Üstüne Yaz)" → restore   (cloud wins, overwrite local)
- *   3. "Lokalimi Koru"        → upload    (local wins, overwrite cloud)
+ *   1. "Create New Agent"    → duplicate  (keep local, copy cloud to cloud-restore/)
+ *   2. "Use Cloud (Overwrite)" → restore  (cloud wins, overwrite local)
+ *   3. "Keep Mine"           → upload     (local wins, overwrite cloud)
  *
  * Posts the decision to POST /api/setup/sync-resolve and closes when resolved.
  */
@@ -37,22 +37,22 @@ interface Option {
 const OPTIONS: Option[] = [
   {
     decision: "duplicate",
-    label:    "Yeni Ajan Oluştur",
-    sublabel: "Her ikisini de koru — bulut verisi ayrı klasöre kopyalanır",
+    label:    "Create New Agent",
+    sublabel: "Keep both — cloud data is copied to a separate folder",
     icon:     GitMerge,
     accent:   "border-blue-500/30 bg-blue-500/8 hover:border-blue-500/50 text-blue-400",
   },
   {
     decision: "restore",
-    label:    "Bulutu Kullan (Üstüne Yaz)",
-    sublabel: "Bulut kazanır — yerel hafıza bulut versiyonuyla değiştirilir",
+    label:    "Use Cloud (Overwrite)",
+    sublabel: "Cloud wins — local memory is replaced with cloud version",
     icon:     CloudDownload,
     accent:   "border-orange-500/30 bg-orange-500/8 hover:border-orange-500/50 text-orange-400",
   },
   {
     decision: "upload",
-    label:    "Lokalimi Koru",
-    sublabel: "Yerel kazanır — bulut hafızanın üzerine yerel veri yazılır",
+    label:    "Keep Mine",
+    sublabel: "Local wins — cloud memory is overwritten with local data",
     icon:     Shield,
     accent:   "border-green-500/30 bg-green-500/8 hover:border-green-500/50 text-green-400",
   },
@@ -101,7 +101,7 @@ export default function ConflictModal() {
 
   const formatDate = (iso: string | null) => {
     if (!iso) return "—";
-    try { return new Date(iso).toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" }); }
+    try { return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }); }
     catch { return iso; }
   };
 
@@ -127,20 +127,20 @@ export default function ConflictModal() {
                 <AlertTriangle size={18} className="text-amber-400" />
               </div>
               <div>
-                <h2 className="text-white font-bold text-base">Hafıza Çakışması Tespit Edildi</h2>
-                <p className="text-gray-500 text-xs mt-0.5">İki farklı ajan verisi bulundu — karar vermeniz gerekiyor</p>
+                <h2 className="text-white font-bold text-base">Memory Conflict Detected</h2>
+                <p className="text-gray-500 text-xs mt-0.5">Two agent identities found — action required</p>
               </div>
             </div>
 
             {/* Agent comparison */}
             <div className="grid grid-cols-2 gap-3 px-6 pt-5 pb-2">
               <div className="rounded-xl border border-white/8 bg-white/3 px-4 py-3">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Yerel Ajan</p>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Local Agent</p>
                 <p className="text-white font-bold text-sm">{conflict.localAgentName ?? "—"}</p>
                 <p className="text-gray-600 text-[10px] mt-1">{formatDate(conflict.localMtime)}</p>
               </div>
               <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 px-4 py-3">
-                <p className="text-[10px] font-bold text-orange-400/60 uppercase tracking-widest mb-1">Bulut Ajanı</p>
+                <p className="text-[10px] font-bold text-orange-400/60 uppercase tracking-widest mb-1">Cloud Agent</p>
                 <p className="text-orange-300 font-bold text-sm">{conflict.cloudAgentName ?? "—"}</p>
                 <p className="text-orange-400/40 text-[10px] mt-1">{formatDate(conflict.cloudTimestamp)}</p>
               </div>
@@ -151,7 +151,7 @@ export default function ConflictModal() {
               {done ? (
                 <div className="flex items-center justify-center gap-2 py-6 text-green-400 text-sm font-semibold">
                   <span className="w-4 h-4 rounded-full border-2 border-green-400 flex items-center justify-center text-[10px]">✓</span>
-                  Çakışma çözüldü
+                  Conflict resolved
                 </div>
               ) : (
                 OPTIONS.map(opt => {
@@ -180,7 +180,7 @@ export default function ConflictModal() {
 
             <div className="px-6 pb-5 pt-1">
               <p className="text-[10px] text-gray-700 text-center">
-                Seçim geri alınamaz · Endişeniz varsa önce "Yeni Ajan Oluştur" seçeneğini tercih edin
+                This action cannot be undone · If unsure, choose "Create New Agent" first
               </p>
             </div>
           </motion.div>
