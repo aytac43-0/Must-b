@@ -1,0 +1,8 @@
+Feature: Plugin Architect — Build Form
+Version: Must-b v2.0 (v4.9)
+Description: Collapsed build form with plugin name, goal, optional context, and
+  language selector (Node.js / Python). 'Generate Plugin' CTA calls
+  POST /api/plugins/build which writes src/plugins/<name>.mjs or .py and returns
+  PluginInfo { name, lang, filename, filePath, running, createdAt }.
+Component: PluginsPanel → build form
+Added: v4.9 Synthetic Consciousness

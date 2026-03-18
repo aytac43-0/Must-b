@@ -1,0 +1,9 @@
+Feature: Emotional Tone Observer — Stress Detected
+Version: Must-b v2.0 (v4.9)
+Description: When the user sends a message with stress signals (frustration,
+  error, broken, not working, urgency markers), the Tone Observer detects 'stress'
+  tone and broadcasts a 'toneChange' socket event. The Right Panel shows a red
+  pulsing 'Stress Detected' badge with a score % and auto-dismisses after 8s.
+  No LLM call required — runs on local keyword scoring, <1ms.
+Components: tone-observer.ts, RightPanel, socket.ts (global event bridge)
+Added: v4.9 Synthetic Consciousness

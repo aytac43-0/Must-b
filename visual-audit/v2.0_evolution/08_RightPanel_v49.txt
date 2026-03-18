@@ -1,0 +1,12 @@
+Feature: Right Panel — v2.0 Controls
+Version: Must-b v2.0 (v4.9)
+Description: The Right Panel now includes:
+  • Ghost Slots section: G1 / G2 / G3 buttons — each toggles an independent
+    headless Chromium context via POST /api/ghost/toggle { slot, enabled }.
+    Active slots show purple animate-pulse Ghost icons.
+  • Tone Observer badge (conditional): appears when tone is non-normal,
+    shows red/orange/blue badge with label + score %. Auto-dismisses in 8s.
+  • Previous sections: Agent Role, Hardware Score, Active Model, Model Roster,
+    Shadow Mode toggle, Connect Mobile button.
+Components: RightPanel, tone-observer.ts, browser.ts toggleGhostSlot()
+Added: v4.9 Synthetic Consciousness

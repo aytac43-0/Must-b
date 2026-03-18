@@ -1,0 +1,8 @@
+Feature: Emotional Tone Observer — Normal State
+Version: Must-b v2.0 (v4.9)
+Description: In the normal/focused state the Right Panel shows no tone badge.
+  The tone observer analyzes every user message sent via POST /api/goal and
+  only emits 'toneChange' when tone is non-normal (stress / urgent / focused).
+  Tone history aggregation uses a 5-message sliding window.
+Components: tone-observer.ts observeHistory(), RightPanel
+Added: v4.9 Synthetic Consciousness

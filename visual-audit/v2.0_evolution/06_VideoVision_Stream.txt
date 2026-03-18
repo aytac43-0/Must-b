@@ -1,0 +1,10 @@
+Feature: Real-Time Video Vision — 15 FPS Screen Stream
+Version: Must-b v2.0 (v4.9)
+Description: POST /api/vision/stream/start { fps: 15 } launches a setInterval
+  loop at 66ms intervals (15 FPS) that calls captureScreen() and emits each
+  frame over Socket.IO as 'videoFrame' events. Change detection uses sampled
+  base64 FNV-1a hashing; significant diffs (>5%) also emit 'videoChange' events.
+  The WarRoomPanel receives these as live captures, giving the AI a continuous
+  visual feed of the OS screen for dynamic UI tracking.
+Components: vision.ts startVideoStream(), api.ts /api/vision/stream/*, WarRoomPanel
+Added: v4.9 Synthetic Consciousness

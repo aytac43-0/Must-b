@@ -1,0 +1,8 @@
+Feature: Dashboard — 5-Tab War Room (v2.0)
+Version: Must-b v2.0 (v4.9)
+Description: The DashboardPage tab bar now includes 5 tabs:
+  💬 Chat | 📁 Workspace | ⚡ Skills | 🧠 Memory | 🧩 Plugins
+  Each tab is a dedicated panel: ChatArea, WorkspacePreview, SkillsPanel,
+  MemoryPanel, PluginsPanel. Auto-switches to Chat on planStart/skillRunStart.
+Components: DashboardPage, PluginsPanel (new in v4.9)
+Added: v4.9 Synthetic Consciousness
