@@ -22,11 +22,20 @@ import path from 'path';
  * Determined once at module load; guaranteed to exist on disk.
  */
 export const WORKSPACE_ROOT: string = (() => {
-  const fromEnv = process.env.MUSTB_WORKSPACE;
-  if (fromEnv) return path.resolve(fromEnv);
+  if (process.env.MUSTB_WORKSPACE) return path.resolve(process.env.MUSTB_WORKSPACE);
 
-  // Convention: place workspace beside the project root (one level up from src/)
-  const projectRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
+  // Resolve project root — works in CJS bundle (esbuild __dirname), ESM dev (import.meta.url),
+  // and always when MUSTB_ROOT is set by bin/must-b.cjs.
+  let projectRoot: string;
+  if (process.env.MUSTB_ROOT) {
+    projectRoot = path.resolve(process.env.MUSTB_ROOT);
+  } else if (typeof __dirname !== 'undefined') {
+    // CJS bundle: __dirname = dist/ → one level up is project root
+    projectRoot = path.resolve(__dirname, '..');
+  } else {
+    // ESM dev: src/core/paths.ts → up 2 levels to project root
+    projectRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
+  }
   return path.join(projectRoot, 'workspace');
 })();
 

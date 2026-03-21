@@ -21,7 +21,13 @@ import type { ChildProcess } from 'child_process';
 
 // ── Constants ─────────────────────────────────────────────────────────────
 
-const PLUGINS_DIR = path.resolve(new URL('../../src/plugins', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
+// Resolve plugins dir — safe for CJS bundle (no import.meta.url) and ESM dev
+const _pluginRoot = (() => {
+  if (process.env.MUSTB_ROOT) return path.resolve(process.env.MUSTB_ROOT);
+  if (typeof __dirname !== 'undefined') return path.resolve(__dirname, '..');
+  return path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
+})();
+const PLUGINS_DIR = path.join(_pluginRoot, 'src', 'plugins');
 
 // ── Types ─────────────────────────────────────────────────────────────────
 

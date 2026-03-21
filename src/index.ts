@@ -24,8 +24,18 @@ import { initWorkspace } from './core/paths.js';
 dotenv.config();
 
 // ── Resolve project root ───────────────────────────────────────────────────
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = process.env.MUSTB_ROOT ?? path.resolve(__dirname, '..');
+// MUSTB_ROOT is always set by bin/must-b.cjs before this file runs.
+// Fallback: in CJS bundles __dirname is the dist/ directory (injected by Node/esbuild);
+// in ESM dev mode (tsx) we derive it from import.meta.url.
+// We must NOT use `const __dirname = …` here — that would shadow the CJS global.
+function _resolveRoot(): string {
+  if (process.env.MUSTB_ROOT) return path.resolve(process.env.MUSTB_ROOT);
+  // CJS bundle: __dirname is available as a global
+  if (typeof __dirname !== 'undefined') return path.resolve(__dirname, '..');
+  // ESM dev fallback
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+}
+const ROOT = _resolveRoot();
 
 // ── World mode: ensure MUSTB_UID is set and persisted ─────────────────────
 function ensureWorldUid() {

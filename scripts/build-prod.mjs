@@ -133,6 +133,10 @@ const BASE_FLAGS = [
   "--external:fsevents",
   "--external:onnxruntime-node",
   "--external:chromium-bidi",
+  // playwright bundles its own binaries and uses require.resolve() for relative
+  // paths that break when inlined — must stay external
+  "--external:playwright",
+  "--external:playwright-core",
   // All Node.js built-ins (prevents CJS require() shim errors in ESM output)
   ...NODE_BUILTINS.map((m) => `--external:${m}`),
   ...NODE_BUILTINS.map((m) => `--external:node:${m}`),
