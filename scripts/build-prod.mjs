@@ -109,6 +109,18 @@ if (!existsSync(join(ROOT, "node_modules/esbuild"))) {
 
 const ESBUILD = join(ROOT, "node_modules/.bin/esbuild");
 
+const NODE_BUILTINS = [
+  "assert", "async_hooks", "buffer", "child_process", "cluster",
+  "console", "constants", "crypto", "dgram", "diagnostics_channel",
+  "dns", "domain", "events", "fs", "fs/promises", "http", "http2",
+  "https", "inspector", "module", "net", "os", "path", "path/posix",
+  "path/win32", "perf_hooks", "process", "punycode", "querystring",
+  "readline", "repl", "stream", "stream/consumers", "stream/promises",
+  "stream/web", "string_decoder", "sys", "timers", "timers/promises",
+  "tls", "trace_events", "tty", "url", "util", "util/types", "v8",
+  "vm", "wasi", "worker_threads", "zlib",
+];
+
 const BASE_FLAGS = [
   "src/index.ts",
   "--bundle",
@@ -116,10 +128,14 @@ const BASE_FLAGS = [
   "--target=node20",
   "--minify",
   "--sourcemap=external",
+  // Explicit 3rd-party native / non-bundleable packages
   "--external:sharp",
   "--external:fsevents",
   "--external:onnxruntime-node",
   "--external:chromium-bidi",
+  // All Node.js built-ins (prevents CJS require() shim errors in ESM output)
+  ...NODE_BUILTINS.map((m) => `--external:${m}`),
+  ...NODE_BUILTINS.map((m) => `--external:node:${m}`),
   `--define:__VERSION__='"${VERSION}"'`,
   `--define:__GIT_HASH__='"${GIT_HASH}"'`,
   "--log-level=warning",
