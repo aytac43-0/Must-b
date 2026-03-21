@@ -1,0 +1,9 @@
+Feature: Shadow Mode — Virtual Stealth Execution
+Version: Must-b v1.0 (v4.8)
+Description: When Shadow Mode is enabled from the RightPanel toggle, the War Room
+  left column switches from OS screenshots to a live JPEG mirror of the headless
+  Playwright browser (500ms refresh). Purple 'SHADOW / LIVE' badges overlay the
+  mirror. Panel header shows the pulsing 'Ghost Active' pill badge.
+  Mouse/keyboard input is silently routed to the Playwright Page, not the OS.
+Components: shadow-bridge.ts, WarRoomPanel, RightPanel
+Added: v4.8 Shadow Mode

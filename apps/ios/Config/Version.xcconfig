@@ -1,0 +1,8 @@
+// Shared iOS version defaults.
+// Generated overrides live in build/Version.xcconfig (git-ignored).
+
+MUSTB_GATEWAY_VERSION = 0.0.0
+MUSTB_MARKETING_VERSION = 0.0.0
+MUSTB_BUILD_VERSION = 0
+
+#include? "../build/Version.xcconfig"

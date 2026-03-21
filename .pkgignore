@@ -1,0 +1,56 @@
+# .pkgignore — files excluded from @yao-pkg/pkg binary packaging
+#
+# pkg bundles dist/index.cjs + dist/public/** into the executable.
+# Everything listed here stays OUT of the binary.
+
+# Development source
+src/
+tsconfig.json
+tsconfig*.json
+
+# Test infrastructure
+visual-audit/
+*.test.ts
+*.spec.ts
+playwright.config.*
+
+# Documentation and metadata
+*.md
+LICENSE
+CHANGELOG*
+docs/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+*.crt
+
+# Logs and workspace output
+logs/
+workspace/
+*.log
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Editor configs
+.vscode/
+.idea/
+*.suo
+
+# Build tooling (not needed at runtime)
+scripts/
+node_modules/
+public/must-b-ui/node_modules/
+public/must-b-ui/src/
+public/must-b-ui/dist/
+
+# CI / deployment
+.github/
+Dockerfile*
+docker-compose*
+vercel.json

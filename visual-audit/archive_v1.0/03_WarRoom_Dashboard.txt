@@ -1,0 +1,7 @@
+Feature: 3-Column War Room Dashboard
+Version: Must-b v1.0
+Description: Main dashboard layout — Left sidebar with navigation, central
+  content area with Chat tab active (empty state with logo), Right panel showing
+  Agent Role badge, Hardware score bar, Model Roster and Shadow Mode toggle.
+Components: AppLayout, Sidebar, DashboardPage, ChatArea, RightPanel
+Added: v4.3 XU UI Master Dashboard

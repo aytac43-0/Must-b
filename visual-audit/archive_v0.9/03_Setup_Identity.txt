@@ -1,0 +1,7 @@
+Setup Wizard — Kimlik Adımı (Step 1/5)
+Kullanıcıdan isim alınıyor.
+İlgili dosyalar:
+  - public/must-b-ui/src/pages/SetupPage.tsx  (step 0)
+  - src/core/identity.ts  (Ed25519 kimlik üretimi)
+  - src/memory/long-term.ts  (profil kaydı)
+API bağlantısı: POST /api/setup (Finish'e kadar yok)

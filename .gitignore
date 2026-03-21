@@ -1,0 +1,26 @@
+# Dependencies (single root node_modules)
+node_modules/
+
+# Build outputs
+dist/
+public/Luma/.next/
+public/Luma/out/
+
+# Environment files
+.env
+.env.local
+.env.production
+public/Luma/.env
+public/Luma/.env.local
+
+# Logs
+logs/
+*.log
+memory/*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large embedded repos — tracked separately
+src/core/must-b/

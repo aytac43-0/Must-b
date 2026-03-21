@@ -1,0 +1,12 @@
+{
+  "name": "@must-b/google-gemini-cli-auth",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "Must-b Gemini CLI OAuth provider plugin",
+  "type": "module",
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

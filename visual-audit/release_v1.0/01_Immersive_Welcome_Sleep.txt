@@ -1,0 +1,6 @@
+Feature: Immersive Welcome Screen (Sleeping)
+Version: Must-b v1.0
+Description: Full-screen animated fox avatar in sleep state. Radial gradient
+  background, pulsing breathing animation. Touch/click to wake interaction.
+Component: WelcomePage → SleepingFox
+Added: v4.3 XU UI Master Dashboard

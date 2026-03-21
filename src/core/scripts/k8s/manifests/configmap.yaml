@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: must-b-config
+  labels:
+    app: must-b
+data:
+  must-b.json: |
+    {
+      "gateway": {
+        "mode": "local",
+        "bind": "loopback",
+        "port": 18789,
+        "auth": {
+          "mode": "token"
+        },
+        "controlUi": {
+          "enabled": true
+        }
+      },
+      "agents": {
+        "defaults": {
+          "workspace": "~/.must-b/workspace"
+        },
+        "list": [
+          {
+            "id": "default",
+            "name": "Must-b Assistant",
+            "workspace": "~/.must-b/workspace"
+          }
+        ]
+      },
+      "cron": { "enabled": false }
+    }
+  AGENTS.md: |
+    # Must-b Assistant
+
+    You are a helpful AI assistant running in Kubernetes.

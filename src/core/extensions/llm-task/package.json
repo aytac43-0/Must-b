@@ -1,0 +1,16 @@
+{
+  "name": "@must-b/llm-task",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "Must-b JSON-only LLM task plugin",
+  "type": "module",
+  "dependencies": {
+    "@sinclair/typebox": "0.34.48",
+    "ajv": "^8.18.0"
+  },
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

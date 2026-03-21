@@ -1,0 +1,7 @@
+Feature: War Room Live Sight Panel
+Version: Must-b v1.0
+Description: WarRoomPanel expands above the chat area after a screen capture.
+  Left half: captured screenshot thumbnail with Sobel-detected UI element overlays
+  (button/input/image bounding boxes). Right half: workflow step cards + Control Feed.
+Component: WarRoomPanel (v4.3)
+Added: v4.2 Precision Control → v4.3 XU UI

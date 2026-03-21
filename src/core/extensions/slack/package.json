@@ -1,0 +1,12 @@
+{
+  "name": "@must-b/slack",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "Must-b Slack channel plugin",
+  "type": "module",
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

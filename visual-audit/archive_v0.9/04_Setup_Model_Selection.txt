@@ -1,0 +1,7 @@
+Setup Wizard — LLM Sağlayıcı Seçimi (Step 2/5)
+OpenRouter / OpenAI / Anthropic / Ollama seçenekleri gösterilir.
+İlgili dosyalar:
+  - public/must-b-ui/src/pages/SetupPage.tsx  (step 1 — PROVIDERS)
+  - src/utils/hardware.ts  (getPerformancePrediction, recommendModels)
+  - src/core/models-catalog.ts  (MODELS_LIST)
+API bağlantısı: GET /api/setup/performance?modelId=... (Step 1 render)

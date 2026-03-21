@@ -1,0 +1,9 @@
+Setup — CloudSyncButton Panel (Açık)
+Sağ alttaki "Giriş Yap / Yükle" butonu açıldıktan sonraki panel.
+İki akış:
+  1. Must-b Worlds OAuth → /api/auth/cloud-connect
+  2. Hafıza dosyası sürükle/bırak (.md/.json) → POST /api/memory/import
+İlgili dosyalar:
+  - public/must-b-ui/src/components/CloudSyncButton.tsx
+  - src/interface/api.ts  (POST /api/memory/import)
+  - src/core/cloud-sync.ts  (CloudSync — OAuth ardından çalışır)

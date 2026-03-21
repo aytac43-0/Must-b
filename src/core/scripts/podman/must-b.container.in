@@ -1,0 +1,28 @@
+# Must-b gateway — Podman Quadlet (rootless)
+# Installed by setup-podman.sh into must-b's ~/.config/containers/systemd/
+# {{MUSTB_HOME}} is replaced at install time.
+
+[Unit]
+Description=Must-b gateway (rootless Podman)
+
+[Container]
+Image=must-b:local
+ContainerName=must-b
+UserNS=keep-id
+# Keep container UID/GID aligned with the invoking user so mounted config is readable.
+User=%U:%G
+Volume={{MUSTB_HOME}}/.must-b:/home/node/.must-b:Z
+EnvironmentFile={{MUSTB_HOME}}/.must-b/.env
+Environment=HOME=/home/node
+Environment=TERM=xterm-256color
+PublishPort=18789:18789
+PublishPort=18790:18790
+Pull=never
+Exec=node dist/index.js gateway --bind lan --port 18789
+
+[Service]
+TimeoutStartSec=300
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

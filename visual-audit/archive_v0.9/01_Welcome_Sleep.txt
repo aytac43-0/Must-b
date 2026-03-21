@@ -1,0 +1,6 @@
+Welcome Screen — Uyku Hali
+Backend bağlantısı: YOK (salt okunur render)
+İlgili dosyalar:
+  - public/must-b-ui/src/pages/WelcomePage.tsx
+  - public/must-b-ui/public/avatar/sleep.png
+API bağlantısı: Yok (mount'ta API çağrısı yapılmıyor)

@@ -1,0 +1,12 @@
+{
+  "name": "@must-b/sglang-provider",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "Must-b SGLang provider plugin",
+  "type": "module",
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

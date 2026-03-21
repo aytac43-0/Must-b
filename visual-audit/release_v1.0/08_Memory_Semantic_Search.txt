@@ -1,0 +1,12 @@
+Feature: Elephant Memory — Local Vector Semantic Search
+Version: Must-b v1.0 (v4.7)
+Description: The Memory tab connects to GET /api/memory/search?q= which runs
+  vectra LocalIndex similarity search using @huggingface/transformers all-MiniLM-L6-v2
+  (384-dim, on-device, no API key required). Results show:
+  • Similarity score badge (% colour-coded: green ≥85%, orange ≥65%)
+  • Source type badges (Skill / Conversation / Workspace / Custom)
+  • Text snippet with score progress bar
+  Collapsible control row: Index Skills | Index Workspace | Clear Index.
+  Completed conversations auto-indexed on planFinish event.
+Components: MemoryPanel, memory-index.ts
+Added: v4.7 Elephant Memory

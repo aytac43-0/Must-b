@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  },
+  "include": [
+    "src/index.ts",
+    "src/core/orchestrator.ts",
+    "src/core/executor.ts",
+    "src/core/planner.ts",
+    "src/core/provider.ts",
+    "src/commands/**/*",
+    "src/interface/**/*",
+    "src/memory/**/*",
+    "src/tools/**/*",
+    "src/utils/**/*"
+  ],
+  "exclude": ["node_modules", "dist", "src/core/source", "src/core/extensions", "src/core/vendor"]
+}

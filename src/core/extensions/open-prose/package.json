@@ -1,0 +1,12 @@
+{
+  "name": "@must-b/open-prose",
+  "version": "2026.3.13",
+  "private": true,
+  "description": "OpenProse VM skill pack plugin (slash command + telemetry).",
+  "type": "module",
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

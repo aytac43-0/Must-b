@@ -1,0 +1,10 @@
+Feature: Live Workspace Preview
+Version: Must-b v1.0 (v4.3)
+Description: The Workspace tab in DashboardPage renders a file tree from
+  GET /api/workspace/files. Selecting a file previews it inline:
+  • HTML → sandboxed iframe with srcdoc
+  • JSON → regex syntax-colored pre block
+  • Other text → monospace pre
+  File icons differ by extension (Globe2 for HTML, FileCode2 for JSON/JS/TS).
+Component: WorkspacePreview
+Added: v4.3 XU UI Master Dashboard

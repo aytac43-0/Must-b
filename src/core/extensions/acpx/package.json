@@ -1,0 +1,14 @@
+{
+  "name": "@must-b/acpx",
+  "version": "2026.3.13",
+  "description": "Must-b ACP runtime backend via acpx",
+  "type": "module",
+  "dependencies": {
+    "acpx": "0.3.0"
+  },
+  "must-b": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

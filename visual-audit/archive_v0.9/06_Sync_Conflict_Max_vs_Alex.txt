@@ -1,0 +1,10 @@
+Hafıza Çakışması Modalı — Max vs Alex
+Socket.IO "CONFLICT_DETECTED" eventi alındığında gösterilir.
+Üç karar seçeneği:
+  1. Yeni Ajan Oluştur (duplicate)
+  2. Bulutu Kullan — Üstüne Yaz (restore)
+  3. Lokalimi Koru (upload)
+İlgili dosyalar:
+  - public/must-b-ui/src/components/ConflictModal.tsx
+  - src/core/cloud-sync.ts  (CloudSync.checkConflict — çakışma tespiti)
+  - src/interface/api.ts  (POST /api/setup/sync-resolve)

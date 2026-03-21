@@ -1,0 +1,6 @@
+Feature: Immersive Welcome Screen (Awake)
+Version: Must-b v1.0
+Description: Fox avatar transitions to awake state with orange glow bloom,
+  eye-open animation and 'Start' CTA button appearing. Framer Motion spring.
+Component: WelcomePage → AwakeFox
+Added: v4.3 XU UI Master Dashboard

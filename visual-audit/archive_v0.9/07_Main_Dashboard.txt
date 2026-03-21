@@ -1,0 +1,10 @@
+Ana Komuta Merkezi — Dashboard (/app)
+Kurulum tamamlandıktan sonra gösterilen ana ekran.
+İlgili dosyalar:
+  - public/must-b-ui/src/pages/DashboardPage.tsx
+  - public/must-b-ui/src/components/chat/ChatArea.tsx
+  - public/must-b-ui/src/components/layout/AppLayout.tsx  (Sidebar + Outlet)
+  - public/must-b-ui/src/components/layout/Sidebar.tsx    (GET /api/chats)
+  - src/interface/api.ts  (GET /api/status, GET /api/chats)
+  - src/core/hierarchy.ts  (getAgentRole — rol rozeti)
+  - src/core/orchestrator.ts  (mesaj işleme motoru)

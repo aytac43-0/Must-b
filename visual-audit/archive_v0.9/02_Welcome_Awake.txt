@@ -1,0 +1,6 @@
+Welcome Screen — Uyanış Anı
+Tetikleyici: "Must-b'yi Uyandır" butonuna basıldı
+İlgili dosyalar:
+  - public/must-b-ui/src/pages/WelcomePage.tsx  (handleWake)
+  - public/must-b-ui/public/avatar/awake.png
+API bağlantısı: GET /api/setup/status → GET /api/auth/local
