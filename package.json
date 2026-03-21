@@ -1,8 +1,8 @@
 {
   "name": "@must-b/must-b",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Must-b v1.0 — Professional Autonomous AI Operating System by Auto Step",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "bin": {
     "must-b": "bin/must-b.cjs"
   },

@@ -2,7 +2,7 @@
 /**
  * Must-b cross-platform entry wrapper.
  *
- * Production (global install): runs dist/index.js directly with Node.
+ * Production (global install): runs dist/index.cjs directly with Node.
  * Development (local clone):   falls back to tsx + src/index.ts.
  *
  * Works on Windows, Linux, macOS after `npm install -g @must-b/must-b`.
@@ -22,7 +22,7 @@ function findRoot() {
       if (fs.existsSync(path.join(dir, 'package.json'))) {
         // Accept if we have a built dist OR a dev src tree
         if (
-          fs.existsSync(path.join(dir, 'dist', 'index.js')) ||
+          fs.existsSync(path.join(dir, 'dist', 'index.cjs')) ||
           fs.existsSync(path.join(dir, 'src', 'index.ts'))
         ) return dir;
       }
@@ -36,10 +36,10 @@ const root  = findRoot();
 const args  = process.argv.slice(2);
 const env   = { ...process.env, MUSTB_ROOT: root };
 
-const distEntry = path.join(root, 'dist', 'index.js');
+const distEntry = path.join(root, 'dist', 'index.cjs');
 const srcEntry  = path.join(root, 'src', 'index.ts');
 
-// ── 2. Production path: dist/index.js exists → run directly with Node ────────
+// ── 2. Production path: dist/index.cjs exists → run directly with Node ───────
 if (fs.existsSync(distEntry)) {
   const result = spawnSync(
     process.execPath,
@@ -54,7 +54,7 @@ if (!fs.existsSync(srcEntry)) {
   console.error(
     '\n[must-b] Installation appears incomplete.\n' +
     '  Expected: ' + distEntry + '\n' +
-    '  Run: npm run build:prod   (or reinstall via npm install -g @must-b/must-b)\n'
+    '  Reinstall: npm install -g @must-b/must-b\n'
   );
   process.exit(1);
 }

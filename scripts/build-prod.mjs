@@ -100,7 +100,7 @@ cpSync(join(UI_DIR, "out"), join(ROOT, "dist/public"), { recursive: true });
 console.log(`${OK} Frontend → dist/public/ (${fmtSize(fileSize(join(ROOT, "dist/public/index.html")))} index.html)`);
 
 // ── 3. Bundle backend — CJS ────────────────────────────────────────────────
-header(3, TOTAL_STEPS, "Bundling backend → CJS (dist/index.js)…");
+header(3, TOTAL_STEPS, "Bundling backend → CJS (dist/index.cjs)…");
 
 if (!existsSync(join(ROOT, "node_modules/esbuild"))) {
   console.log("  Installing esbuild…");
@@ -141,13 +141,13 @@ const BASE_FLAGS = [
   "--log-level=warning",
 ].join(" ");
 
-run(`"${ESBUILD}" ${BASE_FLAGS} --format=cjs --outfile=dist/index.js`);
-console.log(`${OK} CJS bundle → dist/index.js (${fmtSize(fileSize(join(ROOT, "dist/index.js")))})`);
-
-// ── 4. Bundle backend — CJS copy for @yao-pkg/pkg ─────────────────────────
-header(4, TOTAL_STEPS, "Copying CJS bundle → dist/index.cjs (for pkg)…");
 run(`"${ESBUILD}" ${BASE_FLAGS} --format=cjs --outfile=dist/index.cjs`);
 console.log(`${OK} CJS bundle → dist/index.cjs (${fmtSize(fileSize(join(ROOT, "dist/index.cjs")))})`);
+
+// ── 4. Copy CJS bundle as dist/index.js for pkg compatibility ─────────────
+header(4, TOTAL_STEPS, "Copying dist/index.cjs → dist/index.js (for pkg)…");
+run(`"${ESBUILD}" ${BASE_FLAGS} --format=cjs --outfile=dist/index.js`);
+console.log(`${OK} CJS bundle → dist/index.js (${fmtSize(fileSize(join(ROOT, "dist/index.js")))})`);
 
 // ── 5. Write BUILD.json ────────────────────────────────────────────────────
 header(5, TOTAL_STEPS, "Writing build metadata…");
