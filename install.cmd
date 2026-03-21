@@ -1,4 +1,5 @@
 @echo off
+:: Usage: curl -fsSL https://must-b.com/install.cmd -o install.cmd && install.cmd
 title Must-b Installer — Auto Step Edition
 echo.
 echo  =============================================

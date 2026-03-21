@@ -1,5 +1,5 @@
 # ── Must-b Universal Installer (Windows PowerShell) ──────────────────────
-# Usage: irm https://raw.githubusercontent.com/aytac43-0/must-b/main/install.ps1 | iex
+# Usage: irm https://must-b.com/install.ps1 | iex
 # Or:   .\install.ps1
 $ErrorActionPreference = "Stop"
 

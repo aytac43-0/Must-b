@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # ── Must-b Universal Installer (Linux / macOS) ────────────────────────────
+# Usage: curl -fsSL https://must-b.com/install.sh | bash
 set -euo pipefail
 
 REPO="https://github.com/aytac43-0/must-b.git"
