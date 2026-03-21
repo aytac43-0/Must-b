@@ -2,11 +2,10 @@
 /**
  * Must-b cross-platform entry wrapper.
  *
- * Strategy: use process.execPath (the running Node.js binary — always exists)
- * and register tsx as a --loader / --import hook.
- * This eliminates ANY reliance on tsx.exe / tsx.cmd / tsx shell scripts.
+ * Production (global install): runs dist/index.js directly with Node.
+ * Development (local clone):   falls back to tsx + src/index.ts.
  *
- * Works on Windows, Linux, macOS after `npm install`.
+ * Works on Windows, Linux, macOS after `npm install -g @must-b/must-b`.
  */
 'use strict';
 const { spawnSync } = require('child_process');
@@ -15,63 +14,78 @@ const fs = require('fs');
 const { createRequire } = require('module');
 const { pathToFileURL } = require('url');
 
-// ── 1. Resolve real project root (follows symlinks — handles npm link) ─────
+// ── 1. Resolve real package root (follows symlinks — handles npm link / global) ─
 function findRoot() {
   try {
     let dir = fs.realpathSync(__dirname);
     while (dir !== path.parse(dir).root) {
-      if (
-        fs.existsSync(path.join(dir, 'src', 'index.ts')) &&
-        fs.existsSync(path.join(dir, 'package.json'))
-      ) return dir;
+      if (fs.existsSync(path.join(dir, 'package.json'))) {
+        // Accept if we have a built dist OR a dev src tree
+        if (
+          fs.existsSync(path.join(dir, 'dist', 'index.js')) ||
+          fs.existsSync(path.join(dir, 'src', 'index.ts'))
+        ) return dir;
+      }
       dir = path.dirname(dir);
     }
   } catch { /* fallthrough */ }
   return path.resolve(__dirname, '..');
 }
 
-const root = findRoot();
-const entry = path.join(root, 'src', 'index.ts');
+const root  = findRoot();
 const args  = process.argv.slice(2);
 const env   = { ...process.env, MUSTB_ROOT: root };
 
-// ── 2. Check tsx is installed ──────────────────────────────────────────────
-if (!fs.existsSync(path.join(root, 'node_modules', 'tsx'))) {
+const distEntry = path.join(root, 'dist', 'index.js');
+const srcEntry  = path.join(root, 'src', 'index.ts');
+
+// ── 2. Production path: dist/index.js exists → run directly with Node ────────
+if (fs.existsSync(distEntry)) {
+  const result = spawnSync(
+    process.execPath,
+    ['--no-warnings', distEntry, ...args],
+    { stdio: 'inherit', cwd: root, env }
+  );
+  process.exit(result.status ?? 1);
+}
+
+// ── 3. Dev path: no dist → require tsx to transpile src/index.ts ─────────────
+if (!fs.existsSync(srcEntry)) {
   console.error(
-    '\n[must-b] Dependencies not installed.\n' +
+    '\n[must-b] Installation appears incomplete.\n' +
+    '  Expected: ' + distEntry + '\n' +
+    '  Run: npm run build:prod   (or reinstall via npm install -g @must-b/must-b)\n'
+  );
+  process.exit(1);
+}
+
+const tsxDir = path.join(root, 'node_modules', 'tsx');
+if (!fs.existsSync(tsxDir)) {
+  console.error(
+    '\n[must-b] Dev dependencies not installed.\n' +
     '  Run: npm install\n' +
     '  in:  ' + root + '\n'
   );
   process.exit(1);
 }
 
-// ── 3. Resolve tsx loader path (absolute — no global lookup needed) ────────
 const rootRequire = createRequire(path.join(root, 'package.json'));
 let loaderPath;
 try {
-  // tsx v4 exports 'tsx/esm' as the ESM/CJS hook
   loaderPath = rootRequire.resolve('tsx/esm');
 } catch {
-  // Fallback to tsx package main if export map differs
   loaderPath = rootRequire.resolve('tsx');
 }
 
-// ── 4. Pick the right hook flag for this Node version ─────────────────────
-//   Node 20.6+: --import (stable, requires file:// URL on Windows)
-//   Node 18/19: --loader (experimental but fully functional)
 const nodeMajor = parseInt(process.versions.node.split('.')[0], 10);
-const hookFlag = nodeMajor >= 20 ? '--import' : '--loader';
-
-// --import requires a file:// URL on Windows; --loader accepts bare paths
-const hookArg = hookFlag === '--import'
+const hookFlag  = nodeMajor >= 20 ? '--import' : '--loader';
+const hookArg   = hookFlag === '--import'
   ? pathToFileURL(loaderPath).href
   : loaderPath;
 
-// ── 5. Spawn Node itself with tsx hook — no tsx binary required ────────────
 const result = spawnSync(
   process.execPath,
-  [hookFlag, hookArg, '--no-warnings', entry, ...args],
+  [hookFlag, hookArg, '--no-warnings', srcEntry, ...args],
   { stdio: 'inherit', cwd: root, env }
 );
-
 process.exit(result.status ?? 1);
