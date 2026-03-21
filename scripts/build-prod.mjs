@@ -99,8 +99,8 @@ run("npx vite build --mode production", UI_DIR);
 cpSync(join(UI_DIR, "out"), join(ROOT, "dist/public"), { recursive: true });
 console.log(`${OK} Frontend → dist/public/ (${fmtSize(fileSize(join(ROOT, "dist/public/index.html")))} index.html)`);
 
-// ── 3. Bundle backend — ESM ────────────────────────────────────────────────
-header(3, TOTAL_STEPS, "Bundling backend → ESM (dist/index.js)…");
+// ── 3. Bundle backend — CJS ────────────────────────────────────────────────
+header(3, TOTAL_STEPS, "Bundling backend → CJS (dist/index.js)…");
 
 if (!existsSync(join(ROOT, "node_modules/esbuild"))) {
   console.log("  Installing esbuild…");
@@ -141,11 +141,11 @@ const BASE_FLAGS = [
   "--log-level=warning",
 ].join(" ");
 
-run(`"${ESBUILD}" ${BASE_FLAGS} --format=esm --outfile=dist/index.js`);
-console.log(`${OK} ESM bundle → dist/index.js (${fmtSize(fileSize(join(ROOT, "dist/index.js")))})`);
+run(`"${ESBUILD}" ${BASE_FLAGS} --format=cjs --outfile=dist/index.js`);
+console.log(`${OK} CJS bundle → dist/index.js (${fmtSize(fileSize(join(ROOT, "dist/index.js")))})`);
 
-// ── 4. Bundle backend — CJS (for @yao-pkg/pkg) ────────────────────────────
-header(4, TOTAL_STEPS, "Bundling backend → CJS (dist/index.cjs)…");
+// ── 4. Bundle backend — CJS copy for @yao-pkg/pkg ─────────────────────────
+header(4, TOTAL_STEPS, "Copying CJS bundle → dist/index.cjs (for pkg)…");
 run(`"${ESBUILD}" ${BASE_FLAGS} --format=cjs --outfile=dist/index.cjs`);
 console.log(`${OK} CJS bundle → dist/index.cjs (${fmtSize(fileSize(join(ROOT, "dist/index.cjs")))})`);
 
