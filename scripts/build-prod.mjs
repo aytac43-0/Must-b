@@ -118,6 +118,7 @@ const BASE_FLAGS = [
   "--sourcemap=external",
   "--external:sharp",
   "--external:fsevents",
+  "--external:onnxruntime-node",
   `--define:__VERSION__='"${VERSION}"'`,
   `--define:__GIT_HASH__='"${GIT_HASH}"'`,
   "--log-level=warning",
