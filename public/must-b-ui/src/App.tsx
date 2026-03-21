@@ -36,13 +36,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 }
 import SetupPage      from "@/pages/SetupPage";
 import DashboardPage  from "@/pages/DashboardPage";
-import AutomationsPage  from "@/pages/AutomationsPage";
-import ActivePage       from "@/pages/ActivePage";
-import ProductsPage     from "@/pages/ProductsPage";
-import ClientsPage      from "@/pages/ClientsPage";
-import IntegrationsPage from "@/pages/IntegrationsPage";
-import LogsPage         from "@/pages/LogsPage";
-import SettingsPage     from "@/pages/SettingsPage";
+import SettingsPage   from "@/pages/SettingsPage";
 import MobilePage       from "@/pages/MobilePage";
 import AppLayout        from "@/components/layout/AppLayout";
 import ConflictModal    from "@/components/ConflictModal";
@@ -67,13 +61,8 @@ export default function App() {
           {/* App dashboard — three-column war-room layout */}
           <Route path="/app" element={<AppLayout />}>
             <Route index           element={<DashboardPage />} />
-            <Route path="automations" element={<AutomationsPage />} />
-            <Route path="active"      element={<ActivePage />} />
-            <Route path="products"    element={<ProductsPage />} />
-            <Route path="clients"     element={<ClientsPage />} />
-            <Route path="integrations" element={<IntegrationsPage />} />
-            <Route path="logs"        element={<LogsPage />} />
             <Route path="settings"    element={<SettingsPage />} />
+            <Route path="*"           element={<Navigate to="/app" replace />} />
           </Route>
 
           {/* Mobile Companion — standalone page, no AppLayout */}

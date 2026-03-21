@@ -16,7 +16,7 @@ import {
   Eye, EyeOff, Scan, Globe, FileText, Brain, Terminal,
   CheckCircle2, Loader2,
   MousePointerClick, MousePointer2, Keyboard,
-  ChevronDown, ChevronUp, Ghost,
+  ChevronDown, ChevronUp, Ghost, X,
 } from "lucide-react";
 import { getSocket }  from "@/lib/socket";
 import { apiFetch }   from "@/lib/api";
@@ -103,8 +103,9 @@ export default function WarRoomPanel() {
   const [actions, setActions] = useState<ActionLog[]>([]);
   const logEndRef = useRef<HTMLDivElement>(null);
 
-  // Panel collapse
-  const [collapsed, setCollapsed] = useState(false);
+  // Panel collapse / dismiss
+  const [collapsed,  setCollapsed]  = useState(false);
+  const [dismissed,  setDismissed]  = useState(false);
 
   // ── Canvas draw ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -148,6 +149,7 @@ export default function WarRoomPanel() {
           elements: data.elements as UIElement[] | undefined,
         });
         setCollapsed(false);
+        setDismissed(false);
       }
 
       // Workflow
@@ -155,6 +157,7 @@ export default function WarRoomPanel() {
         setGoal((data.goal as string) ?? null);
         setSteps((data.steps as WorkflowStep[]) ?? []);
         setCollapsed(false);
+        setDismissed(false);
       }
       if (data.type === "workflowStep" && data.step) {
         const s = data.step as WorkflowStep;
@@ -207,6 +210,7 @@ export default function WarRoomPanel() {
         };
         setActions((prev) => [...prev.slice(-11), entry]);
         setCollapsed(false);
+        setDismissed(false);
       }
     };
 
@@ -236,7 +240,7 @@ export default function WarRoomPanel() {
 
   const hasActiveGhost = ghostFrames.some(f => f !== null);
   const isVisible = capture || steps.length > 0 || actions.length > 0 || scanning || shadowActive || hasActiveGhost;
-  if (!isVisible) return null;
+  if (!isVisible || dismissed) return null;
 
   return (
     <AnimatePresence>
@@ -300,6 +304,15 @@ export default function WarRoomPanel() {
               title={collapsed ? "Expand war room" : "Collapse war room"}
             >
               {collapsed ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+            </button>
+
+            {/* Dismiss panel */}
+            <button
+              onClick={() => setDismissed(true)}
+              className="text-gray-700 hover:text-red-400 transition-colors"
+              title="Dismiss war room"
+            >
+              <X size={12} />
             </button>
           </div>
         </div>

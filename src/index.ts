@@ -53,10 +53,69 @@ function ensureWorldUid() {
   } catch { /* best-effort */ }
 }
 
+// ── First-run terminal setup ───────────────────────────────────────────────
+// If MUSTB_NAME is not set, prompt once for name + language before anything else.
+async function runFirstTimeSetup(): Promise<void> {
+  const envPath = path.join(ROOT, '.env');
+  const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+  const hasName = /^MUSTB_NAME=/m.test(envContent);
+  if (hasName) return;
+
+  const orange = (s: string) => `\x1b[38;2;234;88;12m${s}\x1b[0m`;
+  const bold   = (s: string) => `\x1b[1m${s}\x1b[0m`;
+  const dim    = (s: string) => `\x1b[2m${s}\x1b[0m`;
+  const cyan   = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
+
+  console.log('');
+  console.log(bold(`  ${orange('◆')} Welcome to Must-b! Let's set things up.`));
+  console.log('');
+
+  await new Promise<void>((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
+    rl.question(`  ${cyan('Your name')} (press Enter for "User"): `, (nameAnswer) => {
+      const name = nameAnswer.trim() || 'User';
+
+      console.log('');
+      console.log(`  ${cyan('Language:')}  ${dim('[1]')} English  ${dim('[2]')} Türkçe  ${dim('[3]')} Deutsch`);
+
+      rl.question(`  Your choice (1/2/3, default 1): `, (langAnswer) => {
+        rl.close();
+        const langMap: Record<string, string> = { '1': 'en', '2': 'tr', '3': 'de', 'en': 'en', 'tr': 'tr', 'de': 'de' };
+        const lang = langMap[langAnswer.trim().toLowerCase()] ?? 'en';
+
+        // Persist to .env
+        let lines = envContent.split('\n').filter(l => l.trim() !== '');
+        const setVar = (key: string, val: string) => {
+          const idx = lines.findIndex(l => l.startsWith(`${key}=`));
+          if (idx >= 0) lines[idx] = `${key}=${val}`;
+          else lines.push(`${key}=${val}`);
+        };
+        setVar('MUSTB_NAME', name);
+        setVar('MUSTB_LANG', lang);
+        fs.writeFileSync(envPath, lines.join('\n') + '\n', 'utf-8');
+        // Reload into process env
+        process.env.MUSTB_NAME = name;
+        process.env.MUSTB_LANG = lang;
+
+        console.log('');
+        console.log(`  ${orange('✓')} Setup complete. Hello, ${bold(name)}!`);
+        console.log('');
+        resolve();
+      });
+    });
+  });
+}
+
 // ── Command routing ────────────────────────────────────────────────────────
 const rawArg = process.argv[2]?.toLowerCase().trim() ?? '';
 
 async function main() {
+  // First run: prompt for name & language before anything else
+  // (skip for non-interactive commands like doctor, help, memory-sync)
+  const skipFirstRun = ['doctor', 'help', '--help', '-h', 'memory-sync', 'onboard'].includes(rawArg);
+  if (!skipFirstRun) await runFirstTimeSetup();
+
   switch (rawArg) {
     case 'doctor': {
       const fix = process.argv.includes('--fix');

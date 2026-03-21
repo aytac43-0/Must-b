@@ -7,6 +7,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 
 interface Chat { id: string; title: string; created_at?: string; }
 
@@ -217,9 +218,12 @@ export default function Sidebar() {
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <div className={clsx("border-t border-orange-500/10 bg-black/20 shrink-0", collapsed ? "p-2" : "p-3")}>
         {!collapsed && (
-          <div className="mb-3 px-1">
-            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-0.5">Powered by</p>
-            <p className="text-orange-500 text-xs font-bold">Auto Step Platform</p>
+          <div className="mb-3 px-1 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-0.5">Powered by</p>
+              <p className="text-orange-500 text-xs font-bold">Auto Step Platform</p>
+            </div>
+            <LanguageSwitcher />
           </div>
         )}
 
