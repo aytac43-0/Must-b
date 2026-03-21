@@ -1,5 +1,5 @@
 {
-  "name": "@aytac/must-b",
+  "name": "@must-b/must-b",
   "version": "1.0.0",
   "description": "Must-b v1.0 — Professional Autonomous AI Operating System by Auto Step",
   "main": "dist/index.js",
