@@ -95,8 +95,8 @@ if (!existsSync(join(UI_DIR, "node_modules"))) {
 }
 run("npx vite build --mode production", UI_DIR);
 
-// Vite outputs to public/must-b-ui/dist → copy to dist/public/
-cpSync(join(UI_DIR, "dist"), join(ROOT, "dist/public"), { recursive: true });
+// Vite outputs to public/must-b-ui/out → copy to dist/public/
+cpSync(join(UI_DIR, "out"), join(ROOT, "dist/public"), { recursive: true });
 console.log(`${OK} Frontend → dist/public/ (${fmtSize(fileSize(join(ROOT, "dist/public/index.html")))} index.html)`);
 
 // ── 3. Bundle backend — ESM ────────────────────────────────────────────────

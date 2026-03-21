@@ -1,0 +1,25 @@
+# Exclude apps and docs
+/apps
+/docs
+
+# Exclude testing and memory
+/visual-audit
+/tests
+/memory
+
+# Exclude source code
+/src
+/public
+/scripts
+
+# Exclude editor and generic dev config
+/.claude
+/.github
+/.vscode-must-b
+tsconfig.json
+playwright.config*
+CLAUDE .md
+.env*
+
+# Node modules are normally excluded by default, but it doesn't hurt
+/node_modules
