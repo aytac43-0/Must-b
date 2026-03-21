@@ -1,7 +1,6 @@
 import {
-  History, Plus, LogOut, Zap, Globe, Package, Users,
-  Link as LinkIcon, BarChart3, Edit3, Trash2, Check, X,
-  Settings as SettingsIcon,
+  History, Plus, LogOut, Edit3, Trash2, Check, X,
+  Settings as SettingsIcon, ChevronLeft, ChevronRight, MessageSquare,
 } from "lucide-react";
 import clsx from "clsx";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -9,25 +8,18 @@ import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 
-interface NavItemProps {
-  to: string;
-  icon: React.ElementType;
-  label: string;
-  active?: boolean;
-  comingSoon?: boolean;
-}
-
 interface Chat { id: string; title: string; created_at?: string; }
 
 export default function Sidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const pathname = location.pathname;
+  const navigate  = useNavigate();
+  const pathname  = location.pathname;
 
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chats,         setChats]         = useState<Chat[]>([]);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
+  const [editTitle,     setEditTitle]     = useState("");
+  const [deletingChatId,setDeletingChatId]= useState<string | null>(null);
+  const [collapsed,     setCollapsed]     = useState(false);
 
   const fetchChats = useCallback(async () => {
     try {
@@ -81,50 +73,53 @@ export default function Sidebar() {
     setEditingChatId(null);
   };
 
-  const NavItem = ({ to, icon: Icon, label, active = false, comingSoon = false }: NavItemProps) => (
-    <Link
-      to={comingSoon ? "#" : to}
-      className={clsx(
-        "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-[13px] font-medium group",
-        active ? "bg-orange-500/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5",
-        comingSoon && "opacity-60 cursor-not-allowed"
-      )}
-    >
-      <Icon size={18} className={clsx(active ? "text-orange-500" : "text-gray-500 group-hover:text-gray-300")} />
-      <span className="flex-1">{label}</span>
-    </Link>
-  );
-
-  const SectionHeader = ({ label }: { label: string }) => (
-    <h3 className="px-3 mt-6 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">{label}</h3>
-  );
+  const isSettings = pathname === "/app/settings";
 
   return (
-    <aside className="w-[280px] h-screen bg-[#0d0a07]/90 border-r border-orange-500/10 flex flex-col overflow-hidden text-sm sticky top-0 font-sans z-50 backdrop-blur-xl">
-      {/* Header / Logo */}
-      <div className="p-6 flex items-center gap-3">
-        <div className="relative w-9 h-9">
-          <div className="absolute inset-0 bg-orange-500 rounded-full blur-md opacity-50" />
+    <aside
+      className={clsx(
+        "h-screen bg-[#0d0a07]/90 border-r border-orange-500/10 flex flex-col overflow-hidden sticky top-0 font-sans z-50 backdrop-blur-xl transition-all duration-300",
+        collapsed ? "w-[64px]" : "w-[260px]"
+      )}
+    >
+      {/* ── Header / Logo ─────────────────────────────────────────────── */}
+      <div className={clsx("flex items-center gap-3 shrink-0", collapsed ? "px-4 py-5 justify-center" : "p-5")}>
+        <div className="relative w-8 h-8 shrink-0">
+          <div className="absolute inset-0 bg-orange-500 rounded-full blur-md opacity-40" />
           <img src="/logo.png" alt="Must-b" className="w-full h-full object-contain relative z-10" />
         </div>
-        <span className="text-xl font-bold tracking-tight text-white">Must-b</span>
+        {!collapsed && (
+          <span className="text-lg font-bold tracking-tight text-white truncate">Must-b</span>
+        )}
       </div>
 
-      {/* New Chat Button */}
-      <div className="px-4 mb-4">
+      {/* ── New Chat Button ────────────────────────────────────────────── */}
+      <div className={clsx("shrink-0", collapsed ? "px-3 mb-3" : "px-4 mb-4")}>
         <button
           onClick={handleNewChat}
-          className="w-full h-11 bg-orange-600 hover:bg-orange-500 text-white rounded-xl flex items-center justify-center gap-3 font-semibold transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98]"
+          title="New Chat"
+          className={clsx(
+            "w-full bg-orange-600 hover:bg-orange-500 text-white rounded-xl flex items-center justify-center gap-2 font-semibold transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98]",
+            collapsed ? "h-10 px-2" : "h-10 px-3 text-sm"
+          )}
         >
-          <Plus size={18} strokeWidth={2.5} />
-          <span>New Chat</span>
+          <Plus size={17} strokeWidth={2.5} />
+          {!collapsed && <span>New Chat</span>}
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-3 pb-8">
-        {/* Chat History */}
-        <SectionHeader label="Recent Chats" />
-        <div className="space-y-1 mb-4">
+      {/* ── Scrollable area ────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-2 pb-4">
+
+        {/* Recent Chats */}
+        {!collapsed && (
+          <h3 className="px-2 mt-2 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+            Recent Chats
+          </h3>
+        )}
+        {collapsed && <div className="mt-1 mb-1 border-t border-white/5" />}
+
+        <div className="space-y-0.5">
           {chats.map((chat) => (
             <div key={chat.id} className="group relative">
               {editingChatId === chat.id ? (
@@ -140,32 +135,47 @@ export default function Sidebar() {
                       if (e.key === "Escape") setEditingChatId(null);
                     }}
                   />
-                  <div className="flex items-center">
-                    <button onClick={saveEdit} className="p-1 hover:bg-green-500/20 text-green-500 rounded"><Check size={14} /></button>
-                    <button onClick={() => setEditingChatId(null)} className="p-1 hover:bg-red-500/20 text-red-500 rounded"><X size={14} /></button>
-                  </div>
+                  <button onClick={saveEdit} className="p-1 hover:bg-green-500/20 text-green-500 rounded">
+                    <Check size={13} />
+                  </button>
+                  <button onClick={() => setEditingChatId(null)} className="p-1 hover:bg-red-500/20 text-red-500 rounded">
+                    <X size={13} />
+                  </button>
                 </div>
+              ) : collapsed ? (
+                <Link
+                  to={`/app?chat=${chat.id}`}
+                  title={chat.title}
+                  className={clsx(
+                    "flex items-center justify-center p-2.5 rounded-lg transition-all",
+                    pathname.includes(chat.id) ? "bg-orange-500/10 text-orange-400" : "text-gray-500 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <MessageSquare size={15} />
+                </Link>
               ) : (
                 <>
                   <Link
                     to={`/app?chat=${chat.id}`}
                     className={clsx(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-[13px] font-medium pr-10",
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-[13px] font-medium pr-10",
                       pathname.includes(chat.id) ? "bg-orange-500/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
                     )}
                   >
-                    <History size={16} className={pathname.includes(chat.id) ? "text-orange-500" : "text-gray-500"} />
+                    <History size={14} className={pathname.includes(chat.id) ? "text-orange-500 shrink-0" : "text-gray-600 shrink-0"} />
                     <span className="flex-1 truncate">{chat.title}</span>
                   </Link>
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-[#0F0F0F] px-1 rounded-md shadow-lg border border-white/5">
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 bg-[#0F0F0F] px-1 rounded-md shadow-lg border border-white/5">
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditing(chat); }}
-                      className="p-1 hover:bg-white/10 rounded-md text-gray-500 hover:text-orange-400" title="Rename"
-                    ><Edit3 size={14} /></button>
+                      className="p-1 hover:bg-white/10 rounded text-gray-500 hover:text-orange-400"
+                      title="Rename"
+                    ><Edit3 size={13} /></button>
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeletingChatId(chat.id); }}
-                      className="p-1 hover:bg-white/10 rounded-md text-gray-500 hover:text-red-400" title="Delete"
-                    ><Trash2 size={14} /></button>
+                      className="p-1 hover:bg-white/10 rounded text-gray-500 hover:text-red-400"
+                      title="Delete"
+                    ><Trash2 size={13} /></button>
                   </div>
                 </>
               )}
@@ -173,36 +183,72 @@ export default function Sidebar() {
           ))}
         </div>
 
-        {/* Platform */}
-        <SectionHeader label="Platform" />
-        <NavItem to="/app/automations" icon={Zap}       label="My Automations"      active={pathname === "/app/automations"} />
-        <NavItem to="/app/active"      icon={Globe}     label="Active Workflows"    active={pathname === "/app/active"} />
-        <NavItem to="/app/products"    icon={Package}   label="Products & Services" active={pathname === "/app/products"} />
-        <NavItem to="/app/clients"     icon={Users}     label="Client Management"   active={pathname === "/app/clients"} />
-        <NavItem to="/app/integrations" icon={LinkIcon} label="Integrations"        active={pathname === "/app/integrations"} />
+        {/* ── Settings ────────────────────────────────────────────────── */}
+        {!collapsed && (
+          <h3 className="px-2 mt-5 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">System</h3>
+        )}
+        {collapsed && <div className="mt-3 mb-1 border-t border-white/5" />}
 
-        {/* System */}
-        <SectionHeader label="System" />
-        <NavItem to="/app/logs"     icon={BarChart3}    label="Logs & Activity" active={pathname === "/app/logs"} />
-        <NavItem to="/app/settings" icon={SettingsIcon} label="Settings"        active={pathname === "/app/settings"} />
+        {collapsed ? (
+          <Link
+            to="/app/settings"
+            title="Settings"
+            className={clsx(
+              "flex items-center justify-center p-2.5 rounded-lg transition-all",
+              isSettings ? "bg-orange-500/10 text-orange-400" : "text-gray-500 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <SettingsIcon size={15} />
+          </Link>
+        ) : (
+          <Link
+            to="/app/settings"
+            className={clsx(
+              "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-[13px] font-medium",
+              isSettings ? "bg-orange-500/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <SettingsIcon size={15} className={isSettings ? "text-orange-500" : "text-gray-500"} />
+            <span>Settings</span>
+          </Link>
+        )}
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-orange-500/10 bg-black/20">
-        <div className="mb-4">
-          <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-1">Powered by</p>
-          <p className="text-orange-500 text-xs font-bold">Auto Step Platform</p>
+      {/* ── Footer ──────────────────────────────────────────────────────── */}
+      <div className={clsx("border-t border-orange-500/10 bg-black/20 shrink-0", collapsed ? "p-2" : "p-3")}>
+        {!collapsed && (
+          <div className="mb-3 px-1">
+            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-0.5">Powered by</p>
+            <p className="text-orange-500 text-xs font-bold">Auto Step Platform</p>
+          </div>
+        )}
+
+        <div className={clsx("flex", collapsed ? "flex-col gap-1 items-center" : "items-center gap-1")}>
+          {/* Logout */}
+          <button
+            onClick={() => navigate("/")}
+            title="Logout"
+            className={clsx(
+              "flex items-center gap-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/5 transition-all text-xs font-medium",
+              collapsed ? "p-2.5 justify-center" : "flex-1 px-2.5 py-2"
+            )}
+          >
+            <LogOut size={14} />
+            {!collapsed && "Logout"}
+          </button>
+
+          {/* Collapse toggle */}
+          <button
+            onClick={() => setCollapsed((c) => !c)}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="p-2.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-white/5 transition-all"
+          >
+            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
         </div>
-        <button
-          onClick={() => navigate("/")}
-          className="flex-1 w-full flex items-center gap-2 px-3 py-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/5 transition-all text-xs font-medium"
-        >
-          <LogOut size={16} />
-          Logout
-        </button>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* ── Delete Confirmation Modal ────────────────────────────────────── */}
       {deletingChatId && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-[#1A1A1A] border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">

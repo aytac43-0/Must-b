@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings } from "lucide-react";
@@ -26,8 +26,22 @@ export default function WelcomePage() {
   const [awake,   setAwake]   = useState(false);
   const [exiting, setExiting] = useState(false);
 
-  // No API calls on mount — the sleeping fox renders fully offline.
-  // All gateway communication starts only when the user clicks "Wake".
+  // Auto-check: if gateway is up and not configured, redirect to setup immediately.
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const res = await fetch("/api/setup/status");
+        if (!res.ok || cancelled) return;
+        const data = await res.json() as { configured?: boolean };
+        if (!cancelled && !data.configured) navigate("/setup");
+      } catch { /* gateway not ready yet — user can click Wake */ }
+    };
+    // Give the gateway 800ms to start, then check
+    const t = setTimeout(check, 800);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [navigate]);
+
   const handleWake = async () => {
     if (waking) return;
     setWaking(true);
