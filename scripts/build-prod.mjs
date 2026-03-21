@@ -119,6 +119,7 @@ const BASE_FLAGS = [
   "--external:sharp",
   "--external:fsevents",
   "--external:onnxruntime-node",
+  "--external:chromium-bidi",
   `--define:__VERSION__='"${VERSION}"'`,
   `--define:__GIT_HASH__='"${GIT_HASH}"'`,
   "--log-level=warning",
