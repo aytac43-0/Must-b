@@ -177,6 +177,22 @@ function openBrowser(url: string): void {
 
 // ── Launch mode prompt (inquirer list) ──────────────────────────────────────
 async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
+  // Drain any buffered stdin keypresses left over from the wizard prompts,
+  // so a stray Enter doesn't auto-select the first choice immediately.
+  await new Promise<void>((resolve) => {
+    if (!process.stdin.isTTY) { resolve(); return; }
+    process.stdin.setRawMode?.(true);
+    process.stdin.resume();
+    const onData = () => { /* discard buffered bytes */ };
+    process.stdin.on('data', onData);
+    setTimeout(() => {
+      process.stdin.removeListener('data', onData);
+      process.stdin.setRawMode?.(false);
+      process.stdin.pause();
+      resolve();
+    }, 120);
+  });
+
   const { default: inquirer } = await import('inquirer');
   const { mode } = await inquirer.prompt([{
     type:    'list',

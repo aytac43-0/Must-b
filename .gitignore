@@ -13,10 +13,13 @@ public/Luma/out/
 public/Luma/.env
 public/Luma/.env.local
 
+# Runtime-generated data (never commit)
+memory/
+workspace/
+
 # Logs
 logs/
 *.log
-memory/*.json
 
 # OS
 .DS_Store
