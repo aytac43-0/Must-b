@@ -269,18 +269,41 @@ function checkEnvFile(root: string): CheckResult {
 
 function checkApiKey(): CheckResult {
   dotenv.config();
-  const key = process.env.OPENROUTER_API_KEY ?? '';
-  if (!key || key.startsWith('sk-or-v1-...') || key.trim() === '') {
+  const provider = (process.env.LLM_PROVIDER ?? 'openrouter').toLowerCase();
+
+  // Ollama is local — no API key required
+  if (provider === 'ollama') {
+    return { label: 'LLM Key', ok: true, detail: 'Ollama (local — no key required)' };
+  }
+
+  const KEY_MAP: Record<string, string> = {
+    openrouter: 'OPENROUTER_API_KEY',
+    openai:     'OPENAI_API_KEY',
+    anthropic:  'ANTHROPIC_API_KEY',
+    gemini:     'GOOGLE_API_KEY',
+    groq:       'GROQ_API_KEY',
+    mistral:    'MISTRAL_API_KEY',
+    xai:        'XAI_API_KEY',
+    deepseek:   'DEEPSEEK_API_KEY',
+    azure:      'AZURE_OPENAI_API_KEY',
+    vertex:     'GOOGLE_CLOUD_PROJECT',
+  };
+
+  const envVar = KEY_MAP[provider] ?? 'OPENROUTER_API_KEY';
+  const key    = (process.env[envVar] ?? '').trim();
+
+  if (!key || key.includes('...')) {
+    // ⚠ WARNING only — gateway starts fine without LLM (local tools still work)
     return {
-      label: 'OPENROUTER_API_KEY',
-      ok: false,
-      critical: true,
-      detail: 'not set or is placeholder',
-      fix: 'Get a key at https://openrouter.ai and set it in .env',
+      label:  `LLM Key (${provider})`,
+      ok:     false,
+      detail: `${envVar} not set — LLM chat will be unavailable`,
+      fix:    `Set ${envVar}=your-key in .env  or  run: must-b onboard`,
     };
   }
-  const masked = key.slice(0, 12) + '***' + key.slice(-4);
-  return { label: 'OPENROUTER_API_KEY', ok: true, detail: masked };
+
+  const masked = key.slice(0, 8) + '***';
+  return { label: `LLM Key (${provider})`, ok: true, detail: masked };
 }
 
 function checkMode(root: string): CheckResult {

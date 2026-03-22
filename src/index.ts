@@ -56,9 +56,13 @@ function ensureWorldUid() {
 async function runFirstTimeSetup(): Promise<void> {
   const envPath    = path.join(ROOT, '.env');
   const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-  const hasName    = /^MUSTB_NAME=/m.test(envContent);
-  if (hasName) return;
-  // Not configured — run the full interactive wizard, then exit (user re-invokes 'must-b web')
+  // Consider setup complete if: MUSTB_SETUP_COMPLETE flag is set (v1.3.2+)
+  // OR both MUSTB_NAME and LLM_PROVIDER exist (users who set up before v1.3.2)
+  const isComplete  = /^MUSTB_SETUP_COMPLETE=true/m.test(envContent);
+  const hasName     = /^MUSTB_NAME=/m.test(envContent);
+  const hasProvider = /^LLM_PROVIDER=/m.test(envContent);
+  if (isComplete || (hasName && hasProvider)) return;
+  // Incomplete or cancelled setup — run the full wizard, then exit
   await runOnboard(ROOT);
   process.exit(0);
 }
@@ -163,16 +167,20 @@ function openBrowser(url: string): void {
 
 // ── Terminal / Dashboard launch mode selector ──────────────────────────────
 async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
-  const { select, isCancel, cancel } = await import('@clack/prompts');
-  const choice = await select({
-    message: 'How would you like to start?',
-    options: [
-      { value: 'dashboard', label: 'Dashboard', hint: 'Web UI — opens http://localhost:4309' },
-      { value: 'terminal',  label: 'Terminal',  hint: 'Re-run the setup wizard & CLI flow'  },
-    ],
+  const cyanFn = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
+  const dimFn  = (s: string) => `\x1b[2m${s}\x1b[0m`;
+  console.log('');
+  console.log(`  ${cyanFn('1')}  Dashboard  ${dimFn('Web UI — opens http://localhost:4309')}`);
+  console.log(`  ${cyanFn('2')}  Terminal   ${dimFn('Re-run the setup wizard')}`);
+  console.log('');
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question('  Select (1 or 2): ', (answer) => {
+      rl.close();
+      resolve(answer.trim() === '2' ? 'terminal' : 'dashboard');
+    });
+    rl.on('close', () => resolve('dashboard'));
   });
-  if (isCancel(choice)) { cancel('Cancelled.'); process.exit(0); }
-  return choice as 'terminal' | 'dashboard';
 }
 
 // ── Server / CLI boot ──────────────────────────────────────────────────────
