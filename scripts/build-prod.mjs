@@ -137,6 +137,8 @@ const BASE_FLAGS = [
   // paths that break when inlined — must stay external
   "--external:playwright",
   "--external:playwright-core",
+  // @clack/prompts is ESM-only (.mjs); keep external so Node handles the dynamic import
+  "--external:@clack/prompts",
   // All Node.js built-ins (prevents CJS require() shim errors in ESM output)
   ...NODE_BUILTINS.map((m) => `--external:${m}`),
   ...NODE_BUILTINS.map((m) => `--external:node:${m}`),

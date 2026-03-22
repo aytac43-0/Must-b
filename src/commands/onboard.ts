@@ -1,146 +1,204 @@
-import fs from 'fs';
+/**
+ * Must-b Onboarding Wizard (v1.3.0)
+ *
+ * Interactive CLI setup using @clack/prompts.
+ * Covers all 11 AI providers + full 10-tool skill roster.
+ * Writes directly to .env — user never touches a text editor.
+ */
+import fs   from 'fs';
 import path from 'path';
-import readline from 'readline';
 import crypto from 'crypto';
 import { printBanner } from '../utils/banner.js';
-import { runDoctor } from './doctor.js';
+import { runDoctor }   from './doctor.js';
 import { LongTermMemory } from '../memory/long-term.js';
 
-const cyan   = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
-const orange = (s: string) => `\x1b[38;2;255;140;0m${s}\x1b[0m`;
-const green  = (s: string) => `\x1b[32m${s}\x1b[0m`;
-const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
-const dim    = (s: string) => `\x1b[2m${s}\x1b[0m`;
-const bold   = (s: string) => `\x1b[1m${s}\x1b[0m`;
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-function ask(rl: readline.Interface, q: string): Promise<string> {
-  return new Promise(r => rl.question(q, r));
-}
 function generateUid(): string { return 'mustb_' + crypto.randomBytes(12).toString('hex'); }
-function writeEnvKey(envPath: string, key: string, value: string) {
+
+function writeEnvKey(envPath: string, key: string, value: string): void {
   let c = ''; try { c = fs.readFileSync(envPath, 'utf-8'); } catch { c = ''; }
   const lines = c.split('\n');
   const idx = lines.findIndex((l: string) => l.startsWith(key + '='));
-  if (idx >= 0) lines[idx] = key + '=' + value; else lines.push(key + '=' + value);
-  fs.writeFileSync(envPath, lines.join('\n'), 'utf-8');
+  if (idx >= 0) lines[idx] = `${key}=${value}`; else lines.push(`${key}=${value}`);
+  fs.writeFileSync(envPath, lines.filter(l => l !== '').join('\n') + '\n', 'utf-8');
 }
 
+function readEnvKey(envPath: string, key: string): string {
+  try {
+    const match = fs.readFileSync(envPath, 'utf-8').match(new RegExp(`^${key}=(.*)$`, 'm'));
+    return match ? match[1].trim() : '';
+  } catch { return ''; }
+}
+
+// ── Provider + Skill Definitions ──────────────────────────────────────────
+
 const PROVIDERS = [
-  { id: 'openrouter', label: 'OpenRouter',    keyEnv: 'OPENROUTER_API_KEY', url: 'https://openrouter.ai' },
-  { id: 'openai',     label: 'OpenAI',          keyEnv: 'OPENAI_API_KEY',     url: 'https://platform.openai.com' },
-  { id: 'anthropic',  label: 'Anthropic',       keyEnv: 'ANTHROPIC_API_KEY',  url: 'https://console.anthropic.com' },
-  { id: 'ollama',     label: 'Ollama (local)',   keyEnv: 'OLLAMA_BASE_URL',    url: 'https://ollama.com' },
+  { value: 'openrouter', label: 'OpenRouter',       keyEnv: 'OPENROUTER_API_KEY',     hint: 'sk-or-v1-…   → openrouter.ai/keys',    isUrl: false },
+  { value: 'openai',     label: 'OpenAI',            keyEnv: 'OPENAI_API_KEY',         hint: 'sk-…         → platform.openai.com',    isUrl: false },
+  { value: 'anthropic',  label: 'Anthropic',         keyEnv: 'ANTHROPIC_API_KEY',      hint: 'sk-ant-…     → console.anthropic.com',  isUrl: false },
+  { value: 'gemini',     label: 'Google Gemini',     keyEnv: 'GOOGLE_API_KEY',         hint: 'AIza…        → aistudio.google.com',    isUrl: false },
+  { value: 'groq',       label: 'Groq',              keyEnv: 'GROQ_API_KEY',           hint: 'gsk_…        → console.groq.com',       isUrl: false },
+  { value: 'ollama',     label: 'Ollama  (local)',   keyEnv: 'OLLAMA_BASE_URL',        hint: 'http://localhost:11434  (no key needed)', isUrl: true  },
+  { value: 'mistral',    label: 'Mistral AI',        keyEnv: 'MISTRAL_API_KEY',        hint: 'your-key     → console.mistral.ai',     isUrl: false },
+  { value: 'xai',        label: 'xAI  (Grok)',       keyEnv: 'XAI_API_KEY',            hint: 'xai-…        → console.x.ai',           isUrl: false },
+  { value: 'deepseek',   label: 'DeepSeek',          keyEnv: 'DEEPSEEK_API_KEY',       hint: 'sk-…         → platform.deepseek.com',  isUrl: false },
+  { value: 'azure',      label: 'Azure OpenAI',      keyEnv: 'AZURE_OPENAI_API_KEY',   hint: 'your-key     → azure.microsoft.com/ai', isUrl: false },
+  { value: 'vertex',     label: 'Vertex AI',         keyEnv: 'GOOGLE_CLOUD_PROJECT',   hint: 'project-id   → cloud.google.com/vertex',isUrl: true  },
 ] as const;
 
 const SKILLS = [
-  { id: 'browser',    label: 'Browser Automation', envKey: 'SKILL_BROWSER',    desc: 'Playwright Chromium' },
-  { id: 'terminal',   label: 'Terminal Execution',  envKey: 'SKILL_TERMINAL',   desc: 'Shell commands, git, npm' },
-  { id: 'memory',     label: 'Long-Term Memory',    envKey: 'SKILL_MEMORY',     desc: 'SQLite FTS5 + temporal decay' },
-  { id: 'web_search', label: 'Web Search',           envKey: 'SKILL_WEB_SEARCH', desc: 'Search via Playwright browser' },
-  { id: 'filesystem', label: 'Filesystem Access',    envKey: 'SKILL_FILESYSTEM', desc: 'Read/write workspace files' },
+  { value: 'terminal',   label: 'Terminal & Bash Execution',  envKey: 'SKILL_TERMINAL',    hint: 'Run shell commands, npm, Python scripts' },
+  { value: 'filesystem', label: 'Full Filesystem Suite',      envKey: 'SKILL_FILESYSTEM',  hint: 'Read, write, patch, search, delete files' },
+  { value: 'git',        label: 'Git Integration',            envKey: 'SKILL_GIT',         hint: 'Commit, push, create PRs automatically' },
+  { value: 'browser',    label: 'Browser Automation',         envKey: 'SKILL_BROWSER',     hint: 'Playwright Chromium — navigate, click, scrape' },
+  { value: 'web_search', label: 'Web Search',                 envKey: 'SKILL_WEB_SEARCH',  hint: 'Search the web and summarize results' },
+  { value: 'vision',     label: 'Screen Vision & Capture',    envKey: 'SKILL_VISION',      hint: 'Screenshot, detect UI elements, video stream' },
+  { value: 'input',      label: 'OS Input Control',           envKey: 'SKILL_INPUT',       hint: 'Simulate mouse clicks & keyboard typing' },
+  { value: 'memory',     label: 'Long-Term Memory',           envKey: 'SKILL_MEMORY',      hint: 'Semantic vector index, knowledge base' },
+  { value: 'telegram',   label: 'Telegram Messaging',         envKey: 'SKILL_TELEGRAM',    hint: 'Send messages via Telegram Bot API' },
+  { value: 'analyzer',   label: 'Project Analyzer',           envKey: 'SKILL_ANALYZER',    hint: 'Read and summarize codebases & READMEs' },
 ] as const;
 
-export async function runOnboard(root: string) {
-  printBanner('onboard', 4309);
-  console.log('');
-  console.log(orange('  \u2554' + '\u2550'.repeat(46) + '\u2557'));
-  console.log(orange('  \u2551   Must-b \u2014 First Time Setup Wizard          \u2551'));
-  console.log(orange('  \u255a' + '\u2550'.repeat(46) + '\u255d'));
-  console.log('');
-  console.log(dim('  Press Ctrl+C at any time to cancel.\n'));
+// ── Main Wizard ────────────────────────────────────────────────────────────
 
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+export async function runOnboard(root: string): Promise<void> {
+  // Dynamic import — @clack/prompts is ESM-only; dynamic import works from CJS
+  const {
+    intro, outro, text, select, multiselect, password,
+    isCancel, spinner, note, cancel,
+  } = await import('@clack/prompts');
+
+  printBanner('onboard', 4309);
+
   const envPath = path.join(root, '.env');
   if (!fs.existsSync(envPath)) {
     const ex = path.join(root, '.env.example');
-    if (fs.existsSync(ex)) { fs.copyFileSync(ex, envPath); console.log(green('  \u2713 Created .env\n')); }
+    if (fs.existsSync(ex)) fs.copyFileSync(ex, envPath);
     else fs.writeFileSync(envPath, '', 'utf-8');
   }
 
-  // Step 1: Name
-  console.log(bold('  \u2500\u2500\u2500 Step 1: Who are you? \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500'));
-  const rawName = await ask(rl, orange('  Your name') + dim(' (used in memory/greetings): '));
-  const userName = rawName.trim() || 'User';
-  console.log(green(`  \u2713 Hello, ${userName}!\n`));
+  intro('  Must-b — First-Time Setup Wizard  ');
 
-  // Step 2: Provider
-  console.log(bold('  \u2500\u2500\u2500 Step 2: LLM Provider \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500'));
-  PROVIDERS.forEach((p, i) => console.log(`  ${cyan(`[${i + 1}]`)} ${bold(p.label.padEnd(22))} ${dim(p.url)}`));
-  console.log('');
-  const rawProv = await ask(rl, orange('  Provider') + dim(' [1-4, default: 1 OpenRouter]: '));
-  const provIdx = Math.max(0, Math.min(3, (parseInt(rawProv.trim()) || 1) - 1));
-  const provider = PROVIDERS[provIdx];
-  writeEnvKey(envPath, 'LLM_PROVIDER', provider.id);
-  console.log(green(`  \u2713 Provider: ${provider.label}\n`));
+  // ── Step 1: Name ─────────────────────────────────────────────────────────
+  const rawName = await text({
+    message: 'Your name',
+    placeholder: 'User',
+    defaultValue: 'User',
+  });
+  if (isCancel(rawName)) { cancel('Setup cancelled.'); process.exit(0); }
+  const userName = (rawName as string).trim() || 'User';
+  writeEnvKey(envPath, 'MUSTB_NAME', userName);
+  process.env.MUSTB_NAME = userName;
 
-  // Step 3: API Key
-  console.log(bold('  \u2500\u2500\u2500 Step 3: API Key \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500'));
-  const existingKey: string = (process.env as any)[provider.keyEnv] ?? '';
-  if (!existingKey || existingKey.includes('...')) {
-    if (provider.id === 'ollama') {
-      const rawUrl = await ask(rl, orange('  Ollama URL') + dim(' [default: http://localhost:11434]: '));
-      const url = rawUrl.trim() || 'http://localhost:11434';
-      writeEnvKey(envPath, provider.keyEnv, url);
-      console.log(green(`  \u2713 Ollama URL: ${url}\n`));
+  // ── Step 2: Language ─────────────────────────────────────────────────────
+  const lang = await select({
+    message: 'Preferred language',
+    options: [
+      { value: 'en', label: 'English' },
+      { value: 'tr', label: 'Türkçe' },
+      { value: 'de', label: 'Deutsch' },
+    ],
+  });
+  if (isCancel(lang)) { cancel('Setup cancelled.'); process.exit(0); }
+  writeEnvKey(envPath, 'MUSTB_LANG', lang as string);
+  process.env.MUSTB_LANG = lang as string;
+
+  // ── Step 3: AI Provider ───────────────────────────────────────────────────
+  const providerValue = await select({
+    message: 'Select your AI provider',
+    options: PROVIDERS.map(p => ({ value: p.value, label: p.label, hint: p.hint })),
+  });
+  if (isCancel(providerValue)) { cancel('Setup cancelled.'); process.exit(0); }
+
+  const provider = PROVIDERS.find(p => p.value === providerValue)!;
+  writeEnvKey(envPath, 'LLM_PROVIDER', provider.value);
+
+  // ── Step 4: API Key / URL ─────────────────────────────────────────────────
+  const existingKey = readEnvKey(envPath, provider.keyEnv) || (process.env as any)[provider.keyEnv] || '';
+  if (existingKey && !existingKey.includes('...')) {
+    note(`Already set: ${existingKey.slice(0, 12)}***`, 'API Key');
+  } else {
+    if (provider.isUrl) {
+      const rawUrl = await text({
+        message: provider.value === 'ollama'
+          ? 'Ollama base URL'
+          : `${provider.label} value`,
+        placeholder: provider.hint.split('→')[0].trim(),
+        defaultValue: provider.value === 'ollama' ? 'http://localhost:11434' : '',
+      });
+      if (isCancel(rawUrl)) { cancel('Setup cancelled.'); process.exit(0); }
+      const val = (rawUrl as string).trim() || (provider.value === 'ollama' ? 'http://localhost:11434' : '');
+      if (val) { writeEnvKey(envPath, provider.keyEnv, val); (process.env as any)[provider.keyEnv] = val; }
     } else {
-      const rawKey = await ask(rl, orange(`  ${provider.label} key`) + dim(` (${provider.url}): `));
-      const apiKey = rawKey.trim();
+      const rawKey = await password({
+        message: `${provider.label} API key  (${provider.hint.split('→')[1]?.trim() ?? ''})`,
+        mask: '▪',
+      });
+      if (isCancel(rawKey)) { cancel('Setup cancelled.'); process.exit(0); }
+      const apiKey = (rawKey as string).trim();
       if (apiKey) {
         writeEnvKey(envPath, provider.keyEnv, apiKey);
-        if (provider.id === 'openrouter') writeEnvKey(envPath, 'OPENROUTER_API_KEY', apiKey);
-        console.log(green(`  \u2713 Key saved: ${apiKey.slice(0, 10)}***\n`));
-      } else console.log(yellow('  \u26a0 No key \u2014 add to .env later.\n'));
+        (process.env as any)[provider.keyEnv] = apiKey;
+      } else {
+        note('No key entered — add it to .env later.', 'Skipped');
+      }
     }
-  } else console.log(green(`  \u2713 Key already set: ${existingKey.slice(0, 10)}***\n`));
-
-  // Step 4: Skills
-  console.log(bold('  \u2500\u2500\u2500 Step 4: Activate Skills \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500'));
-  console.log(dim('  Space-separated numbers. 0 = all skills.'));
-  SKILLS.forEach((s, i) => console.log(`  ${cyan(`[${i + 1}]`)} ${bold(s.label.padEnd(24))} ${dim(s.desc)}`));
-  console.log(`  ${cyan('[0]')} ${bold('All skills (recommended)')}`);
-  console.log('');
-  const rawSkills = await ask(rl, orange('  Skills') + dim(' [default: 0 all]: '));
-  const skillInput = rawSkills.trim();
-  let selectedSkills: typeof SKILLS[number][];
-  if (!skillInput || skillInput === '0') {
-    selectedSkills = [...SKILLS];
-  } else {
-    const nums = skillInput.split(/[\s,]+/).map((n: string) => parseInt(n) - 1).filter((n: number) => n >= 0 && n < SKILLS.length);
-    selectedSkills = nums.length > 0 ? nums.map((n: number) => SKILLS[n]) : [...SKILLS];
   }
-  for (const skill of SKILLS) writeEnvKey(envPath, skill.envKey, selectedSkills.includes(skill) ? 'true' : 'false');
-  console.log(green(`  \u2713 Active: ${selectedSkills.map(s => s.label).join(', ')}\n`));
 
-  // Step 5: Mode
-  console.log(bold('  \u2500\u2500\u2500 Step 5: Must-b Mode \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500'));
-  console.log(dim('    local  \u2014 single machine, no external ID'));
-  console.log(dim('    world  \u2014 cross-device unique MUSTB_UID'));
-  const rawMode = await ask(rl, orange('  Mode') + dim(' [local/world, default: local]: '));
-  const mode = rawMode.trim().toLowerCase() === 'world' ? 'world' : 'local';
-  writeEnvKey(envPath, 'MUSTB_MODE', mode);
+  // ── Step 5: Skills / Tools (multi-select with Spacebar) ──────────────────
+  const selectedSkills = await multiselect({
+    message: 'Select tools to activate  (Space to toggle, Enter to confirm)',
+    options: SKILLS.map(s => ({ value: s.value, label: s.label, hint: s.hint })),
+    initialValues: SKILLS.map(s => s.value) as unknown as string[],
+    required: false,
+  });
+  if (isCancel(selectedSkills)) { cancel('Setup cancelled.'); process.exit(0); }
+
+  for (const skill of SKILLS) {
+    const enabled = (selectedSkills as string[]).includes(skill.value);
+    writeEnvKey(envPath, skill.envKey, enabled ? 'true' : 'false');
+  }
+
+  // ── Step 6: Mode ─────────────────────────────────────────────────────────
+  const mode = await select({
+    message: 'Operating mode',
+    options: [
+      { value: 'local', label: 'Local',  hint: 'Single machine — no external ID' },
+      { value: 'world', label: 'World',  hint: 'Cross-device — generates a unique MUSTB_UID' },
+    ],
+  });
+  if (isCancel(mode)) { cancel('Setup cancelled.'); process.exit(0); }
+  writeEnvKey(envPath, 'MUSTB_MODE', mode as string);
+
   let uid = process.env.MUSTB_UID ?? '';
-  if (mode === 'world') {
-    if (!uid) { uid = generateUid(); writeEnvKey(envPath, 'MUSTB_UID', uid); }
-    console.log(green(`  \u2713 World mode \u2014 UID: ${uid}\n`));
-  } else console.log(green('  \u2713 Local mode configured.\n'));
+  if (mode === 'world' && !uid) {
+    uid = generateUid();
+    writeEnvKey(envPath, 'MUSTB_UID', uid);
+    process.env.MUSTB_UID = uid;
+  }
 
-  rl.close();
-
+  // ── Save Profile ──────────────────────────────────────────────────────────
   const mem = new LongTermMemory(root);
   await mem.load();
-  mem.setProfile({ name: userName, mode, uid: mode === 'world' ? uid : undefined });
+  const modeStr = mode as 'local' | 'world';
+  mem.setProfile({ name: userName, mode: modeStr, uid: modeStr === 'world' ? uid : undefined });
   await mem.save();
-  console.log(green('  \u2713 Profile saved to memory/user.json'));
-  console.log('');
-  console.log(cyan('  Running system health check...\n'));
-  await runDoctor(root);
 
-  console.log(orange('  \u2554' + '\u2550'.repeat(46) + '\u2557'));
-  console.log(orange('  \u2551       Must-b is ready! Start with:           \u2551'));
-  console.log(orange('  \u255a' + '\u2550'.repeat(46) + '\u255d'));
-  console.log('');
-  console.log(dim('    must-b start    \u2192  http://localhost:4309'));
-  console.log(dim('    must-b cli      \u2192  terminal chat'));
-  console.log(dim('    must-b doctor   \u2192  health check'));
-  console.log('');
+  // ── Health Check ──────────────────────────────────────────────────────────
+  const sp = spinner();
+  sp.start('Running system health check…');
+  try {
+    await runDoctor(root, true, true);
+    sp.stop('Health check passed.');
+  } catch {
+    sp.stop('Health check completed (some warnings may exist — run: must-b doctor)');
+  }
+
+  outro(
+    `  Must-b is ready, ${userName}!\n\n` +
+    `  must-b web      →  http://localhost:4309\n` +
+    `  must-b cli      →  terminal chat\n` +
+    `  must-b doctor   →  health check`
+  );
 }
