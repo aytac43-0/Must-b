@@ -26,12 +26,9 @@ dotenv.config();
 // MUSTB_ROOT is always set by bin/must-b.cjs before this file runs.
 // Fallback: in CJS bundles __dirname is the dist/ directory (injected by Node/esbuild);
 // tsx also runs in CJS mode, so __dirname is always available.
-// We must NOT use `const __dirname = …` here — that would shadow the CJS global.
 function _resolveRoot(): string {
   if (process.env.MUSTB_ROOT) return path.resolve(process.env.MUSTB_ROOT);
-  // CJS bundle / tsx: __dirname is always available as a global
   if (typeof __dirname !== 'undefined') return path.resolve(__dirname, '..');
-  // Last resort — should never reach here
   return process.cwd();
 }
 const ROOT = _resolveRoot();
@@ -52,40 +49,37 @@ function ensureWorldUid() {
   } catch { /* best-effort */ }
 }
 
-// ── First-run check: redirect to full onboard wizard if unconfigured ───────
+// ── First-run check ────────────────────────────────────────────────────────
+// Runs the onboarding wizard if setup is incomplete.
+// Does NOT exit — returns control to main() so the launch prompt follows.
 async function runFirstTimeSetup(): Promise<void> {
   const envPath    = path.join(ROOT, '.env');
   const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-  // Consider setup complete if: MUSTB_SETUP_COMPLETE flag is set (v1.3.2+)
-  // OR both MUSTB_NAME and LLM_PROVIDER exist (users who set up before v1.3.2)
+  // Complete if: explicit flag (v1.3.2+) OR legacy users with name+provider
   const isComplete  = /^MUSTB_SETUP_COMPLETE=true/m.test(envContent);
   const hasName     = /^MUSTB_NAME=/m.test(envContent);
   const hasProvider = /^LLM_PROVIDER=/m.test(envContent);
   if (isComplete || (hasName && hasProvider)) return;
-  // Incomplete or cancelled setup — run the full wizard, then exit
+  // Incomplete / cancelled — run wizard then fall through to launch prompt
   await runOnboard(ROOT);
-  process.exit(0);
+  dotenv.config({ override: true }); // pick up keys written by the wizard
 }
 
 // ── Command routing ────────────────────────────────────────────────────────
 const rawArg = process.argv[2]?.toLowerCase().trim() ?? '';
 
 async function main() {
-  // First run: prompt for name & language before anything else
-  // (skip for non-interactive commands like doctor, help, memory-sync)
+  // Skip first-run check for pure informational / non-interactive commands
   const skipFirstRun = ['doctor', 'help', '--help', '-h', 'memory-sync', 'onboard'].includes(rawArg);
   if (!skipFirstRun) await runFirstTimeSetup();
 
   switch (rawArg) {
+    // ── Utility commands (always exit) ────────────────────────────────────
     case 'doctor': {
       const fix = process.argv.includes('--fix');
       await runDoctor(ROOT, fix);
       process.exit(0);
     }
-
-    case 'onboard':
-      await runOnboard(ROOT);
-      process.exit(0);
 
     case 'memory-sync': {
       const cyan = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
@@ -111,19 +105,37 @@ async function main() {
       const dim  = (s: string) => `\x1b[2m${s}\x1b[0m`;
       printBanner('help', 4309);
       console.log('  Usage: must-b [command]\n');
-      console.log(`  ${cyan('web')}         ${dim('Start web UI + API gateway (default)')}`);
-      console.log(`  ${cyan('cli')}         ${dim('Interactive terminal chat')}`);
-      console.log(`  ${cyan('doctor')}      ${dim('System health check (Node, Git, Python, API keys)')}`);
+      console.log(`  ${cyan('web')}          ${dim('Start web dashboard (http://localhost:4309)')}`);
+      console.log(`  ${cyan('cli')}          ${dim('Interactive terminal chat')}`);
+      console.log(`  ${cyan('gateway')}      ${dim('Alias for web')}`);
+      console.log(`  ${cyan('doctor')}       ${dim('System health check')}`);
       console.log(`  ${cyan('doctor --fix')} ${dim('Self-Healing mode — auto-repair issues')}`);
-      console.log(`  ${cyan('onboard')}     ${dim('First-time setup wizard')}`);
+      console.log(`  ${cyan('onboard')}      ${dim('Re-run the setup wizard')}`);
       console.log(`  ${cyan('memory-sync')} ${dim('View / sync long-term memory')}`);
-      console.log(`  ${cyan('help')}        ${dim('Show this help')}\n`);
+      console.log(`  ${cyan('help')}         ${dim('Show this help')}\n`);
       process.exit(0);
     }
 
+    // ── Onboard: run wizard then ask how to launch ────────────────────────
+    case 'onboard':
+      await runOnboard(ROOT);
+      dotenv.config({ override: true });
+      await bootServer(''); // ask launch mode after wizard completes
+      return;
+
+    // ── Direct-mode shortcuts (no prompt) ─────────────────────────────────
+    case 'web':
     case 'gateway':
+      await bootServer('gateway');
+      return;
+
+    case 'cli':
+      await bootServer('cli');
+      return;
+
+    // ── Default: no arg → show launch prompt ─────────────────────────────
     default:
-      await bootServer(rawArg);
+      await bootServer('');
   }
 }
 
@@ -134,7 +146,6 @@ async function runPreFlight(): Promise<void> {
   const green  = (s: string) => `\x1b[32m${s}\x1b[0m`;
   const dim    = (s: string) => `\x1b[2m${s}\x1b[0m`;
 
-  // Run doctor with fix=true, silent=true → auto-repairs fast issues, skips heavy (~2GB) installs
   const result = await runDoctor(ROOT, true, true);
 
   if (result.healed > 0) {
@@ -146,7 +157,6 @@ async function runPreFlight(): Promise<void> {
     console.error(red('  [pre-flight] CRITICAL ERROR — Gateway cannot start!'));
     console.error(red('  ══════════════════════════════════════════════════'));
     console.error(yellow('  Required components are missing or corrupted.'));
-    console.error(yellow('  The gateway cannot start until these are resolved.'));
     console.error('');
     console.error(dim('  Run diagnostics and repair: must-b doctor --fix'));
     console.error('');
@@ -165,48 +175,41 @@ function openBrowser(url: string): void {
   });
 }
 
-// ── Terminal / Dashboard launch mode selector ──────────────────────────────
+// ── Launch mode prompt (inquirer list) ──────────────────────────────────────
 async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
-  const cyanFn = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
-  const dimFn  = (s: string) => `\x1b[2m${s}\x1b[0m`;
-  console.log('');
-  console.log(`  ${cyanFn('1')}  Dashboard  ${dimFn('Web UI — opens http://localhost:4309')}`);
-  console.log(`  ${cyanFn('2')}  Terminal   ${dimFn('Re-run the setup wizard')}`);
-  console.log('');
-  return new Promise((resolve) => {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    rl.question('  Select (1 or 2): ', (answer) => {
-      rl.close();
-      resolve(answer.trim() === '2' ? 'terminal' : 'dashboard');
-    });
-    rl.on('close', () => resolve('dashboard'));
-  });
+  const { default: inquirer } = await import('inquirer');
+  const { mode } = await inquirer.prompt([{
+    type:    'list',
+    name:    'mode',
+    message: 'How would you like to interact with Must-b?',
+    choices: [
+      { name: 'Web Dashboard        — opens http://localhost:4309', value: 'dashboard' },
+      { name: 'Interactive Terminal — CLI chat in this window',     value: 'terminal'  },
+    ],
+  }]);
+  return mode as 'terminal' | 'dashboard';
 }
 
 // ── Server / CLI boot ──────────────────────────────────────────────────────
+// arg: 'cli' → terminal directly
+//      'gateway'|'web' → dashboard directly
+//      '' → show launch-mode prompt
 async function bootServer(arg: string) {
   ensureWorldUid();
-  await runPreFlight(); // Deep pre-flight: self-heal silently, block on critical failures
+  await runPreFlight();
 
-  // If arg is explicitly 'cli' or 'gateway', skip the selection prompt
   let resolvedMode: 'terminal' | 'dashboard';
   if (arg === 'cli') {
     resolvedMode = 'terminal';
-  } else if (arg === 'gateway') {
+  } else if (arg === 'gateway' || arg === 'web') {
     resolvedMode = 'dashboard';
   } else {
     resolvedMode = await askLaunchMode();
   }
 
-  if (resolvedMode === 'terminal') {
-    await runOnboard(ROOT);
-    process.exit(0);
-  }
-
-  const mode = 'web';
   const PORT = parseInt(process.env.PORT || '4309', 10);
 
-  printBanner(mode, PORT);
+  printBanner(resolvedMode === 'dashboard' ? 'web' : 'cli', PORT);
 
   const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'info',
@@ -226,7 +229,6 @@ async function bootServer(arg: string) {
     process.exit(1);
   }
 
-  // ── Workspace isolation — all agent output goes under workspace/ ──────────
   initWorkspace();
   logger.info('[Paths] Workspace directories initialised.');
 
@@ -247,7 +249,7 @@ async function bootServer(arg: string) {
   });
   observer.start();
 
-  // Greet returning users via long-term memory + start semantic engine
+  // ── Memory + Orchestrator (shared by both modes) ──────────────────────────
   const mem = new LongTermMemory(ROOT);
   await mem.load();
   await mem.initSemantic();
@@ -258,20 +260,18 @@ async function bootServer(arg: string) {
     logger.info(`Welcome back, ${profile.name}!`);
   }
 
-  const planner = new Planner(logger);
-  const executor = new Executor(logger, mem);
+  const planner      = new Planner(logger);
+  const executor     = new Executor(logger, mem);
   const orchestrator = new Orchestrator(logger, planner, executor);
 
-  if (mode === 'web') {
-    const history = new SessionHistory(logger, path.join(ROOT, 'memory'));
+  // ── Web Dashboard mode ────────────────────────────────────────────────────
+  if (resolvedMode === 'dashboard') {
+    const history   = new SessionHistory(logger, path.join(ROOT, 'memory'));
     const apiServer = new ApiServer(logger, orchestrator, history, PORT);
     apiServer.start();
-    // Background health watcher: silent checks every 30 minutes
     startHealthMonitor(ROOT, logger);
-    // Dashboard modunda tarayıcıyı otomatik aç
     setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
 
-    // Idling self-improvement loop — only for Planner/Master tier agents
     const caps = getAgentRole();
     if (caps.canIdleInfer) {
       logger.info(`[Hierarchy] Role: ${caps.role} (${caps.tier}, score=${caps.score}) — idling loop enabled.`);
@@ -280,15 +280,23 @@ async function bootServer(arg: string) {
       logger.info(`[Hierarchy] Role: ${caps.role} (${caps.tier}, score=${caps.score}) — Worker tier, idling loop skipped.`);
     }
 
+    logger.info(`Dashboard live → http://localhost:${PORT}`);
+    // Express keeps the process alive — no return needed, but be explicit:
     return;
   }
 
-  // CLI mode — interactive loop (legacy, kept for direct 'cli' arg)
-  logger.info('CLI mode. Type a goal and press Enter. "exit" to quit.');
+  // ── Interactive Terminal (CLI) mode ───────────────────────────────────────
+  logger.info('CLI mode active. Type a goal and press Enter.  "exit" to quit.');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
   const prompt = () => rl.question('\x1b[38;2;0;204;255mMust-b > \x1b[0m', async (line) => {
     const goal = line.trim();
-    if (!goal || goal === 'exit') { rl.close(); return; }
+    if (!goal) { prompt(); return; }
+    if (goal === 'exit' || goal === 'quit') {
+      logger.info('Goodbye!');
+      rl.close();
+      process.exit(0);
+    }
     try {
       await orchestrator.run(goal);
       await mem.recordConversation({ goal, outcome: 'completed' });
@@ -298,6 +306,8 @@ async function bootServer(arg: string) {
     }
     prompt();
   });
+
+  rl.on('close', () => { logger.info('Session ended.'); process.exit(0); });
   prompt();
 }
 
