@@ -126,11 +126,16 @@ export async function indexDocument(
     await idx.insertItem({
       vector,
       metadata: {
-        ...metadata,
-        text:       chunk,
-        chunkIndex: i,
+        source:      metadata.source,
+        title:       metadata.title,
+        id:          metadata.id      ?? '',
+        path:        metadata.path    ?? '',
+        savedAt:     metadata.savedAt ?? '',
+        tags:        JSON.stringify(metadata.tags ?? []),
+        text:        chunk,
+        chunkIndex:  i,
         totalChunks: chunks.length,
-      } as Record<string, unknown>,
+      },
     });
   }
 }
@@ -146,7 +151,7 @@ export async function queryMemory(
   const [idx, embed] = await Promise.all([getIndex(), getEmbedFn()]);
 
   const vector  = await embed(query.trim());
-  const results = await idx.queryItems(vector, topK);
+  const results = await idx.queryItems(vector, query.trim(), topK);
 
   return results.map(r => {
     const m = r.item.metadata as Record<string, unknown>;

@@ -6,7 +6,6 @@ import crypto from 'crypto';
 import readline from 'readline';
 import { exec } from 'child_process';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { printBanner } from './utils/banner.js';
 import { Orchestrator } from './core/orchestrator.js';
 import { Planner } from './core/planner.js';
@@ -26,14 +25,14 @@ dotenv.config();
 // ── Resolve project root ───────────────────────────────────────────────────
 // MUSTB_ROOT is always set by bin/must-b.cjs before this file runs.
 // Fallback: in CJS bundles __dirname is the dist/ directory (injected by Node/esbuild);
-// in ESM dev mode (tsx) we derive it from import.meta.url.
+// tsx also runs in CJS mode, so __dirname is always available.
 // We must NOT use `const __dirname = …` here — that would shadow the CJS global.
 function _resolveRoot(): string {
   if (process.env.MUSTB_ROOT) return path.resolve(process.env.MUSTB_ROOT);
-  // CJS bundle: __dirname is available as a global
+  // CJS bundle / tsx: __dirname is always available as a global
   if (typeof __dirname !== 'undefined') return path.resolve(__dirname, '..');
-  // ESM dev fallback
-  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  // Last resort — should never reach here
+  return process.cwd();
 }
 const ROOT = _resolveRoot();
 

@@ -178,8 +178,8 @@ export class ApiServer {
     // ── Identity — expose agent name for voice wake-word ─────────────────
     this.app.get('/api/identity', async (_req, res) => {
       try {
-        const identity = await loadOrCreateIdentity();
-        res.json({ name: identity.name, id: identity.id });
+        const identity = loadOrCreateIdentity();
+        res.json({ name: process.env.MUSTB_NAME ?? 'Must-b', id: identity.uid });
       } catch {
         res.json({ name: 'Must-b', id: '' });
       }
@@ -2064,10 +2064,11 @@ export class ApiServer {
 
       inputEvents.on('visionClick', (d: { x: number; y: number; type: string; label: string }) => {
         this.io.emit('agentUpdate', {
-          type:   'inputAction',
-          action: 'visionClick',
-          label:  `Vision → ${d.label} (${d.type}) at ${d.x}, ${d.y}`,
-          ...d,
+          type:      'inputAction',
+          action:    'visionClick',
+          label:     `Vision → ${d.label} (${d.type}) at ${d.x}, ${d.y}`,
+          x:         d.x,
+          y:         d.y,
           timestamp: Date.now(),
         });
         this.logger.info(`[Input] VisionClick ${d.label} at (${d.x}, ${d.y})`);
