@@ -132,7 +132,8 @@ export async function runOnboard(root: string): Promise<void> {
       if (val) { writeEnvKey(envPath, provider.keyEnv, val); (process.env as any)[provider.keyEnv] = val; }
     } else {
       const rawKey = await password({
-        message: `${provider.label} API key  (${provider.hint.split('→')[1]?.trim() ?? ''})`,
+        message: `${provider.label} API key  (${provider.hint.split('→')[1]?.trim() ?? ''})\n  ` +
+                 `${'\x1b[2m'}Press Enter without typing to skip and add later${'\x1b[0m'}`,
         mask: '▪',
       });
       if (isCancel(rawKey)) { cancel('Setup cancelled.'); process.exit(0); }
@@ -141,14 +142,25 @@ export async function runOnboard(root: string): Promise<void> {
         writeEnvKey(envPath, provider.keyEnv, apiKey);
         (process.env as any)[provider.keyEnv] = apiKey;
       } else {
-        note('No key entered — add it to .env later.', 'Skipped');
+        note(
+          `No key entered — Must-b will still start.\n` +
+          `  Add it any time:\n` +
+          `    must-b onboard          re-run wizard\n` +
+          `    .env → ${provider.keyEnv}=your-key`,
+          'API Key Skipped'
+        );
       }
     }
   }
 
   // ── Step 5: Skills / Tools (multi-select with Spacebar) ──────────────────
+  note(
+    'Use  ↑↓  to move,  Space  to toggle on/off,  Enter  to confirm.\n' +
+    'All 10 tools are pre-selected. Deselect any you do not need.',
+    'Tool Selection'
+  );
   const selectedSkills = await multiselect({
-    message: 'Select tools to activate  (Space to toggle, Enter to confirm)',
+    message: 'Enable tools  (Space = toggle, A = all/none, Enter = confirm)',
     options: SKILLS.map(s => ({ value: s.value, label: s.label, hint: s.hint })),
     initialValues: SKILLS.map(s => s.value) as unknown as string[],
     required: false,

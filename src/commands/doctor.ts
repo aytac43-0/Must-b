@@ -56,6 +56,89 @@ function getInstallCmd(cmds: { win32?: string; darwin?: string; linux?: string }
   return cmds[process.platform as 'win32' | 'darwin' | 'linux'];
 }
 
+// ── Windows: smart winget installer with "already installed" handling ──────
+//
+// winget install exits non-zero with "Found an existing package already
+// installed. No available upgrade found." — this is a FALSE FAILURE.
+// This helper detects it and autonomously finds the binary in common paths.
+
+const WIN_COMMON_PATHS: Record<string, string[]> = {
+  node:   [
+    'C:\\Program Files\\nodejs\\node.exe',
+    'C:\\Program Files (x86)\\nodejs\\node.exe',
+  ],
+  python: [
+    ...['313', '312', '311', '310', '39'].flatMap(v => [
+      `${os.homedir()}\\AppData\\Local\\Programs\\Python\\Python${v}\\python.exe`,
+      `C:\\Python${v}\\python.exe`,
+    ]),
+    'C:\\Program Files\\Python3\\python.exe',
+  ],
+  git:    [
+    'C:\\Program Files\\Git\\bin\\git.exe',
+    'C:\\Program Files (x86)\\Git\\bin\\git.exe',
+  ],
+  cmake:  [
+    'C:\\Program Files\\CMake\\bin\\cmake.exe',
+    'C:\\Program Files (x86)\\CMake\\bin\\cmake.exe',
+  ],
+  ollama: [
+    `${os.homedir()}\\AppData\\Local\\Programs\\Ollama\\ollama.exe`,
+    'C:\\Program Files\\Ollama\\ollama.exe',
+  ],
+};
+
+/** Add a directory to the current process PATH AND the user's permanent PATH via PowerShell. */
+function addToPath(dir: string): void {
+  if (!process.env.PATH?.split(';').some(p => p.toLowerCase() === dir.toLowerCase())) {
+    process.env.PATH = dir + ';' + (process.env.PATH ?? '');
+    console.log(green(`  ✓  PATH güncellendi: ${dir}`));
+    // Persist to user-level PATH so new shells also pick it up
+    if (process.platform === 'win32') {
+      try {
+        execSync(
+          `powershell -NoProfile -Command "$p=[System.Environment]::GetEnvironmentVariable('PATH','User');` +
+          `if(-not($p -split ';' | Where-Object{$_ -ieq '${dir}'.replace(\"'\",\"''\")})){` +
+          `[System.Environment]::SetEnvironmentVariable('PATH',('${dir};'+$p),'User')}"`,
+          { stdio: 'pipe' }
+        );
+      } catch { /* best-effort */ }
+    }
+  }
+}
+
+/**
+ * Run `winget install <pkgId>`.
+ * Returns true on clean install OR when winget reports "already installed"
+ * (treating pre-existing installations as a success, not a failure).
+ * When already-installed, probes `commonPathKey` entries and auto-adds to PATH.
+ */
+function wingetInstall(pkgId: string, commonPathKey?: keyof typeof WIN_COMMON_PATHS): boolean {
+  if (process.platform !== 'win32') return false;
+  try {
+    execSync(`winget install --id ${pkgId} --accept-source-agreements --accept-package-agreements`,
+      { stdio: 'pipe', encoding: 'utf-8' });
+    return true;
+  } catch (err: any) {
+    const output = ((err.stdout ?? '') + (err.stderr ?? '')).toLowerCase();
+    // winget non-zero but package was already present — NOT a real failure
+    if (output.includes('already installed') || output.includes('no available upgrade') ||
+        output.includes('no applicable update') || output.includes('already up to date')) {
+      console.log(dim('  ↳ Paket zaten kurulu — PATH kontrol ediliyor…'));
+      if (commonPathKey) {
+        for (const candidate of WIN_COMMON_PATHS[commonPathKey]) {
+          if (fs.existsSync(candidate)) {
+            addToPath(path.dirname(candidate));
+            return true;
+          }
+        }
+      }
+      return true; // installed, even if PATH wasn't updated (new shell will have it)
+    }
+    return false;
+  }
+}
+
 // ── Shadow Config: .env ↔ .env.bak ────────────────────────────────────────
 
 function shadowEnv(root: string): void {
@@ -85,8 +168,8 @@ function checkNode(): CheckResult {
     detail: `${version} ${ok ? '(>= 18 required)' : '(upgrade to Node 18+)'}`,
     fix: ok ? undefined : 'Install Node 18+ from https://nodejs.org',
     autoFix: ok ? undefined : async () => {
+      if (process.platform === 'win32') return wingetInstall('OpenJS.NodeJS.LTS', 'node');
       const cmd = getInstallCmd({
-        win32:  'winget install OpenJS.NodeJS.LTS',
         darwin: 'brew install node@20',
         linux:  'curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs',
       });
@@ -108,8 +191,8 @@ function checkGit(): CheckResult {
       detail: 'not found',
       fix: 'Install Git from https://git-scm.com',
       autoFix: async () => {
+        if (process.platform === 'win32') return wingetInstall('Git.Git', 'git');
         const cmd = getInstallCmd({
-          win32:  'winget install Git.Git',
           darwin: 'brew install git',
           linux:  'sudo apt-get install -y git',
         });
@@ -136,26 +219,21 @@ function checkPython(): CheckResult {
     fix: 'Install Python 3 from https://python.org',
     autoFix: async () => {
       if (process.platform === 'win32') {
-        // Try Python 3.12 specifically first (more stable winget ID), then generic
-        for (const cmd of ['winget install Python.Python.3.12', 'winget install Python.Python.3']) {
-          console.log(dim(`  → ${cmd}`));
-          try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { /* try next */ }
+        // Try preferred winget IDs; wingetInstall handles "already installed" as success
+        for (const pkgId of ['Python.Python.3.12', 'Python.Python.3.11', 'Python.Python.3']) {
+          if (wingetInstall(pkgId, 'python')) return true;
         }
-        console.log(yellow('  ⚠  Otomatik kurulum başarısız oldu.'));
-        console.log(yellow('     Manuel indirme: https://www.python.org/downloads/windows/'));
+        // Last resort: probe common paths without install
+        for (const p of WIN_COMMON_PATHS.python) {
+          if (fs.existsSync(p)) { addToPath(path.dirname(p)); return true; }
+        }
+        console.log(yellow('  ⚠  Python bulunamadı — indirin: https://www.python.org/downloads/windows/'));
         return false;
       }
       const cmd = getInstallCmd({ darwin: 'brew install python3', linux: 'sudo apt-get install -y python3' });
-      if (!cmd) {
-        console.log(yellow('  ⚠  Manuel indirme: https://www.python.org/downloads/'));
-        return false;
-      }
+      if (!cmd) return false;
       console.log(dim(`  → ${cmd}`));
-      try { execSync(cmd, { stdio: 'inherit' }); return true; }
-      catch {
-        console.log(yellow('  ⚠  Manuel indirme: https://www.python.org/downloads/'));
-        return false;
-      }
+      try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
     },
   };
 }
@@ -386,11 +464,8 @@ function checkCMake(): CheckResult {
       ? 'Run: brew install cmake'
       : 'Run: sudo apt-get install -y cmake',
     autoFix: async () => {
-      const cmd = getInstallCmd({
-        win32:  'winget install Kitware.CMake',
-        darwin: 'brew install cmake',
-        linux:  'sudo apt-get install -y cmake',
-      });
+      if (process.platform === 'win32') return wingetInstall('Kitware.CMake', 'cmake');
+      const cmd = getInstallCmd({ darwin: 'brew install cmake', linux: 'sudo apt-get install -y cmake' });
       if (!cmd) return false;
       console.log(dim(`  → ${cmd}`));
       try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
@@ -759,7 +834,7 @@ async function selfHeal(
       console.log(`  ${PASS}  ${bold(check.label.padEnd(28))} ${green('onarıldı!')}`);
       healed++;
     } else {
-      console.log(`  ${FAIL}  ${bold(check.label.padEnd(28))} ${red('onarım başarısız — manuel müdahale gerekli')}`);
+      console.log(`  ${FAIL}  ${bold(check.label.padEnd(28))} ${red('onarım başarısız')}${check.fix ? dim(` — ${check.fix}`) : ''}`);
     }
   }
   return healed;
@@ -1093,28 +1168,32 @@ export async function ensureModel(modelName: string): Promise<EnsureModelResult>
   if (!installed) {
     console.log(yellow(`  ⚠  Ollama bulunamadı. Kurulum deneniyor...`));
 
-    const installCmd = getInstallCmd({
-      win32:  'winget install Ollama.Ollama',
-      darwin: 'brew install ollama',
-      linux:  'curl -fsSL https://ollama.com/install.sh | sh',
-    });
+    let ollamaOk = false;
+    if (process.platform === 'win32') {
+      ollamaOk = wingetInstall('Ollama.Ollama', 'ollama');
+      // If winget reported already-installed, verify by probing path directly
+      if (!ollamaOk) {
+        for (const p of WIN_COMMON_PATHS.ollama) {
+          if (fs.existsSync(p)) { addToPath(path.dirname(p)); ollamaOk = true; break; }
+        }
+      }
+    } else {
+      const installCmd = getInstallCmd({
+        darwin: 'brew install ollama',
+        linux:  'curl -fsSL https://ollama.com/install.sh | sh',
+      });
+      if (installCmd) {
+        try { execSync(installCmd, { stdio: 'inherit' }); ollamaOk = true; }
+        catch { /* fall through */ }
+      }
+    }
 
-    if (!installCmd) {
-      result.error = 'Ollama kurulumu bu platformda desteklenmiyor. Lütfen https://ollama.com adresinden manuel kurun.';
+    if (!ollamaOk) {
+      result.error = 'Ollama kurulamadı. https://ollama.com/download adresinden indirin.';
       console.error(red(`  ✗  ${result.error}`));
       return result;
     }
-
-    console.log(dim(`  → ${installCmd}`));
-    try {
-      execSync(installCmd, { stdio: 'inherit' });
-      console.log(green('  ✓  Ollama kuruldu.'));
-    } catch (err: any) {
-      result.error = `Ollama kurulum komutu başarısız: ${err.message}`;
-      console.error(red(`  ✗  ${result.error}`));
-      console.error(dim('     Manuel kurulum: https://ollama.com/download'));
-      return result;
-    }
+    console.log(green('  ✓  Ollama kuruldu.'));
 
     // Start the Ollama daemon after fresh install so subsequent pulls work
     console.log(dim('  → ollama serve başlatılıyor...'));
