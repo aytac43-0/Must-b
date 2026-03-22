@@ -24,17 +24,17 @@ import path from 'path';
 export const WORKSPACE_ROOT: string = (() => {
   if (process.env.MUSTB_WORKSPACE) return path.resolve(process.env.MUSTB_WORKSPACE);
 
-  // Resolve project root — works in CJS bundle (esbuild __dirname), ESM dev (import.meta.url),
+  // Resolve project root — works in CJS bundle (esbuild __dirname) and tsx,
   // and always when MUSTB_ROOT is set by bin/must-b.cjs.
   let projectRoot: string;
   if (process.env.MUSTB_ROOT) {
     projectRoot = path.resolve(process.env.MUSTB_ROOT);
   } else if (typeof __dirname !== 'undefined') {
-    // CJS bundle: __dirname = dist/ → one level up is project root
+    // CJS bundle / tsx: __dirname = dist/ → one level up is project root
     projectRoot = path.resolve(__dirname, '..');
   } else {
-    // ESM dev: src/core/paths.ts → up 2 levels to project root
-    projectRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
+    // Last resort — should never reach here
+    projectRoot = process.cwd();
   }
   return path.join(projectRoot, 'workspace');
 })();
