@@ -27,12 +27,22 @@
  *   - MODEL_CATALOG expanded from 11 → 27 models across all categories:
  *     ultralight, lightweight, vision, coding, mid-tier, flagship, embedding
  *   - getTag() RAM tiers updated to cover 2 GB → 96 GB systems
+ *
+ * v1.4.6 (Titanium Build):
+ *   - refreshEnvironmentPath() called after every winget/installer run so the
+ *     current process sees the updated PATH immediately
+ *   - getOllamaCmd() dual-layer helper: checks refreshed PATH first, then falls
+ *     back to the absolute LOCALAPPDATA exe; used for every spawn/spawnSync call
+ *   - Model pull wrapped in a resilient async retry loop; user is prompted on
+ *     failure (network drop etc.); declining throws a hard error — setup never
+ *     silently falls through to tool selection
  */
 
 import fs           from 'fs';
 import os           from 'os';
 import path         from 'path';
 import { spawnSync, spawn, execSync } from 'child_process';
+import { refreshEnvironmentPath }    from './envRefresher.js';
 
 // ── Colour helpers ──────────────────────────────────────────────────────────
 const cyan   = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
@@ -141,24 +151,46 @@ function analyzeHardware(): HardwareInfo {
 
 // ── Ollama CLI detection + installation ────────────────────────────────────
 
-function isOllamaCli(): boolean {
-  return isOllamaPresent();
-}
-
 /**
  * Returns true if Ollama is present on disk (bypasses stale PATH).
- * Checks the absolute exe path first, then falls back to `ollama --version`.
+ * Checks the absolute Windows exe path first, then falls back to PATH.
+ * Used before any PATH refresh to detect existing installations.
  */
 function isOllamaPresent(): boolean {
-  // Absolute path check — works even when PATH is stale after winget install
   if (process.platform === 'win32') {
     const local = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
-    const absExe = path.join(local, 'Programs', 'Ollama', 'ollama.exe');
-    if (fs.existsSync(absExe)) return true;
+    if (fs.existsSync(path.join(local, 'Programs', 'Ollama', 'ollama.exe'))) return true;
   }
-  // Shell PATH fallback
   const r = spawnSync('ollama', ['--version'], { encoding: 'utf8', timeout: 5000, shell: true });
   return r.status === 0 && !r.error;
+}
+
+function isOllamaCli(): boolean { return isOllamaPresent(); }
+
+/**
+ * Returns the best available path to the ollama executable.
+ *
+ * Always called AFTER refreshEnvironmentPath() so the freshly updated
+ * process.env.PATH is checked first.  Falls back to the hardcoded Windows
+ * install directory if 'ollama' is still not resolvable via PATH.
+ *
+ * Used for every spawn/spawnSync call (serve, pull, version checks).
+ */
+function getOllamaCmd(): string {
+  // Check freshly refreshed PATH
+  const check = spawnSync('ollama', ['--version'], {
+    encoding: 'utf8', timeout: 3000, shell: true,
+  });
+  if (check.status === 0 && !check.error) return 'ollama';
+
+  // Hard fallback: absolute Windows install path (no PATH resolution needed)
+  if (process.platform === 'win32') {
+    const local = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
+    const abs   = path.join(local, 'Programs', 'Ollama', 'ollama.exe');
+    if (fs.existsSync(abs)) return abs;
+  }
+
+  return 'ollama'; // best-effort; caller handles failure
 }
 
 async function installOllama(): Promise<boolean> {
@@ -169,7 +201,10 @@ async function installOllama(): Promise<boolean> {
       { stdio: 'inherit', shell: true },
     );
 
-    if (r.status === 0) return true;
+    if (r.status === 0) {
+      refreshEnvironmentPath();
+      return true;
+    }
 
     // winget exits non-zero for "already installed" / "No available upgrade found".
     // Verify via `winget list` first (captures output), then check exe on disk.
@@ -182,12 +217,14 @@ async function installOllama(): Promise<boolean> {
     const listOut = `${listCheck.stdout ?? ''} ${listCheck.stderr ?? ''}`.toLowerCase();
     if (listCheck.status === 0 && listOut.includes('ollama')) {
       console.log(`  ${green('✓')}  Ollama already installed (winget list confirmed).`);
+      refreshEnvironmentPath();
       return true;
     }
 
     // Final fallback: check exe on disk directly
     if (isOllamaPresent()) {
       console.log(`  ${green('✓')}  Ollama executable found on disk — treating as installed.`);
+      refreshEnvironmentPath();
       return true;
     }
 
@@ -204,16 +241,6 @@ async function installOllama(): Promise<boolean> {
 
 // ── Daemon management ───────────────────────────────────────────────────────
 
-/** Absolute path to the Ollama executable on Windows (survives fresh installs
- *  where the current terminal's PATH has not yet been refreshed). */
-function ollamaAbsPath(): string {
-  if (process.platform === 'win32') {
-    const local = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
-    return path.join(local, 'Programs', 'Ollama', 'ollama.exe');
-  }
-  return 'ollama'; // on Linux/macOS the shell PATH is fine
-}
-
 async function pingOllama(baseUrl: string): Promise<boolean> {
   try {
     const res = await fetch(`${baseUrl}/api/version`, {
@@ -225,26 +252,22 @@ async function pingOllama(baseUrl: string): Promise<boolean> {
   }
 }
 
-/** Spawn the Ollama daemon detached, trying the absolute path first on Windows
- *  to bypass the stale PATH problem that appears right after a winget install. */
+/**
+ * Spawn the Ollama daemon detached.
+ * Uses getOllamaCmd() — PATH-first with absolute-path fallback —
+ * so this works correctly both before and after a winget install.
+ */
 function spawnDaemon(): void {
-  const absExe = ollamaAbsPath();
-
-  // On Windows try absolute path first; fall back to shell PATH variant
-  const spawnArgs: Parameters<typeof spawn> = process.platform === 'win32'
-    ? [absExe, ['serve'], { detached: true, stdio: 'ignore', shell: false }]
-    : ['ollama', ['serve'], { detached: true, stdio: 'ignore', shell: true }];
-
+  const cmd      = getOllamaCmd();
+  const useShell = !path.isAbsolute(cmd); // bare 'ollama' needs shell resolution
   try {
-    const child = spawn(...spawnArgs);
+    const child = spawn(cmd, ['serve'], { detached: true, stdio: 'ignore', shell: useShell });
     child.unref();
   } catch {
-    // If the absolute-path spawn failed (e.g. not yet installed there), fall
-    // back to the shell PATH form so at least something is attempted.
+    // Last-resort: shell PATH form (polling timeout handles failure)
     try {
-      const fallback = spawn('ollama', ['serve'], { detached: true, stdio: 'ignore', shell: true });
-      fallback.unref();
-    } catch { /* will be caught by the polling timeout */ }
+      spawn('ollama', ['serve'], { detached: true, stdio: 'ignore', shell: true }).unref();
+    } catch { /* swallowed — polling timeout will surface the failure */ }
   }
 }
 
@@ -434,7 +457,8 @@ export async function runOllamaManager(baseUrl: string, inquirer: unknown): Prom
     }
     console.log(`  ${green('✓')}  Ollama installed.`);
   } else {
-    const ver = spawnSync('ollama', ['--version'], { encoding: 'utf8', shell: true });
+    const cmd  = getOllamaCmd();
+    const ver  = spawnSync(cmd, ['--version'], { encoding: 'utf8', shell: !path.isAbsolute(cmd) });
     const vStr = ver.stdout?.trim() ?? '';
     console.log(`  ${green('✓')}  Ollama CLI detected${vStr ? ` (${dim(vStr)})` : ''}.`);
   }
@@ -472,15 +496,33 @@ export async function runOllamaManager(baseUrl: string, inquirer: unknown): Prom
     return;
   }
 
-  // ── 6. Pull with live progress ──────────────────────────────────────────
-  console.log(`\n  ${cyan('→')}  Pulling ${bold(String(selectedModel))} — this may take several minutes…\n`);
-  const result = spawnSync('ollama', ['pull', String(selectedModel)], {
-    stdio: 'inherit',
-    shell: true,
-  });
-  if (result.status === 0) {
-    console.log(`\n  ${green('✓')}  ${bold(String(selectedModel))} downloaded successfully.`);
-  } else {
-    console.log(`\n  ${yellow('⚠')}  Pull may have failed. Run manually:  ollama pull ${String(selectedModel)}`);
+  // ── 6. Pull with live progress + network-resilient retry loop ──────────
+  const modelId = String(selectedModel);
+  console.log(`\n  ${cyan('→')}  Pulling ${bold(modelId)} — this may take several minutes…\n`);
+
+  let pullDone = false;
+  while (!pullDone) {
+    const cmd    = getOllamaCmd();
+    const result = spawnSync(cmd, ['pull', modelId], {
+      stdio: 'inherit',
+      shell: !path.isAbsolute(cmd),
+    });
+
+    if (result.status === 0) {
+      console.log(`\n  ${green('✓')}  ${bold(modelId)} downloaded successfully.`);
+      pullDone = true;
+    } else {
+      console.log(`\n  ${yellow('⚠')}  Pull failed or was interrupted (exit ${result.status ?? 'null'}).`);
+      const { doRetry } = await inq.prompt([{
+        type:    'confirm',
+        name:    'doRetry',
+        message: `Network error or pull failed. Retry downloading ${modelId}?`,
+        default: true,
+      }]);
+      if (!doRetry) {
+        throw new Error(`Model download aborted by user. Setup halted.`);
+      }
+      console.log(`\n  ${cyan('→')}  Retrying pull…\n`);
+    }
   }
 }
