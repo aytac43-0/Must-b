@@ -178,9 +178,9 @@ function openBrowser(url: string): void {
 // ── Launch mode prompt (inquirer list) ──────────────────────────────────────
 async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
   // Deep stdin flush — attach a data sink, resume stdin, and actively consume
-  // ALL buffered bytes for 800ms.  This is the only reliable way to destroy
-  // stray \n keypresses left over from Doctor's inquirer prompts; a bare
-  // setTimeout does not drain the buffer, it only delays the read.
+  // ALL buffered bytes for 100ms.  This physically destroys any stray \n
+  // keypresses left by Doctor's inquirer prompts; a bare setTimeout only
+  // delays — it does not drain the buffer.
   await new Promise<void>((resolve) => {
     const onData = () => { /* consume and discard every buffered byte */ };
     process.stdin.on('data', onData);
@@ -189,7 +189,7 @@ async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
       process.stdin.removeListener('data', onData);
       process.stdin.pause();
       resolve();
-    }, 800);
+    }, 100);
   });
 
   const { default: inquirer } = await import('inquirer');
@@ -198,8 +198,8 @@ async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
     name:    'mode',
     message: 'How would you like to launch Must-b?',
     choices: [
-      { name: 'Web Dashboard        — opens http://localhost:4309 in browser', value: 'dashboard' },
-      { name: 'Host in Terminal     — serve http://localhost:4309 (logs here)', value: 'terminal'  },
+      { name: 'Web Dashboard             — opens http://localhost:4309 in browser', value: 'dashboard' },
+      { name: 'Host Web Dashboard        — show terminal logs (no auto-browser)',    value: 'terminal'  },
     ],
   }]);
   return mode as 'terminal' | 'dashboard';
