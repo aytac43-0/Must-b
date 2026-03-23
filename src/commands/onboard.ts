@@ -11,7 +11,7 @@ import fs     from 'fs';
 import path   from 'path';
 import crypto from 'crypto';
 import { printBanner }    from '../utils/banner.js';
-import { runDoctor }      from './doctor.js';
+import { runDoctor, DoctorResult } from './doctor.js';
 import { LongTermMemory } from '../memory/long-term.js';
 
 // ── Colour helpers (matches Must-b identity) ──────────────────────────────
@@ -219,14 +219,35 @@ export async function runOnboard(root: string): Promise<void> {
   // MUSTB_SETUP_COMPLETE is never written and the wizard restarts on next run.
   writeEnvKey(envPath, 'MUSTB_SETUP_COMPLETE', 'true');
 
-  // ── Health Check ──────────────────────────────────────────────────────────
+  // ── Health Check + Active Auto-Repair Prompt ──────────────────────────────
   console.log('');
   process.stdout.write('  Running health check…');
+  let doctorResult: DoctorResult = { failed: 0, healed: 0, remaining: 0, criticalBlock: false };
   try {
-    await runDoctor(root, true, true);
-    process.stdout.write(`\r  ${green('✓')}  Health check passed.                    \n`);
+    doctorResult = await runDoctor(root, false, true); // check-only, silent
+    if (doctorResult.remaining === 0) {
+      process.stdout.write(`\r  ${green('✓')}  Health check passed. All systems go.   \n`);
+    } else {
+      process.stdout.write(`\r  ${yellow('⚠')}  Health check complete.                 \n`);
+    }
   } catch {
-    process.stdout.write(`\r  ${yellow('⚠')}  Health check done (run: must-b doctor) \n`);
+    process.stdout.write(`\r  ${yellow('⚠')}  Health check done.                     \n`);
+  }
+
+  // If any dependency checks failed, ask the user if they want active auto-repair
+  if (doctorResult.remaining > 0) {
+    console.log(`\n  ${yellow('⚠')}  ${doctorResult.remaining} dependency issue(s) detected.`);
+    const { doFix } = await inquirer.prompt([{
+      type:    'confirm',
+      name:    'doFix',
+      message: 'Some dependencies are missing. Do you want to run auto-repair now?',
+      default: true,
+    }]);
+    if (doFix) {
+      console.log('');
+      await runDoctor(root, true, false); // fix=true, verbose output
+      console.log('');
+    }
   }
 
   console.log('');

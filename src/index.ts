@@ -177,21 +177,26 @@ function openBrowser(url: string): void {
 
 // ── Launch mode prompt (inquirer list) ──────────────────────────────────────
 async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
-  // Drain any buffered stdin keypresses left over from the wizard prompts,
-  // so a stray Enter doesn't auto-select the first choice immediately.
-  await new Promise<void>((resolve) => {
-    if (!process.stdin.isTTY) { resolve(); return; }
-    process.stdin.setRawMode?.(true);
-    process.stdin.resume();
-    const onData = () => { /* discard buffered bytes */ };
-    process.stdin.on('data', onData);
-    setTimeout(() => {
-      process.stdin.removeListener('data', onData);
-      process.stdin.setRawMode?.(false);
-      process.stdin.pause();
-      resolve();
-    }, 120);
-  });
+  // Bulletproof stdin drain:
+  // 1) Hard 500ms pause — lets the event loop fully flush any queued keypresses
+  //    buffered from the wizard before we open a new inquirer list prompt.
+  await new Promise<void>(resolve => setTimeout(resolve, 500));
+  // 2) Raw-mode sweep — physically reads and discards any bytes still in the
+  //    stdin buffer (e.g. a stray Enter held over from the last wizard answer).
+  if (process.stdin.isTTY) {
+    await new Promise<void>((resolve) => {
+      process.stdin.setRawMode?.(true);
+      process.stdin.resume();
+      const onData = () => { /* discard buffered bytes */ };
+      process.stdin.on('data', onData);
+      setTimeout(() => {
+        process.stdin.removeListener('data', onData);
+        process.stdin.setRawMode?.(false);
+        process.stdin.pause();
+        resolve();
+      }, 80);
+    });
+  }
 
   const { default: inquirer } = await import('inquirer');
   const { mode } = await inquirer.prompt([{
