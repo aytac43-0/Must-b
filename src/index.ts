@@ -177,35 +177,29 @@ function openBrowser(url: string): void {
 
 // ── Launch mode prompt (inquirer list) ──────────────────────────────────────
 async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
-  // Bulletproof stdin drain:
-  // 1) Hard 500ms pause — lets the event loop fully flush any queued keypresses
-  //    buffered from the wizard before we open a new inquirer list prompt.
-  await new Promise<void>(resolve => setTimeout(resolve, 500));
-  // 2) Raw-mode sweep — physically reads and discards any bytes still in the
-  //    stdin buffer (e.g. a stray Enter held over from the last wizard answer).
-  if (process.stdin.isTTY) {
-    await new Promise<void>((resolve) => {
-      process.stdin.setRawMode?.(true);
-      process.stdin.resume();
-      const onData = () => { /* discard buffered bytes */ };
-      process.stdin.on('data', onData);
-      setTimeout(() => {
-        process.stdin.removeListener('data', onData);
-        process.stdin.setRawMode?.(false);
-        process.stdin.pause();
-        resolve();
-      }, 80);
-    });
-  }
+  // Deep stdin flush — attach a data sink, resume stdin, and actively consume
+  // ALL buffered bytes for 800ms.  This is the only reliable way to destroy
+  // stray \n keypresses left over from Doctor's inquirer prompts; a bare
+  // setTimeout does not drain the buffer, it only delays the read.
+  await new Promise<void>((resolve) => {
+    const onData = () => { /* consume and discard every buffered byte */ };
+    process.stdin.on('data', onData);
+    process.stdin.resume();
+    setTimeout(() => {
+      process.stdin.removeListener('data', onData);
+      process.stdin.pause();
+      resolve();
+    }, 800);
+  });
 
   const { default: inquirer } = await import('inquirer');
   const { mode } = await inquirer.prompt([{
     type:    'list',
     name:    'mode',
-    message: 'How would you like to interact with Must-b?',
+    message: 'How would you like to launch Must-b?',
     choices: [
-      { name: 'Web Dashboard        — opens http://localhost:4309', value: 'dashboard' },
-      { name: 'Interactive Terminal — CLI chat in this window',     value: 'terminal'  },
+      { name: 'Web Dashboard        — opens http://localhost:4309 in browser', value: 'dashboard' },
+      { name: 'Host in Terminal     — serve http://localhost:4309 (logs here)', value: 'terminal'  },
     ],
   }]);
   return mode as 'terminal' | 'dashboard';
@@ -230,7 +224,11 @@ async function bootServer(arg: string) {
 
   const PORT = parseInt(process.env.PORT || '4309', 10);
 
-  printBanner(resolvedMode === 'dashboard' ? 'web' : 'cli', PORT);
+  // 'terminal' from the menu means "host web server, show logs here" — NOT the
+  // old CLI chat loop.  The CLI chat loop is only reached via `must-b cli`.
+  const isHostMode = resolvedMode === 'terminal' && arg !== 'cli';
+
+  printBanner(resolvedMode === 'dashboard' || isHostMode ? 'web' : 'cli', PORT);
 
   const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'info',
@@ -285,13 +283,20 @@ async function bootServer(arg: string) {
   const executor     = new Executor(logger, mem);
   const orchestrator = new Orchestrator(logger, planner, executor);
 
-  // ── Web Dashboard mode ────────────────────────────────────────────────────
-  if (resolvedMode === 'dashboard') {
+  // ── Web Dashboard mode (and "Host in Terminal" menu choice) ─────────────
+  if (resolvedMode === 'dashboard' || isHostMode) {
+    if (isHostMode) {
+      logger.info('Starting Web Dashboard host in terminal — logs will stream here.');
+      logger.info(`Open your browser:  http://localhost:${PORT}`);
+    }
     const history   = new SessionHistory(logger, path.join(ROOT, 'memory'));
     const apiServer = new ApiServer(logger, orchestrator, history, PORT);
     apiServer.start();
     startHealthMonitor(ROOT, logger);
-    setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
+    // Auto-open browser only when the user explicitly chose "Web Dashboard"
+    if (resolvedMode === 'dashboard') {
+      setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
+    }
 
     const caps = getAgentRole();
     if (caps.canIdleInfer) {
@@ -306,7 +311,7 @@ async function bootServer(arg: string) {
     return;
   }
 
-  // ── Interactive Terminal (CLI) mode ───────────────────────────────────────
+  // ── Interactive Terminal (CLI) mode — only reached via `must-b cli` ───────
   logger.info('CLI mode active. Type a goal and press Enter.  "exit" to quit.');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
