@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { Component, type ReactNode, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence }      from "framer-motion";
 import { BookmarkPlus, CheckCircle2, Loader2 } from "lucide-react";
 import { ChatInput }   from "./ChatInput";
@@ -13,6 +13,60 @@ type Message = {
   timestamp: number;
 };
 
+// ── Safe string coercion ─────────────────────────────────────────────────────
+// Prevents React Error #31 ("Objects are not valid as a React child") by
+// ensuring any value that ends up as message.content is always a plain string,
+// even when a backend tool returns a raw object or the LLM returns JSON.
+function safeStr(v: unknown): string {
+  if (typeof v === "string") return v;
+  if (v === null || v === undefined) return "";
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    // Surface the most human-readable field first
+    const msg = o.message ?? o.error ?? o.text ?? o.content ?? o.result;
+    if (msg !== undefined) return safeStr(msg);
+    return JSON.stringify(v);
+  }
+  return String(v);
+}
+
+// ── Chat-area ErrorBoundary ───────────────────────────────────────────────────
+// Scoped to ChatArea only — if a render crash occurs here, the Sidebar and
+// navigation stay functional so the user can navigate away or retry.
+class ChatErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: string | null }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(err: Error) {
+    return { error: err.message ?? "Unknown render error" };
+  }
+  override componentDidCatch(err: Error, info: { componentStack: string }) {
+    console.error("[ChatErrorBoundary]", err, info.componentStack);
+  }
+  override render() {
+    if (this.state.error) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
+          <span className="text-2xl">⚠️</span>
+          <p className="text-orange-400 font-bold text-sm">Chat render error</p>
+          <p className="text-gray-600 text-xs font-mono max-w-sm break-all">{this.state.error}</p>
+          <button
+            onClick={() => this.setState({ error: null })}
+            className="mt-1 px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold hover:bg-orange-500/20 transition-all"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Minimal skill context captured from a completed workflow
 interface CompletedWorkflow {
   goal:   string;
@@ -25,28 +79,32 @@ function eventToMessage(type: string, data: Record<string, unknown>): Message | 
   const timestamp = (data.timestamp as number) ?? Date.now();
   switch (type) {
     case "planStart":
-      return { id, role: "system", content: `Planning: "${data.goal}"`, timestamp };
+      return { id, role: "system", content: `Planning: "${safeStr(data.goal)}"`, timestamp };
     case "planGenerated": {
       const steps = data.steps as unknown[];
       return { id, role: "system", content: `Plan ready — ${steps?.length ?? 0} step(s)`, timestamp };
     }
     case "stepStart": {
-      const step = data.step as { description?: string };
-      return { id, role: "system", content: `▶ ${step?.description ?? JSON.stringify(data.step)}`, timestamp };
+      const step = data.step as { description?: string } | undefined;
+      return { id, role: "system", content: `▶ ${step?.description ?? safeStr(data.step)}`, timestamp };
     }
     case "stepFinish": {
       if (data.status === "error") {
-        return { id, role: "system", content: `✗ Error: ${data.error}`, timestamp };
+        // data.error may be an Error object, a plain string, or an API error object
+        return { id, role: "system", content: `✗ Error: ${safeStr(data.error)}`, timestamp };
       }
       const step   = data.step as { description?: string } | undefined;
-      const result = (data.result as string) ?? `✓ ${step?.description ?? "Step complete"}`;
+      // data.result may be a tool result object — always coerce to string
+      const result = data.result !== undefined
+        ? safeStr(data.result)
+        : `✓ ${step?.description ?? "Step complete"}`;
       return { id, role: "assistant", content: result, timestamp };
     }
     case "finalAnswer":
-      return { id, role: "assistant", content: String(data.answer ?? "Done."), timestamp };
+      return { id, role: "assistant", content: safeStr(data.answer ?? "Done."), timestamp };
     case "planFinish":
       if (data.status === "completed") return null;
-      return { id, role: "system", content: `◼ Finished (${data.status})`, timestamp };
+      return { id, role: "system", content: `◼ Finished (${safeStr(data.status)})`, timestamp };
     default:
       return null;
   }
@@ -199,6 +257,7 @@ export function ChatArea() {
   const hasMessages = messages.length > 0;
 
   return (
+    <ChatErrorBoundary>
     <div className="flex-1 relative flex flex-col h-full overflow-hidden bg-[#02040a]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_#1e293b_0%,_transparent_70%)] pointer-events-none opacity-20" />
 
@@ -290,5 +349,6 @@ export function ChatArea() {
         </div>
       </div>
     </div>
+    </ChatErrorBoundary>
   );
 }

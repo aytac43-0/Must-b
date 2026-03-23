@@ -21,6 +21,8 @@ export default function Sidebar() {
   const [editTitle,     setEditTitle]     = useState("");
   const [deletingChatId,setDeletingChatId]= useState<string | null>(null);
   const [collapsed,     setCollapsed]     = useState(false);
+  const [activeProvider, setActiveProvider] = useState("");
+  const [activeModel,    setActiveModel]    = useState("");
 
   const fetchChats = useCallback(async () => {
     try {
@@ -34,6 +36,18 @@ export default function Sidebar() {
     const interval = setInterval(fetchChats, 10_000);
     return () => clearInterval(interval);
   }, [fetchChats]);
+
+  // Fetch active provider + model on mount so the sidebar footer is hydrated
+  useEffect(() => {
+    apiFetch("/api/setup/status")
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { activeProvider?: string; activeModel?: string } | null) => {
+        if (!data) return;
+        setActiveProvider(data.activeProvider ?? "");
+        setActiveModel(data.activeModel ?? "");
+      })
+      .catch(() => { /* non-fatal */ });
+  }, []);
 
   const handleNewChat = async () => {
     try {
@@ -218,12 +232,29 @@ export default function Sidebar() {
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <div className={clsx("border-t border-orange-500/10 bg-black/20 shrink-0", collapsed ? "p-2" : "p-3")}>
         {!collapsed && (
-          <div className="mb-3 px-1 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-0.5">Powered by</p>
-              <p className="text-orange-500 text-xs font-bold">Auto Step Platform</p>
+          <div className="mb-3 px-1">
+            {/* Active model display — hydrated from /api/setup/status on mount */}
+            {activeModel ? (
+              <div className="mb-2.5">
+                <p className="text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-0.5">Active Model</p>
+                <p className="text-orange-400 text-[11px] font-bold truncate" title={activeModel}>{activeModel}</p>
+                {activeProvider && (
+                  <p className="text-gray-600 text-[10px] capitalize">{activeProvider}</p>
+                )}
+              </div>
+            ) : (
+              <div className="mb-2.5">
+                <p className="text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-0.5">Active Model</p>
+                <p className="text-gray-700 text-[11px] italic">No model active</p>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-0.5">Powered by</p>
+                <p className="text-orange-500 text-xs font-bold">Auto Step Platform</p>
+              </div>
+              <LanguageSwitcher />
             </div>
-            <LanguageSwitcher />
           </div>
         )}
 

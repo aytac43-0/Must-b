@@ -510,6 +510,24 @@ export async function runOllamaManager(baseUrl: string, inquirer: unknown): Prom
 
     if (result.status === 0) {
       console.log(`\n  ${green('✓')}  ${bold(modelId)} downloaded successfully.`);
+      // Persist the active model to .env and process.env so the provider picks
+      // it up immediately without a restart (universal LLM_MODEL key + Ollama-specific).
+      try {
+        const envPath = path.join(process.cwd(), '.env');
+        let content = '';
+        try { content = fs.readFileSync(envPath, 'utf-8'); } catch { /**/ }
+        const setKey = (src: string, key: string, val: string) => {
+          const lines = src.split('\n');
+          const idx = lines.findIndex(l => l.startsWith(key + '='));
+          if (idx >= 0) lines[idx] = `${key}=${val}`; else lines.push(`${key}=${val}`);
+          return lines.filter(l => l !== '').join('\n') + '\n';
+        };
+        content = setKey(content, 'OLLAMA_MODEL', modelId);
+        content = setKey(content, 'LLM_MODEL',    modelId);
+        fs.writeFileSync(envPath, content, 'utf-8');
+        process.env.OLLAMA_MODEL = modelId;
+        process.env.LLM_MODEL    = modelId;
+      } catch { /**/ }
       pullDone = true;
     } else {
       console.log(`\n  ${yellow('⚠')}  Pull failed or was interrupted (exit ${result.status ?? 'null'}).`);

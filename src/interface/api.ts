@@ -607,11 +607,32 @@ export class ApiServer {
       const envPath = path.join(root, '.env');
 
       // LLM yapılandırması kontrolü
-      let configured = false;
+      let configured    = false;
+      let activeProvider = '';
+      let activeModel    = '';
       if (fs.existsSync(envPath)) {
         const env = dotenv.parse(fs.readFileSync(envPath, 'utf-8'));
         const key = env.OPENROUTER_API_KEY ?? env.OPENAI_API_KEY ?? env.ANTHROPIC_API_KEY ?? env.OLLAMA_BASE_URL ?? '';
         configured = key.length > 0 && !key.includes('...');
+
+        activeProvider = env.LLM_PROVIDER ?? '';
+        // LLM_MODEL is the universal active-model key; fall back to the
+        // provider-specific var so the sidebar always shows something useful.
+        const providerModelFallback: Record<string, string> = {
+          openai:     env.OPENAI_MODEL     ?? 'gpt-4o-mini',
+          anthropic:  env.ANTHROPIC_MODEL  ?? 'claude-3-5-haiku-20241022',
+          gemini:     env.GEMINI_MODEL     ?? 'gemini-1.5-flash',
+          groq:       env.GROQ_MODEL       ?? 'llama3-8b-8192',
+          ollama:     env.OLLAMA_MODEL     ?? 'llama3',
+          mistral:    env.MISTRAL_MODEL    ?? 'mistral-small-latest',
+          xai:        env.XAI_MODEL        ?? 'grok-beta',
+          deepseek:   env.DEEPSEEK_MODEL   ?? 'deepseek-chat',
+          together:   env.TOGETHER_MODEL   ?? 'meta-llama/Llama-3-8b-chat-hf',
+          moonshot:   env.MOONSHOT_MODEL   ?? 'moonshot-v1-8k',
+          openrouter: env.OPENROUTER_MODEL ?? 'openai/gpt-4o-mini',
+          vertex:     env.VERTEX_MODEL     ?? 'gemini-1.5-flash-001',
+        };
+        activeModel = env.LLM_MODEL || providerModelFallback[activeProvider] || '';
       }
 
       // memory/must-b.md varlık kontrolü → "Giriş yap veya dosyanı yükle" butonu için
@@ -662,6 +683,8 @@ export class ApiServer {
         syncStatus,
         cloudAgentName,
         localAgentName,
+        activeProvider,
+        activeModel,
         version: '2.0',
       });
     });

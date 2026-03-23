@@ -135,7 +135,35 @@ export async function runOnboard(root: string): Promise<void> {
     })),
   }]);
   const provider = PROVIDERS.find(p => p.value === providerValue)!;
+
+  // Default model per provider — written as LLM_MODEL (universal active-model key)
+  // and as AI_PROVIDER (alias for LLM_PROVIDER used by the frontend).
+  const PROVIDER_DEFAULT_MODELS: Record<string, string> = {
+    openai:     'gpt-4o-mini',
+    anthropic:  'claude-3-5-haiku-20241022',
+    gemini:     'gemini-1.5-flash',
+    groq:       'llama3-8b-8192',
+    mistral:    'mistral-small-latest',
+    xai:        'grok-beta',
+    deepseek:   'deepseek-chat',
+    together:   'meta-llama/Llama-3-8b-chat-hf',
+    moonshot:   'moonshot-v1-8k',
+    openrouter: 'openai/gpt-4o-mini',
+    vertex:     'gemini-1.5-flash-001',
+    ollama:     '', // set later by ollamaManager after the model pull
+    azure:      '', // deployment-specific — set separately in .env
+  };
+
   writeEnvKey(envPath, 'LLM_PROVIDER', provider.value);
+  writeEnvKey(envPath, 'AI_PROVIDER',  provider.value);
+  process.env.LLM_PROVIDER = provider.value;
+  process.env.AI_PROVIDER  = provider.value;
+
+  const defaultModel = PROVIDER_DEFAULT_MODELS[provider.value] ?? '';
+  if (defaultModel) {
+    writeEnvKey(envPath, 'LLM_MODEL', defaultModel);
+    process.env.LLM_MODEL = defaultModel;
+  }
 
   // ── Step 4: API Key / URL ─────────────────────────────────────────────────
   const existingKey = readEnvKey(envPath, provider.keyEnv)
