@@ -1,11 +1,13 @@
 /**
- * Must-b Onboarding Wizard (v1.4.0)
+ * Must-b Onboarding Wizard (v1.4.3)
  *
  * Interactive CLI setup using inquirer v8.
- * Covers all 11 AI providers + full 10-tool skill roster.
+ * Covers all 13 AI providers + full 10-tool skill roster.
  * Writes directly to .env — user never touches a text editor.
  * Writes MUSTB_SETUP_COMPLETE=true only on full success,
  * so an ESC/Ctrl+C mid-way always re-triggers the wizard.
+ *
+ * v1.4.3: Added Moonshot (Kimi) and Together AI providers.
  */
 import fs     from 'fs';
 import path   from 'path';
@@ -45,17 +47,19 @@ function readEnvKey(envPath: string, key: string): string {
 // ── Provider + Skill Definitions ──────────────────────────────────────────
 
 const PROVIDERS = [
-  { value: 'openrouter', label: 'OpenRouter',       keyEnv: 'OPENROUTER_API_KEY',     hint: 'openrouter.ai/keys',       isUrl: false },
-  { value: 'openai',     label: 'OpenAI',            keyEnv: 'OPENAI_API_KEY',         hint: 'platform.openai.com',      isUrl: false },
-  { value: 'anthropic',  label: 'Anthropic',         keyEnv: 'ANTHROPIC_API_KEY',      hint: 'console.anthropic.com',    isUrl: false },
-  { value: 'gemini',     label: 'Google Gemini',     keyEnv: 'GOOGLE_API_KEY',         hint: 'aistudio.google.com',      isUrl: false },
-  { value: 'groq',       label: 'Groq',              keyEnv: 'GROQ_API_KEY',           hint: 'console.groq.com',         isUrl: false },
-  { value: 'ollama',     label: 'Ollama  (local)',   keyEnv: 'OLLAMA_BASE_URL',        hint: 'http://localhost:11434',   isUrl: true  },
-  { value: 'mistral',    label: 'Mistral AI',        keyEnv: 'MISTRAL_API_KEY',        hint: 'console.mistral.ai',       isUrl: false },
-  { value: 'xai',        label: 'xAI  (Grok)',       keyEnv: 'XAI_API_KEY',            hint: 'console.x.ai',             isUrl: false },
-  { value: 'deepseek',   label: 'DeepSeek',          keyEnv: 'DEEPSEEK_API_KEY',       hint: 'platform.deepseek.com',    isUrl: false },
-  { value: 'azure',      label: 'Azure OpenAI',      keyEnv: 'AZURE_OPENAI_API_KEY',   hint: 'azure.microsoft.com/ai',   isUrl: false },
-  { value: 'vertex',     label: 'Vertex AI',         keyEnv: 'GOOGLE_CLOUD_PROJECT',   hint: 'cloud.google.com/vertex',  isUrl: true  },
+  { value: 'openrouter', label: 'OpenRouter',          keyEnv: 'OPENROUTER_API_KEY',   hint: 'openrouter.ai/keys',        isUrl: false },
+  { value: 'openai',     label: 'OpenAI',              keyEnv: 'OPENAI_API_KEY',       hint: 'platform.openai.com',       isUrl: false },
+  { value: 'anthropic',  label: 'Anthropic (Claude)',  keyEnv: 'ANTHROPIC_API_KEY',    hint: 'console.anthropic.com',     isUrl: false },
+  { value: 'gemini',     label: 'Google Gemini',       keyEnv: 'GOOGLE_API_KEY',       hint: 'aistudio.google.com',       isUrl: false },
+  { value: 'groq',       label: 'Groq (Fast)',         keyEnv: 'GROQ_API_KEY',         hint: 'console.groq.com',          isUrl: false },
+  { value: 'deepseek',   label: 'DeepSeek API',        keyEnv: 'DEEPSEEK_API_KEY',     hint: 'platform.deepseek.com',     isUrl: false },
+  { value: 'xai',        label: 'xAI  (Grok)',         keyEnv: 'XAI_API_KEY',          hint: 'console.x.ai',              isUrl: false },
+  { value: 'mistral',    label: 'Mistral API',         keyEnv: 'MISTRAL_API_KEY',      hint: 'console.mistral.ai',        isUrl: false },
+  { value: 'together',   label: 'Together AI',         keyEnv: 'TOGETHER_API_KEY',     hint: 'api.together.xyz',          isUrl: false },
+  { value: 'moonshot',   label: 'Moonshot (Kimi)',     keyEnv: 'MOONSHOT_API_KEY',     hint: 'platform.moonshot.cn',      isUrl: false },
+  { value: 'azure',      label: 'Azure OpenAI',        keyEnv: 'AZURE_OPENAI_API_KEY', hint: 'azure.microsoft.com/ai',    isUrl: false },
+  { value: 'vertex',     label: 'Vertex AI',           keyEnv: 'GOOGLE_CLOUD_PROJECT', hint: 'cloud.google.com/vertex',   isUrl: true  },
+  { value: 'ollama',     label: 'Ollama  (local)',     keyEnv: 'OLLAMA_BASE_URL',      hint: 'http://localhost:11434',    isUrl: true  },
 ] as const;
 
 const SKILLS = [

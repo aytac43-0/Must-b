@@ -22,6 +22,11 @@
  *   - installOllama() no longer fails when winget exits non-zero due to
  *     "already installed" / "No available upgrade found" — performs a two-step
  *     verification (winget list + absolute exe existence) before giving up
+ *
+ * v1.4.3 expansion:
+ *   - MODEL_CATALOG expanded from 11 → 27 models across all categories:
+ *     ultralight, lightweight, vision, coding, mid-tier, flagship, embedding
+ *   - getTag() RAM tiers updated to cover 2 GB → 96 GB systems
  */
 
 import fs           from 'fs';
@@ -47,17 +52,44 @@ interface ModelEntry {
 }
 
 const MODEL_CATALOG: ModelEntry[] = [
-  { id: 'qwen2.5:0.5b',  label: 'Qwen 2.5 0.5B',        sizeGb: 0.4,  minRamGb: 2,  specialty: 'ultralight'      },
-  { id: 'phi3:mini',     label: 'Microsoft Phi-3 Mini',  sizeGb: 2.3,  minRamGb: 4,  specialty: 'lightweight'     },
-  { id: 'qwen2.5:7b',   label: 'Qwen 2.5 7B',           sizeGb: 4.4,  minRamGb: 8,  specialty: 'multilingual'    },
-  { id: 'mistral:7b',   label: 'Mistral 7B',             sizeGb: 4.1,  minRamGb: 8                               },
-  { id: 'llama3:8b',    label: 'Meta Llama 3 8B',        sizeGb: 5.0,  minRamGb: 8                               },
-  { id: 'gemma2:9b',    label: 'Google Gemma 2 9B',      sizeGb: 5.5,  minRamGb: 8                               },
-  { id: 'llama3.1:8b',  label: 'Meta Llama 3.1 8B',      sizeGb: 5.0,  minRamGb: 8,  specialty: 'tool use'        },
-  { id: 'codellama:7b', label: 'Code Llama 7B',          sizeGb: 3.8,  minRamGb: 8,  specialty: 'coding'          },
-  { id: 'deepseek-r1:7b', label: 'DeepSeek R1 7B',       sizeGb: 4.7,  minRamGb: 8,  specialty: 'reasoning'       },
-  { id: 'mixtral:8x7b', label: 'Mixtral 8x7B MoE',       sizeGb: 26.0, minRamGb: 32, specialty: 'high-performance'},
-  { id: 'llama3:70b',   label: 'Meta Llama 3 70B',       sizeGb: 40.0, minRamGb: 48, specialty: 'flagship'        },
+  // ── Ultralight / Embedding (≤ 2 GB RAM) ──────────────────────────────────
+  { id: 'smollm2:135m',          label: 'SmolLM2 135M',             sizeGb: 0.09, minRamGb: 2,  specialty: 'ultralight'      },
+  { id: 'nomic-embed-text',      label: 'Nomic Embed Text',         sizeGb: 0.3,  minRamGb: 2,  specialty: 'embeddings'      },
+  { id: 'qwen2.5:0.5b',         label: 'Qwen 2.5 0.5B',            sizeGb: 0.4,  minRamGb: 2,  specialty: 'ultralight'      },
+
+  // ── Lightweight (4 GB RAM) ────────────────────────────────────────────────
+  { id: 'qwen2.5:1.5b',         label: 'Qwen 2.5 1.5B',            sizeGb: 1.0,  minRamGb: 4,  specialty: 'lightweight'     },
+  { id: 'gemma2:2b',            label: 'Google Gemma 2 2B',         sizeGb: 1.6,  minRamGb: 4,  specialty: 'lightweight'     },
+  { id: 'llama3.2:3b',          label: 'Meta Llama 3.2 3B',         sizeGb: 2.0,  minRamGb: 4,  specialty: 'lightweight'     },
+  { id: 'phi3:mini',            label: 'Microsoft Phi-3 Mini',      sizeGb: 2.3,  minRamGb: 4,  specialty: 'lightweight'     },
+
+  // ── Mid-tier (8 GB RAM) ───────────────────────────────────────────────────
+  { id: 'codellama:7b',         label: 'Code Llama 7B',             sizeGb: 3.8,  minRamGb: 8,  specialty: 'coding'          },
+  { id: 'mistral:7b',           label: 'Mistral 7B',                sizeGb: 4.1,  minRamGb: 8                               },
+  { id: 'qwen2.5:7b',          label: 'Qwen 2.5 7B',               sizeGb: 4.4,  minRamGb: 8,  specialty: 'multilingual'    },
+  { id: 'llava:7b',             label: 'LLaVA 7B',                  sizeGb: 4.7,  minRamGb: 8,  specialty: 'vision'          },
+  { id: 'qwen2.5-coder:7b',    label: 'Qwen 2.5 Coder 7B',         sizeGb: 4.7,  minRamGb: 8,  specialty: 'coding'          },
+  { id: 'deepseek-r1:7b',      label: 'DeepSeek R1 7B',            sizeGb: 4.7,  minRamGb: 8,  specialty: 'reasoning'       },
+  { id: 'llama3:8b',           label: 'Meta Llama 3 8B',            sizeGb: 5.0,  minRamGb: 8                               },
+  { id: 'llama3.1:8b',         label: 'Meta Llama 3.1 8B',          sizeGb: 5.0,  minRamGb: 8,  specialty: 'tool use'        },
+  { id: 'gemma2:9b',           label: 'Google Gemma 2 9B',          sizeGb: 5.5,  minRamGb: 8                               },
+
+  // ── Upper mid-tier (16 GB RAM) ────────────────────────────────────────────
+  { id: 'llama3.2-vision:11b', label: 'Meta Llama 3.2 Vision 11B',  sizeGb: 7.9,  minRamGb: 16, specialty: 'vision'          },
+  { id: 'deepseek-coder-v2:16b', label: 'DeepSeek Coder V2 16B',   sizeGb: 9.0,  minRamGb: 16, specialty: 'coding'          },
+  { id: 'phi4',                label: 'Microsoft Phi-4 14B',         sizeGb: 9.1,  minRamGb: 16                              },
+
+  // ── Heavy (32 GB RAM) ─────────────────────────────────────────────────────
+  { id: 'gemma2:27b',          label: 'Google Gemma 2 27B',         sizeGb: 16.4, minRamGb: 32                              },
+  { id: 'command-r:35b',       label: 'Cohere Command R 35B',        sizeGb: 20.7, minRamGb: 32, specialty: 'tool use'        },
+  { id: 'mixtral:8x7b',        label: 'Mixtral 8x7B MoE',           sizeGb: 26.0, minRamGb: 32, specialty: 'high-performance'},
+
+  // ── Flagship (48 GB+ RAM) ─────────────────────────────────────────────────
+  { id: 'llama3.1:70b',        label: 'Meta Llama 3.1 70B',         sizeGb: 40.0, minRamGb: 48, specialty: 'flagship'        },
+  { id: 'llama3.3:70b',        label: 'Meta Llama 3.3 70B',         sizeGb: 43.0, minRamGb: 48, specialty: 'flagship'        },
+  { id: 'qwen2.5:72b',         label: 'Qwen 2.5 72B',               sizeGb: 47.0, minRamGb: 64, specialty: 'multilingual'    },
+  { id: 'command-r-plus:104b', label: 'Cohere Command R+ 104B',      sizeGb: 65.0, minRamGb: 80, specialty: 'flagship'        },
+  { id: 'mixtral:8x22b',       label: 'Mixtral 8x22B MoE',          sizeGb: 87.0, minRamGb: 96, specialty: 'high-performance'},
 ];
 
 // ── Hardware analysis ───────────────────────────────────────────────────────
@@ -315,10 +347,33 @@ type Tag = 'recommended' | 'fits' | 'heavy';
 
 function getTag(m: ModelEntry, ramGb: number): Tag {
   if (m.minRamGb > ramGb) return 'heavy';
-  // Best fit per RAM tier
-  if (ramGb < 8  && (m.id === 'phi3:mini'   || m.id === 'qwen2.5:0.5b')) return 'recommended';
-  if (ramGb >= 8 && ramGb < 32 && (m.id === 'llama3:8b' || m.id === 'mistral:7b')) return 'recommended';
-  if (ramGb >= 32 && m.id === 'mixtral:8x7b') return 'recommended';
+
+  // Best-fit recommendation per RAM tier.
+  // Embedding-only models (nomic-embed-text) are never flagged as recommended
+  // for general chat use.
+  if (ramGb <= 3) {
+    // Very low RAM — smallest usable generative model
+    if (m.id === 'qwen2.5:0.5b') return 'recommended';
+  } else if (ramGb <= 6) {
+    // 4-6 GB — small but capable
+    if (m.id === 'gemma2:2b' || m.id === 'llama3.2:3b') return 'recommended';
+  } else if (ramGb < 16) {
+    // 7-15 GB — sweet spot for 7-9B models
+    if (m.id === 'llama3.1:8b' || m.id === 'mistral:7b') return 'recommended';
+  } else if (ramGb < 32) {
+    // 16-31 GB — upper-mid models
+    if (m.id === 'phi4') return 'recommended';
+  } else if (ramGb < 48) {
+    // 32-47 GB — heavy MoE / large dense
+    if (m.id === 'command-r:35b' || m.id === 'mixtral:8x7b') return 'recommended';
+  } else if (ramGb < 64) {
+    // 48-63 GB — flagship 70B
+    if (m.id === 'llama3.3:70b') return 'recommended';
+  } else {
+    // 64 GB+ — largest open-weights available
+    if (m.id === 'qwen2.5:72b') return 'recommended';
+  }
+
   return 'fits';
 }
 
@@ -409,7 +464,7 @@ export async function runOllamaManager(baseUrl: string, inquirer: unknown): Prom
     name:     'selectedModel',
     message:  'Select a model to download:',
     choices:  buildChoices(hw),
-    pageSize: MODEL_CATALOG.length + 3,
+    pageSize: Math.min(MODEL_CATALOG.length + 2, 30),
   }]);
 
   if (selectedModel === 'skip') {
