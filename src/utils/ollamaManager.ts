@@ -1,5 +1,5 @@
 /**
- * Ollama Manager (v1.4.1)
+ * Ollama Manager (v1.4.2)
  *
  * Autonomous Ollama lifecycle manager called during onboarding when the
  * user chooses Ollama as their AI provider.
@@ -17,8 +17,14 @@
  *   - Polling extended to 25 s (fresh installs need time to settle)
  *   - Zero fall-through: daemon failure triggers Doctor-style auto-repair loop
  *     (kills hung processes + hard-restarts) instead of silently returning
+ *
+ * v1.4.2 fixes:
+ *   - installOllama() no longer fails when winget exits non-zero due to
+ *     "already installed" / "No available upgrade found" — performs a two-step
+ *     verification (winget list + absolute exe existence) before giving up
  */
 
+import fs           from 'fs';
 import os           from 'os';
 import path         from 'path';
 import { spawnSync, spawn, execSync } from 'child_process';
@@ -104,9 +110,22 @@ function analyzeHardware(): HardwareInfo {
 // ── Ollama CLI detection + installation ────────────────────────────────────
 
 function isOllamaCli(): boolean {
-  const r = spawnSync('ollama', ['--version'], {
-    encoding: 'utf8', timeout: 5000, shell: true,
-  });
+  return isOllamaPresent();
+}
+
+/**
+ * Returns true if Ollama is present on disk (bypasses stale PATH).
+ * Checks the absolute exe path first, then falls back to `ollama --version`.
+ */
+function isOllamaPresent(): boolean {
+  // Absolute path check — works even when PATH is stale after winget install
+  if (process.platform === 'win32') {
+    const local = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
+    const absExe = path.join(local, 'Programs', 'Ollama', 'ollama.exe');
+    if (fs.existsSync(absExe)) return true;
+  }
+  // Shell PATH fallback
+  const r = spawnSync('ollama', ['--version'], { encoding: 'utf8', timeout: 5000, shell: true });
   return r.status === 0 && !r.error;
 }
 
@@ -117,7 +136,30 @@ async function installOllama(): Promise<boolean> {
       'winget', ['install', '--id', 'Ollama.Ollama', '-e', '--silent'],
       { stdio: 'inherit', shell: true },
     );
-    return r.status === 0;
+
+    if (r.status === 0) return true;
+
+    // winget exits non-zero for "already installed" / "No available upgrade found".
+    // Verify via `winget list` first (captures output), then check exe on disk.
+    console.log(`  ${cyan('→')}  winget exited non-zero — verifying Ollama presence…`);
+
+    const listCheck = spawnSync(
+      'winget', ['list', '--id', 'Ollama.Ollama', '-e'],
+      { encoding: 'utf8', shell: true, timeout: 15000 },
+    );
+    const listOut = `${listCheck.stdout ?? ''} ${listCheck.stderr ?? ''}`.toLowerCase();
+    if (listCheck.status === 0 && listOut.includes('ollama')) {
+      console.log(`  ${green('✓')}  Ollama already installed (winget list confirmed).`);
+      return true;
+    }
+
+    // Final fallback: check exe on disk directly
+    if (isOllamaPresent()) {
+      console.log(`  ${green('✓')}  Ollama executable found on disk — treating as installed.`);
+      return true;
+    }
+
+    return false; // genuinely failed
   } else {
     // Linux / macOS
     console.log(`  ${cyan('→')}  Running: curl -fsSL https://ollama.com/install.sh | sh`);
