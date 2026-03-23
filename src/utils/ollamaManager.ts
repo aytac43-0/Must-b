@@ -1,5 +1,5 @@
 /**
- * Ollama Manager (v1.4.0)
+ * Ollama Manager (v1.4.1)
  *
  * Autonomous Ollama lifecycle manager called during onboarding when the
  * user chooses Ollama as their AI provider.
@@ -11,10 +11,17 @@
  *   4. Check for already-installed models (skip pull if present)
  *   5. Present smart model picker — ALL models shown, tagged by fit
  *   6. Pull the selected model with live progress output
+ *
+ * v1.4.1 fixes:
+ *   - Windows PATH bypass: spawn via absolute LOCALAPPDATA path after winget install
+ *   - Polling extended to 25 s (fresh installs need time to settle)
+ *   - Zero fall-through: daemon failure triggers Doctor-style auto-repair loop
+ *     (kills hung processes + hard-restarts) instead of silently returning
  */
 
 import os           from 'os';
-import { spawnSync, spawn } from 'child_process';
+import path         from 'path';
+import { spawnSync, spawn, execSync } from 'child_process';
 
 // ── Colour helpers ──────────────────────────────────────────────────────────
 const cyan   = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
@@ -123,6 +130,16 @@ async function installOllama(): Promise<boolean> {
 
 // ── Daemon management ───────────────────────────────────────────────────────
 
+/** Absolute path to the Ollama executable on Windows (survives fresh installs
+ *  where the current terminal's PATH has not yet been refreshed). */
+function ollamaAbsPath(): string {
+  if (process.platform === 'win32') {
+    const local = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
+    return path.join(local, 'Programs', 'Ollama', 'ollama.exe');
+  }
+  return 'ollama'; // on Linux/macOS the shell PATH is fine
+}
+
 async function pingOllama(baseUrl: string): Promise<boolean> {
   try {
     const res = await fetch(`${baseUrl}/api/version`, {
@@ -134,28 +151,108 @@ async function pingOllama(baseUrl: string): Promise<boolean> {
   }
 }
 
-async function ensureDaemon(baseUrl: string): Promise<boolean> {
-  if (await pingOllama(baseUrl)) return true;
+/** Spawn the Ollama daemon detached, trying the absolute path first on Windows
+ *  to bypass the stale PATH problem that appears right after a winget install. */
+function spawnDaemon(): void {
+  const absExe = ollamaAbsPath();
 
-  console.log(`  ${cyan('→')}  Starting Ollama daemon…`);
-  const child = spawn('ollama', ['serve'], {
-    detached: true,
-    stdio:    'ignore',
-    shell:    true,
-  });
-  child.unref();
+  // On Windows try absolute path first; fall back to shell PATH variant
+  const spawnArgs: Parameters<typeof spawn> = process.platform === 'win32'
+    ? [absExe, ['serve'], { detached: true, stdio: 'ignore', shell: false }]
+    : ['ollama', ['serve'], { detached: true, stdio: 'ignore', shell: true }];
 
-  // Poll up to 8 seconds
-  for (let i = 0; i < 8; i++) {
-    await new Promise(r => setTimeout(r, 1000));
-    if (await pingOllama(baseUrl)) {
-      console.log(`  ${green('✓')}  Ollama daemon is up.`);
-      return true;
+  try {
+    const child = spawn(...spawnArgs);
+    child.unref();
+  } catch {
+    // If the absolute-path spawn failed (e.g. not yet installed there), fall
+    // back to the shell PATH form so at least something is attempted.
+    try {
+      const fallback = spawn('ollama', ['serve'], { detached: true, stdio: 'ignore', shell: true });
+      fallback.unref();
+    } catch { /* will be caught by the polling timeout */ }
+  }
+}
+
+/** Kill any hanging Ollama processes (hard-reset for auto-repair). */
+function killOllamaProcesses(): void {
+  try {
+    if (process.platform === 'win32') {
+      execSync('taskkill /F /IM ollama.exe', { stdio: 'ignore' });
+    } else {
+      execSync('pkill -9 ollama', { stdio: 'ignore' });
     }
+  } catch { /* process may not exist — that's fine */ }
+}
+
+/** Poll ${baseUrl}/api/version every second for up to ${maxSeconds} seconds. */
+async function pollUntilUp(baseUrl: string, maxSeconds: number): Promise<boolean> {
+  for (let i = 0; i < maxSeconds; i++) {
+    await new Promise(r => setTimeout(r, 1000));
+    if (await pingOllama(baseUrl)) return true;
     process.stdout.write('.');
   }
   process.stdout.write('\n');
   return false;
+}
+
+/**
+ * Ensure the Ollama daemon is running.
+ *
+ * Strategy:
+ *   1. Already up?  → return true immediately.
+ *   2. Spawn daemon (absolute path on Windows to bypass stale PATH).
+ *   3. Poll 25 s.
+ *   4. Still down?  → prompt user for Doctor-style auto-repair.
+ *      4a. Kill hung processes + hard-restart via absolute path.
+ *      4b. Poll another 25 s.
+ *      4c. Still down?  → throw so the caller never falls through silently.
+ */
+async function ensureDaemon(
+  baseUrl: string,
+  inq: { prompt: (q: object[]) => Promise<Record<string, unknown>> },
+): Promise<void> {
+  if (await pingOllama(baseUrl)) return; // already running
+
+  console.log(`  ${cyan('→')}  Starting Ollama daemon…`);
+  spawnDaemon();
+
+  if (await pollUntilUp(baseUrl, 25)) {
+    console.log(`  ${green('✓')}  Ollama daemon is up.`);
+    return;
+  }
+
+  // ── Auto-repair loop ────────────────────────────────────────────────────
+  console.log(`\n  ${yellow('⚠')}  Daemon did not respond after 25 s.`);
+  const { doRepair } = await inq.prompt([{
+    type:    'confirm',
+    name:    'doRepair',
+    message: 'Daemon failed to start. Attempt hard-reset and auto-repair?',
+    default: true,
+  }]);
+
+  if (!doRepair) {
+    throw new Error(
+      'Ollama daemon is not running. Run `ollama serve` in a separate terminal then re-run `must-b onboard`.',
+    );
+  }
+
+  console.log(`  ${cyan('→')}  Killing any hung Ollama processes…`);
+  killOllamaProcesses();
+  await new Promise(r => setTimeout(r, 2000)); // brief settle time
+
+  console.log(`  ${cyan('→')}  Hard-restarting Ollama via absolute path…`);
+  spawnDaemon();
+
+  if (await pollUntilUp(baseUrl, 25)) {
+    console.log(`  ${green('✓')}  Ollama daemon is up after auto-repair.`);
+    return;
+  }
+
+  throw new Error(
+    'Ollama daemon could not be started even after auto-repair. ' +
+    'Please run `ollama serve` manually in a separate terminal, then re-run `must-b onboard`.',
+  );
 }
 
 // ── Model list query ────────────────────────────────────────────────────────
@@ -246,10 +343,11 @@ export async function runOllamaManager(baseUrl: string, inquirer: unknown): Prom
   }
 
   // ── 3. Ensure daemon is running ─────────────────────────────────────────
-  const daemonUp = await ensureDaemon(baseUrl);
-  if (!daemonUp) {
-    console.log(`  ${yellow('⚠')}  Could not start Ollama daemon.`);
-    console.log(dim(`     Start manually:  ollama serve`));
+  try {
+    await ensureDaemon(baseUrl, inq);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.log(`\n  ${yellow('⚠')}  ${msg}`);
     return;
   }
 
