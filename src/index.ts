@@ -290,13 +290,12 @@ async function bootServer(arg: string) {
       logger.info(`Open your browser:  http://localhost:${PORT}`);
     }
     const history   = new SessionHistory(logger, path.join(ROOT, 'memory'));
-    const apiServer = new ApiServer(logger, orchestrator, history, PORT);
+    const apiServer = new ApiServer(logger, orchestrator, history, PORT, ROOT);
     apiServer.start();
     startHealthMonitor(ROOT, logger);
-    // Auto-open browser only when the user explicitly chose "Web Dashboard"
-    if (resolvedMode === 'dashboard') {
-      setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
-    }
+    // Open browser for both "Web Dashboard" (auto) and "Host Web Dashboard" (log mode).
+    // Both choices serve the full web UI — the user should always land in the browser.
+    setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
 
     const caps = getAgentRole();
     if (caps.canIdleInfer) {

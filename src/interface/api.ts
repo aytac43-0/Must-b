@@ -132,17 +132,20 @@ export class ApiServer {
   private orchestrator: Orchestrator;
   private history: SessionHistory;
   private port: number;
+  private root: string;
 
   constructor(
     logger: winston.Logger,
     orchestrator: Orchestrator,
     history: SessionHistory,
-    port: number = 4309
+    port: number = 4309,
+    root: string = process.cwd()
   ) {
     this.logger = logger;
     this.orchestrator = orchestrator;
     this.history = history;
     this.port = port;
+    this.root = root;
     this.app = express();
     this.server = http.createServer(this.app);
     this.io = new SocketIOServer(this.server, { cors: { origin: '*' } });
@@ -158,13 +161,20 @@ export class ApiServer {
     this.app.use(express.json({ limit: '10mb' }));
     // Multipart raw body for /api/memory/import (handled inline, no heavy dep needed)
     this.app.use('/api/memory/import', express.raw({ type: '*/*', limit: '10mb' }));
-    const frontendOut = path.join(process.cwd(), 'public', 'must-b-ui', 'out');
+
+    // Resolve UI assets using the package root (ROOT from index.ts, passed via constructor).
+    // Priority: dist/public (production / globally-installed), then dev source tree.
+    // Using process.cwd() here would point to the user's working directory, not the package.
+    const distPublic = path.join(this.root, 'dist', 'public');
+    const devOut     = path.join(this.root, 'public', 'must-b-ui', 'out');
+    const frontendOut = fs.existsSync(distPublic) ? distPublic : devOut;
+
     this.app.use(express.static(frontendOut));
     // SPA fallback
     this.app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next();
       res.sendFile(path.join(frontendOut, 'index.html'), (err) => {
-        if (err) res.sendFile(path.join(frontendOut, '404.html'));
+        if (err) res.status(404).send('Must-b UI not found. Run: npm run build:prod');
       });
     });
   }

@@ -10,6 +10,7 @@
 import fs     from 'fs';
 import path   from 'path';
 import crypto from 'crypto';
+import { spawnSync } from 'child_process';
 import { printBanner }    from '../utils/banner.js';
 import { runDoctor, DoctorResult } from './doctor.js';
 import { LongTermMemory } from '../memory/long-term.js';
@@ -69,6 +70,76 @@ const SKILLS = [
   { value: 'telegram',   label: 'Telegram Messaging',         envKey: 'SKILL_TELEGRAM',    hint: 'Send messages via Telegram Bot API' },
   { value: 'analyzer',   label: 'Project Analyzer',           envKey: 'SKILL_ANALYZER',    hint: 'Read and summarize codebases & READMEs' },
 ] as const;
+
+// ── Ollama Interactive Setup ───────────────────────────────────────────────
+// Called when the user selects Ollama as their provider.
+// 1) Pings the local Ollama API.  If down, warns and returns.
+// 2) Fetches installed models.  If none, prompts to pull a recommended one.
+
+const OLLAMA_RECOMMENDED = [
+  { name: 'llama3:8b    — Meta Llama 3 8B  (5 GB)  · best balance',    value: 'llama3:8b'   },
+  { name: 'mistral:7b   — Mistral 7B       (4.1 GB) · fast & capable',  value: 'mistral:7b'  },
+  { name: 'phi3:mini    — Microsoft Phi-3  (2.3 GB) · lightweight',      value: 'phi3:mini'   },
+  { name: 'gemma2:9b    — Google Gemma 2   (5.5 GB)',                    value: 'gemma2:9b'   },
+  { name: 'qwen2.5:7b   — Alibaba Qwen 2.5 (4.4 GB)',                   value: 'qwen2.5:7b'  },
+  { name: 'Skip — I will pull a model manually later',                   value: null          },
+] as const;
+
+async function runOllamaSetup(baseUrl: string, inquirer: any): Promise<void> {
+  console.log('');
+
+  // ── 1. Ping ───────────────────────────────────────────────────────────────
+  let ollamaUp = false;
+  try {
+    const res = await fetch(`${baseUrl}/api/version`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    ollamaUp = res.ok;
+  } catch { /* unreachable or timeout */ }
+
+  if (!ollamaUp) {
+    console.log(`  ${yellow('⚠')}  Ollama is not running at ${dim(baseUrl)}.`);
+    console.log(dim(`     Start it first:  ollama serve`));
+    console.log(dim(`     Then re-run:     must-b onboard`));
+    return;
+  }
+  console.log(`  ${green('✓')}  Ollama is running at ${dim(baseUrl)}.`);
+
+  // ── 2. Fetch installed models ─────────────────────────────────────────────
+  let installedModels: string[] = [];
+  try {
+    const tagsRes  = await fetch(`${baseUrl}/api/tags`);
+    const data     = await tagsRes.json() as { models?: { name: string }[] };
+    installedModels = (data.models ?? []).map((m: { name: string }) => m.name);
+  } catch { /* ignore — treat as empty */ }
+
+  if (installedModels.length > 0) {
+    console.log(`  ${green('✓')}  Models installed: ${installedModels.slice(0, 5).join(', ')}`);
+    return;
+  }
+
+  // ── 3. No models — offer to pull one ─────────────────────────────────────
+  console.log(`  ${yellow('⚠')}  No models are installed in Ollama yet.`);
+  const { modelToPull } = await inquirer.prompt([{
+    type:    'list',
+    name:    'modelToPull',
+    message: 'Select a model to download now (or skip):',
+    choices: OLLAMA_RECOMMENDED,
+  }]);
+
+  if (!modelToPull) {
+    console.log(dim(`  Skipped. Pull later:  ollama pull <model>`));
+    return;
+  }
+
+  console.log(`\n  ${cyan('→')}  Pulling ${modelToPull} — this may take several minutes…\n`);
+  const result = spawnSync('ollama', ['pull', modelToPull], { stdio: 'inherit', shell: true });
+  if (result.status === 0) {
+    console.log(`\n  ${green('✓')}  ${modelToPull} downloaded successfully.`);
+  } else {
+    console.log(`\n  ${yellow('⚠')}  Pull may have failed. Run manually: ollama pull ${modelToPull}`);
+  }
+}
 
 // ── Main Wizard ────────────────────────────────────────────────────────────
 
@@ -150,6 +221,10 @@ export async function runOnboard(root: string): Promise<void> {
     if (val) {
       writeEnvKey(envPath, provider.keyEnv, val);
       (process.env as Record<string, string>)[provider.keyEnv] = val;
+    }
+    // Interactive Ollama model check — ping, list, and optionally pull
+    if (provider.value === 'ollama') {
+      await runOllamaSetup(val || defaultUrl, inquirer);
     }
   } else {
     console.log(dim(`  Leave blank to skip — add later in .env or re-run: must-b onboard`));
