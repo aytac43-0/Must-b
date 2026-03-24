@@ -51,18 +51,20 @@ function ensureWorldUid() {
 
 // ── First-run check ────────────────────────────────────────────────────────
 // Runs the onboarding wizard if setup is incomplete.
-// Does NOT exit — returns control to main() so the launch prompt follows.
-async function runFirstTimeSetup(): Promise<void> {
+// Returns { webMode: true } if the user chose Web Dashboard — caller must
+// boot the gateway server instead of continuing the normal launch prompt.
+async function runFirstTimeSetup(): Promise<{ webMode?: boolean }> {
   const envPath    = path.join(ROOT, '.env');
   const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
   // Complete if: explicit flag (v1.3.2+) OR legacy users with name+provider
   const isComplete  = /^MUSTB_SETUP_COMPLETE=true/m.test(envContent);
   const hasName     = /^MUSTB_NAME=/m.test(envContent);
   const hasProvider = /^LLM_PROVIDER=/m.test(envContent);
-  if (isComplete || (hasName && hasProvider)) return;
+  if (isComplete || (hasName && hasProvider)) return {};
   // Incomplete / cancelled — run wizard then fall through to launch prompt
-  await runOnboard(ROOT);
+  const result = await runOnboard(ROOT);
   dotenv.config({ override: true }); // pick up keys written by the wizard
+  return result ?? {};
 }
 
 // ── Command routing ────────────────────────────────────────────────────────
@@ -71,7 +73,15 @@ const rawArg = process.argv[2]?.toLowerCase().trim() ?? '';
 async function main() {
   // Skip first-run check for pure informational / non-interactive commands
   const skipFirstRun = ['doctor', 'help', '--help', '-h', 'memory-sync', 'onboard'].includes(rawArg);
-  if (!skipFirstRun) await runFirstTimeSetup();
+  if (!skipFirstRun) {
+    const setupResult = await runFirstTimeSetup();
+    // Phase 2: if the user picked Web Dashboard during first-run setup,
+    // boot the gateway immediately and never reach the switch below.
+    if (setupResult.webMode) {
+      await bootServer('gateway');
+      return;
+    }
+  }
 
   switch (rawArg) {
     // ── Utility commands (always exit) ────────────────────────────────────
@@ -117,11 +127,17 @@ async function main() {
     }
 
     // ── Onboard: run wizard then ask how to launch ────────────────────────
-    case 'onboard':
-      await runOnboard(ROOT);
+    case 'onboard': {
+      const onboardResult = await runOnboard(ROOT);
       dotenv.config({ override: true });
-      await bootServer(''); // ask launch mode after wizard completes
+      // Web Dashboard path: boot gateway immediately (browser was already opened)
+      if (onboardResult.webMode) {
+        await bootServer('gateway');
+      } else {
+        await bootServer(''); // ask launch mode after CLI wizard completes
+      }
       return;
+    }
 
     // ── Direct-mode shortcuts (no prompt) ─────────────────────────────────
     case 'web':

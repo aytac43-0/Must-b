@@ -1,21 +1,31 @@
 /**
- * Must-b Onboarding Wizard (v1.4.3)
+ * Must-b Onboarding Wizard (v1.5.0-alpha.2)
  *
- * Interactive CLI setup using inquirer v8.
- * Covers all 13 AI providers + full 10-tool skill roster.
- * Writes directly to .env — user never touches a text editor.
- * Writes MUSTB_SETUP_COMPLETE=true only on full success,
- * so an ESC/Ctrl+C mid-way always re-triggers the wizard.
+ * Phase 2: Universal Onboarding Fork.
+ * After the welcome banner the user chooses:
+ *   • Terminal (CLI)  — text-based wizard (existing flow)
+ *   • Web Dashboard   — hands off to the Express/Vite server and opens /setup
  *
- * v1.4.3: Added Moonshot (Kimi) and Together AI providers.
+ * Every answer is written to BOTH the .env file AND UniversalStore so that
+ * runtime env is immediately synchronised without server restarts.
+ *
+ * Returns { webMode: true } when the user picked Web Dashboard so that
+ * index.ts can boot the server immediately.
  */
 import fs     from 'fs';
 import path   from 'path';
 import crypto from 'crypto';
+import { exec } from 'child_process';
 import { printBanner }      from '../utils/banner.js';
 import { runDoctor, DoctorResult } from './doctor.js';
 import { LongTermMemory }   from '../memory/long-term.js';
 import { runOllamaManager } from '../utils/ollamaManager.js';
+import { UniversalStore }   from '../core/config-store.js';
+
+/** Result returned by runOnboard — webMode signals gateway boot is needed. */
+export interface OnboardResult {
+  webMode?: boolean;
+}
 
 // ── Colour helpers (matches Must-b identity) ──────────────────────────────
 
@@ -75,9 +85,20 @@ const SKILLS = [
   { value: 'analyzer',   label: 'Project Analyzer',           envKey: 'SKILL_ANALYZER',    hint: 'Read and summarize codebases & READMEs' },
 ] as const;
 
+// ── Browser launcher ───────────────────────────────────────────────────────
+
+function openBrowserToSetup(port: number): void {
+  const url = `http://localhost:${port}/setup`;
+  const cmd =
+    process.platform === 'win32'  ? `start "" "${url}"` :
+    process.platform === 'darwin' ? `open "${url}"` :
+                                     `xdg-open "${url}"`;
+  exec(cmd, err => { if (err) console.warn(`  [browser] ${err.message}`); });
+}
+
 // ── Main Wizard ────────────────────────────────────────────────────────────
 
-export async function runOnboard(root: string): Promise<void> {
+export async function runOnboard(root: string): Promise<OnboardResult> {
   // inquirer v8 is CJS — dynamic import resolves correctly from the bundled CJS context
   const { default: inquirer } = await import('inquirer');
 
@@ -99,6 +120,28 @@ export async function runOnboard(root: string): Promise<void> {
     process.exit(0);
   });
 
+  // ── Setup Path Fork ──────────────────────────────────────────────────────
+  // Phase 2: let the user choose between text-based CLI wizard and visual web UI.
+  const { setupPath } = await inquirer.prompt([{
+    type:    'list',
+    name:    'setupPath',
+    message: 'How would you like to complete the Must-b setup?',
+    choices: [
+      { name: `${cyan('Terminal (CLI)')}   ${dim('— Fast and text-based')}`,             value: 'cli' },
+      { name: `${cyan('Web Dashboard')}    ${dim('— Visual and guided (Opens browser)')}`, value: 'web' },
+    ],
+  }]);
+
+  if (setupPath === 'web') {
+    const port = parseInt(process.env.PORT || '4309', 10);
+    console.log('');
+    console.log(cyan(`  Opening Web Setup Wizard → http://localhost:${port}/setup`));
+    console.log(dim('  The Must-b server will start and your browser will open automatically.'));
+    console.log(dim('  Complete the setup in the browser, then return here.\n'));
+    openBrowserToSetup(port);
+    return { webMode: true };
+  }
+
   // ── Step 1: Name ──────────────────────────────────────────────────────────
   const { userName } = await inquirer.prompt([{
     type:    'input',
@@ -109,6 +152,7 @@ export async function runOnboard(root: string): Promise<void> {
   }]);
   writeEnvKey(envPath, 'MUSTB_NAME', userName);
   process.env.MUSTB_NAME = userName;
+  UniversalStore.get().set('MUSTB_NAME', userName);
 
   // ── Step 2: Language ──────────────────────────────────────────────────────
   const { lang } = await inquirer.prompt([{
@@ -123,6 +167,7 @@ export async function runOnboard(root: string): Promise<void> {
   }]);
   writeEnvKey(envPath, 'MUSTB_LANG', lang);
   process.env.MUSTB_LANG = lang;
+  UniversalStore.get().set('MUSTB_LANG', lang);
 
   // ── Step 3: AI Provider ───────────────────────────────────────────────────
   const { providerValue } = await inquirer.prompt([{
@@ -158,11 +203,14 @@ export async function runOnboard(root: string): Promise<void> {
   writeEnvKey(envPath, 'AI_PROVIDER',  provider.value);
   process.env.LLM_PROVIDER = provider.value;
   process.env.AI_PROVIDER  = provider.value;
+  UniversalStore.get().set('LLM_PROVIDER', provider.value);
+  UniversalStore.get().set('AI_PROVIDER',  provider.value);
 
   const defaultModel = PROVIDER_DEFAULT_MODELS[provider.value] ?? '';
   if (defaultModel) {
     writeEnvKey(envPath, 'LLM_MODEL', defaultModel);
     process.env.LLM_MODEL = defaultModel;
+    UniversalStore.get().set('LLM_MODEL', defaultModel);
   }
 
   // ── Step 4: API Key / URL ─────────────────────────────────────────────────
@@ -200,6 +248,7 @@ export async function runOnboard(root: string): Promise<void> {
     if (key) {
       writeEnvKey(envPath, provider.keyEnv, key);
       (process.env as Record<string, string>)[provider.keyEnv] = key;
+      UniversalStore.get().set(provider.keyEnv, key);
       console.log(`  ${green('✓')}  Key saved.`);
     } else {
       console.log(`  ${yellow('⚠')}  No key — LLM chat disabled until a key is set.`);
@@ -236,12 +285,14 @@ export async function runOnboard(root: string): Promise<void> {
     ],
   }]);
   writeEnvKey(envPath, 'MUSTB_MODE', mode);
+  UniversalStore.get().set('MUSTB_MODE', mode);
 
   let uid = process.env.MUSTB_UID ?? '';
   if (mode === 'world' && !uid) {
     uid = generateUid();
     writeEnvKey(envPath, 'MUSTB_UID', uid);
     process.env.MUSTB_UID = uid;
+    UniversalStore.get().set('MUSTB_UID', uid);
   }
 
   // ── Save Profile ──────────────────────────────────────────────────────────
@@ -255,6 +306,7 @@ export async function runOnboard(root: string): Promise<void> {
   // If the user cancels (Ctrl+C / process kill) before reaching this line,
   // MUSTB_SETUP_COMPLETE is never written and the wizard restarts on next run.
   writeEnvKey(envPath, 'MUSTB_SETUP_COMPLETE', 'true');
+  UniversalStore.get().set('MUSTB_SETUP_COMPLETE', 'true');
 
   // ── Health Check + Active Auto-Repair Prompt ──────────────────────────────
   console.log('');
@@ -295,4 +347,5 @@ export async function runOnboard(root: string): Promise<void> {
   console.log(`  ${cyan('must-b cli')}       →  terminal chat`);
   console.log(`  ${cyan('must-b doctor')}    →  health check`);
   console.log('');
+  return {};
 }
