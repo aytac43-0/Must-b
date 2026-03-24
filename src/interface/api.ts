@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import os from 'os';
 import winston from 'winston';
 
 import { Orchestrator, type PlanStep } from '../core/orchestrator.js';
@@ -17,6 +18,7 @@ import { recommendModels, getPerformancePrediction } from '../utils/hardware.js'
 import { ensureModel } from '../commands/doctor.js';
 import { CloudSync, type SyncDecision } from '../core/cloud-sync.js';
 import { getAgentRole, getNodeCard, canRouteTo } from '../core/hierarchy.js';
+import { PROVIDER_CATALOG, findProvider, PROVIDER_ENV_KEY_MAP } from '../core/provider-catalog.js';
 import { getSkillsMarket, publishSkill } from '../commands/doctor.js';
 
 /** One-time random local auth token — valid for this process lifetime */
@@ -687,6 +689,135 @@ export class ApiServer {
         activeModel,
         version: '2.0',
       });
+    });
+
+    /**
+     * GET /api/setup/providers
+     * Returns the full catalog of supported LLM providers with metadata.
+     * Used by the Visual Setup Wizard to render the searchable provider grid.
+     */
+    this.app.get('/api/setup/providers', (_req, res) => {
+      res.json({ providers: PROVIDER_CATALOG });
+    });
+
+    /**
+     * GET /api/setup/ollama-models
+     * Returns hardware-aware Ollama model recommendations.
+     * Uses os.totalmem() + os.cpus() to flag each model as:
+     *   recommended — hardware score comfortably meets model requirements
+     *   marginal     — hardware is close to the minimum; may be slow
+     *   warning      — insufficient hardware; expect poor performance
+     */
+    this.app.get('/api/setup/ollama-models', (_req, res) => {
+      const ramGb    = Math.round(os.totalmem() / (1024 ** 3) * 10) / 10;
+      const cpuCount = os.cpus().length;
+      const hw       = getHardwareScore();
+      const score    = hw.score;
+
+      // Annotate every local model with a hardware fit flag
+      const models = MODELS_LIST.filter(m => m.category === 'local').map(m => {
+        let fit: 'recommended' | 'marginal' | 'warning';
+        if (score >= m.minScore)        fit = 'recommended';
+        else if (score >= m.minScore - 4) fit = 'marginal';
+        else                              fit = 'warning';
+        return { ...m, fit };
+      });
+
+      res.json({
+        models,
+        hardware: { ramGb, cpuCount, score, tier: hw.tier },
+      });
+    });
+
+    /**
+     * POST /api/setup/save
+     * Enhanced save endpoint — writes ALL provider env keys, full skill roster,
+     * and syncs to UniversalStore for immediate runtime effect.
+     * Body: { name, provider, apiKey, model?, skills, mode }
+     */
+    this.app.post('/api/setup/save', async (req, res) => {
+      try {
+        const { UniversalStore } = await import('../core/config-store.js');
+        const body = req.body as {
+          name?: string; provider?: string; apiKey?: string;
+          model?: string; skills?: string[]; mode?: string;
+        };
+
+        const root    = process.cwd();
+        const envPath = path.join(root, '.env');
+        let envContent = '';
+        try { envContent = fs.readFileSync(envPath, 'utf-8'); } catch { envContent = ''; }
+
+        function setEnvKey(content: string, key: string, value: string): string {
+          const lines = content.split('\n');
+          const idx   = lines.findIndex(l => l.startsWith(key + '='));
+          if (idx >= 0) lines[idx] = `${key}=${value}`;
+          else lines.push(`${key}=${value}`);
+          return lines.join('\n');
+        }
+        function syncKey(content: string, key: string, value: string): string {
+          process.env[key] = value;
+          UniversalStore.get().set(key, value);
+          return setEnvKey(content, key, value);
+        }
+
+        const safeName     = ((body.name ?? '').trim() || 'User');
+        const safeProvider = (body.provider ?? 'openrouter').trim();
+        const safeKey      = (body.apiKey ?? '').trim();
+        const safeModel    = (body.model ?? '').trim();
+        const safeMode     = body.mode === 'world' ? 'world' : 'local';
+        const safeSkills: string[] = Array.isArray(body.skills)
+          ? body.skills : ['browser', 'terminal', 'memory', 'web_search', 'filesystem'];
+
+        // Core identity
+        envContent = syncKey(envContent, 'MUSTB_NAME',  safeName);
+        envContent = syncKey(envContent, 'MUSTB_MODE',  safeMode);
+        envContent = syncKey(envContent, 'LLM_PROVIDER', safeProvider);
+        envContent = syncKey(envContent, 'AI_PROVIDER',  safeProvider);
+
+        // API key — write to the correct env var for this provider
+        const targetEnvKey = PROVIDER_ENV_KEY_MAP[safeProvider] ?? 'CUSTOM_API_KEY';
+        if (safeKey) {
+          envContent = syncKey(envContent, targetEnvKey, safeKey);
+        }
+
+        // Default model
+        const providerMeta = findProvider(safeProvider);
+        const defaultModel = safeModel || providerMeta?.defaultModel || '';
+        if (defaultModel) {
+          envContent = syncKey(envContent, 'LLM_MODEL', defaultModel);
+        }
+
+        // Skills
+        const ALL_SKILLS = ['browser', 'terminal', 'memory', 'web_search', 'filesystem',
+                            'git', 'vision', 'input', 'telegram', 'analyzer'];
+        for (const s of ALL_SKILLS) {
+          const enabled = safeSkills.includes(s);
+          envContent = syncKey(envContent, `SKILL_${s.toUpperCase()}`, enabled ? 'true' : 'false');
+        }
+
+        // World mode UID
+        if (safeMode === 'world' && !process.env.MUSTB_UID) {
+          const uid = 'mustb_' + crypto.randomBytes(12).toString('hex');
+          envContent = syncKey(envContent, 'MUSTB_UID', uid);
+        }
+
+        envContent = syncKey(envContent, 'MUSTB_SETUP_COMPLETE', 'true');
+
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+        dotenv.config({ path: envPath, override: true });
+
+        // Persist to long-term memory
+        const mem = new LongTermMemory(root);
+        await mem.load();
+        mem.setProfile({ name: safeName, mode: safeMode });
+        await mem.save();
+
+        res.json({ ok: true, name: safeName, provider: safeProvider, mode: safeMode });
+      } catch (err: any) {
+        this.logger.error(`Setup/save: ${err.message}`);
+        res.status(500).json({ error: err.message });
+      }
     });
 
     /**
@@ -1859,13 +1990,12 @@ export class ApiServer {
         const safeKey = (apiKey ?? '').trim();
         const safeSkills: string[] = Array.isArray(skills) ? skills : ['browser', 'terminal', 'memory', 'web_search', 'filesystem'];
 
-        // Write LLM provider + key
+        // Write LLM provider + key (uses full provider catalog mapping)
         envContent = setEnvKey(envContent, 'LLM_PROVIDER', safeProvider);
+        envContent = setEnvKey(envContent, 'AI_PROVIDER',  safeProvider);
         if (safeKey) {
-          if (safeProvider === 'openrouter') envContent = setEnvKey(envContent, 'OPENROUTER_API_KEY', safeKey);
-          else if (safeProvider === 'openai') envContent = setEnvKey(envContent, 'OPENAI_API_KEY', safeKey);
-          else if (safeProvider === 'anthropic') envContent = setEnvKey(envContent, 'ANTHROPIC_API_KEY', safeKey);
-          else if (safeProvider === 'ollama') envContent = setEnvKey(envContent, 'OLLAMA_BASE_URL', safeKey);
+          const targetKey = PROVIDER_ENV_KEY_MAP[safeProvider] ?? 'CUSTOM_API_KEY';
+          envContent = setEnvKey(envContent, targetKey, safeKey);
         }
 
         // Write skills
