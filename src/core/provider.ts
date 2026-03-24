@@ -1,22 +1,26 @@
 /**
- * Must-b LLM Provider (v2.0) — Multi-Provider Router
+ * Must-b LLM Provider (v3.0) — Unified Brain
  *
- * Routes to the correct API based on LLM_PROVIDER env var.
- * Supported: OpenRouter, OpenAI, Anthropic, Google Gemini, Groq,
- *            Ollama, Mistral, xAI, DeepSeek, Azure OpenAI, Vertex AI,
- *            Together AI, Moonshot (Kimi)
+ * Brain-Graft Phase 1 (v1.5.0-alpha.1):
+ *   - Fused Must-b Titanium Ollama Architecture (v1.4.7) with OpenClaw's
+ *     comprehensive API provider suite intelligence.
+ *   - New providers: Perplexity, Cohere, Fireworks AI, NVIDIA NIM,
+ *     Cloudflare Workers AI, generic OpenAI-compatible custom endpoint.
+ *   - SSE streaming support via LLMProvider.stream().
+ *   - Per-provider key rotation via UniversalStore.
+ *   - All v1.4.7 Ollama Titanium Armor preserved intact.
  *
- * v1.4.7 additions:
- *   - LLM_MODEL is a universal override checked first across all providers
- *   - Ollama 404 → auto-selects first installed model via `ollama list`,
- *     writes OLLAMA_MODEL + LLM_MODEL to .env, then retries seamlessly;
- *     returns a graceful system string if no models are installed at all
+ * Supported providers:
+ *   openrouter | openai | anthropic | gemini | groq | ollama | mistral |
+ *   xai | deepseek | azure | vertex | together | moonshot |
+ *   perplexity | cohere | fireworks | nvidia | cloudflare | custom
  */
 import fs            from 'fs';
 import path          from 'path';
 import { spawnSync } from 'child_process';
 import winston from 'winston';
 import dotenv from 'dotenv';
+import { UniversalStore } from './config-store.js';
 
 dotenv.config({ override: true });
 
@@ -31,6 +35,8 @@ interface PC {
   model:   string;
   headers: Record<string, string>;
   noJM?:   boolean;
+  /** Provider name — used for error context & rotation */
+  provider?: string;
 }
 
 /** Universal active-model override — checked first across all providers. */
@@ -38,77 +44,91 @@ function universalModel(providerDefault: string): string {
   return process.env.LLM_MODEL || providerDefault;
 }
 
+/**
+ * Resolve API key with optional UniversalStore rotation support.
+ * Falls back gracefully if store is unavailable.
+ */
+function resolveKey(provider: string, envVar: string): string {
+  try {
+    return UniversalStore.get().resolveApiKey(provider, envVar);
+  } catch {
+    return process.env[envVar] ?? '';
+  }
+}
+
 function rc(): PC {
   dotenv.config({ override: true });
   const p = (process.env.LLM_PROVIDER ?? 'openrouter').toLowerCase();
+
   if (p === 'openai') {
-    const k = process.env.OPENAI_API_KEY ?? '';
-    return { baseUrl: 'https://api.openai.com/v1', apiKey: k,
+    const k = resolveKey('openai', 'OPENAI_API_KEY');
+    return { baseUrl: 'https://api.openai.com/v1', apiKey: k, provider: p,
       model: universalModel(process.env.OPENAI_MODEL ?? 'gpt-4o-mini'),
       headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
   }
   if (p === 'anthropic') {
-    const k = process.env.ANTHROPIC_API_KEY ?? '';
-    return { baseUrl: 'https://api.anthropic.com/v1', apiKey: k,
+    const k = resolveKey('anthropic', 'ANTHROPIC_API_KEY');
+    return { baseUrl: 'https://api.anthropic.com/v1', apiKey: k, provider: p,
       model: universalModel(process.env.ANTHROPIC_MODEL ?? 'claude-3-5-haiku-20241022'),
       headers: { 'x-api-key': k, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
       noJM: true };
   }
   if (p === 'gemini') {
-    const k = process.env.GOOGLE_API_KEY ?? '';
+    const k = resolveKey('gemini', 'GOOGLE_API_KEY');
     const m = universalModel(process.env.GEMINI_MODEL ?? 'gemini-1.5-flash');
     return { baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/' + m + ':generateContent?key=' + k,
-      apiKey: k, model: m, headers: { 'Content-Type': 'application/json' }, noJM: true };
+      apiKey: k, model: m, provider: p, headers: { 'Content-Type': 'application/json' }, noJM: true };
   }
   if (p === 'groq') {
-    const k = process.env.GROQ_API_KEY ?? '';
-    return { baseUrl: 'https://api.groq.com/openai/v1', apiKey: k,
+    const k = resolveKey('groq', 'GROQ_API_KEY');
+    return { baseUrl: 'https://api.groq.com/openai/v1', apiKey: k, provider: p,
       model: universalModel(process.env.GROQ_MODEL ?? 'llama3-8b-8192'),
       headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
   }
   if (p === 'ollama') {
     const b = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
-    return { baseUrl: b + '/v1', apiKey: 'ollama',
+    return { baseUrl: b + '/v1', apiKey: 'ollama', provider: p,
       model: universalModel(process.env.OLLAMA_MODEL ?? 'llama3'),
       headers: { 'Content-Type': 'application/json' }, noJM: true };
   }
   if (p === 'mistral') {
-    const k = process.env.MISTRAL_API_KEY ?? '';
-    return { baseUrl: 'https://api.mistral.ai/v1', apiKey: k,
+    const k = resolveKey('mistral', 'MISTRAL_API_KEY');
+    return { baseUrl: 'https://api.mistral.ai/v1', apiKey: k, provider: p,
       model: universalModel(process.env.MISTRAL_MODEL ?? 'mistral-small-latest'),
       headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
   }
   if (p === 'xai') {
-    const k = process.env.XAI_API_KEY ?? '';
-    return { baseUrl: 'https://api.x.ai/v1', apiKey: k,
+    const k = resolveKey('xai', 'XAI_API_KEY');
+    return { baseUrl: 'https://api.x.ai/v1', apiKey: k, provider: p,
       model: universalModel(process.env.XAI_MODEL ?? 'grok-beta'),
       headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
   }
   if (p === 'deepseek') {
-    const k = process.env.DEEPSEEK_API_KEY ?? '';
-    return { baseUrl: 'https://api.deepseek.com/v1', apiKey: k,
+    const k = resolveKey('deepseek', 'DEEPSEEK_API_KEY');
+    return { baseUrl: 'https://api.deepseek.com/v1', apiKey: k, provider: p,
       model: universalModel(process.env.DEEPSEEK_MODEL ?? 'deepseek-chat'),
       headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
   }
   if (p === 'together') {
-    const k = process.env.TOGETHER_API_KEY ?? '';
-    return { baseUrl: 'https://api.together.xyz/v1', apiKey: k,
+    const k = resolveKey('together', 'TOGETHER_API_KEY');
+    return { baseUrl: 'https://api.together.xyz/v1', apiKey: k, provider: p,
       model: universalModel(process.env.TOGETHER_MODEL ?? 'meta-llama/Llama-3-8b-chat-hf'),
       headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
   }
   if (p === 'moonshot') {
-    const k = process.env.MOONSHOT_API_KEY ?? '';
-    return { baseUrl: 'https://api.moonshot.cn/v1', apiKey: k,
+    const k = resolveKey('moonshot', 'MOONSHOT_API_KEY');
+    return { baseUrl: 'https://api.moonshot.cn/v1', apiKey: k, provider: p,
       model: universalModel(process.env.MOONSHOT_MODEL ?? 'moonshot-v1-8k'),
       headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
   }
   if (p === 'azure') {
-    const k   = process.env.AZURE_OPENAI_API_KEY ?? '';
+    const k   = resolveKey('azure', 'AZURE_OPENAI_API_KEY');
     const ep  = process.env.AZURE_OPENAI_ENDPOINT ?? '';
     const dep = process.env.AZURE_OPENAI_DEPLOYMENT ?? 'gpt-4o-mini';
     const ver = process.env.AZURE_OPENAI_API_VERSION ?? '2024-02-01';
     return { baseUrl: ep + '/openai/deployments/' + dep + '/chat/completions?api-version=' + ver,
-      apiKey: k, model: dep, headers: { 'api-key': k, 'Content-Type': 'application/json' } };
+      apiKey: k, model: dep, provider: p,
+      headers: { 'api-key': k, 'Content-Type': 'application/json' } };
   }
   if (p === 'vertex') {
     const proj = process.env.GOOGLE_CLOUD_PROJECT ?? '';
@@ -121,17 +141,65 @@ function rc(): PC {
     } catch { /**/ }
     return { baseUrl: 'https://' + loc + '-aiplatform.googleapis.com/v1/projects/' + proj +
         '/locations/' + loc + '/publishers/google/models/' + m + ':generateContent',
-      apiKey: t, model: m, headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, noJM: true };
+      apiKey: t, model: m, provider: p,
+      headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, noJM: true };
   }
+
+  // ── New providers from OpenClaw's comprehensive catalog ──────────────────────
+
+  if (p === 'perplexity') {
+    const k = resolveKey('perplexity', 'PERPLEXITY_API_KEY');
+    return { baseUrl: 'https://api.perplexity.ai', apiKey: k, provider: p,
+      model: universalModel(process.env.PERPLEXITY_MODEL ?? 'llama-3.1-sonar-small-128k-online'),
+      headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
+  }
+  if (p === 'cohere') {
+    const k = resolveKey('cohere', 'COHERE_API_KEY');
+    // Use Cohere's OpenAI-compatible compatibility endpoint
+    return { baseUrl: 'https://api.cohere.ai/compatibility/v1', apiKey: k, provider: p,
+      model: universalModel(process.env.COHERE_MODEL ?? 'command-r-plus'),
+      headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
+  }
+  if (p === 'fireworks') {
+    const k = resolveKey('fireworks', 'FIREWORKS_API_KEY');
+    return { baseUrl: 'https://api.fireworks.ai/inference/v1', apiKey: k, provider: p,
+      model: universalModel(process.env.FIREWORKS_MODEL ?? 'accounts/fireworks/models/llama-v3p1-8b-instruct'),
+      headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
+  }
+  if (p === 'nvidia') {
+    const k = resolveKey('nvidia', 'NVIDIA_API_KEY');
+    return { baseUrl: 'https://integrate.api.nvidia.com/v1', apiKey: k, provider: p,
+      model: universalModel(process.env.NVIDIA_MODEL ?? 'meta/llama-3.1-8b-instruct'),
+      headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
+  }
+  if (p === 'cloudflare') {
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID ?? '';
+    const k = resolveKey('cloudflare', 'CLOUDFLARE_API_KEY');
+    return {
+      baseUrl: `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1`,
+      apiKey: k, provider: p,
+      model: universalModel(process.env.CLOUDFLARE_MODEL ?? '@cf/meta/llama-3.1-8b-instruct'),
+      headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' },
+    };
+  }
+  if (p === 'custom') {
+    // Generic OpenAI-compatible endpoint — set CUSTOM_API_BASE_URL + CUSTOM_API_KEY
+    const base = (process.env.CUSTOM_API_BASE_URL ?? '').replace(/\/+$/, '');
+    const k = process.env.CUSTOM_API_KEY ?? '';
+    return { baseUrl: base + '/v1', apiKey: k, provider: p,
+      model: universalModel(process.env.CUSTOM_MODEL ?? 'default'),
+      headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json' } };
+  }
+
   // Default: OpenRouter
-  const k = process.env.OPENROUTER_API_KEY ?? '';
-  return { baseUrl: 'https://openrouter.ai/api/v1', apiKey: k,
+  const k = resolveKey('openrouter', 'OPENROUTER_API_KEY');
+  return { baseUrl: 'https://openrouter.ai/api/v1', apiKey: k, provider: 'openrouter',
     model: universalModel(process.env.OPENROUTER_MODEL ?? 'openai/gpt-4o-mini'),
     headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json',
       'HTTP-Referer': 'https://must-b.ai', 'X-Title': 'Must-b Agent' } };
 }
 
-// ── Ollama 404 fallback ──────────────────────────────────────────────────────
+// ── Ollama 404 fallback (v1.4.7 Titanium Armor — preserved intact) ────────────
 
 /** Attempt to update OLLAMA_MODEL and LLM_MODEL in .env and process.env. */
 function persistOllamaModel(model: string): void {
@@ -232,6 +300,35 @@ async function aGemini(c: PC, msgs: CompletionMessage[]): Promise<string> {
   return ((await res.json()) as any).candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }
 
+// ── SSE stream parser ─────────────────────────────────────────────────────────
+
+/**
+ * Parse an OpenAI-compatible SSE stream and yield text tokens as they arrive.
+ * Used by LLMProvider.stream() for real-time output.
+ */
+async function* parseOpenAIStream(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
+  const reader  = body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop() ?? '';
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t || t === 'data: [DONE]') continue;
+      if (!t.startsWith('data: ')) continue;
+      try {
+        const chunk = JSON.parse(t.slice(6));
+        const token = chunk.choices?.[0]?.delta?.content;
+        if (token) yield token as string;
+      } catch { /* skip malformed SSE chunk */ }
+    }
+  }
+}
+
 export class LLMProvider {
   private logger: winston.Logger;
   constructor(logger: winston.Logger) { this.logger = logger; }
@@ -262,13 +359,15 @@ export class LLMProvider {
         if (!res.ok) throw new Error('Azure ' + res.status + ': ' + await res.text());
         return ((await res.json()) as any).choices?.[0]?.message?.content ?? '';
       }
-      // OpenAI-compatible: openrouter, openai, groq, mistral, xai, deepseek, ollama, together, moonshot
+      // OpenAI-compatible: openrouter, openai, groq, mistral, xai, deepseek, ollama,
+      //                    together, moonshot, perplexity, cohere, fireworks, nvidia,
+      //                    cloudflare, custom
       const b: any = { model: cfg.model, messages, temperature: 0.1 };
       if (options.jsonMode && !cfg.noJM) b.response_format = { type: 'json_object' };
       const res = await fetch(cfg.baseUrl + '/chat/completions', {
         method: 'POST', headers: cfg.headers, body: JSON.stringify(b),
       });
-      // Ollama 404: model not found — auto-recover from installed models
+      // Ollama 404: model not found — auto-recover from installed models (Titanium Armor)
       if (!res.ok && p === 'ollama' && res.status === 404) {
         return await handleOllamaFallback(cfg, messages, options, this.logger);
       }
@@ -280,5 +379,49 @@ export class LLMProvider {
       this.logger.error('Provider [' + p + ']: ' + e.message);
       throw e;
     }
+  }
+
+  /**
+   * Stream tokens from the LLM as they arrive via SSE.
+   * Yields string chunks in real-time for responsive UIs.
+   *
+   * Supports: all OpenAI-compatible providers (openrouter, openai, groq, mistral,
+   *   xai, deepseek, together, moonshot, perplexity, cohere, fireworks, nvidia,
+   *   cloudflare, custom, ollama).
+   * Non-streamable providers (anthropic, gemini, vertex, azure) fall back to
+   *   yielding the full response as a single chunk.
+   */
+  async *stream(messages: CompletionMessage[]): AsyncGenerator<string> {
+    const cfg = rc();
+    const p   = (process.env.LLM_PROVIDER ?? 'openrouter').toLowerCase();
+
+    // Non-streamable providers: yield full response as single chunk
+    if (p === 'anthropic') { yield await aAnthropic(cfg, messages); return; }
+    if (p === 'gemini' || p === 'vertex') { yield await aGemini(cfg, messages); return; }
+    if (p === 'azure') {
+      const b: any = { messages, temperature: 0.1 };
+      const res = await fetch(cfg.baseUrl, { method: 'POST', headers: cfg.headers, body: JSON.stringify(b) });
+      if (!res.ok) throw new Error('Azure stream ' + res.status);
+      yield ((await res.json()) as any).choices?.[0]?.message?.content ?? '';
+      return;
+    }
+
+    // OpenAI-compatible SSE streaming
+    const b: any = { model: cfg.model, messages, temperature: 0.1, stream: true };
+    const res = await fetch(cfg.baseUrl + '/chat/completions', {
+      method: 'POST', headers: cfg.headers, body: JSON.stringify(b),
+    });
+
+    if (!res.ok || !res.body) {
+      // Ollama 404 fallback path for stream mode
+      if (p === 'ollama' && res.status === 404) {
+        const full = await handleOllamaFallback(cfg, messages, {}, this.logger);
+        yield full;
+        return;
+      }
+      throw new Error(p + ' stream error ' + res.status);
+    }
+
+    yield* parseOpenAIStream(res.body);
   }
 }
