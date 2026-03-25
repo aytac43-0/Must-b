@@ -730,17 +730,30 @@ export class ApiServer {
     });
 
     /**
+     * GET /api/setup/workspace-default
+     * Returns the OS home directory so the frontend can pre-fill the workspace path.
+     */
+    this.app.get('/api/setup/workspace-default', (_req, res) => {
+      const home = os.homedir().replace(/\\/g, '/');
+      res.json({ home, suggested: `${home}/Mustb-Projects` });
+    });
+
+    /**
      * POST /api/setup/save
-     * Enhanced save endpoint — writes ALL provider env keys, full skill roster,
-     * and syncs to UniversalStore for immediate runtime effect.
-     * Body: { name, provider, apiKey, model?, skills, mode }
+     * Writes ALL setup fields to .env AND UniversalStore for immediate runtime sync.
+     * Body: {
+     *   name, language, provider, apiKey, model?, skills, mode,
+     *   workspacePath, wakeWord, telemetry
+     * }
+     * Always writes MUSTB_SETUP_COMPLETE=true as the final key.
      */
     this.app.post('/api/setup/save', async (req, res) => {
       try {
         const { UniversalStore } = await import('../core/config-store.js');
         const body = req.body as {
-          name?: string; provider?: string; apiKey?: string;
+          name?: string; language?: string; provider?: string; apiKey?: string;
           model?: string; skills?: string[]; mode?: string;
+          workspacePath?: string; wakeWord?: boolean; telemetry?: boolean;
         };
 
         const root    = process.cwd();
@@ -761,17 +774,23 @@ export class ApiServer {
           return setEnvKey(content, key, value);
         }
 
-        const safeName     = ((body.name ?? '').trim() || 'User');
-        const safeProvider = (body.provider ?? 'openrouter').trim();
-        const safeKey      = (body.apiKey ?? '').trim();
-        const safeModel    = (body.model ?? '').trim();
-        const safeMode     = body.mode === 'world' ? 'world' : 'local';
+        const safeName          = ((body.name     ?? '').trim() || 'User');
+        const safeLanguage      = ((body.language ?? '').trim() || 'en-US');
+        const safeProvider      = (body.provider  ?? 'openrouter').trim();
+        const safeKey           = (body.apiKey    ?? '').trim();
+        const safeModel         = (body.model     ?? '').trim();
+        const safeMode          = body.mode === 'world' ? 'world' : 'local';
+        const safeWorkspace     = ((body.workspacePath ?? '').trim()) || (os.homedir().replace(/\\/g, '/') + '/Mustb-Projects');
+        const safeWakeWord      = body.wakeWord  === true;
+        const safeTelemetry     = body.telemetry === true;
         const safeSkills: string[] = Array.isArray(body.skills)
           ? body.skills : ['browser', 'terminal', 'memory', 'web_search', 'filesystem'];
 
-        // Core identity
-        envContent = syncKey(envContent, 'MUSTB_NAME',  safeName);
-        envContent = syncKey(envContent, 'MUSTB_MODE',  safeMode);
+        // ── Identity & Locale ─────────────────────────────────────────────
+        envContent = syncKey(envContent, 'MUSTB_NAME',     safeName);
+        envContent = syncKey(envContent, 'USER_NAME',      safeName);
+        envContent = syncKey(envContent, 'MUSTB_LANGUAGE', safeLanguage);
+        envContent = syncKey(envContent, 'MUSTB_MODE',     safeMode);
         envContent = syncKey(envContent, 'LLM_PROVIDER', safeProvider);
         envContent = syncKey(envContent, 'AI_PROVIDER',  safeProvider);
 
@@ -796,13 +815,24 @@ export class ApiServer {
           envContent = syncKey(envContent, `SKILL_${s.toUpperCase()}`, enabled ? 'true' : 'false');
         }
 
-        // World mode UID
+        // ── Workspace ─────────────────────────────────────────────────────
+        envContent = syncKey(envContent, 'WORKSPACE_DIR', safeWorkspace);
+
+        // ── Voice & Wake Word ─────────────────────────────────────────────
+        envContent = syncKey(envContent, 'WAKE_WORD_ENABLED', safeWakeWord ? 'true' : 'false');
+
+        // ── Telemetry ─────────────────────────────────────────────────────
+        envContent = syncKey(envContent, 'TELEMETRY_ENABLED', safeTelemetry ? 'true' : 'false');
+
+        // ── World mode UID ────────────────────────────────────────────────
         if (safeMode === 'world' && !process.env.MUSTB_UID) {
           const uid = 'mustb_' + crypto.randomBytes(12).toString('hex');
           envContent = syncKey(envContent, 'MUSTB_UID', uid);
         }
 
+        // ── Seal: MUSTB_SETUP_COMPLETE must be the very last key written ──
         envContent = syncKey(envContent, 'MUSTB_SETUP_COMPLETE', 'true');
+        envContent = syncKey(envContent, 'SETUP_COMPLETE',       'true');
 
         fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
         dotenv.config({ path: envPath, override: true });
@@ -813,7 +843,13 @@ export class ApiServer {
         mem.setProfile({ name: safeName, mode: safeMode });
         await mem.save();
 
-        res.json({ ok: true, name: safeName, provider: safeProvider, mode: safeMode });
+        res.json({
+          ok: true,
+          name: safeName, language: safeLanguage,
+          provider: safeProvider, mode: safeMode,
+          workspacePath: safeWorkspace,
+          wakeWord: safeWakeWord, telemetry: safeTelemetry,
+        });
       } catch (err: any) {
         this.logger.error(`Setup/save: ${err.message}`);
         res.status(500).json({ error: err.message });
