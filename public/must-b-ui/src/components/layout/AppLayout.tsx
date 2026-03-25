@@ -1,47 +1,60 @@
 /**
- * AppLayout — Liquid Glass Shell (v1.6.0)
+ * AppLayout — Liquid Glass Shell v1.6.1
  *
- * Both Sidebar and RightPanel are hidden by default.
- * They slide in as glass overlays via Framer Motion AnimatePresence.
- * The centre stage is always full-width, dominated by the chat.
+ * Visual: Matches the "Xrio"-style reference.
+ *   • White floating pill navigation anchored at the top centre.
+ *   • Must-b logo text on the far left, dark "System" pill on the far right.
+ *   • Sidebar and RightPanel hidden by default — spring-slide in as glass overlays.
+ *   • Body carries the soft-white → lime-green → deep-forest gradient via index.css.
  */
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { PanelLeftOpen, PanelRightOpen } from "lucide-react";
-import Sidebar from "./Sidebar";
-import RightPanel from "./RightPanel";
+import { Settings, ArrowRight, MessageSquare, Cpu } from "lucide-react";
+import Sidebar     from "./Sidebar";
+import RightPanel  from "./RightPanel";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { WakeWordListener } from "@/components/chat/WakeWordListener";
 import { useI18n } from "@/i18n";
 
+function NavItem({ to, label, active }: { to: string; label: string; active?: boolean }) {
+  return (
+    <Link
+      to={to}
+      className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all select-none ${
+        active
+          ? "bg-black text-white shadow-sm"
+          : "text-black/70 hover:text-black hover:bg-black/6"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
 export default function AppLayout() {
-  const { t } = useI18n();
+  const { t }    = useI18n();
+  const location = useLocation();
   const [leftOpen,  setLeftOpen]  = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
+
+  const isSettings = location.pathname === "/app/settings";
 
   const handleWake = () => {
     document.querySelector<HTMLTextAreaElement>("textarea")?.focus();
   };
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden font-sans text-white">
-
-      {/* ── Deep gradient background ───────────────────────────────────── */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#020407] via-[#04060e] to-[#020508] pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_-10%,rgba(234,88,12,0.10),transparent)] pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_110%,rgba(30,20,60,0.25),transparent)] pointer-events-none" />
+    <div className="relative min-h-screen overflow-x-hidden font-sans">
 
       {/* ── Left panel overlay ────────────────────────────────────────── */}
       <AnimatePresence>
         {leftOpen && (
           <motion.div
             key="left-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]"
             onClick={() => setLeftOpen(false)}
           />
         )}
@@ -66,11 +79,9 @@ export default function AppLayout() {
         {rightOpen && (
           <motion.div
             key="right-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]"
             onClick={() => setRightOpen(false)}
           />
         )}
@@ -90,50 +101,55 @@ export default function AppLayout() {
         )}
       </AnimatePresence>
 
-      {/* ── Centre stage (full width) ─────────────────────────────────── */}
-      <main className="relative flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+      {/* ── Floating pill navigation ──────────────────────────────────── */}
+      <header className="fixed top-4 left-0 right-0 z-30 px-6 flex items-center justify-between pointer-events-none">
 
-        {/* Top bar — glass strip */}
-        <div className="relative z-10 flex items-center justify-between px-3 py-2 shrink-0 border-b border-white/[0.06] bg-black/20 backdrop-blur-xl">
-
-          {/* Left: chats toggle */}
+        {/* Left — logo + chats toggle */}
+        <div className="pointer-events-auto flex items-center gap-3">
           <button
             onClick={() => setLeftOpen(true)}
+            className="flex items-center gap-2 select-none"
             title={t.layout.openChats}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass border border-white/8 text-gray-400 hover:text-orange-400 hover:border-orange-500/25 transition-all text-xs font-medium"
           >
-            <PanelLeftOpen size={14} />
-            <span className="hidden sm:inline">{t.layout.chats}</span>
+            <span className="text-[22px] font-black text-[#0c1a07] tracking-tighter drop-shadow-sm">
+              Must-b
+            </span>
           </button>
-
-          {/* Centre: logo + wordmark */}
-          <div className="flex items-center gap-2 select-none">
-            <div className="relative w-6 h-6">
-              <div className="absolute inset-0 bg-orange-500 rounded-full blur-[6px] opacity-50" />
-              <img src="/logo.png" alt="Must-b" className="relative z-10 w-full h-full object-contain" />
-            </div>
-            <span className="text-sm font-bold tracking-tight text-white/80">Must-b</span>
-          </div>
-
-          {/* Right: wake word + language + system panel */}
-          <div className="flex items-center gap-2">
-            <WakeWordListener onWake={handleWake} />
-            <LanguageSwitcher />
-            <button
-              onClick={() => setRightOpen(true)}
-              title={t.layout.openSystem}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass border border-white/8 text-gray-400 hover:text-orange-400 hover:border-orange-500/25 transition-all text-xs font-medium"
-            >
-              <span className="hidden sm:inline">{t.layout.system}</span>
-              <PanelRightOpen size={14} />
-            </button>
-          </div>
+          <button
+            onClick={() => setLeftOpen(true)}
+            className="p-2 rounded-full bg-white/70 hover:bg-white shadow-sm border border-white/50 text-[#0c1a07] transition-all"
+            title={t.layout.openChats}
+          >
+            <MessageSquare size={15} />
+          </button>
         </div>
 
-        {/* Page content */}
-        <div className="relative flex-1 overflow-hidden min-h-0">
-          <Outlet />
+        {/* Centre — white pill nav */}
+        <nav className="pointer-events-auto nav-pill px-2 py-1.5 flex items-center gap-0.5">
+          <NavItem to="/app"          label="Chat"      active={!isSettings} />
+          <NavItem to="/app/settings" label="Settings"  active={isSettings}  />
+          <div className="w-px h-4 bg-black/10 mx-1" />
+          <WakeWordListener onWake={handleWake} />
+          <LanguageSwitcher />
+        </nav>
+
+        {/* Right — system panel pill */}
+        <div className="pointer-events-auto flex items-center gap-2">
+          <button
+            onClick={() => setRightOpen(true)}
+            title={t.layout.openSystem}
+            className="flex items-center gap-2 bg-[#0c1a07] hover:bg-[#1a3010] text-white/90 rounded-full px-4 py-2 text-[13px] font-semibold shadow-lg transition-all"
+          >
+            <Cpu size={13} />
+            {t.layout.system}
+            <ArrowRight size={12} className="opacity-60" />
+          </button>
         </div>
+      </header>
+
+      {/* ── Page content (padded below fixed nav) ─────────────────────── */}
+      <main className="relative min-h-screen pt-[72px]">
+        <Outlet />
       </main>
     </div>
   );

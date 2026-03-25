@@ -1,45 +1,33 @@
+/**
+ * WelcomePage — Liquid Glass Green (v1.6.1)
+ *
+ * Matches the reference: white pill nav, massive dark title,
+ * soft-white → lime → forest-green gradient background.
+ */
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link }   from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings } from "lucide-react";
-import { useI18n } from "@/i18n";
-
-// Stable star positions — no random re-renders
-const STARS = [
-  { w: 1.8, top: "8%",  left: "12%", op: 0.25 },
-  { w: 1.2, top: "22%", left: "85%", op: 0.18 },
-  { w: 2.1, top: "35%", left: "5%",  op: 0.30 },
-  { w: 1.5, top: "60%", left: "92%", op: 0.20 },
-  { w: 1.0, top: "75%", left: "18%", op: 0.15 },
-  { w: 2.0, top: "88%", left: "72%", op: 0.28 },
-  { w: 1.3, top: "14%", left: "55%", op: 0.22 },
-  { w: 1.7, top: "45%", left: "78%", op: 0.19 },
-  { w: 1.1, top: "92%", left: "40%", op: 0.16 },
-  { w: 2.2, top: "5%",  left: "38%", op: 0.24 },
-];
+import { Settings, ArrowRight }    from "lucide-react";
+import { useI18n }              from "@/i18n";
 
 export default function WelcomePage() {
-  const navigate = useNavigate();
-  const { t }    = useI18n();
-
+  const navigate       = useNavigate();
+  const { t }          = useI18n();
   const [waking,  setWaking]  = useState(false);
-  const [awake,   setAwake]   = useState(false);
   const [exiting, setExiting] = useState(false);
 
-  // Auto-check: if gateway is up and not configured, redirect to setup immediately.
   useEffect(() => {
     let cancelled = false;
     const check = async () => {
       try {
-        const res = await fetch("/api/setup/status");
+        const res  = await fetch("/api/setup/status");
         if (!res.ok || cancelled) return;
         const data = await res.json() as { configured?: boolean };
         if (!cancelled && !data.configured) navigate("/setup");
-      } catch { /* gateway not ready yet — user can click Wake */ }
+      } catch { /* gateway not ready */ }
     };
-    // Give the gateway 800ms to start, then check
-    const t = setTimeout(check, 800);
-    return () => { cancelled = true; clearTimeout(t); };
+    const timer = setTimeout(check, 800);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [navigate]);
 
   const handleWake = async () => {
@@ -52,160 +40,119 @@ export default function WelcomePage() {
         if (!data.configured) { navigate("/setup"); return; }
       }
       await fetch("/api/auth/local");
-    } catch { /* gateway not ready — continue anyway */ }
-
-    setTimeout(() => setAwake(true), 600);
-    // Fade out before navigate
+    } catch { /* continue */ }
     setTimeout(() => {
       setExiting(true);
-      setTimeout(() => navigate("/app"), 550);
-    }, 1500);
+      setTimeout(() => navigate("/app"), 500);
+    }, 600);
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#02040a]">
+    <div className="relative min-h-screen overflow-hidden flex flex-col">
 
-      {/* ── Full-screen immersive background image ── */}
-      <motion.img
-        src="/avatar/sleep.png"
-        alt=""
-        aria-hidden
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ objectPosition: "center 25%" }}
-        animate={{ opacity: waking ? 0 : 0.16, scale: waking ? 1.05 : 1 }}
-        transition={{ duration: 1.4, ease: "easeInOut" }}
-      />
-      <motion.img
-        src="/avatar/awake.png"
-        alt=""
-        aria-hidden
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ objectPosition: "center 25%" }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: awake ? 0.20 : 0, scale: awake ? 1.04 : 1 }}
-        transition={{ duration: 0.9, ease: "easeOut" }}
-      />
-
-      {/* Dark vignette — keeps text readable over the large image */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-[#02040a]/40 to-[#02040a] pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#02040a]/55 via-transparent to-[#02040a]/55 pointer-events-none" />
-
-      {/* ── Warm background glow ── */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-900/15 rounded-full blur-[120px]" />
-      </div>
-
-      {/* ── Stars ── */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
-        {STARS.map((s, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-white"
-            style={{ width: s.w + "px", height: s.w + "px", top: s.top, left: s.left, opacity: s.op }}
-          />
-        ))}
-      </div>
-
-      {/* ── Exit fade overlay ── */}
+      {/* ── Exit fade ── */}
       <AnimatePresence>
         {exiting && (
           <motion.div
-            className="absolute inset-0 bg-[#02040a] z-50 pointer-events-none"
+            className="fixed inset-0 z-50 pointer-events-none"
+            style={{ background: "linear-gradient(180deg, #f4f6e6 0%, #c8d815 25%, #0b1f04 100%)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.45 }}
           />
         )}
       </AnimatePresence>
 
-      {/* ── Reconfigure link (top-right) ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6 }}
-        className="absolute top-5 right-5 z-20"
-      >
+      {/* ── Floating pill nav ── */}
+      <header className="fixed top-4 left-0 right-0 z-30 px-6 flex items-center justify-between">
+        {/* Logo */}
+        <span className="text-[22px] font-black text-[#0c1a07] tracking-tighter drop-shadow-sm select-none">
+          Must-b
+        </span>
+
+        {/* White pill nav */}
+        <nav className="nav-pill px-3 py-2 flex items-center gap-0.5">
+          {["Home", "AI Models", "API", "Skills", "Labs"].map((item, i) => (
+            <span key={item} className={`px-4 py-1.5 rounded-full text-[13px] font-semibold cursor-default select-none transition-colors ${i === 0 ? "bg-black text-white" : "text-black/60 hover:text-black"}`}>
+              {item}
+            </span>
+          ))}
+        </nav>
+
+        {/* Settings pill */}
         <Link
           to="/setup"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-white/5 transition-all text-xs font-medium"
+          className="flex items-center gap-2 bg-[#0c1a07] hover:bg-[#1a3010] text-white/90 rounded-full px-4 py-2 text-[13px] font-semibold shadow-lg transition-all"
         >
           <Settings size={13} />
           {t.welcome.reconfigure}
+          <ArrowRight size={12} className="opacity-60" />
         </Link>
-      </motion.div>
+      </header>
 
-      {/* ── Main content ── */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center gap-8">
+      {/* ── Hero content ── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20 pt-28 select-none">
 
-        {/* Brand */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
+        {/* Massive title */}
+        <motion.h1
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center"
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="font-black leading-none tracking-tighter text-[#0c1a07] mb-12 text-center"
+          style={{ fontSize: "clamp(5rem, 18vw, 13rem)" }}
         >
-          <p className="text-xs font-bold text-orange-500/60 tracking-[0.4em] uppercase mb-2">
-            {t.welcome.tagline}
-          </p>
-          <h1 className="text-5xl font-extrabold tracking-tight text-white">
-            {t.welcome.title}
-          </h1>
-        </motion.div>
+          Must-b
+        </motion.h1>
 
-        {/* Status text */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-gray-500 text-sm font-medium tracking-wide"
-        >
-          {awake ? t.welcome.awake : waking ? t.welcome.waking : t.welcome.sleeping}
-        </motion.p>
-
-        {/* Wake button */}
+        {/* Glass input — centered hero input */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.7 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="w-full max-w-2xl"
         >
           <button
             onClick={handleWake}
             disabled={waking}
-            className={`relative group px-10 py-4 rounded-2xl font-bold text-base tracking-wide transition-all duration-300 overflow-hidden ${
-              waking
-                ? "bg-orange-700/50 text-orange-300/60 cursor-not-allowed"
-                : "bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-500 hover:to-amber-500 shadow-[0_0_30px_rgba(234,88,12,0.35)] hover:shadow-[0_0_45px_rgba(234,88,12,0.55)] active:scale-[0.97]"
-            }`}
+            className="glass-input w-full rounded-2xl flex items-center justify-between px-5 py-4 group cursor-pointer disabled:opacity-70"
           >
-            {!waking && (
-              <span className="absolute inset-0 w-1/3 h-full bg-white/10 skew-x-12 -translate-x-full group-hover:translate-x-[350%] transition-transform duration-700" />
-            )}
-            <span className="relative z-10 flex items-center gap-3">
-              {waking ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-orange-300/60 border-t-orange-300 rounded-full animate-spin" />
-                  {t.welcome.waking}
-                </>
-              ) : (
-                <>
-                  <span className="text-xl">🦊</span>
-                  {t.welcome.wakeBtn}
-                </>
-              )}
+            <span className="text-white/45 text-[16px] leading-relaxed font-normal">
+              {waking ? t.welcome.waking : "What do you want to know?"}
             </span>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+              waking
+                ? "bg-white/10"
+                : "bg-[#0c1a07] group-hover:bg-[#1a3a0a] shadow-lg"
+            }`}>
+              {waking
+                ? <div className="w-4 h-4 border-2 border-white/30 border-t-white/70 rounded-full animate-spin" />
+                : <ArrowRight size={18} className="text-white" />}
+            </div>
           </button>
         </motion.div>
 
-        {/* Footer */}
-        <motion.p
+        {/* Scroll indicator */}
+        <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: 0.5 }}
           transition={{ delay: 1.4 }}
-          className="text-[11px] text-gray-700 font-medium tracking-widest uppercase"
+          className="mt-12 flex flex-col items-center gap-1"
         >
-          {t.welcome.footer}
-        </motion.p>
+          <div className="w-6 h-9 rounded-full border-2 border-[#0c1a07]/30 flex items-start justify-center pt-1.5">
+            <div className="w-1 h-2 rounded-full bg-[#0c1a07]/40 animate-bounce" />
+          </div>
+        </motion.div>
       </div>
+
+      {/* Footer */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.45 }}
+        transition={{ delay: 1.6 }}
+        className="text-center pb-6 text-[11px] text-[#0c1a07]/50 font-medium tracking-widest uppercase select-none"
+      >
+        {t.welcome.footer}
+      </motion.p>
     </div>
   );
 }

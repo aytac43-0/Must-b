@@ -58,7 +58,7 @@ export default function LanguageSwitcher() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.96 }}
               transition={{ duration: 0.13, ease: "easeOut" }}
-              className="absolute right-0 top-full mt-2 z-20 w-44 bg-[#0c0f18] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden"
+              className="absolute right-0 top-full mt-2 z-20 w-44 bg-[#081206]/95 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden"
             >
               {/* Header */}
               <div className="px-3 py-2 border-b border-white/6">
