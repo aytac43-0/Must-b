@@ -127,6 +127,31 @@ Example Output:
   }
 
   /**
+   * Fast-path: answer a conversational prompt directly without planning or tool use.
+   * Used by the Orchestrator's direct-chat router for simple queries.
+   */
+  async directChat(goal: string): Promise<string> {
+    this.logger.info(`Planner: directChat — "${goal.slice(0, 80)}"`);
+    const messages: CompletionMessage[] = [
+      {
+        role: 'system',
+        content:
+          'You are Must-b, a knowledgeable and friendly AI assistant. Answer directly and helpfully. ' +
+          'Use markdown for code blocks, lists, and emphasis where it improves clarity. ' +
+          'Be concise unless the question warrants a longer answer.',
+      },
+      { role: 'user', content: goal },
+    ];
+    try {
+      const answer = await this.provider.chat(messages, { jsonMode: false });
+      return answer.trim();
+    } catch (err: any) {
+      this.logger.warn(`Planner: directChat failed — ${err.message}`);
+      throw err;
+    }
+  }
+
+  /**
    * After all steps complete, synthesize a final human-readable answer
    * from the collected step results using the LLM.
    */

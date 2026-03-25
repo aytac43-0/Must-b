@@ -78,7 +78,8 @@ async function main() {
     // Phase 2: if the user picked Web Dashboard during first-run setup,
     // boot the gateway immediately and never reach the switch below.
     if (setupResult.webMode) {
-      await bootServer('gateway');
+      // Browser was already opened by onboard.ts → suppress second launch
+      await bootServer('gateway', true);
       return;
     }
   }
@@ -130,9 +131,9 @@ async function main() {
     case 'onboard': {
       const onboardResult = await runOnboard(ROOT);
       dotenv.config({ override: true });
-      // Web Dashboard path: boot gateway immediately (browser was already opened)
+      // Web Dashboard path: boot gateway immediately (browser was already opened by onboard.ts)
       if (onboardResult.webMode) {
-        await bootServer('gateway');
+        await bootServer('gateway', true);
       } else {
         await bootServer(''); // ask launch mode after CLI wizard completes
       }
@@ -225,7 +226,9 @@ async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
 // arg: 'cli' → terminal directly
 //      'gateway'|'web' → dashboard directly
 //      '' → show launch-mode prompt
-async function bootServer(arg: string) {
+// suppressBrowser: when true the auto-browser launch is skipped (used when the
+//   onboarding wizard already opened the browser to /setup — prevents a second tab).
+async function bootServer(arg: string, suppressBrowser = false) {
   ensureWorldUid();
   await runPreFlight();
 
@@ -309,9 +312,10 @@ async function bootServer(arg: string) {
     const apiServer = new ApiServer(logger, orchestrator, history, PORT, ROOT);
     apiServer.start();
     startHealthMonitor(ROOT, logger);
-    // Open browser for both "Web Dashboard" (auto) and "Host Web Dashboard" (log mode).
-    // Both choices serve the full web UI — the user should always land in the browser.
-    setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
+    // Open browser unless suppressed (e.g. onboarding wizard already opened one tab).
+    if (!suppressBrowser) {
+      setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);
+    }
 
     const caps = getAgentRole();
     if (caps.canIdleInfer) {

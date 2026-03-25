@@ -8,6 +8,52 @@ import { Executor } from './executor.js';
 
 export { PlanStep };
 
+// ── Fast-Path Intent Classifier ────────────────────────────────────────────
+// Determines whether a user prompt requires the full Planner/Executor pipeline
+// (agent mode) or can be answered directly via a single LLM call (direct mode).
+//
+// Strategy: keyword heuristic — zero LLM calls, sub-millisecond latency.
+//   If ANY action-verb pattern or URL is detected → 'agent'
+//   Otherwise → 'direct' (conversational, factual, greetings, math, etc.)
+
+const AGENT_PATTERNS: RegExp[] = [
+  // Browser / web navigation
+  /\b(navigate|browse)\b/i,
+  /\bopen\s+(the\s+)?(website|url|browser|page|site|link)\b/i,
+  /\b(go\s+to|visit|open)\s+https?:\/\//i,
+  /https?:\/\/\S+/,
+  // Filesystem
+  /\bread\s+(the\s+)?(file|folder|directory|path)\b/i,
+  /\bwrite\s+(to\s+)?(the\s+)?(file|disk|path)\b/i,
+  /\b(create|delete|remove|rename|move|copy)\s+(a\s+)?(file|folder|directory|script)\b/i,
+  /\bsave\s+(this|it)\s+to\b/i,
+  /\bpatch\s+(the\s+)?file\b/i,
+  // Terminal / shell
+  /\b(run|execute|launch)\s+(a\s+)?(command|script|program|code)\b/i,
+  /\bterminal\b/i,
+  /\bbash\b/i,
+  /\bnpm\s+\w/i,
+  /\bgit\s+(clone|commit|push|pull|checkout|status|log|diff|add|merge)\b/i,
+  /\bpython\s+\w.*\.py\b/i,
+  // Web search (explicit)
+  /\b(search|look\s+up)\s+(the\s+)?(web|internet|online|google|bing)\b/i,
+  /\bfind\s+(it\s+)?(online|on\s+the\s+web)\b/i,
+  // System actions
+  /\b(take\s+a?\s*)screenshot\b/i,
+  /\bdownload\b/i,
+  /\binstall\b/i,
+  /\blist\s+(the\s+)?(files|folders|contents)\b/i,
+  /\bclick\s+(on\s+)?(the\s+)?\w/i,
+  /\btype\s+(into|in)\b/i,
+];
+
+function classifyIntent(goal: string): 'direct' | 'agent' {
+  for (const pat of AGENT_PATTERNS) {
+    if (pat.test(goal)) return 'agent';
+  }
+  return 'direct';
+}
+
 /** Classify an error message for self-healing decisions */
 function classifyError(msg: string): 'auth' | 'network' | 'ratelimit' | 'unknown' {
   const m = msg.toLowerCase();
@@ -81,9 +127,51 @@ export class Orchestrator extends EventEmitter {
     this.logger.info('Orchestrator: Initialized.');
   }
 
-  async run(goal: string): Promise<void> {
+  /**
+   * Fast-path: bypass Planner/Executor entirely.
+   * Emits planStart → finalAnswer → planFinish using a single direct LLM call.
+   * Used for conversational prompts that don't require tools.
+   */
+  async runDirect(goal: string): Promise<void> {
     this._busy = true;
-    this.logger.info(`Orchestrator: Goal received — "${goal}"`);
+    this.emit('planStart', { goal, timestamp: Date.now() });
+    try {
+      const answer = await this.planner.directChat(goal);
+      this.emit('finalAnswer', { goal, answer, timestamp: Date.now() });
+      this.emit('planFinish', {
+        goal, status: 'completed', answer, steps: [], timestamp: Date.now(),
+      });
+    } catch (err: any) {
+      const msg = err?.message ?? String(err);
+      this.logger.warn(`Orchestrator: directChat failed — ${msg}`);
+      // Self-heal: try once more after env reload
+      await reloadEnv();
+      try {
+        const answer = await this.planner.directChat(goal);
+        this.emit('finalAnswer', { goal, answer, timestamp: Date.now() });
+        this.emit('planFinish', { goal, status: 'completed', answer, steps: [], timestamp: Date.now() });
+      } catch (err2: any) {
+        const msg2 = err2?.message ?? String(err2);
+        this.emit('finalAnswer', { goal, answer: `I'm sorry, I ran into an error: ${msg2}`, timestamp: Date.now() });
+        this.emit('planFinish', { goal, status: 'failed', error: msg2, timestamp: Date.now() });
+      }
+    } finally {
+      this._busy = false;
+    }
+  }
+
+  async run(goal: string): Promise<void> {
+    // ── Fast-Path Router ───────────────────────────────────────────────────
+    // Conversational prompts skip the Planner entirely — faster, fewer tokens,
+    // avoids JSON-plan hallucinations on local/small models.
+    const intent = classifyIntent(goal);
+    if (intent === 'direct') {
+      this.logger.info(`Orchestrator: Fast-path (direct) — "${goal.slice(0, 80)}"`);
+      return this.runDirect(goal);
+    }
+    this.logger.info(`Orchestrator: Agent mode — "${goal.slice(0, 80)}"`);
+
+    this._busy = true;
     this.emit('planStart', { goal, timestamp: Date.now() });
 
     let revision = 0;
