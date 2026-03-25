@@ -17,7 +17,7 @@
  */
 import fs            from 'fs';
 import path          from 'path';
-import { spawnSync } from 'child_process';
+import { spawnSync, spawn } from 'child_process';
 import winston from 'winston';
 import dotenv from 'dotenv';
 import { UniversalStore } from './config-store.js';
@@ -257,8 +257,42 @@ async function handleOllamaFallback(
     .filter(Boolean);
 
   if (models.length === 0) {
-    logger.warn('Ollama fallback: no installed models found.');
-    return NO_MODELS;
+    // ── Auto-pull: no models installed — kick off ollama pull in background ──
+    const targetModel = cfg.model || process.env.OLLAMA_MODEL || 'llama3';
+    logger.info(`Ollama: no models installed — auto-pulling "${targetModel}"…`);
+
+    // Find ollama binary
+    const ollamaExe = (() => {
+      // Try PATH first
+      const chk = spawnSync('ollama', ['--version'], { encoding: 'utf8', timeout: 2000, shell: true });
+      if (chk.status === 0) return 'ollama';
+      // Windows absolute fallback
+      const abs = path.join(
+        process.env.LOCALAPPDATA ?? path.join(process.env.USERPROFILE ?? '', 'AppData', 'Local'),
+        'Programs', 'Ollama', 'ollama.exe',
+      );
+      return fs.existsSync(abs) ? abs : 'ollama';
+    })();
+
+    try {
+      // Spawn detached so pull continues independently of the parent process
+      const child = spawn(ollamaExe, ['pull', targetModel], {
+        detached: true,
+        stdio:    'ignore',
+        shell:    process.platform === 'win32',
+      });
+      child.unref();
+      logger.info(`Ollama: pull spawned (pid ${child.pid}) for model "${targetModel}"`);
+    } catch (spawnErr: any) {
+      logger.warn(`Ollama: failed to spawn pull — ${spawnErr.message}`);
+    }
+
+    return (
+      `[Must-b is downloading **${targetModel}** from Ollama in the background. ` +
+      `This typically takes 1–5 minutes depending on model size and connection speed. ` +
+      `You can monitor progress in the terminal. Please send your message again once ` +
+      `the download completes, or choose a different model in Settings.]`
+    );
   }
 
   const chosen = models[0];
