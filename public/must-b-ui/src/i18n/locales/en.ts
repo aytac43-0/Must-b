@@ -54,6 +54,25 @@ export const en = {
     placeholder: "Send a message to Must-b...",
     thinking: "Must-b is thinking...",
   },
+  layout: {
+    chats: "Chats",
+    system: "System",
+    openChats: "Open chat history",
+    openSystem: "Open system panel",
+    closePanel: "Close panel",
+  },
+  chat: {
+    inputPlaceholder: "Ask Must-b anything…",
+    listening: "Listening…",
+    thoughtProcess: "Thought Process",
+    saveAsSkill: "Save as Skill",
+    skillSaved: "Skill saved to your library!",
+    saving: "Saving…",
+    retry: "Retry",
+    save: "Save",
+    guidance: "Guidance",
+    errorBoundary: "Chat rendering error — reloading…",
+  },
 } as const;
 
 export type Translations = typeof en;

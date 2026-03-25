@@ -1,17 +1,22 @@
 /**
- * RightPanel — Hierarchy Dashboard (v4.4)
- * Now collapsible. Real-time CPU/RAM from /api/status.
+ * RightPanel — Liquid Glass System Panel (v1.6.0)
+ *
+ * Rendered as a glass overlay from the right edge.
+ * Receives an onClose callback from AppLayout.
  */
-
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Cpu, Zap, Crown, Brain, Wrench, BarChart2, Database, CheckCircle2,
-  Smartphone, Ghost, Loader2, Layers, Activity, ChevronRight, ChevronLeft,
+  Smartphone, Ghost, Loader2, Layers, Activity, ChevronRight,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useI18n }  from "@/i18n";
 import QRPairingModal from "@/components/QRPairingModal";
+
+interface RightPanelProps {
+  onClose: () => void;
+}
 
 interface AgentStatus {
   role:    string;
@@ -55,7 +60,7 @@ function shortModel(name: string): string {
     .trim();
 }
 
-export default function RightPanel() {
+export default function RightPanel({ onClose }: RightPanelProps) {
   const { t } = useI18n();
   const [status,     setStatus]     = useState<AgentStatus | null>(null);
   const [models,     setModels]     = useState<OllamaModel[]>([]);
@@ -65,7 +70,6 @@ export default function RightPanel() {
   const [ghostSlots, setGhostSlots] = useState<boolean[]>(() => [false, false, false]);
   const [ghostBusy,  setGhostBusy]  = useState<boolean[]>(() => [false, false, false]);
   const [tone, setTone] = useState<{ tone: string; score: number; badgeClass: string; badgeLabel: string } | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -118,50 +122,29 @@ export default function RightPanel() {
   const TierIcon  = TIER_ICONS[tier]  ?? Wrench;
   const scorePct  = Math.min(100, Math.round((status?.score ?? 0) * 10));
 
-  // ── Collapsed strip ──────────────────────────────────────────────────────
-  if (collapsed) {
-    return (
-      <aside className="w-8 h-screen bg-[#090c14]/80 border-l border-white/5 flex flex-col items-center sticky top-0 backdrop-blur-xl shrink-0 pt-3 transition-all duration-300">
-        <button
-          onClick={() => setCollapsed(false)}
-          title="Expand panel"
-          className="p-1.5 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-white/5 transition-all"
-        >
-          <ChevronLeft size={12} />
-        </button>
-        <div className="mt-auto mb-3">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
-          </span>
-        </div>
-      </aside>
-    );
-  }
-
   return (
-    <aside className="w-[220px] h-screen bg-[#090c14]/80 border-l border-white/5 flex flex-col overflow-hidden sticky top-0 backdrop-blur-xl shrink-0 transition-all duration-300">
+    <aside className="w-[240px] h-screen glass-panel flex flex-col overflow-hidden font-sans">
 
-      {/* ── Header + collapse ───────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5 shrink-0">
-        <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">System</span>
+      {/* ── Header + close ──────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-3 pt-3 pb-2 shrink-0 border-b border-white/[0.06]">
+        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t.layout.system}</span>
         <button
-          onClick={() => setCollapsed(true)}
-          title="Collapse panel"
-          className="p-1 rounded-lg text-gray-600 hover:text-gray-300 hover:bg-white/5 transition-all"
+          onClick={onClose}
+          title={t.layout.closePanel}
+          className="p-1.5 rounded-lg text-gray-600 hover:text-white hover:bg-white/8 transition-all"
         >
-          <ChevronRight size={12} />
+          <ChevronRight size={14} />
         </button>
       </div>
 
       {/* ── Agent Role ──────────────────────────────────────────────────── */}
-      <div className="px-3 pb-3 border-b border-white/5">
+      <div className="px-3 py-3 border-b border-white/[0.05]">
         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
           {t.rightPanel.agentRole}
         </p>
         {status ? (
           <motion.div
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-bold ${tierStyle}`}
           >
@@ -176,15 +159,14 @@ export default function RightPanel() {
         )}
       </div>
 
-      {/* ── Hardware — real-time ─────────────────────────────────────────── */}
-      <div className="px-3 py-3 border-b border-white/5">
+      {/* ── Hardware ─────────────────────────────────────────────────────── */}
+      <div className="px-3 py-3 border-b border-white/[0.05]">
         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
           {t.rightPanel.hardware}
         </p>
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-1 text-gray-400 text-[11px]">
-            <Cpu size={10} className="text-orange-400" />
-            Score
+            <Cpu size={10} className="text-orange-400" /> Score
           </div>
           <span className="text-orange-400 font-bold text-[11px] tabular-nums">
             {status?.score?.toFixed(2) ?? "—"}
@@ -219,7 +201,7 @@ export default function RightPanel() {
       </div>
 
       {/* ── Active Model ────────────────────────────────────────────────── */}
-      <div className="px-3 py-3 border-b border-white/5">
+      <div className="px-3 py-3 border-b border-white/[0.05]">
         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
           {t.rightPanel.model}
         </p>
@@ -236,14 +218,13 @@ export default function RightPanel() {
       {/* ── Model Roster ────────────────────────────────────────────────── */}
       <div className="px-3 py-3 flex-1 overflow-hidden">
         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1">
-          <Database size={9} className="text-gray-600" />
-          Available Models
+          <Database size={9} className="text-gray-600" /> Available Models
         </p>
         <AnimatePresence>
           {models.length === 0 ? (
             <p className="text-[10px] text-gray-700 italic">Ollama not detected</p>
           ) : (
-            <div className="space-y-1 overflow-y-auto scrollbar-hide max-h-[130px]">
+            <div className="space-y-1 overflow-y-auto scrollbar-hide max-h-[140px]">
               {models.map((m, i) => {
                 const isActive = status?.model && m.name.startsWith(status.model.split(":")[0]);
                 return (
@@ -276,7 +257,7 @@ export default function RightPanel() {
       </div>
 
       {/* ── Shadow Mode ─────────────────────────────────────────────────── */}
-      <div className="px-3 pb-2 border-b border-white/5">
+      <div className="px-3 pb-2 border-b border-white/[0.05]">
         <button
           onClick={async () => {
             setShadowBusy(true);
@@ -305,7 +286,7 @@ export default function RightPanel() {
       </div>
 
       {/* ── Ghost Slots ─────────────────────────────────────────────────── */}
-      <div className="px-3 pb-2 border-b border-white/5">
+      <div className="px-3 pb-2 border-b border-white/[0.05]">
         <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-1.5 flex items-center gap-1">
           <Layers size={8} /> Ghost Slots
         </p>
@@ -366,11 +347,11 @@ export default function RightPanel() {
       </div>
 
       {/* ── Live indicator ──────────────────────────────────────────────── */}
-      <div className="px-3 pb-3 pt-2 border-t border-white/5">
+      <div className="px-3 pb-3 pt-2 border-t border-white/[0.05]">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400 glow-green" />
           </span>
           <span className="text-[10px] text-gray-600 font-medium">{t.rightPanel.connected}</span>
         </div>

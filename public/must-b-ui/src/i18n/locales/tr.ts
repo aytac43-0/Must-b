@@ -56,4 +56,23 @@ export const tr: Translations = {
     placeholder: "Must-b'ye bir mesaj gönderin...",
     thinking: "Must-b düşünüyor...",
   },
+  layout: {
+    chats: "Sohbetler",
+    system: "Sistem",
+    openChats: "Sohbet geçmişini aç",
+    openSystem: "Sistem panelini aç",
+    closePanel: "Paneli kapat",
+  },
+  chat: {
+    inputPlaceholder: "Must-b'ye her şeyi sorun…",
+    listening: "Dinleniyor…",
+    thoughtProcess: "Düşünce Süreci",
+    saveAsSkill: "Beceri Olarak Kaydet",
+    skillSaved: "Beceri kütüphanenize kaydedildi!",
+    saving: "Kaydediliyor…",
+    retry: "Tekrar Dene",
+    save: "Kaydet",
+    guidance: "Rehberlik",
+    errorBoundary: "Sohbet render hatası — yeniden yükleniyor…",
+  },
 };

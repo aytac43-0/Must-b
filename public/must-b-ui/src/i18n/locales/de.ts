@@ -56,4 +56,23 @@ export const de: Translations = {
     placeholder: "Nachricht an Must-b senden...",
     thinking: "Must-b denkt nach...",
   },
+  layout: {
+    chats: "Chats",
+    system: "System",
+    openChats: "Chatverlauf öffnen",
+    openSystem: "Systembereich öffnen",
+    closePanel: "Bereich schließen",
+  },
+  chat: {
+    inputPlaceholder: "Fragen Sie Must-b alles…",
+    listening: "Höre zu…",
+    thoughtProcess: "Denkprozess",
+    saveAsSkill: "Als Fähigkeit speichern",
+    skillSaved: "Fähigkeit in Ihrer Bibliothek gespeichert!",
+    saving: "Speichere…",
+    retry: "Erneut versuchen",
+    save: "Speichern",
+    guidance: "Hinweis",
+    errorBoundary: "Chat-Fehler — wird neu geladen…",
+  },
 };

@@ -9,6 +9,10 @@ export interface PlanStep {
     | 'filesystem_read'
     | 'filesystem_write'
     | 'filesystem_list'
+    | 'filesystem_search'
+    | 'filesystem_copy'
+    | 'filesystem_delete'
+    | 'filesystem_mkdir'
     | 'terminal'
     | 'browser_navigate'
     | 'browser_screenshot'
@@ -22,6 +26,7 @@ export interface PlanStep {
     | 'memory_search'
     | 'memory_write'
     | 'web_search'
+    | 'http_request'
     | 'log';
   parameters: Record<string, any>;
 }
@@ -75,8 +80,18 @@ MEMORY (SQLite FTS5 + Temporal Decay):
 WEB SEARCH:
 16. web_search         { query: string, maxResults?: number }    – DuckDuckGo search via Playwright. Returns { query, snippets }.
 
+FILESYSTEM (extended):
+17. filesystem_search  { pattern: string, cwd?: string, maxResults?: number }           – Search for files by name pattern.
+18. filesystem_copy    { src: string, dest: string }                                     – Copy a file.
+19. filesystem_delete  { path: string }                                                  – Delete a file or directory.
+20. filesystem_mkdir   { path: string }                                                  – Create a directory recursively.
+
+HTTP:
+21. http_request       { url: string, method?: "GET"|"POST"|"PUT"|"PATCH"|"DELETE", headers?: object, body?: object }
+                                                                                         – HTTP request to any URL (GitHub API, REST, webhooks).
+
 UTILITY:
-17. log                { message: string }                       – Log a message or observation.
+22. log                { message: string }                       – Log a message or observation.
 
 Rules:
 - Return ONLY a valid JSON object with no markdown, no backticks, no explanation.

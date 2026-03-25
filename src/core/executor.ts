@@ -205,6 +205,79 @@ export class Executor {
           break;
         }
 
+        // ── Extended Filesystem ─────────────────────────────────────────────
+        case 'filesystem_search': {
+          const searchDir  = path.resolve(String(step.parameters.cwd ?? process.cwd()));
+          const rawPattern = String(step.parameters.pattern ?? '');
+          const maxRes     = Number(step.parameters.maxResults ?? 50);
+          const keyword    = rawPattern.replace(/[*?]/g, '').toLowerCase();
+          const results: string[] = [];
+          function walkDir(dir: string, depth: number): void {
+            if (depth > 6 || results.length >= maxRes) return;
+            let entries: fs.Dirent[];
+            try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+            for (const e of entries) {
+              if (results.length >= maxRes) return;
+              const full = path.join(dir, e.name);
+              if (!keyword || e.name.toLowerCase().includes(keyword)) results.push(full);
+              if (e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules') {
+                walkDir(full, depth + 1);
+              }
+            }
+          }
+          walkDir(searchDir, 0);
+          result = { pattern: rawPattern, cwd: searchDir, results };
+          break;
+        }
+
+        case 'filesystem_copy': {
+          const copySrc  = path.resolve(String(step.parameters.src ?? ''));
+          const copyDest = path.resolve(String(step.parameters.dest ?? ''));
+          fs.mkdirSync(path.dirname(copyDest), { recursive: true });
+          fs.copyFileSync(copySrc, copyDest);
+          result = { success: true, src: copySrc, dest: copyDest };
+          break;
+        }
+
+        case 'filesystem_delete': {
+          const delPath = path.resolve(String(step.parameters.path ?? ''));
+          const stats   = fs.statSync(delPath);
+          if (stats.isDirectory()) {
+            fs.rmSync(delPath, { recursive: true, force: true });
+          } else {
+            fs.unlinkSync(delPath);
+          }
+          result = { success: true, deleted: delPath };
+          break;
+        }
+
+        case 'filesystem_mkdir': {
+          const mkdirPath = path.resolve(String(step.parameters.path ?? ''));
+          fs.mkdirSync(mkdirPath, { recursive: true });
+          result = { success: true, path: mkdirPath };
+          break;
+        }
+
+        // ── HTTP Request ─────────────────────────────────────────────────────
+        case 'http_request': {
+          const httpUrl     = String(step.parameters.url ?? '');
+          const httpMethod  = String(step.parameters.method ?? 'GET').toUpperCase();
+          const httpHeaders = (step.parameters.headers ?? {}) as Record<string, string>;
+          const httpBody    = step.parameters.body != null
+            ? JSON.stringify(step.parameters.body)
+            : undefined;
+          const httpResp = await fetch(httpUrl, {
+            method:  httpMethod,
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', ...httpHeaders },
+            body:    httpBody,
+          });
+          const respText = await httpResp.text();
+          let respData: unknown;
+          try { respData = JSON.parse(respText); } catch { respData = respText; }
+          result = { status: httpResp.status, ok: httpResp.ok, data: respData };
+          break;
+        }
+
         // ── Utility ─────────────────────────────────────────────────────────
         case 'log':
           this.logger.info(`> ${step.parameters.message}`);
