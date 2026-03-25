@@ -128,7 +128,7 @@ function inlineRender(text: string, baseKey: string): ReactNode {
       <Fragment key={`${baseKey}-bi${ci}`}>
         {boldItalic.map((sp, bi) => {
           if (sp.startsWith("**") && sp.endsWith("**") && sp.length > 4)
-            return <strong key={`${baseKey}-b${ci}-${bi}`} className="font-bold text-[#0c1a07]">{sp.slice(2, -2)}</strong>;
+            return <strong key={`${baseKey}-b${ci}-${bi}`} className="font-bold text-[#1a0c06]">{sp.slice(2, -2)}</strong>;
           if (sp.startsWith("*") && sp.endsWith("*") && sp.length > 2)
             return <em key={`${baseKey}-em${ci}-${bi}`} className="italic">{sp.slice(1, -1)}</em>;
           return <span key={`${baseKey}-s${ci}-${bi}`}>{sp}</span>;
@@ -343,7 +343,7 @@ function HeroInput({ onSend, disabled }: { onSend: (msg: string) => void; disabl
             disabled={!value.trim() || disabled}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
               value.trim() && !disabled
-                ? "bg-[#0c1a07] hover:bg-[#1a3a0a] text-white shadow-lg active:scale-95"
+                ? "bg-[#1a0c06] hover:bg-[#3d1a06] text-white shadow-lg active:scale-95"
                 : "bg-white/10 text-white/25 cursor-not-allowed"
             }`}
           >
@@ -423,7 +423,7 @@ function BottomInput({ onSend, disabled }: { onSend: (msg: string) => void; disa
               disabled={!value.trim() || disabled}
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                 value.trim() && !disabled
-                  ? "bg-[#0c1a07] hover:bg-[#1a3a0a] text-white shadow-lg active:scale-95"
+                  ? "bg-[#1a0c06] hover:bg-[#3d1a06] text-white shadow-lg active:scale-95"
                   : "bg-white/10 text-white/25 cursor-not-allowed"
               }`}
             >
@@ -510,7 +510,7 @@ export function ChatArea() {
               initial={{ opacity: 0, y: -24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: "easeOut" }}
-              className="font-black leading-none tracking-tighter text-[#0c1a07] mb-10 text-center"
+              className="font-black leading-none tracking-tighter text-[#1a0c06] mb-10 text-center"
               style={{ fontSize: "clamp(5rem, 18vw, 12rem)" }}
             >
               Must-b
@@ -533,8 +533,8 @@ export function ChatArea() {
               transition={{ delay: 1.2 }}
               className="mt-10 flex flex-col items-center gap-1"
             >
-              <div className="w-6 h-9 rounded-full border-2 border-[#0c1a07]/30 flex items-start justify-center pt-1.5">
-                <div className="w-1 h-2 rounded-full bg-[#0c1a07]/40 animate-bounce" />
+              <div className="w-6 h-9 rounded-full border-2 border-[#1a0c06]/30 flex items-start justify-center pt-1.5">
+                <div className="w-1 h-2 rounded-full bg-[#1a0c06]/40 animate-bounce" />
               </div>
             </motion.div>
           </div>
@@ -577,9 +577,9 @@ export function ChatArea() {
                           <div className="absolute inset-0 bg-green-700/30 rounded-full blur-sm" />
                           <img src="/logo.png" alt="Must-b" className="w-full h-full object-contain relative z-10" />
                         </div>
-                        <span className="text-[12px] font-semibold text-[#0c1a07]/70 tracking-wide">Must-b</span>
+                        <span className="text-[12px] font-semibold text-[#1a0c06]/70 tracking-wide">Must-b</span>
                         {hasThoughts && (
-                          <span className="text-[10px] text-[#0c1a07]/40 font-mono">
+                          <span className="text-[10px] text-[#1a0c06]/40 font-mono">
                             {turn.thoughts.length} step{turn.thoughts.length !== 1 ? "s" : ""}
                           </span>
                         )}
@@ -589,14 +589,14 @@ export function ChatArea() {
                       {hasThoughts && (
                         <details className="mb-3 group" {...(!hasAnswer ? { open: true } : {})}>
                           <summary className="flex items-center gap-1.5 cursor-pointer list-none select-none w-fit">
-                            <ChevronRight size={11} className="text-[#0c1a07]/40 group-open:rotate-90 transition-transform duration-150 flex-shrink-0" />
-                            <span className="text-[11px] font-medium text-[#0c1a07]/50 hover:text-[#0c1a07]/70 transition-colors">
+                            <ChevronRight size={11} className="text-[#1a0c06]/40 group-open:rotate-90 transition-transform duration-150 flex-shrink-0" />
+                            <span className="text-[11px] font-medium text-[#1a0c06]/50 hover:text-[#1a0c06]/70 transition-colors">
                               Thought Process
                             </span>
                           </summary>
-                          <div className="mt-2 ml-3.5 pl-3.5 border-l border-[#0c1a07]/10 space-y-1">
+                          <div className="mt-2 ml-3.5 pl-3.5 border-l border-[#1a0c06]/10 space-y-1">
                             {turn.thoughts.map((thought, idx) => (
-                              <p key={idx} className="text-[11px] font-mono text-[#0c1a07]/50 leading-relaxed break-all">{thought}</p>
+                              <p key={idx} className="text-[11px] font-mono text-[#1a0c06]/50 leading-relaxed break-all">{thought}</p>
                             ))}
                           </div>
                         </details>

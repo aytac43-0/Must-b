@@ -29,6 +29,27 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     setSpeechSupported(!!SR);
   }, []);
 
+  // Listen for skill invocations dispatched by the OMNI-MENU DOCK
+  useEffect(() => {
+    const onSkill = (e: Event) => {
+      const { skill } = (e as CustomEvent<{ skill: string }>).detail;
+      if (skill === "chat-focus") {
+        textareaRef.current?.focus();
+        return;
+      }
+      const prompt = `/${skill} `;
+      setMessage(prompt);
+      setTimeout(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.focus();
+        el.setSelectionRange(prompt.length, prompt.length);
+      }, 50);
+    };
+    window.addEventListener("mustb:invoke-skill", onSkill);
+    return () => window.removeEventListener("mustb:invoke-skill", onSkill);
+  }, []);
+
   // Model guidance: warn once per session if a weak model is active
   const warnedRef = useRef(false);
   const checkModelGuidance = useCallback(async () => {

@@ -1,8 +1,8 @@
 /**
- * WelcomePage — Liquid Glass Green (v1.6.1)
+ * WelcomePage — Liquid Orange v1.7.0
  *
- * Matches the reference: white pill nav, massive dark title,
- * soft-white → lime → forest-green gradient background.
+ * White pill nav, massive dark title,
+ * cream → warm orange → deep charcoal gradient (index.css).
  */
 import { useState, useEffect } from "react";
 import { useNavigate, Link }   from "react-router-dom";
@@ -55,7 +55,7 @@ export default function WelcomePage() {
         {exiting && (
           <motion.div
             className="fixed inset-0 z-50 pointer-events-none"
-            style={{ background: "linear-gradient(180deg, #f4f6e6 0%, #c8d815 25%, #0b1f04 100%)" }}
+            style={{ background: "linear-gradient(180deg, #fefaf5 0%, #f97316 30%, #0d0602 100%)" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.45 }}
@@ -66,7 +66,7 @@ export default function WelcomePage() {
       {/* ── Floating pill nav ── */}
       <header className="fixed top-4 left-0 right-0 z-30 px-6 flex items-center justify-between">
         {/* Logo */}
-        <span className="text-[22px] font-black text-[#0c1a07] tracking-tighter drop-shadow-sm select-none">
+        <span className="text-[22px] font-black text-[#1a0c06] tracking-tighter drop-shadow-sm select-none">
           Must-b
         </span>
 
@@ -82,7 +82,7 @@ export default function WelcomePage() {
         {/* Settings pill */}
         <Link
           to="/setup"
-          className="flex items-center gap-2 bg-[#0c1a07] hover:bg-[#1a3010] text-white/90 rounded-full px-4 py-2 text-[13px] font-semibold shadow-lg transition-all"
+          className="flex items-center gap-2 bg-[#1a0c06] hover:bg-[#3d1a06] text-white/90 rounded-full px-4 py-2 text-[13px] font-semibold shadow-lg transition-all"
         >
           <Settings size={13} />
           {t.welcome.reconfigure}
@@ -98,7 +98,7 @@ export default function WelcomePage() {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="font-black leading-none tracking-tighter text-[#0c1a07] mb-12 text-center"
+          className="font-black leading-none tracking-tighter text-[#1a0c06] mb-12 text-center"
           style={{ fontSize: "clamp(5rem, 18vw, 13rem)" }}
         >
           Must-b
@@ -122,7 +122,7 @@ export default function WelcomePage() {
             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
               waking
                 ? "bg-white/10"
-                : "bg-[#0c1a07] group-hover:bg-[#1a3a0a] shadow-lg"
+                : "bg-[#1a0c06] group-hover:bg-[#3d1a06] shadow-lg"
             }`}>
               {waking
                 ? <div className="w-4 h-4 border-2 border-white/30 border-t-white/70 rounded-full animate-spin" />
@@ -138,8 +138,8 @@ export default function WelcomePage() {
           transition={{ delay: 1.4 }}
           className="mt-12 flex flex-col items-center gap-1"
         >
-          <div className="w-6 h-9 rounded-full border-2 border-[#0c1a07]/30 flex items-start justify-center pt-1.5">
-            <div className="w-1 h-2 rounded-full bg-[#0c1a07]/40 animate-bounce" />
+          <div className="w-6 h-9 rounded-full border-2 border-[#1a0c06]/30 flex items-start justify-center pt-1.5">
+            <div className="w-1 h-2 rounded-full bg-[#1a0c06]/40 animate-bounce" />
           </div>
         </motion.div>
       </div>
@@ -149,7 +149,7 @@ export default function WelcomePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.45 }}
         transition={{ delay: 1.6 }}
-        className="text-center pb-6 text-[11px] text-[#0c1a07]/50 font-medium tracking-widest uppercase select-none"
+        className="text-center pb-6 text-[11px] text-[#1a0c06]/50 font-medium tracking-widest uppercase select-none"
       >
         {t.welcome.footer}
       </motion.p>
