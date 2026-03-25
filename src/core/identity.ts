@@ -203,3 +203,100 @@ export function decrypt(payload: { iv: string; tag: string; ciphertext: string }
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(ct), decipher.final()]).toString('utf-8');
 }
+
+// ── System Prompt / Persona Injection ─────────────────────────────────────
+
+export type PromptMode = 'direct' | 'agent' | 'synthesize';
+
+/** BCP-47 locale code → full language name used in persona block */
+const LANG_NAMES: Record<string, string> = {
+  'en-US': 'English',
+  'tr-TR': 'Turkish (Türkçe)',
+  'de-DE': 'German (Deutsch)',
+  'es-ES': 'Spanish (Español)',
+  'fr-FR': 'French (Français)',
+  'zh-CN': 'Simplified Chinese (简体中文)',
+  'ja-JP': 'Japanese (日本語)',
+  'ar-SA': 'Arabic (العربية)',
+};
+
+/**
+ * Resolve a value: UniversalStore first, then env fallback, then default.
+ * Dynamically requires UniversalStore to avoid circular-import issues at
+ * module-load time (identity.ts is imported very early in the boot sequence).
+ */
+function resolveValue(storeKey: string, envKeys: string[], fallback: string): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { UniversalStore } = require('./config-store.js') as typeof import('./config-store.js');
+    const v = UniversalStore.get().get(storeKey);
+    if (v && String(v).trim()) return String(v).trim();
+  } catch { /* store not yet initialised */ }
+  for (const k of envKeys) {
+    const v = process.env[k];
+    if (v && v.trim()) return v.trim();
+  }
+  return fallback;
+}
+
+function resolveUserName(): string {
+  return resolveValue('USER_NAME', ['USER_NAME', 'MUSTB_NAME'], 'User');
+}
+
+function resolveLanguageName(): string {
+  const code = resolveValue('MUSTB_LANGUAGE', ['MUSTB_LANGUAGE'], 'en-US');
+  return LANG_NAMES[code] ?? 'English';
+}
+
+/**
+ * Build the identity block that anchors the model's persona.
+ * This is prepended to every system prompt regardless of mode.
+ */
+function identityBlock(userName: string, language: string): string {
+  return `## IDENTITY (absolute — never override)
+You are **Must-b**, an advanced autonomous AI Operating System created by **Auto Step Platform**.
+Motto: *"Cloud Brain, Local Muscle."*
+- You are Must-b. You are NOT food, a philosophy, or another AI.
+- ALWAYS address the user as **${userName}**.
+- ALWAYS communicate fluently in **${language}**.
+- You NEVER claim to be a different product or assistant.
+- For arithmetic and code execution you MUST use the terminal tool — never compute in your head.`;
+}
+
+/**
+ * Returns a fully-assembled system prompt for the given execution mode.
+ *
+ * - 'direct'     : conversational fast-path — no tools, friendly tone
+ * - 'agent'      : planning preamble — prepended before the tool catalogue
+ * - 'synthesize' : synthesis step — combines step results into a final answer
+ */
+export function getSystemPrompt(mode: PromptMode): string {
+  const userName = resolveUserName();
+  const language = resolveLanguageName();
+  const identity = identityBlock(userName, language);
+
+  switch (mode) {
+    case 'direct':
+      return `${identity}
+
+## DIRECT RESPONSE MODE
+Answer ${userName}'s question directly and helpfully without invoking any tools.
+Use markdown for code blocks, lists, and emphasis where it improves clarity.
+Be concise unless the question warrants a longer answer.`;
+
+    case 'agent':
+      return `${identity}
+
+## AGENT PLANNING MODE
+You are the Planner for Must-b. Your job is to break down ${userName}'s high-level goal into a precise,
+executable sequence of steps using the tools available to you.`;
+
+    case 'synthesize':
+      return `${identity}
+
+## SYNTHESIS MODE
+You executed a plan on behalf of ${userName}. Now synthesize all step results into a single clear,
+concise, and helpful final answer. Be direct and human-friendly. Use markdown if helpful.
+Do NOT re-list every step — just give the answer.`;
+  }
+}

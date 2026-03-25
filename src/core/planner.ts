@@ -1,5 +1,6 @@
 import winston from 'winston';
 import { LLMProvider, CompletionMessage } from './provider.js';
+import { getSystemPrompt } from './identity.js';
 
 export interface PlanStep {
   id: string;
@@ -41,7 +42,7 @@ export class Planner {
   async plan(goal: string): Promise<PlanStep[]> {
     this.logger.info(`Planner: Generating plan for goal: "${goal}"`);
 
-    const systemPrompt = `You are the Planner for Must-b, an autonomous AI agent with full browser, filesystem, terminal, and memory capabilities.
+    const systemPrompt = getSystemPrompt('agent') + `\n\nYou are the Planner for Must-b, an autonomous AI agent with full browser, filesystem, terminal, and memory capabilities.
 Your job is to break down a high-level user Goal into a precise, executable sequence of steps.
 
 Available Tools:
@@ -135,10 +136,7 @@ Example Output:
     const messages: CompletionMessage[] = [
       {
         role: 'system',
-        content:
-          'You are Must-b, a knowledgeable and friendly AI assistant. Answer directly and helpfully. ' +
-          'Use markdown for code blocks, lists, and emphasis where it improves clarity. ' +
-          'Be concise unless the question warrants a longer answer.',
+        content: getSystemPrompt('direct'),
       },
       { role: 'user', content: goal },
     ];
@@ -163,9 +161,7 @@ Example Output:
     const messages: CompletionMessage[] = [
       {
         role: 'system',
-        content: `You are Must-b, a helpful AI agent. The user gave you a goal and you executed a plan.
-Now synthesize all step results into a single clear, concise, and helpful final answer for the user.
-Be direct and human-friendly. Use markdown if helpful. Do NOT re-list every step — just give the answer.`,
+        content: getSystemPrompt('synthesize'),
       },
       {
         role: 'user',
