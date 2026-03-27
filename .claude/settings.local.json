@@ -109,7 +109,34 @@
       "Bash(ls c:/Users/aytac/must-b/openclaw/src/web*)",
       "Bash(grep -r \"openclaw\\\\|OpenClaw\" C:/Users/aytac/must-b/ --include=*.ts --include=*.tsx --include=*.js)",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(cat:*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat C:/Users/aytac/must-b/PIPELINE.md"
+          }
+        ]
+      }
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/pipeline-check.mjs"
+          }
+        ]
+      }
     ]
   }
 }

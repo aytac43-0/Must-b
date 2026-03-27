@@ -34,9 +34,14 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
     return this.props.children;
   }
 }
-import SetupPage      from "@/pages/SetupPage";
-import DashboardPage  from "@/pages/DashboardPage";
-import SettingsPage   from "@/pages/SettingsPage";
+import SetupPage        from "@/pages/SetupPage";
+import DashboardPage    from "@/pages/DashboardPage";
+import SettingsPage     from "@/pages/SettingsPage";
+import ActivePage       from "@/pages/ActivePage";
+import AutomationsPage  from "@/pages/AutomationsPage";
+import ClientsPage      from "@/pages/ClientsPage";
+import LogsPage         from "@/pages/LogsPage";
+import ProductsPage     from "@/pages/ProductsPage";
 import MobilePage       from "@/pages/MobilePage";
 import AppLayout        from "@/components/layout/AppLayout";
 import ConflictModal    from "@/components/ConflictModal";
@@ -107,9 +112,14 @@ export default function App() {
               <AppLayout />
             </SetupGuard>
           }>
-            <Route index        element={<DashboardPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="*"        element={<Navigate to="/app" replace />} />
+            <Route index             element={<DashboardPage />} />
+            <Route path="settings"   element={<SettingsPage />} />
+            <Route path="active"     element={<ActivePage />} />
+            <Route path="automations" element={<AutomationsPage />} />
+            <Route path="clients"    element={<ClientsPage />} />
+            <Route path="logs"       element={<LogsPage />} />
+            <Route path="products"   element={<ProductsPage />} />
+            <Route path="*"          element={<Navigate to="/app" replace />} />
           </Route>
 
           {/* Mobile Companion — standalone page, no AppLayout */}

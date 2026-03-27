@@ -81,7 +81,7 @@ declare global { interface Window { __MUSTB_NEED_API_KEY?: boolean; } }
 /* ── Tag badge ────────────────────────────────────────────────────────────── */
 function TagBadge({ tag }: { tag: string }) {
   return (
-    <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-white/8 text-[9px] text-gray-500 font-medium">
+    <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-white/8 text-[9px] text-gray-400 font-medium">
       {tag}
     </span>
   );
@@ -105,7 +105,7 @@ function ProviderCard({
           <p className={`text-[13px] font-semibold leading-tight truncate ${active ? "text-orange-300" : "text-gray-200"}`}>
             {p.label}
           </p>
-          <p className="text-[11px] text-gray-500 mt-0.5 leading-snug line-clamp-2">{p.description}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5 leading-snug line-clamp-2">{p.description}</p>
           <div className="flex flex-wrap gap-1 mt-1.5">
             {p.tags.slice(0, 3).map(t => <TagBadge key={t} tag={t} />)}
           </div>
@@ -262,7 +262,7 @@ export default function SettingsPage() {
   /* ── Hardware badge ─────────────────────────────────────────────────────── */
   const hwColor = status
     ? status.score >= 70 ? "text-green-400" : status.score >= 40 ? "text-amber-400" : "text-red-400"
-    : "text-gray-500";
+    : "text-gray-400";
 
   return (
     <div className="h-full flex flex-col overflow-hidden font-sans">
@@ -275,7 +275,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <h1 className="text-[14px] font-bold text-white leading-tight">{sp.title}</h1>
-            <p className="text-[10px] text-gray-500 leading-tight">
+            <p className="text-[10px] text-gray-400 leading-tight">
               {status?.configured
                 ? `Active · ${status.provider ?? "unknown"}`
                 : "Not configured"}
@@ -291,7 +291,7 @@ export default function SettingsPage() {
             <span className={`text-[11px] font-semibold ${hwColor}`}>
               HW {status.score}
             </span>
-            <span className="text-[10px] text-gray-600">· {status.tier}</span>
+            <span className="text-[10px] text-gray-400">· {status.tier}</span>
           </div>
         )}
       </div>
@@ -316,7 +316,7 @@ export default function SettingsPage() {
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold border transition-all ${
             activeTab === "providers"
               ? "bg-orange-500/15 border-orange-500/30 text-orange-300"
-              : "bg-white/3 border-white/6 text-gray-500 hover:text-gray-300 hover:border-white/12"
+              : "bg-white/3 border-white/6 text-gray-400 hover:text-gray-300 hover:border-white/12"
           }`}
         >
           <Cpu size={11} /> LLM Providers
@@ -326,7 +326,7 @@ export default function SettingsPage() {
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold border transition-all ${
             activeTab === "channels"
               ? "bg-orange-500/15 border-orange-500/30 text-orange-300"
-              : "bg-white/3 border-white/6 text-gray-500 hover:text-gray-300 hover:border-white/12"
+              : "bg-white/3 border-white/6 text-gray-400 hover:text-gray-300 hover:border-white/12"
           }`}
         >
           <MessageCircle size={11} /> Kanallar
@@ -350,14 +350,14 @@ export default function SettingsPage() {
           <div className="shrink-0 px-4 pt-3 pb-2 space-y-2.5">
             {/* Search */}
             <div className="relative">
-              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 ref={searchRef}
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={sp.searchPlaceholder}
-                className="w-full bg-white/4 border border-white/8 rounded-xl pl-8 pr-3 py-2 text-[12px] text-white placeholder:text-gray-600 outline-none focus:border-orange-500/40 transition-colors"
+                className="w-full bg-white/4 border border-white/8 rounded-xl pl-8 pr-3 py-2 text-[12px] text-white placeholder:text-gray-400 outline-none focus:border-orange-500/40 transition-colors"
               />
             </div>
 
@@ -368,7 +368,7 @@ export default function SettingsPage() {
                 className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition-all ${
                   activeCat === "all"
                     ? "bg-orange-500/15 border-orange-500/30 text-orange-300"
-                    : "bg-white/4 border-white/8 text-gray-500 hover:text-gray-300"
+                    : "bg-white/4 border-white/8 text-gray-400 hover:text-gray-300"
                 }`}
               >
                 {sp.allProviders}
@@ -380,7 +380,7 @@ export default function SettingsPage() {
                   className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition-all ${
                     activeCat === c
                       ? "bg-orange-500/15 border-orange-500/30 text-orange-300"
-                      : "bg-white/4 border-white/8 text-gray-500 hover:text-gray-300"
+                      : "bg-white/4 border-white/8 text-gray-400 hover:text-gray-300"
                   }`}
                 >
                   {CATEGORY_LABELS[c]}
@@ -392,13 +392,13 @@ export default function SettingsPage() {
           {/* Provider list */}
           <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
             {providers.length === 0 && (
-              <div className="flex items-center gap-2 py-6 text-gray-600 text-[12px]">
+              <div className="flex items-center gap-2 py-6 text-gray-400 text-[12px]">
                 <Loader2 size={13} className="animate-spin" /> Loading providers…
               </div>
             )}
             {CATEGORY_ORDER.filter(c => grouped[c]?.length).map(cat => (
               <div key={cat}>
-                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-1.5 px-1">
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 px-1">
                   {CATEGORY_LABELS[cat]}
                 </p>
                 <div className="space-y-1.5">
@@ -414,7 +414,7 @@ export default function SettingsPage() {
               </div>
             ))}
             {providers.length > 0 && filtered.length === 0 && (
-              <p className="text-[12px] text-gray-600 py-4 text-center">No providers match "{search}"</p>
+              <p className="text-[12px] text-gray-400 py-4 text-center">No providers match "{search}"</p>
             )}
           </div>
         </div>
@@ -426,7 +426,7 @@ export default function SettingsPage() {
               <div className="w-12 h-12 rounded-2xl bg-orange-500/8 border border-orange-500/15 flex items-center justify-center">
                 <Globe size={20} className="text-orange-500/50" />
               </div>
-              <p className="text-[13px] text-gray-500">Select a provider from the left to configure your API key</p>
+              <p className="text-[13px] text-gray-400">Select a provider from the left to configure your API key</p>
             </div>
           ) : (
             <div className="p-5 space-y-5">
@@ -453,7 +453,7 @@ export default function SettingsPage() {
               {/* Ollama special UI */}
               {isOllama && ollamaModels.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                     Recommended Models for Your Hardware
                   </p>
                   <div className="space-y-1.5">
@@ -470,7 +470,7 @@ export default function SettingsPage() {
                         >
                           <div className="flex-1 min-w-0">
                             <p className="text-[12px] font-semibold text-gray-200 truncate">{m.label}</p>
-                            <p className="text-[10px] text-gray-500">{m.sizeGb} GB</p>
+                            <p className="text-[10px] text-gray-400">{m.sizeGb} GB</p>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${fitColor}`}>
@@ -496,7 +496,7 @@ export default function SettingsPage() {
 
               {/* API Key / URL input */}
               <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                   {isLocal ? <Server size={9} /> : <Key size={9} />}
                   {isLocal ? sp.baseUrl : sp.apiKey}
                 </p>
@@ -511,19 +511,19 @@ export default function SettingsPage() {
                       value={apiKey}
                       onChange={e => { setApiKey(e.target.value); setTestResult(null); }}
                       placeholder={selected.placeholder}
-                      className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-[12px] text-white placeholder:text-gray-600 outline-none focus:border-orange-500/40 transition-colors"
+                      className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-[12px] text-white placeholder:text-gray-400 outline-none focus:border-orange-500/40 transition-colors"
                     />
                     {!isLocal && (
                       <button
                         onClick={() => setShowKey(s => !s)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
                       >
                         {showKey ? <EyeOff size={13} /> : <Eye size={13} />}
                       </button>
                     )}
                   </div>
                 )}
-                <p className="text-[10px] text-gray-600 px-1">
+                <p className="text-[10px] text-gray-400 px-1">
                   {isLocal
                     ? `Stored in .env as ${selected.envKey}. Default: ${selected.placeholder}`
                     : `Stored locally in .env as ${selected.envKey} — never sent to external servers.`}
@@ -532,7 +532,7 @@ export default function SettingsPage() {
 
               {/* Model selector */}
               <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                   <Zap size={9} />
                   {sp.model}
                 </p>
@@ -594,7 +594,7 @@ export default function SettingsPage() {
               {/* Ollama base URL note */}
               {isOllama && (
                 <div className="pt-1 space-y-1.5">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                     <HardDrive size={9} />
                     Custom Base URL (optional)
                   </p>
@@ -603,9 +603,9 @@ export default function SettingsPage() {
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
                     placeholder="http://localhost:11434"
-                    className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 text-[12px] text-white placeholder:text-gray-600 outline-none focus:border-orange-500/40 transition-colors"
+                    className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 text-[12px] text-white placeholder:text-gray-400 outline-none focus:border-orange-500/40 transition-colors"
                   />
-                  <p className="text-[10px] text-gray-600 px-1">
+                  <p className="text-[10px] text-gray-400 px-1">
                     Leave blank to use the default http://localhost:11434
                   </p>
                 </div>
@@ -618,7 +618,7 @@ export default function SettingsPage() {
           <div className="shrink-0 px-5 py-4 border-t border-white/5 mt-auto">
             <a
               href="/setup"
-              className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-300 transition-colors"
+              className="inline-flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-300 transition-colors"
             >
               <Settings size={11} />
               Re-run full setup wizard

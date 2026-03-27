@@ -8,6 +8,7 @@
 import {
   History, Plus, LogOut, Edit3, Trash2, Check, X,
   Settings as SettingsIcon, MessageSquare, ChevronLeft,
+  Activity, Zap, Users, BarChart3, Package,
 } from "lucide-react";
 import clsx from "clsx";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -117,7 +118,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <button
           onClick={onClose}
           title={t.layout.closePanel}
-          className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/8 transition-all"
+          className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/8 transition-all"
         >
           <ChevronLeft size={16} />
         </button>
@@ -136,7 +137,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
       {/* ── Chat list ───────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto scrollbar-hide px-2 pb-4">
-        <h3 className="px-2 mt-3 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+        <h3 className="px-2 mt-3 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
           {t.sidebar.recentChats}
         </h3>
 
@@ -175,18 +176,18 @@ export default function Sidebar({ onClose }: SidebarProps) {
                         : "text-gray-400 hover:text-white hover:bg-white/5"
                     )}
                   >
-                    <MessageSquare size={13} className={pathname.includes(chat.id) ? "text-orange-400 shrink-0" : "text-gray-600 shrink-0"} />
+                    <MessageSquare size={13} className={pathname.includes(chat.id) ? "text-orange-400 shrink-0" : "text-gray-400 shrink-0"} />
                     <span className="flex-1 truncate">{chat.title}</span>
                   </Link>
                   <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 bg-[#0f0f14] px-1 rounded-md shadow-lg border border-white/5">
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditing(chat); }}
-                      className="p-1 hover:bg-white/10 rounded text-gray-500 hover:text-orange-400"
+                      className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-orange-400"
                       title="Rename"
                     ><Edit3 size={12} /></button>
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeletingChatId(chat.id); }}
-                      className="p-1 hover:bg-white/10 rounded text-gray-500 hover:text-red-400"
+                      className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-red-400"
                       title="Delete"
                     ><Trash2 size={12} /></button>
                   </div>
@@ -196,8 +197,38 @@ export default function Sidebar({ onClose }: SidebarProps) {
           ))}
         </div>
 
+        {/* Platform links */}
+        <h3 className="px-2 mt-5 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          {t.sidebar.platform}
+        </h3>
+        {[
+          { to: "/app/active",      icon: <Activity size={14} />, label: t.sidebar.activeWorkflows  },
+          { to: "/app/automations", icon: <Zap size={14} />,      label: t.sidebar.automations      },
+          { to: "/app/clients",     icon: <Users size={14} />,    label: t.sidebar.clients          },
+          { to: "/app/logs",        icon: <BarChart3 size={14} />,label: t.sidebar.logs             },
+          { to: "/app/products",    icon: <Package size={14} />,  label: t.sidebar.products         },
+        ].map(({ to, icon, label }) => {
+          const active = pathname === to;
+          return (
+            <Link
+              key={to}
+              to={to}
+              onClick={onClose}
+              className={clsx(
+                "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all text-[13px] font-medium",
+                active
+                  ? "bg-orange-500/10 text-white border border-orange-500/15"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              )}
+            >
+              <span className={active ? "text-orange-400" : "text-gray-400"}>{icon}</span>
+              {label}
+            </Link>
+          );
+        })}
+
         {/* Settings link */}
-        <h3 className="px-2 mt-5 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+        <h3 className="px-2 mt-5 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
           {t.sidebar.system}
         </h3>
         <Link
@@ -210,7 +241,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
               : "text-gray-400 hover:text-white hover:bg-white/5"
           )}
         >
-          <SettingsIcon size={14} className={isSettings ? "text-orange-400" : "text-gray-600"} />
+          <SettingsIcon size={14} className={isSettings ? "text-orange-400" : "text-gray-400"} />
           {t.sidebar.settings}
         </Link>
       </div>
@@ -219,17 +250,17 @@ export default function Sidebar({ onClose }: SidebarProps) {
       <div className="border-t border-white/[0.06] bg-black/20 p-3 shrink-0">
         {activeModel && (
           <div className="mb-3 px-1">
-            <p className="text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em] mb-0.5">Active Model</p>
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-0.5">Active Model</p>
             <p className="text-orange-400 text-[11px] font-bold truncate">{activeModel}</p>
             {activeProvider && (
-              <p className="text-gray-600 text-[10px] capitalize">{activeProvider}</p>
+              <p className="text-gray-400 text-[10px] capitalize">{activeProvider}</p>
             )}
           </div>
         )}
         <div className="flex items-center gap-1">
           <button
             onClick={() => { navigate("/"); onClose(); }}
-            className="flex-1 flex items-center gap-2 px-2.5 py-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/5 transition-all text-xs font-medium"
+            className="flex-1 flex items-center gap-2 px-2.5 py-2 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/5 transition-all text-xs font-medium"
           >
             <LogOut size={13} />
             {t.sidebar.logout}

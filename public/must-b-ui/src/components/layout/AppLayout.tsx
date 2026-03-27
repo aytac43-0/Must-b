@@ -9,7 +9,7 @@
  * ─ AI tools dispatch mustb:invoke-skill so the chat input pre-fills.
  */
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, FolderOpen, Globe, ChevronDown,
@@ -18,18 +18,21 @@ import {
   Network, Bot, Layers, BookOpen, Plus,
   Play, Terminal, Zap, Activity, GitBranch,
   Camera, Link2, Package, Code2, Workflow,
+  Users, BarChart3, Eye,
 } from "lucide-react";
 import { WakeWordListener }  from "@/components/chat/WakeWordListener";
 import { useI18n }           from "@/i18n";
 import MemoryPanel           from "@/components/MemoryPanel";
 import PluginsPanel          from "@/components/PluginsPanel";
 import SkillsPanel           from "@/components/SkillsPanel";
+import WorkspacePreview      from "@/components/WorkspacePreview";
+import LiveSightPanel        from "@/components/LiveSightPanel";
 import LanguageSwitcher      from "@/components/layout/LanguageSwitcher";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Types
 ───────────────────────────────────────────────────────────────────────── */
-type StagePanel = "memory" | "plugins" | "skills" | null;
+type StagePanel = "memory" | "plugins" | "skills" | "workspace" | "livesight" | null;
 
 interface MenuItem {
   icon:       React.ReactNode;
@@ -113,9 +116,11 @@ function StageOverlay({
 
         {/* Component */}
         <div className="flex-1 overflow-hidden min-h-0">
-          {panel === "memory"  && <MemoryPanel />}
-          {panel === "plugins" && <PluginsPanel />}
-          {panel === "skills"  && <SkillsPanel />}
+          {panel === "memory"    && <MemoryPanel />}
+          {panel === "plugins"   && <PluginsPanel />}
+          {panel === "skills"    && <SkillsPanel />}
+          {panel === "workspace" && <WorkspacePreview />}
+          {panel === "livesight" && <LiveSightPanel />}
         </div>
       </motion.div>
     </AnimatePresence>
@@ -244,6 +249,7 @@ function QuickAction({ icon, label, onClick, active }: {
 export default function AppLayout() {
   const { t }    = useI18n();
   const location = useLocation();
+  const navigate = useNavigate();
   const [openMenu,  setOpenMenu]  = useState<string>("");
   const [stageOpen, setStageOpen] = useState<StagePanel>(null);
 
@@ -290,6 +296,7 @@ export default function AppLayout() {
       items: [
         // "Skill Library" opens the real SkillsPanel UI
         { icon: <Zap size={13} />,         label: d.skills,          desc: "Open saved skill library", panel: "skills" as StagePanel },
+        { icon: <Eye size={13} />,         label: "Visual Audit",    desc: "Live screen capture & element detection", panel: "livesight" as StagePanel },
         { icon: <Bot size={13} />,         label: d.skill_spawnAgent,    desc: d.desc_spawnAgent,    action: () => invokeSkill("spawn-agent") },
         { icon: <Layers size={13} />,      label: d.skill_agentSessions, desc: d.desc_agentSessions, action: () => invokeSkill("sessions") },
         { icon: <Activity size={13} />,    label: d.skill_canvas,        desc: d.desc_canvas,        action: () => invokeSkill("canvas") },
@@ -352,6 +359,7 @@ export default function AppLayout() {
     {
       category: d.cat_automation,
       items: [
+        { icon: <Camera size={13} />,   label: "War Room",        desc: "Live vision + workflow control panel", panel: "livesight" as StagePanel },
         { icon: <Play size={13} />,     label: d.wf_automations, desc: d.desc_automations, action: () => invokeSkill("automations") },
         { icon: <Clock size={13} />,    label: d.wf_scheduled,   desc: d.desc_scheduled,   action: () => invokeSkill("scheduled-tasks") },
         { icon: <Terminal size={13} />, label: d.wf_commands,    desc: d.desc_commands,    action: () => invokeSkill("commands") },
@@ -368,9 +376,11 @@ export default function AppLayout() {
 
   /* ── Panel titles map ─────────────────────────────────────────────── */
   const panelTitles: Record<NonNullable<StagePanel>, string> = {
-    memory:  d.memory,
-    plugins: d.plugins,
-    skills:  d.skills,
+    memory:    d.memory,
+    plugins:   d.plugins,
+    skills:    d.skills,
+    workspace: d.files,
+    livesight: "Visual Audit",
   };
 
   /* ── Render ─────────────────────────────────────────────────────────── */
@@ -404,8 +414,16 @@ export default function AppLayout() {
           <div className="w-px h-4 bg-black/10 mx-0.5" />
 
           {/* Quick Actions */}
-          <QuickAction icon={<MessageSquare size={13} />} label={d.chat}    onClick={() => invokeSkill("chat-focus")} active={!isSettings} />
-          <QuickAction icon={<FolderOpen size={13} />}    label={d.files}   onClick={() => invokeSkill("files")} />
+          <QuickAction
+            icon={<MessageSquare size={13} />}
+            label={d.chat}
+            active={!isSettings}
+            onClick={() => {
+              if (isSettings) navigate("/app");
+              else invokeSkill("chat-focus");
+            }}
+          />
+          <QuickAction icon={<FolderOpen size={13} />}    label={d.files}   onClick={() => openPanel("workspace")} />
           <QuickAction icon={<Globe size={13} />}         label={d.browser} onClick={() => invokeSkill("browser")} />
 
           <div className="w-px h-4 bg-black/10 mx-0.5" />
@@ -431,6 +449,31 @@ export default function AppLayout() {
             groups={workflowsGroups}
             isOpen={openMenu === "workflows"} onToggle={toggleMenu} onOpenPanel={openPanel}
           />
+
+          <div className="w-px h-4 bg-black/10 mx-0.5" />
+
+          {/* Platform page links */}
+          {[
+            { to: "/app/active",      icon: <Activity size={12} />,   label: t.sidebar.activeWorkflows  },
+            { to: "/app/automations", icon: <Zap size={12} />,        label: t.sidebar.automations      },
+            { to: "/app/clients",     icon: <Users size={12} />,      label: t.sidebar.clients          },
+            { to: "/app/logs",        icon: <BarChart3 size={12} />,  label: t.sidebar.logs             },
+            { to: "/app/products",    icon: <Package size={12} />,    label: t.sidebar.products         },
+          ].map(({ to, icon, label }) => (
+            <Link
+              key={to}
+              to={to}
+              title={label}
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-full text-[12px] font-semibold transition-all select-none ${
+                location.pathname === to
+                  ? "bg-black text-white shadow-sm"
+                  : "text-black/65 hover:text-black hover:bg-black/6"
+              }`}
+            >
+              {icon}
+              <span className="hidden lg:inline">{label}</span>
+            </Link>
+          ))}
 
           <div className="w-px h-4 bg-black/10 mx-0.5" />
 

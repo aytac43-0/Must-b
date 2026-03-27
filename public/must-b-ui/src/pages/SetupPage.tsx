@@ -91,7 +91,7 @@ function StepDot({ index, current }: { index: number; current: number }) {
         "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300",
         done   ? "bg-orange-500 text-white" :
         active ? "bg-orange-500/20 border-2 border-orange-500 text-orange-400" :
-                 "bg-white/5 border border-white/10 text-gray-600",
+                 "bg-white/5 border border-white/10 text-gray-400",
       )}>
         {done ? <Check size={13} /> : index + 1}
       </div>
@@ -107,7 +107,7 @@ function StepDot({ index, current }: { index: number; current: number }) {
 
 function Tag({ label }: { label: string }) {
   return (
-    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/5 text-gray-500 border border-white/8">
+    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/5 text-gray-400 border border-white/8">
       {label}
     </span>
   );
@@ -161,7 +161,7 @@ function Toggle({
       </div>
       <div>
         <p className="font-semibold text-sm">{label}</p>
-        {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
+        {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
       </div>
     </button>
   );
@@ -345,7 +345,7 @@ export default function SetupPage() {
             </div>
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Setup Must-b</h1>
-          <p className="text-gray-500 mt-1.5 text-sm">First-time configuration · 5 steps</p>
+          <p className="text-gray-400 mt-1.5 text-sm">First-time configuration · 5 steps</p>
         </div>
 
         {/* Step progress dots */}
@@ -390,13 +390,13 @@ export default function SetupPage() {
                     placeholder="e.g. Burak"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition-all text-base"
                   />
-                  <p className="text-gray-600 text-xs">Used in greetings and memory. Editable anytime in Settings.</p>
+                  <p className="text-gray-400 text-xs">Used in greetings and memory. Editable anytime in Settings.</p>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-xs text-gray-400 uppercase tracking-widest font-bold">Language</label>
                   <div className="relative">
-                    <Globe size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <Globe size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <select
                       value={language}
                       onChange={e => setLanguage(e.target.value)}
@@ -408,7 +408,7 @@ export default function SetupPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronRight size={13} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none rotate-90" />
+                    <ChevronRight size={13} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none rotate-90" />
                   </div>
                 </div>
               </div>
@@ -419,7 +419,7 @@ export default function SetupPage() {
               <div className="space-y-4">
                 {/* Search */}
                 <div className="relative">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text" value={provSearch}
                     onChange={e => setProvSearch(e.target.value)}
@@ -431,14 +431,14 @@ export default function SetupPage() {
                 {/* Scrollable provider grid */}
                 <div className="max-h-[260px] overflow-y-auto space-y-4 pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                   {loadingProviders ? (
-                    <p className="text-center py-6 text-gray-600 text-sm">Loading providers…</p>
+                    <p className="text-center py-6 text-gray-400 text-sm">Loading providers…</p>
                   ) : (
                     CATEGORY_ORDER.map(cat => {
                       const items = grouped[cat];
                       if (!items?.length) return null;
                       return (
                         <div key={cat}>
-                          <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-1.5 px-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 px-1">
                             {CATEGORY_LABELS[cat]}
                           </p>
                           <div className="space-y-1">
@@ -459,7 +459,7 @@ export default function SetupPage() {
                                 )} />
                                 <div className="flex-1 min-w-0">
                                   <p className="font-semibold text-sm leading-tight">{p.label}</p>
-                                  <p className="text-xs text-gray-500 truncate">{p.description}</p>
+                                  <p className="text-xs text-gray-400 truncate">{p.description}</p>
                                 </div>
                                 <div className="flex flex-wrap gap-1 justify-end flex-shrink-0 max-w-[120px]">
                                   {p.tags.slice(0, 2).map(t => <Tag key={t} label={t} />)}
@@ -472,7 +472,7 @@ export default function SetupPage() {
                     })
                   )}
                   {!loadingProviders && filteredProviders.length === 0 && (
-                    <p className="text-center py-6 text-gray-600 text-sm">No providers match "{provSearch}"</p>
+                    <p className="text-center py-6 text-gray-400 text-sm">No providers match "{provSearch}"</p>
                   )}
                 </div>
 
@@ -491,7 +491,7 @@ export default function SetupPage() {
 
                     {/* Hardware info + model picker */}
                     {hardware && (
-                      <div className="flex items-center gap-4 rounded-xl bg-white/3 border border-white/8 px-3 py-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 rounded-xl bg-white/3 border border-white/8 px-3 py-2 text-xs text-gray-400">
                         <span className="flex items-center gap-1.5"><MemoryStick size={11} className="text-orange-400" />{hardware.ramGb.toFixed(1)} GB RAM</span>
                         <span className="flex items-center gap-1.5"><Cpu size={11} className="text-orange-400" />{hardware.cpuCount} CPUs</span>
                         <span className="flex items-center gap-1.5"><Zap size={11} className="text-orange-400" />Score {hardware.score} · {hardware.tier}</span>
@@ -516,13 +516,13 @@ export default function SetupPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
                                 <p className="font-semibold text-sm">{m.name}</p>
-                                <span className="text-[10px] text-gray-600 font-mono">{m.params}</span>
+                                <span className="text-[10px] text-gray-400 font-mono">{m.params}</span>
                               </div>
-                              <p className="text-xs text-gray-500 truncate">{m.description}</p>
+                              <p className="text-xs text-gray-400 truncate">{m.description}</p>
                             </div>
                             <div className="flex flex-col items-end gap-1 flex-shrink-0">
                               <FitBadge fit={m.fit} />
-                              <span className="text-[10px] text-gray-600">{m.ramGb} GB</span>
+                              <span className="text-[10px] text-gray-400">{m.ramGb} GB</span>
                             </div>
                           </button>
                         ))}
@@ -550,7 +550,7 @@ export default function SetupPage() {
                         ))}
                       </div>
                     )}
-                    <p className="text-gray-600 text-xs">
+                    <p className="text-gray-400 text-xs">
                       Stored locally in <code className="text-orange-500/60">.env</code> — never sent to external servers.
                     </p>
                   </div>
@@ -564,7 +564,7 @@ export default function SetupPage() {
                 <div className="space-y-2">
                   <label className="text-xs text-gray-400 uppercase tracking-widest font-bold">Workspace Directory</label>
                   <div className="relative">
-                    <Folder size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <Folder size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input
                       autoFocus type="text"
                       value={workspacePath}
@@ -573,7 +573,7 @@ export default function SetupPage() {
                       className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-orange-500/50 font-mono text-sm"
                     />
                   </div>
-                  <p className="text-gray-600 text-xs">
+                  <p className="text-gray-400 text-xs">
                     Must-b will read and write files <span className="text-orange-500/70 font-medium">only within this directory</span>.
                     The folder will be created if it doesn't exist.
                   </p>
@@ -582,7 +582,7 @@ export default function SetupPage() {
                 {/* Security notice */}
                 <div className="flex items-start gap-3 rounded-xl bg-white/3 border border-white/8 px-4 py-3">
                   <ShieldCheck size={15} className="text-green-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                  <p className="text-xs text-gray-400 leading-relaxed">
                     Must-b operates in a sandboxed workspace. It cannot access files outside
                     this directory unless you explicitly provide a path in a prompt.
                   </p>
@@ -605,7 +605,7 @@ export default function SetupPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-semibold text-white">Test Microphone Permission</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-xs text-gray-400 mt-0.5">
                         {micState === "idle"    && "Click to verify your browser can access the microphone."}
                         {micState === "testing" && "Requesting permission…"}
                         {micState === "granted" && "Microphone access granted ✓"}
@@ -653,7 +653,7 @@ export default function SetupPage() {
 
                 {/* Summary card */}
                 <div className="rounded-xl bg-white/3 border border-white/6 px-4 py-4 space-y-2">
-                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Configuration Summary</p>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Configuration Summary</p>
                   {[
                     { label: "Name",      value: name || "—" },
                     { label: "Language",  value: LANGUAGES.find(l => l.value === language)?.label ?? language },
@@ -662,7 +662,7 @@ export default function SetupPage() {
                     { label: "Wake Word", value: wakeWord ? "Enabled" : "Disabled" },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600">{row.label}</span>
+                      <span className="text-gray-400">{row.label}</span>
                       <span className="text-gray-300 font-mono truncate max-w-[200px]">{row.value}</span>
                     </div>
                   ))}

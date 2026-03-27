@@ -8,6 +8,7 @@
 import { useEffect }          from "react";
 import { ChatArea }           from "@/components/chat/ChatArea";
 import ScreenScanOverlay      from "@/components/ScreenScanOverlay";
+import WarRoomPanel           from "@/components/WarRoomPanel";
 import { getSocket }          from "@/lib/socket";
 
 export default function DashboardPage() {
@@ -19,6 +20,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-72px)] overflow-hidden">
       <ScreenScanOverlay />
+      <WarRoomPanel />
       <ChatArea />
     </div>
   );
