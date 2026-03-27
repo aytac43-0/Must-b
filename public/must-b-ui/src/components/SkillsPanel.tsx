@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { apiFetch }  from "@/lib/api";
 import { getSocket } from "@/lib/socket";
+import { useI18n }   from "@/i18n";
 
 interface SkillStep {
   description: string;
@@ -55,6 +56,8 @@ function fmtRelative(iso: string): string {
 }
 
 export default function SkillsPanel() {
+  const { t }         = useI18n();
+  const ps            = t.panels.skills;
   const [skills,      setSkills]      = useState<SavedSkill[]>([]);
   const [loading,     setLoading]     = useState(false);
   const [runningId,   setRunningId]   = useState<string | null>(null);
@@ -130,7 +133,7 @@ export default function SkillsPanel() {
       <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 shrink-0">
         <div className="flex items-center gap-2">
           <BookOpen size={14} className="text-orange-400" />
-          <span className="text-[13px] font-bold text-gray-300">Skill Library</span>
+          <span className="text-[13px] font-bold text-gray-300">{ps.title}</span>
           {skills.length > 0 && (
             <span className="text-[10px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full font-mono">
               {skills.length}
@@ -163,9 +166,9 @@ export default function SkillsPanel() {
             {runState === "running" && <Loader2 size={12} className="animate-spin" />}
             {runState === "done"    && <CheckCircle2 size={12} />}
             {runState === "error"   && <AlertCircle size={12} />}
-            {runState === "running" ? "Running skill…" :
-             runState === "done"    ? "Skill completed" :
-                                     "Skill run failed"}
+            {runState === "running" ? ps.runningStatus :
+             runState === "done"    ? ps.completedStatus :
+                                     ps.failedStatus}
           </motion.div>
         )}
       </AnimatePresence>
@@ -174,15 +177,16 @@ export default function SkillsPanel() {
       <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-3">
         {loading && skills.length === 0 ? (
           <div className="flex items-center justify-center py-16 text-gray-700 text-xs gap-2">
-            <Loader2 size={13} className="animate-spin" /> Loading skills…
+            <Loader2 size={13} className="animate-spin" /> {ps.loading}
           </div>
         ) : skills.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <Zap size={36} className="text-gray-700 mb-4" />
-            <p className="text-sm font-semibold text-gray-500">No skills saved yet</p>
+            <p className="text-sm font-semibold text-gray-500">{ps.emptyTitle}</p>
             <p className="text-xs text-gray-700 mt-1 max-w-xs">
-              Complete a workflow in the Chat tab, then click{" "}
-              <span className="text-orange-400 font-medium">Save as Skill</span> to build your library.
+              {ps.emptyHint}{" "}
+              <span className="text-orange-400 font-medium">{ps.saveAsSkill}</span>{" "}
+              {ps.emptyHint2}
             </p>
           </div>
         ) : (
@@ -248,7 +252,7 @@ export default function SkillsPanel() {
                       <Clock size={9} />
                       <span>{fmtRelative(skill.savedAt)}</span>
                       {skill.lastRunAt && (
-                        <span className="text-gray-800">· last run {fmtDate(skill.lastRunAt)}</span>
+                        <span className="text-gray-800">· {ps.lastRun} {fmtDate(skill.lastRunAt)}</span>
                       )}
                     </div>
 
@@ -256,19 +260,19 @@ export default function SkillsPanel() {
                       {/* Delete */}
                       {confirmDel === skill.id ? (
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-red-400">Delete?</span>
+                          <span className="text-[10px] text-red-400">{ps.deleteConfirm}</span>
                           <button
                             onClick={() => deleteSkill(skill.id)}
                             disabled={isDeleting}
                             className="text-[10px] px-2 py-0.5 rounded bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-colors"
                           >
-                            {isDeleting ? "…" : "Yes"}
+                            {isDeleting ? "…" : ps.yes}
                           </button>
                           <button
                             onClick={() => setConfirmDel(null)}
                             className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-500 hover:bg-white/8"
                           >
-                            No
+                            {ps.no}
                           </button>
                         </div>
                       ) : (
@@ -294,11 +298,11 @@ export default function SkillsPanel() {
                         }`}
                       >
                         {isRunning ? (
-                          <><Loader2 size={11} className="animate-spin" /> Running…</>
+                          <><Loader2 size={11} className="animate-spin" /> {ps.runningBtn}</>
                         ) : isDone ? (
-                          <><CheckCircle2 size={11} /> Done</>
+                          <><CheckCircle2 size={11} /> {ps.doneBtn}</>
                         ) : (
-                          <><Play size={11} /> Run</>
+                          <><Play size={11} /> {ps.runBtn}</>
                         )}
                       </button>
                     </div>

@@ -312,6 +312,24 @@ async function bootServer(arg: string, suppressBrowser = false) {
     const apiServer = new ApiServer(logger, orchestrator, history, PORT, ROOT);
     apiServer.start();
     startHealthMonitor(ROOT, logger);
+
+    // ── Ollama Auto-Discovery (OpenClaw port) ────────────────────────────
+    // Runs silently in background. Warns only if OLLAMA_BASE_URL is set but
+    // the daemon is unreachable. Mirrors OpenClaw's implicit-provider pattern.
+    if ((process.env.LLM_PROVIDER ?? '').toLowerCase() === 'ollama') {
+      import('./utils/ollama-autodiscovery.js').then(async ({ autoDiscoverOllama }) => {
+        const explicitly = Boolean(process.env.OLLAMA_BASE_URL);
+        const result = await autoDiscoverOllama(explicitly);
+        if (result.reachable && result.models.length > 0) {
+          logger.info(
+            `[Ollama] Auto-discovered ${result.models.length} model(s) at ${result.baseUrl}` +
+            ` — reasoning: ${result.models.filter(m => m.isReasoning).map(m => m.name).join(', ') || 'none'}`,
+          );
+        } else if (!result.reachable && explicitly) {
+          logger.warn(`[Ollama] Daemon unreachable at ${result.baseUrl}. Run: ollama serve`);
+        }
+      }).catch((e: any) => logger.warn(`[Ollama] Auto-discovery failed: ${e.message}`));
+    }
     // Open browser unless suppressed (e.g. onboarding wizard already opened one tab).
     if (!suppressBrowser) {
       setTimeout(() => openBrowser(`http://localhost:${PORT}`), 1200);

@@ -27,3 +27,10 @@ Thumbs.db
 
 # Large embedded repos — tracked separately
 src/core/must-b/
+
+# Internal Automation Tools
+auto-mustb.js
+factory-manager.js
+PIPELINE.md
+CLAUDE.md
+.claude/

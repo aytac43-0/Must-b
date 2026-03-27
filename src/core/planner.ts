@@ -38,10 +38,28 @@ interface PlanResponse {
 export class Planner {
   private logger: winston.Logger;
   private provider: LLMProvider;
+  /** Rolling conversation buffer used by directChat — compacted on overflow. */
+  private _chatHistory: CompletionMessage[] = [];
 
   constructor(logger: winston.Logger) {
     this.logger = logger;
     this.provider = new LLMProvider(logger);
+  }
+
+  /**
+   * Context-window overflow recovery (called by Orchestrator on 'overflow' error).
+   * Drops the oldest conversation turns while keeping the system prompt.
+   * Mirrors OpenClaw's overflow-compaction strategy.
+   */
+  compactHistory(keepTurns = 4): void {
+    const system  = this._chatHistory.filter(m => m.role === 'system');
+    const conv    = this._chatHistory.filter(m => m.role !== 'system');
+    const trimmed = conv.slice(-keepTurns);
+    this._chatHistory = [...system, ...trimmed];
+    this.logger.warn(
+      `Planner: compactHistory — dropped ${conv.length - trimmed.length} turn(s), ` +
+      `${this._chatHistory.length} remain.`,
+    );
   }
 
   async plan(goal: string): Promise<PlanStep[]> {

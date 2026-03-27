@@ -19,11 +19,12 @@ import {
   Play, Terminal, Zap, Activity, GitBranch,
   Camera, Link2, Package, Code2, Workflow,
 } from "lucide-react";
-import { WakeWordListener } from "@/components/chat/WakeWordListener";
-import { useI18n } from "@/i18n";
-import MemoryPanel  from "@/components/MemoryPanel";
-import PluginsPanel from "@/components/PluginsPanel";
-import SkillsPanel  from "@/components/SkillsPanel";
+import { WakeWordListener }  from "@/components/chat/WakeWordListener";
+import { useI18n }           from "@/i18n";
+import MemoryPanel           from "@/components/MemoryPanel";
+import PluginsPanel          from "@/components/PluginsPanel";
+import SkillsPanel           from "@/components/SkillsPanel";
+import LanguageSwitcher      from "@/components/layout/LanguageSwitcher";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Types
@@ -445,6 +446,9 @@ export default function AppLayout() {
           </Link>
 
           <div className="w-px h-4 bg-black/10 mx-0.5" />
+
+          {/* Language switcher */}
+          <LanguageSwitcher />
 
           {/* Wake word listener */}
           <WakeWordListener onWake={handleWake} />

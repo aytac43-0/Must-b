@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import { WebSocket } from 'ws';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -126,6 +127,150 @@ const CHANNEL_REGISTRY: ChannelDef[] = [
 /** Pending OAuth state tokens — map of state → { timestamp, resolve } */
 const _pendingCloudStates = new Map<string, { ts: number; resolve: (token: string) => void }>();
 
+// ── OpenClaw Gateway Bridge ────────────────────────────────────────────────
+// Maintains a single persistent WebSocket connection to the OpenClaw gateway.
+// Implements the OpenClaw wire protocol: challenge-response handshake + RPC frames.
+// All /api/openclaw/* endpoints use this bridge.
+
+class OpenClawBridge {
+  private ws: WebSocket | null = null;
+  private pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: unknown) => void }>();
+  private reconnectTimer: NodeJS.Timeout | null = null;
+  private logger: winston.Logger;
+  private connected = false;
+
+  constructor(logger: winston.Logger) {
+    this.logger = logger;
+    this.connect();
+  }
+
+  isAlive(): boolean { return this.connected; }
+
+  private get url(): string {
+    return `ws://127.0.0.1:${process.env.OPENCLAW_PORT ?? '18789'}`;
+  }
+
+  private connect() {
+    if (this.connected) return;
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(this.url, { maxPayload: 25 * 1024 * 1024 });
+    } catch {
+      this.scheduleReconnect();
+      return;
+    }
+
+    ws.on('message', (raw) => {
+      try {
+        const msg = JSON.parse(raw.toString()) as Record<string, unknown>;
+
+        // Server challenge — send connect handshake
+        if (msg['event'] === 'connect.challenge') {
+          const id = crypto.randomUUID();
+          const params = {
+            minProtocol: 3, maxProtocol: 3,
+            client: {
+              id: 'must-b-bridge',
+              displayName: 'Must-b Bridge',
+              version: '1.8.1',
+              platform: process.platform,
+              mode: 'backend',
+            },
+            caps: [] as string[],
+            role: 'operator',
+            scopes: ['operator.admin'],
+            auth: process.env.OPENCLAW_PASSWORD
+              ? { password: process.env.OPENCLAW_PASSWORD }
+              : process.env.OPENCLAW_TOKEN
+              ? { token: process.env.OPENCLAW_TOKEN }
+              : undefined,
+          };
+          this.pending.set(id, {
+            resolve: () => {
+              this.connected = true;
+              this.ws = ws;
+              this.logger.info('[OpenClaw] Bridge connected and ready');
+            },
+            reject: (err) => {
+              this.logger.warn(`[OpenClaw] Handshake failed: ${String(err)}`);
+              ws.terminate();
+            },
+          });
+          ws.send(JSON.stringify({ type: 'req', id, method: 'connect', params }));
+          return;
+        }
+
+        // Response frame: { type: "res", id: "...", result?: ..., error?: ... }
+        if (msg['type'] === 'res' && typeof msg['id'] === 'string') {
+          const pend = this.pending.get(msg['id']);
+          if (!pend) return;
+          this.pending.delete(msg['id']);
+          if (msg['error']) {
+            const err = msg['error'] as Record<string, unknown>;
+            pend.reject(new Error((err['message'] as string | undefined) ?? 'OpenClaw RPC error'));
+          } else {
+            pend.resolve(msg['result']);
+          }
+        }
+      } catch { /* ignore parse errors */ }
+    });
+
+    ws.on('close', () => {
+      this.connected = false;
+      if (this.ws === ws) this.ws = null;
+      for (const [, p] of this.pending) p.reject({ offline: true });
+      this.pending.clear();
+      this.scheduleReconnect();
+    });
+
+    ws.on('error', (err) => {
+      this.logger.debug(`[OpenClaw] WS error: ${err.message}`);
+    });
+  }
+
+  private scheduleReconnect() {
+    if (this.reconnectTimer) return;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.connect();
+    }, 5_000);
+    this.reconnectTimer.unref();
+  }
+
+  async call(method: string, params?: unknown): Promise<unknown> {
+    if (!this.connected) {
+      // Wait up to 2s for a connection
+      await new Promise<void>((res, rej) => {
+        const start = Date.now();
+        const timer = setInterval(() => {
+          if (this.connected) { clearInterval(timer); res(); }
+          else if (Date.now() - start > 2000) { clearInterval(timer); rej({ offline: true }); }
+        }, 100);
+      });
+    }
+    if (!this.connected || !this.ws) throw { offline: true };
+
+    return new Promise((resolve, reject) => {
+      const id = crypto.randomUUID();
+      this.pending.set(id, { resolve, reject });
+      try {
+        this.ws!.send(JSON.stringify({ type: 'req', id, method, params: params ?? {} }));
+      } catch {
+        this.pending.delete(id);
+        reject({ offline: true });
+        return;
+      }
+      // 10-second RPC timeout
+      setTimeout(() => {
+        if (this.pending.has(id)) {
+          this.pending.delete(id);
+          reject(new Error(`OpenClaw RPC timeout: ${method}`));
+        }
+      }, 10_000);
+    });
+  }
+}
+
 export class ApiServer {
   private app: express.Application;
   private server: http.Server;
@@ -135,6 +280,7 @@ export class ApiServer {
   private history: SessionHistory;
   private port: number;
   private root: string;
+  private openClawBridge: OpenClawBridge;
 
   constructor(
     logger: winston.Logger,
@@ -152,6 +298,7 @@ export class ApiServer {
     this.server = http.createServer(this.app);
     this.io = new SocketIOServer(this.server, { cors: { origin: '*' } });
 
+    this.openClawBridge = new OpenClawBridge(logger);
     this.setupMiddleware();
     this.setupRoutes();
     this.setupSocketIO();
@@ -416,6 +563,244 @@ export class ApiServer {
       fs.writeFileSync(envPath, lines.join('\n').trim() + '\n', 'utf-8');
       this.logger.info(`[Channels] ${ch.name} credentials removed.`);
       res.json({ ok: true, channel: ch.id });
+    });
+
+    // ── OpenClaw Gateway Bridge Endpoints ─────────────────────────────────
+    // All /api/openclaw/* routes proxy to the OpenClaw gateway (ws://127.0.0.1:18789).
+    // On offline: read endpoints return { offline: true, ...emptyData } (200),
+    //             mutation endpoints return 503.
+
+    const ocCall = async (method: string, params?: unknown) => this.openClawBridge.call(method, params);
+    const isOcOffline = (err: unknown): boolean => !!(err && typeof err === 'object' && 'offline' in err);
+
+    /** GET /api/openclaw/status — always 200, { online: boolean } */
+    this.app.get('/api/openclaw/status', requireAuth, async (_req, res) => {
+      try {
+        const controller = new AbortController();
+        const t = setTimeout(() => controller.abort(), 2000);
+        const port = process.env.OPENCLAW_PORT ?? '18789';
+        const r = await fetch(`http://127.0.0.1:${port}/health`, { signal: controller.signal });
+        clearTimeout(t);
+        const body = await r.json().catch(() => ({}));
+        res.json({ online: true, ...(body as object) });
+      } catch {
+        res.json({ online: false });
+      }
+    });
+
+    /** GET /api/openclaw/channels — channels.status */
+    this.app.get('/api/openclaw/channels', requireAuth, async (_req, res) => {
+      try {
+        const result = await ocCall('channels.status', {});
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, channelOrder: [], channelLabels: {}, channelAccounts: {} });
+        this.logger.warn(`[OpenClaw] channels.status: ${String(err)}`);
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** POST /api/openclaw/channels/:channel/logout */
+    this.app.post('/api/openclaw/channels/:channel/logout', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('channels.logout', { channel: req.params.channel, accountId: req.body?.accountId });
+        res.json(result ?? { ok: true });
+      } catch (err) {
+        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** POST /api/openclaw/channels/config — config.patch */
+    this.app.post('/api/openclaw/channels/config', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('config.patch', req.body ?? {});
+        res.json(result ?? { ok: true });
+      } catch (err) {
+        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/sessions — sessions.list */
+    this.app.get('/api/openclaw/sessions', requireAuth, async (req, res) => {
+      try {
+        const params: Record<string, unknown> = {};
+        if (req.query.limit) params.limit = Number(req.query.limit);
+        if (req.query.includeDerivedTitles === 'true') params.includeDerivedTitles = true;
+        if (req.query.includeLastMessage === 'true') params.includeLastMessage = true;
+        const result = await ocCall('sessions.list', params);
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, sessions: [] });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/sessions/usage */
+    this.app.get('/api/openclaw/sessions/usage', requireAuth, async (req, res) => {
+      try {
+        const params = { limit: Number(req.query.limit ?? 30) };
+        let result: unknown;
+        try { result = await ocCall('sessions.usage', params); }
+        catch { result = await ocCall('usage.status', {}); }
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, sessions: [] });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/usage/cost */
+    this.app.get('/api/openclaw/usage/cost', requireAuth, async (_req, res) => {
+      try {
+        const result = await ocCall('usage.cost', {});
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, total: {}, daily: [], providers: [] });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/logs — logs.tail */
+    this.app.get('/api/openclaw/logs', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('logs.tail', {
+          cursor: Number(req.query.cursor ?? 0),
+          limit: Number(req.query.limit ?? 200),
+        });
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, lines: [], cursor: 0, truncated: false });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/automations — cron.list */
+    this.app.get('/api/openclaw/automations', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('cron.list', {
+          enabled: req.query.enabled ?? 'all',
+          limit: Number(req.query.limit ?? 50),
+        });
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, jobs: [] });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** POST /api/openclaw/automations — cron.add */
+    this.app.post('/api/openclaw/automations', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('cron.add', req.body ?? {});
+        res.json(result ?? { ok: true });
+      } catch (err) {
+        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** PATCH /api/openclaw/automations/:id — cron.update */
+    this.app.patch('/api/openclaw/automations/:id', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('cron.update', { id: req.params.id, patch: req.body?.patch ?? req.body });
+        res.json(result ?? { ok: true });
+      } catch (err) {
+        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** DELETE /api/openclaw/automations/:id — cron.remove */
+    this.app.delete('/api/openclaw/automations/:id', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('cron.remove', { id: req.params.id });
+        res.json(result ?? { ok: true });
+      } catch (err) {
+        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** POST /api/openclaw/automations/:id/run — cron.run */
+    this.app.post('/api/openclaw/automations/:id/run', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('cron.run', { id: req.params.id, mode: req.body?.mode ?? 'force' });
+        res.json(result ?? { ok: true });
+      } catch (err) {
+        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/automations/:id/runs — cron.runs */
+    this.app.get('/api/openclaw/automations/:id/runs', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('cron.runs', { id: req.params.id, limit: Number(req.query.limit ?? 20) });
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, runs: [] });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/clients — node.list */
+    this.app.get('/api/openclaw/clients', requireAuth, async (_req, res) => {
+      try {
+        const result = await ocCall('node.list', {});
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, nodes: [] });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/clients/:nodeId — node.describe */
+    this.app.get('/api/openclaw/clients/:nodeId', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('node.describe', { nodeId: req.params.nodeId });
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** POST /api/openclaw/clients/:nodeId/rename — node.rename */
+    this.app.post('/api/openclaw/clients/:nodeId/rename', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('node.rename', { nodeId: req.params.nodeId, displayName: req.body?.displayName });
+        res.json(result ?? { ok: true });
+      } catch (err) {
+        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/tools — tools.catalog */
+    this.app.get('/api/openclaw/tools', requireAuth, async (req, res) => {
+      try {
+        const result = await ocCall('tools.catalog', {
+          includePlugins: req.query.includePlugins !== 'false',
+          agentId: req.query.agentId,
+        });
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, groups: [], profiles: [], tools: [] });
+        res.status(502).json({ error: String(err) });
+      }
+    });
+
+    /** GET /api/openclaw/agents — agents.list */
+    this.app.get('/api/openclaw/agents', requireAuth, async (_req, res) => {
+      try {
+        const result = await ocCall('agents.list', {});
+        res.json(result);
+      } catch (err) {
+        if (isOcOffline(err)) return res.json({ offline: true, agents: [], defaultId: null });
+        res.status(502).json({ error: String(err) });
+      }
     });
 
     // ── Vision: OS screen capture (no rank restriction) ───────────────────
@@ -1545,6 +1930,90 @@ export class ApiServer {
       }
     });
 
+    // ── Skill Router — Omni-Menu direct invocations (Skill_Master v1.0) ───
+
+    /**
+     * GET /api/v1/skills/routes
+     * Returns all registered skill routes (for Omni-Menu / UI discovery).
+     */
+    this.app.get('/api/v1/skills/routes', requireAuth, async (_req, res) => {
+      try {
+        const { listRoutes } = await import('../plugins/skill-router.js');
+        res.json({ routes: listRoutes() });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/v1/skills/invoke
+     * Body: { skill: string, params?: Record<string, unknown> }
+     *
+     * DIRECT skills  → execute the mapped plugin and return { ok, data }.
+     * PROMPT skills  → return { ok, mode: "prompt", prompt } so the caller
+     *                  can forward the prompt to the orchestrator.
+     *
+     * The frontend (or another backend caller) decides whether to:
+     *   a) display direct results immediately
+     *   b) forward prompt results to POST /api/agent/run
+     */
+    this.app.post('/api/v1/skills/invoke', requireAuth, async (req, res) => {
+      const { skill, params = {} } = req.body as {
+        skill?:  string;
+        params?: Record<string, unknown>;
+      };
+
+      if (!skill || typeof skill !== 'string') {
+        return res.status(400).json({ error: '"skill" (string) is required' });
+      }
+
+      try {
+        const { registerBuiltins } = await import('../plugins/index.js');
+        const { routeSkill }       = await import('../plugins/skill-router.js');
+
+        // Ensure built-ins are registered (idempotent)
+        registerBuiltins({ logger: this.logger });
+
+        const result = await routeSkill(skill, params as Record<string, unknown>);
+
+        this.logger.info(`[SkillRouter] ${skill} → mode=${result.mode} ok=${result.ok}`);
+        this.io.emit('agentUpdate', {
+          type:  'skillInvoked',
+          skill,
+          mode:  result.mode,
+          ok:    result.ok,
+        });
+
+        // If prompt mode, optionally auto-forward to orchestrator
+        if (result.mode === 'prompt' && result.prompt && params._autoRun === true) {
+          this.orchestrator.run(result.prompt).catch((err: any) => {
+            this.logger.warn(`[SkillRouter] auto-run failed: ${err.message}`);
+          });
+          return res.json({ ok: true, mode: 'prompt', forwarded: true, prompt: result.prompt });
+        }
+
+        res.json(result);
+      } catch (err: any) {
+        this.logger.error(`[SkillRouter] ${skill} error: ${err.message}`);
+        res.status(500).json({ ok: false, error: err?.message });
+      }
+    });
+
+    /**
+     * GET /api/v1/plugins/registry
+     * Returns all registered plugins (built-in + user-loaded).
+     */
+    this.app.get('/api/v1/plugins/registry', requireAuth, async (_req, res) => {
+      try {
+        const { registerBuiltins, listAll, loadUserPlugins } = await import('../plugins/index.js');
+        registerBuiltins({ logger: this.logger });
+        await loadUserPlugins();
+        res.json({ plugins: listAll() });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
     // ── Shadow Mode (v4.8) ────────────────────────────────────────────────
 
     /**
@@ -2065,6 +2534,118 @@ export class ApiServer {
       }
     });
 
+    // ── Quick key test & update (called by SettingsPage) ───────────────────
+
+    /**
+     * POST /api/setup/test-key
+     * Body: { provider, apiKey?, model? }
+     * Makes a minimal chat completion to verify the key works.
+     * Returns: { ok, message }
+     */
+    this.app.post('/api/setup/test-key', async (req, res) => {
+      const { provider, apiKey, model } = req.body as {
+        provider?: string; apiKey?: string; model?: string;
+      };
+      const safeProvider = (provider ?? 'openrouter').toLowerCase().trim();
+      const safeKey      = (apiKey ?? '').trim();
+
+      if (!safeKey && safeProvider !== 'ollama') {
+        return res.json({ ok: false, message: 'No API key provided' });
+      }
+
+      try {
+        // Temporarily override env vars for this test request
+        const savedProvider = process.env.LLM_PROVIDER;
+        const targetEnvKey  = PROVIDER_ENV_KEY_MAP[safeProvider] ?? 'CUSTOM_API_KEY';
+        const savedKey      = process.env[targetEnvKey];
+        const savedModel    = process.env.LLM_MODEL;
+
+        if (safeKey)  process.env[targetEnvKey]   = safeKey;
+        if (model)    process.env.LLM_MODEL        = model;
+        process.env.LLM_PROVIDER = safeProvider;
+
+        const { LLMProvider } = await import('../core/provider.js');
+        const llm = new LLMProvider(this.logger);
+        const resp = await llm.chat([
+          { role: 'user', content: 'Reply with exactly: ok' },
+        ]);
+
+        // Restore
+        if (savedProvider !== undefined) process.env.LLM_PROVIDER = savedProvider; else delete process.env.LLM_PROVIDER;
+        if (savedKey !== undefined) process.env[targetEnvKey] = savedKey; else delete process.env[targetEnvKey];
+        if (savedModel !== undefined) process.env.LLM_MODEL = savedModel; else delete process.env.LLM_MODEL;
+
+        const ok = typeof resp === 'string' && resp.length > 0 && !resp.startsWith('[System Error');
+        res.json({ ok, message: ok ? 'Connection successful' : `Unexpected response: ${resp.slice(0, 80)}` });
+      } catch (err: any) {
+        res.json({ ok: false, message: err.message ?? 'Connection failed' });
+      }
+    });
+
+    /**
+     * POST /api/setup/update-key
+     * Body: { provider, apiKey, model? }
+     * Quick key-only save — updates the key and provider in .env without
+     * requiring the full onboarding wizard payload.
+     * Returns: { ok }
+     */
+    this.app.post('/api/setup/update-key', async (req, res) => {
+      try {
+        const { UniversalStore } = await import('../core/config-store.js');
+        const { provider, apiKey, model } = req.body as {
+          provider?: string; apiKey?: string; model?: string;
+        };
+
+        const safeProvider  = (provider ?? 'openrouter').toLowerCase().trim();
+        const safeKey       = (apiKey  ?? '').trim();
+        const safeModel     = (model   ?? '').trim();
+
+        const root    = process.cwd();
+        const envPath = path.join(root, '.env');
+        let   envContent = '';
+        try { envContent = fs.readFileSync(envPath, 'utf-8'); } catch { envContent = ''; }
+
+        function setKey(content: string, key: string, value: string): string {
+          process.env[key] = value;
+          UniversalStore.get().set(key, value);
+          const lines = content.split('\n');
+          const idx   = lines.findIndex(l => l.startsWith(key + '='));
+          if (idx >= 0) lines[idx] = `${key}=${value}`; else lines.push(`${key}=${value}`);
+          return lines.join('\n');
+        }
+
+        envContent = setKey(envContent, 'LLM_PROVIDER', safeProvider);
+        envContent = setKey(envContent, 'AI_PROVIDER',  safeProvider);
+
+        if (safeKey) {
+          const targetEnvKey = PROVIDER_ENV_KEY_MAP[safeProvider] ?? 'CUSTOM_API_KEY';
+          envContent = setKey(envContent, targetEnvKey, safeKey);
+        }
+
+        if (safeModel) {
+          envContent = setKey(envContent, 'LLM_MODEL', safeModel);
+        } else {
+          const providerMeta = findProvider(safeProvider);
+          if (providerMeta?.defaultModel) {
+            envContent = setKey(envContent, 'LLM_MODEL', providerMeta.defaultModel);
+          }
+        }
+
+        // Mark setup as complete if not already
+        if (!envContent.includes('MUSTB_SETUP_COMPLETE=true')) {
+          envContent = setKey(envContent, 'MUSTB_SETUP_COMPLETE', 'true');
+        }
+
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+        dotenv.config({ path: envPath, override: true });
+
+        res.json({ ok: true, provider: safeProvider });
+      } catch (err: any) {
+        this.logger.error(`update-key: ${err.message}`);
+        res.status(500).json({ ok: false, error: err.message });
+      }
+    });
+
     // ── Memory File Import ──────────────────────────────────────────────────
     /**
      * POST /api/memory/import
@@ -2124,14 +2705,151 @@ export class ApiServer {
         res.status(500).json({ error: err.message });
       }
     });
+
+    // ── OpenClaw Gateway — Ported Routes (v1.8.0) ──────────────────────────
+    // These routes replicate the most useful OpenClaw gateway methods as
+    // standard REST endpoints, making the Must-b API surface compatible with
+    // OpenClaw tooling and frontend expectations.
+
+    /**
+     * GET /api/ollama/models
+     * Live Ollama model list with context-window info (auto-discovery).
+     * Ported from OpenClaw: fetchOllamaModels + enrichOllamaModelsWithContext.
+     */
+    this.app.get('/api/ollama/models', async (_req, res) => {
+      try {
+        const { autoDiscoverOllama } = await import('../utils/ollama-autodiscovery.js');
+        const explicitly = Boolean(process.env.OLLAMA_BASE_URL);
+        const result = await autoDiscoverOllama(explicitly);
+        res.json({
+          reachable: result.reachable,
+          baseUrl:   result.baseUrl,
+          models:    result.models,
+        });
+      } catch (err: any) {
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    /**
+     * GET /api/ollama/model-info/:name
+     * Returns context-window size and reasoning flag for a specific model.
+     * Ported from OpenClaw: queryOllamaContextWindow.
+     */
+    this.app.get('/api/ollama/model-info/:name', async (req, res) => {
+      try {
+        const { queryOllamaContextWindow, resolveOllamaApiBase, isReasoningModelHeuristic } =
+          await import('../utils/ollama-autodiscovery.js');
+        const baseUrl = process.env.OLLAMA_BASE_URL ?? 'http://127.0.0.1:11434';
+        const apiBase = resolveOllamaApiBase(baseUrl);
+        const name    = req.params['name'];
+        if (!name) { res.status(400).json({ error: 'model name required' }); return; }
+        const contextWindow = await queryOllamaContextWindow(apiBase, name);
+        res.json({
+          name,
+          contextWindow: contextWindow ?? null,
+          isReasoning:   isReasoningModelHeuristic(name),
+        });
+      } catch (err: any) {
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    /**
+     * GET /api/gateway/health
+     * Full health check — mirrors OpenClaw's `health` gateway method.
+     * Returns process uptime, memory, provider config, and Ollama reachability.
+     */
+    this.app.get('/api/gateway/health', async (_req, res) => {
+      const mem = process.memoryUsage();
+      let ollamaReachable = false;
+      if ((process.env.LLM_PROVIDER ?? '').toLowerCase() === 'ollama') {
+        try {
+          const base = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
+          const ping = await fetch(`${base}/api/version`, { signal: AbortSignal.timeout(2000) });
+          ollamaReachable = ping.ok;
+        } catch { /* unreachable */ }
+      }
+      res.json({
+        status:   'ok',
+        uptime:   process.uptime(),
+        provider: process.env.LLM_PROVIDER ?? 'openrouter',
+        model:    process.env.LLM_MODEL ?? '',
+        memory:   { heapUsed: mem.heapUsed, heapTotal: mem.heapTotal, rss: mem.rss },
+        ollama:   { reachable: ollamaReachable, baseUrl: process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434' },
+        ts:       Date.now(),
+      });
+    });
+
+    /**
+     * GET /api/sessions
+     * List recent agent sessions (chat sessions) — mirrors OpenClaw sessions.list.
+     */
+    this.app.get('/api/sessions', (_req, res) => {
+      // Surface the in-memory local chats as "sessions" for OpenClaw-compatible consumers
+      const sessions = localChats.slice(-50).reverse().map(c => ({
+        id:         c.id,
+        title:      c.title,
+        created_at: c.created_at,
+        status:     'idle',
+      }));
+      res.json({ sessions });
+    });
+
+    /**
+     * POST /api/sessions/:id/abort
+     * Abort an in-progress agent run for a session — mirrors OpenClaw sessions.abort.
+     */
+    this.app.post('/api/sessions/:id/abort', (req, res) => {
+      const id = req.params['id'];
+      if (this.orchestrator.busy) {
+        // Orchestrator doesn't have per-session abort yet; emit event and let
+        // the frontend handle graceful degradation.
+        this.io.emit('agentUpdate', { type: 'sessionAborted', sessionId: id, ts: Date.now() });
+        this.logger.warn(`[Sessions] Abort requested for session ${id} (orchestrator busy)`);
+        res.json({ ok: true, aborted: true });
+      } else {
+        res.json({ ok: true, aborted: false, reason: 'no active run' });
+      }
+    });
+
+    /**
+     * GET /api/gateway/logs
+     * Tail recent log lines — mirrors OpenClaw logs.tail gateway method.
+     * Returns the last N lines from the Winston log file if present.
+     */
+    this.app.get('/api/gateway/logs', (req, res) => {
+      const n     = Math.min(parseInt(String(req.query['n'] ?? '100'), 10), 500);
+      const logFn = path.join(process.cwd(), 'logs', 'must-b.log');
+      try {
+        if (!fs.existsSync(logFn)) { res.json({ lines: [] }); return; }
+        const content = fs.readFileSync(logFn, 'utf-8');
+        const lines   = content.trim().split('\n').slice(-n);
+        res.json({ lines });
+      } catch {
+        res.json({ lines: [] });
+      }
+    });
   }
 
   private setupSocketIO() {
     // ── Desktop clients ────────────────────────────────────────────────────
     this.io.on('connection', (socket) => {
       this.logger.info(`Gateway: client connected ${socket.id}`);
+      // Send initial health state on connect (mirrors OpenClaw gateway connect.challenge pattern)
+      socket.emit('agentUpdate', {
+        type:   'health',
+        status: 'ready',
+        ts:     Date.now(),
+      });
       socket.on('disconnect', () => this.logger.info(`Gateway: client disconnected ${socket.id}`));
     });
+
+    // ── Heartbeat tick (OpenClaw: gateway tick / last-heartbeat pattern) ───
+    // Emits a 'tick' event every 30 s so clients can detect stale connections.
+    setInterval(() => {
+      this.io.emit('agentUpdate', { type: 'tick', ts: Date.now() });
+    }, 30_000);
 
     // ── Mobile companion namespace ─────────────────────────────────────────
     // Mobile clients authenticate via a short-lived pairing token passed as

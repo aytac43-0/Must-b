@@ -13,6 +13,7 @@ import {
   AlertCircle, RefreshCw, Code2, FileCode2, Zap,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { useI18n }  from "@/i18n";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,8 @@ const LANG_COLORS: Record<string, string> = {
 // ── Component ─────────────────────────────────────────────────────────────
 
 export default function PluginsPanel() {
+  const { t }        = useI18n();
+  const pp           = t.panels.plugins;
   const [plugins,    setPlugins]    = useState<PluginInfo[]>([]);
   const [loading,    setLoading]    = useState(false);
   const [busyName,   setBusyName]   = useState<string | null>(null);
@@ -85,10 +88,10 @@ export default function PluginsPanel() {
         flash(true, running ? `${name} stopped` : `${name} launched`);
         await loadPlugins();
       } else {
-        flash(false, "Operation failed");
+        flash(false, pp.opFailed);
       }
     } catch {
-      flash(false, "Request error");
+      flash(false, pp.reqError);
     }
     setBusyName(null);
   };
@@ -112,10 +115,10 @@ export default function PluginsPanel() {
         setShowBuild(false);
         await loadPlugins();
       } else {
-        flash(false, "Build failed");
+        flash(false, pp.buildFailed);
       }
     } catch {
-      flash(false, "Request error");
+      flash(false, pp.reqError);
     }
     setBuilding(false);
   };
@@ -127,16 +130,16 @@ export default function PluginsPanel() {
       <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 shrink-0">
         <div className="flex items-center gap-2">
           <Puzzle size={14} className="text-orange-400" />
-          <span className="text-[13px] font-bold text-gray-300">Plugin Architect</span>
+          <span className="text-[13px] font-bold text-gray-300">{pp.title}</span>
           <span className="text-[10px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full font-mono">
-            {plugins.length} installed
+            {plugins.length} {pp.installed}
           </span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={loadPlugins}
             className="text-gray-600 hover:text-gray-400 transition-colors"
-            title="Refresh"
+            title={pp.refresh}
           >
             <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
           </button>
@@ -149,7 +152,7 @@ export default function PluginsPanel() {
             }`}
           >
             <Plus size={10} />
-            New Plugin
+            {pp.newPlugin}
           </button>
         </div>
       </div>
@@ -182,25 +185,25 @@ export default function PluginsPanel() {
           >
             <div className="px-6 py-4 space-y-3">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                Build New Plugin
+                {pp.buildTitle}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   value={buildName}
                   onChange={e => setBuildName(e.target.value)}
-                  placeholder="Plugin name (e.g. weather-monitor)"
+                  placeholder={pp.namePlaceholder}
                   className="col-span-2 px-3 py-2 rounded-lg bg-white/4 border border-white/8 text-[12px] text-gray-200 outline-none placeholder-gray-700 focus:border-orange-500/30 transition-colors"
                 />
                 <input
                   value={buildGoal}
                   onChange={e => setBuildGoal(e.target.value)}
-                  placeholder="Goal (e.g. poll OpenWeather API every 5 min)"
+                  placeholder={pp.goalPlaceholder}
                   className="col-span-2 px-3 py-2 rounded-lg bg-white/4 border border-white/8 text-[12px] text-gray-200 outline-none placeholder-gray-700 focus:border-orange-500/30 transition-colors"
                 />
                 <input
                   value={buildContext}
                   onChange={e => setBuildContext(e.target.value)}
-                  placeholder="Optional context / notes"
+                  placeholder={pp.contextPlaceholder}
                   className="col-span-2 px-3 py-2 rounded-lg bg-white/4 border border-white/8 text-[12px] text-gray-200 outline-none placeholder-gray-700 focus:border-orange-500/30 transition-colors"
                 />
                 <div className="flex gap-2">
@@ -224,7 +227,7 @@ export default function PluginsPanel() {
                   className="flex items-center justify-center gap-1.5 py-2 rounded-lg bg-orange-500/12 border border-orange-500/20 text-orange-400 text-[11px] font-bold hover:bg-orange-500/20 transition-all disabled:opacity-40"
                 >
                   {building ? <Loader2 size={11} className="animate-spin" /> : <Zap size={11} />}
-                  Generate Plugin
+                  {pp.generatePlugin}
                 </button>
               </div>
             </div>
@@ -237,10 +240,8 @@ export default function PluginsPanel() {
         {plugins.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Puzzle size={36} className="text-gray-700 mb-4" />
-            <p className="text-sm font-semibold text-gray-500">No plugins installed</p>
-            <p className="text-xs text-gray-700 mt-1">
-              Click "New Plugin" to generate your first plugin.
-            </p>
+            <p className="text-sm font-semibold text-gray-500">{pp.emptyTitle}</p>
+            <p className="text-xs text-gray-700 mt-1">{pp.emptyHint}</p>
           </div>
         )}
 
@@ -268,7 +269,7 @@ export default function PluginsPanel() {
 
               {p.running && (
                 <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/12 border border-green-500/20 text-green-400 font-bold">
-                  RUNNING
+                  {pp.running}
                 </span>
               )}
 
@@ -286,7 +287,7 @@ export default function PluginsPanel() {
                   : p.running
                     ? <Square size={10} />
                     : <Play size={10} />}
-                {p.running ? "Stop" : "Run"}
+                {p.running ? pp.stop : pp.run}
               </button>
             </motion.div>
           );

@@ -5,6 +5,7 @@ import path from 'path';
 import winston from 'winston';
 import { Planner, type PlanStep } from './planner.js';
 import { Executor } from './executor.js';
+import { type CompletionMessage } from './provider.js';
 
 export { PlanStep };
 
@@ -55,12 +56,39 @@ function classifyIntent(goal: string): 'direct' | 'agent' {
 }
 
 /** Classify an error message for self-healing decisions */
-function classifyError(msg: string): 'auth' | 'network' | 'ratelimit' | 'unknown' {
+function classifyError(msg: string): 'auth' | 'network' | 'ratelimit' | 'overflow' | 'unknown' {
   const m = msg.toLowerCase();
   if (m.includes('401') || m.includes('unauthorized') || m.includes('api key') || m.includes('invalid key')) return 'auth';
   if (m.includes('429') || m.includes('rate limit') || m.includes('too many requests')) return 'ratelimit';
   if (m.includes('econnrefused') || m.includes('enotfound') || m.includes('fetch failed') || m.includes('network')) return 'network';
+  // Context window overflow — ported from OpenClaw pi-embedded-runner pattern
+  if (
+    m.includes('context length') ||
+    m.includes('context window') ||
+    m.includes('maximum context') ||
+    m.includes('token limit') ||
+    m.includes('too many tokens') ||
+    m.includes('prompt is too long') ||
+    m.includes('reduce the length') ||
+    (m.includes('413') && m.includes('request'))
+  ) return 'overflow';
   return 'unknown';
+}
+
+/**
+ * Compact message history when context window overflow is detected.
+ * Drops the oldest non-system turns (keeping system prompt + last N turns).
+ * Mirrors OpenClaw's overflow-compaction strategy.
+ */
+function compactMessages(
+  messages: CompletionMessage[],
+  keepTurns = 6,
+): CompletionMessage[] {
+  const system = messages.filter(m => m.role === 'system');
+  const conv   = messages.filter(m => m.role !== 'system');
+  // Keep most recent turns; drop oldest to free context
+  const trimmed = conv.slice(-keepTurns);
+  return [...system, ...trimmed];
 }
 
 /** Reload .env into process.env so keys written by onboard are picked up */
@@ -253,6 +281,20 @@ export class Orchestrator extends EventEmitter {
           this.logger.info(`Orchestrator: Network error — waiting ${wait}ms then re-planning.`);
           this.emit('agentRepair', { action: 'backoff', waitMs: wait, reason: msg, timestamp: Date.now() });
           await new Promise(r => setTimeout(r, wait));
+        }
+
+        // Context window overflow — ported from OpenClaw overflow-compaction strategy.
+        // Compact the planner's message history and shorten the goal to fit within limits.
+        if (kind === 'overflow') {
+          this.logger.warn('Orchestrator: Context window overflow — compacting history and retrying.');
+          this.emit('agentRepair', { action: 'context_compaction', reason: msg, timestamp: Date.now() });
+          // Ask the planner to compact its internal history (best-effort)
+          if (typeof (this.planner as any).compactHistory === 'function') {
+            (this.planner as any).compactHistory();
+          }
+          // Shorten the re-plan goal so it occupies fewer tokens
+          currentGoal = `Concise version of: "${goal.slice(0, 300)}"`;
+          continue;
         }
 
         // Auto-repair loop for unknown errors: track recurring signatures and

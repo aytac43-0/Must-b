@@ -36,10 +36,10 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Switch language"
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[12px] font-medium transition-all select-none ${
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border text-[12px] font-semibold transition-all select-none ${
           open
-            ? "bg-white/10 border-white/15 text-white"
-            : "bg-white/5 border-white/8 text-gray-300 hover:bg-white/8 hover:text-white"
+            ? "bg-orange-500/15 border-orange-400/30 text-orange-700"
+            : "text-black/65 border-transparent hover:text-black hover:bg-black/6"
         }`}
       >
         <Languages size={12} className="text-orange-400 shrink-0" />

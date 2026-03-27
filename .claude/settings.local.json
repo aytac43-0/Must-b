@@ -92,7 +92,24 @@
       "Bash(cd \"/c/Users/aytac/must-b/src/core\" grep -n \"must-b\" extensions/acpx/src/runtime-internals/process.test.ts)",
       "Read(//c/Users/aytac/must-b/src/core/**)",
       "Bash(wc -l echo \"Syntax errors remaining \\(was 78\\):\" cd \"/c/Users/aytac/must-b/src/core\")",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git update-ref:*)",
+      "Bash(git branch:*)",
+      "Bash(ls c:/Users/aytac/must-b/install*)",
+      "Bash(npm publish:*)",
+      "Bash(npm pack:*)",
+      "Bash(npm version:*)",
+      "Bash(find c:/Users/aytac/must-b/public/must-b-ui/src -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\))",
+      "Bash(grep -E \"\\\\.ts$\")",
+      "Bash(cmd /c \"dir c:\\\\Users\\\\aytac\\\\must-b\\\\src\\\\core\")",
+      "Bash(cmd /c \"dir c:\\\\Users\\\\aytac\\\\must-b\\\\src\\\\core\"\")",
+      "Bash(cmd /c dir c:\\\\Users\\\\aytac\\\\must-b\\\\src\\\\core)",
+      "Bash(grep -r \"LitElement\\\\|lit\\\\|custom element\" c:/Users/aytac/must-b/openclaw/ui/src/ui/*.ts)",
+      "Bash(sed 's/.*app\\\\.//')",
+      "Bash(ls c:/Users/aytac/must-b/openclaw/src/web*)",
+      "Bash(grep -r \"openclaw\\\\|OpenClaw\" C:/Users/aytac/must-b/ --include=*.ts --include=*.tsx --include=*.js)",
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ]
   }
 }

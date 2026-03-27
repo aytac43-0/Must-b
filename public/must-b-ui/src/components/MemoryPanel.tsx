@@ -14,6 +14,7 @@ import {
   CheckCircle2, AlertCircle, SlidersHorizontal,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { useI18n }  from "@/i18n";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,8 @@ const SOURCE_META: Record<
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function MemoryPanel() {
+  const { t }      = useI18n();
+  const pm         = t.panels.memory;
   const [query,    setQuery]    = useState("");
   const [results,  setResults]  = useState<MemoryResult[]>([]);
   const [stats,    setStats]    = useState<IndexStats | null>(null);
@@ -106,16 +109,16 @@ export default function MemoryPanel() {
       if (r.ok) {
         const d = await r.json() as { indexed?: number };
         const msg = op === "clear"
-          ? "Index cleared"
-          : `Indexed ${d.indexed ?? 0} ${op === "skills" ? "skills" : "files"}`;
+          ? pm.indexCleared
+          : `${pm.indexed} ${d.indexed ?? 0} ${op === "skills" ? pm.skills : pm.files}`;
         setNotice({ ok: true, msg });
         loadStats();
         if (op === "clear") setResults([]);
       } else {
-        setNotice({ ok: false, msg: "Operation failed" });
+        setNotice({ ok: false, msg: pm.opFailed });
       }
     } catch {
-      setNotice({ ok: false, msg: "Request error" });
+      setNotice({ ok: false, msg: pm.reqError });
     }
     setIndexOp(null);
     setTimeout(() => setNotice(null), 4000);
@@ -128,10 +131,10 @@ export default function MemoryPanel() {
       <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 shrink-0">
         <div className="flex items-center gap-2">
           <Brain size={14} className="text-orange-400" />
-          <span className="text-[13px] font-bold text-gray-300">Memory Insights</span>
+          <span className="text-[13px] font-bold text-gray-300">{pm.title}</span>
           {stats && (
             <span className="text-[10px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full font-mono">
-              {stats.items.toLocaleString()} vectors
+              {stats.items.toLocaleString()} {pm.vectors}
             </span>
           )}
         </div>
@@ -139,14 +142,14 @@ export default function MemoryPanel() {
           <button
             onClick={() => { setShowCtrl(v => !v); if (!stats) loadStats(); }}
             className={`text-gray-600 hover:text-gray-400 transition-colors ${showCtrl ? "text-orange-400" : ""}`}
-            title="Index controls"
+            title={pm.indexControls}
           >
             <SlidersHorizontal size={13} />
           </button>
           <button
             onClick={loadStats}
             className="text-gray-600 hover:text-gray-400 transition-colors"
-            title="Refresh stats"
+            title={pm.refreshStats}
           >
             <RefreshCw size={13} />
           </button>
@@ -164,7 +167,7 @@ export default function MemoryPanel() {
           >
             <div className="px-6 py-3 flex flex-wrap items-center gap-2">
               <span className="text-[10px] text-gray-600 uppercase tracking-widest font-bold shrink-0">
-                Index:
+                {pm.indexLabel}
               </span>
               {(["skills", "workspace"] as const).map((op) => (
                 <button
@@ -187,7 +190,7 @@ export default function MemoryPanel() {
                 {indexOp === "clear"
                   ? <Loader2 size={10} className="animate-spin" />
                   : <Trash2 size={10} />}
-                Clear Index
+                {pm.clearIndex}
               </button>
             </div>
 
@@ -218,7 +221,7 @@ export default function MemoryPanel() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Search your memory…"
+            placeholder={pm.searchPlaceholder}
             className="flex-1 bg-transparent text-[13px] text-gray-200 outline-none placeholder-gray-700"
           />
           {loading ? (
@@ -234,7 +237,7 @@ export default function MemoryPanel() {
           )}
         </div>
         <p className="text-[10px] text-gray-700 mt-1.5 ml-1">
-          Semantic similarity search — press Enter or click to search
+          {pm.searchHint}
         </p>
       </div>
 
@@ -244,12 +247,10 @@ export default function MemoryPanel() {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Brain size={36} className="text-gray-700 mb-4" />
             <p className="text-sm font-semibold text-gray-500">
-              {query.trim() ? "No memories found" : "Search your AI memory"}
+              {query.trim() ? pm.emptyNoResults : pm.emptyTitle}
             </p>
             <p className="text-xs text-gray-700 mt-1 max-w-xs leading-relaxed">
-              {query.trim()
-                ? "Try a different phrase or index more content using the controls above."
-                : "Type a phrase to find semantically similar skills, conversations, and workspace files."}
+              {query.trim() ? pm.emptyNoResultsHint : pm.emptyHint}
             </p>
           </div>
         )}

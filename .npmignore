@@ -23,3 +23,10 @@ CLAUDE .md
 
 # Node modules are normally excluded by default, but it doesn't hurt
 /node_modules
+
+# Internal Automation Tools
+auto-mustb.js
+factory-manager.js
+PIPELINE.md
+CLAUDE.md
+.claude/
