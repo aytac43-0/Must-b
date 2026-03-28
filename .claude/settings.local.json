@@ -110,20 +110,8 @@
       "Bash(grep -r \"openclaw\\\\|OpenClaw\" C:/Users/aytac/must-b/ --include=*.ts --include=*.tsx --include=*.js)",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "Bash(cat:*)"
-    ]
-  },
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cat C:/Users/aytac/must-b/PIPELINE.md"
-          }
-        ]
-      }
+      "Bash(cat:*)",
+      "Bash(find C:/Users/aytac/must-b \\\\\\(-name dashboard*new* -o -name *dashboard*new* -o -name *new*dashboard* \\\\\\))"
     ]
   },
   "hooks": {

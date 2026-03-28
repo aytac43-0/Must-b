@@ -1,12 +1,12 @@
 /**
- * ProductsPage — OpenClaw tools catalog & agents.
- * Tabs: Tools (tools.catalog) / Agents (agents.list)
+ * ProductsPage — Must-b native tools catalog & agents.
+ * Tabs: Tools (skill-router + plugins) / Agents (src/core/skills)
+ * No OpenClaw dependency — works 100% standalone.
  */
 
 import { useState, useEffect } from "react";
-import { Package, WifiOff, RefreshCw, Wrench, Bot, ChevronDown, ChevronRight } from "lucide-react";
+import { Package, RefreshCw, Wrench, Bot, ChevronDown, ChevronRight } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { useOpenClawStatus } from "@/hooks/useOpenClawStatus";
 
 type Tab = "tools" | "agents";
 type ToolFilter = "all" | "core" | "plugin";
@@ -34,7 +34,7 @@ interface AgentSummary {
 }
 
 /* ── Tools tab ─────────────────────────────────────────────────────────── */
-function ToolsTab({ online }: { online: boolean }) {
+function ToolsTab() {
   const [groups, setGroups] = useState<ToolGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<ToolFilter>("all");
@@ -42,7 +42,7 @@ function ToolsTab({ online }: { online: boolean }) {
 
   useEffect(() => {
     setLoading(true);
-    apiFetch("/api/openclaw/tools?includePlugins=true")
+    apiFetch("/api/tools")
       .then(r => r.json())
       .then(d => {
         const g: ToolGroup[] = Array.isArray(d?.groups) ? d.groups : [];
@@ -51,7 +51,7 @@ function ToolsTab({ online }: { online: boolean }) {
       })
       .catch(() => setGroups([]))
       .finally(() => setLoading(false));
-  }, [online]);
+  }, []);
 
   const filteredGroups = groups.map(g => ({
     ...g,
@@ -90,9 +90,7 @@ function ToolsTab({ online }: { online: boolean }) {
       {loading ? (
         <div className="flex justify-center py-10"><RefreshCw size={18} className="animate-spin text-orange-400" /></div>
       ) : filteredGroups.length === 0 ? (
-        <p className="text-center text-sm text-gray-600 py-8">
-          {online ? "Araç bulunamadı." : "OpenClaw çevrimdışı."}
-        </p>
+        <p className="text-center text-sm text-gray-600 py-8">Araç bulunamadı.</p>
       ) : (
         <div className="space-y-2">
           {filteredGroups.map(group => (
@@ -143,25 +141,23 @@ function ToolsTab({ online }: { online: boolean }) {
 }
 
 /* ── Agents tab ────────────────────────────────────────────────────────── */
-function AgentsTab({ online }: { online: boolean }) {
+function AgentsTab() {
   const [agents, setAgents] = useState<AgentSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    apiFetch("/api/openclaw/agents")
+    apiFetch("/api/agents")
       .then(r => r.json())
       .then(d => setAgents(Array.isArray(d?.agents) ? d.agents : []))
       .catch(() => setAgents([]))
       .finally(() => setLoading(false));
-  }, [online]);
+  }, []);
 
   return loading ? (
     <div className="flex justify-center py-10"><RefreshCw size={18} className="animate-spin text-orange-400" /></div>
   ) : agents.length === 0 ? (
-    <p className="text-center text-sm text-gray-600 py-8">
-      {online ? "Agent bulunamadı." : "OpenClaw çevrimdışı."}
-    </p>
+    <p className="text-center text-sm text-gray-600 py-8">Agent bulunamadı.</p>
   ) : (
     <div className="grid grid-cols-2 gap-3">
       {agents.map(agent => (
@@ -188,27 +184,19 @@ function AgentsTab({ online }: { online: boolean }) {
 
 /* ── Page ─────────────────────────────────────────────────────────────── */
 export default function ProductsPage() {
-  const { online } = useOpenClawStatus();
   const [tab, setTab] = useState<Tab>("tools");
 
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-orange-500/15 border border-orange-500/25 flex items-center justify-center">
-            <Package size={16} className="text-orange-400" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-white">Araçlar & Agent'lar</h1>
-            <p className="text-[11px] text-gray-500">OpenClaw araç kataloğu ve agent yönetimi</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl bg-orange-500/15 border border-orange-500/25 flex items-center justify-center">
+          <Package size={16} className="text-orange-400" />
         </div>
-        {!online && (
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] bg-red-500/8 border border-red-500/20 text-red-400">
-            <WifiOff size={10} /> Çevrimdışı
-          </span>
-        )}
+        <div>
+          <h1 className="text-xl font-bold text-white">Araçlar & Agent'lar</h1>
+          <p className="text-[11px] text-gray-500">Must-b araç kataloğu ve agent yönetimi</p>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -227,8 +215,8 @@ export default function ProductsPage() {
         ))}
       </div>
 
-      {tab === "tools" && <ToolsTab online={online} />}
-      {tab === "agents" && <AgentsTab online={online} />}
+      {tab === "tools" && <ToolsTab />}
+      {tab === "agents" && <AgentsTab />}
     </div>
   );
 }

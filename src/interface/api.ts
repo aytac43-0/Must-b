@@ -2230,6 +2230,95 @@ export class ApiServer {
       }
     });
 
+    // ── Native Tools & Agents catalog (no OpenClaw dependency) ──────────────
+
+    /**
+     * GET /api/tools
+     * Returns Must-b's own tool catalog: skill routes + built-in plugins.
+     * Groups: "skills" (prompt/direct routes) and "plugins" (built-in + user).
+     * Format mirrors /api/openclaw/tools so ProductsPage works with either.
+     */
+    this.app.get('/api/tools', requireAuth, async (_req, res) => {
+      try {
+        const { listRoutes } = await import('../plugins/skill-router.js');
+        const { listAll } = await import('../plugins/index.js');
+
+        const routes = listRoutes();
+        const plugins = listAll();
+
+        const skillTools = routes.map(r => ({
+          name: r.skill,
+          label: r.label ?? r.skill,
+          description: r.description ?? '',
+          source: 'core' as const,
+        }));
+
+        const pluginTools = plugins.map(p => ({
+          name: p.name,
+          label: p.name,
+          description: p.description ?? '',
+          source: p.source === 'user' ? ('plugin' as const) : ('core' as const),
+        }));
+
+        res.json({
+          groups: [
+            { id: 'skills', label: 'Skills & Automation', tools: skillTools },
+            { id: 'plugins', label: 'Built-in Plugins', tools: pluginTools },
+          ],
+        });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * GET /api/agents
+     * Returns Must-b's own agent/skill metadata from src/core/skills/*.
+     * Reads SKILL.md frontmatter: name, description, emoji, tags.
+     * Format mirrors /api/openclaw/agents so ProductsPage works with either.
+     */
+    this.app.get('/api/agents', requireAuth, async (_req, res) => {
+      try {
+        const fs   = await import('fs');
+        const path = await import('path');
+
+        const skillsDir = path.join(this.root, 'src', 'core', 'skills');
+
+        const agents: Array<{ id: string; name: string; emoji: string; description: string; isDefault: boolean }> = [];
+
+        if (fs.existsSync(skillsDir)) {
+          const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
+          for (const entry of entries) {
+            if (!entry.isDirectory()) continue;
+            const mdPath = path.join(skillsDir, entry.name, 'SKILL.md');
+            if (!fs.existsSync(mdPath)) continue;
+            try {
+              const content = fs.readFileSync(mdPath, 'utf8');
+              // Parse YAML frontmatter between --- delimiters
+              const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+              if (!fmMatch) continue;
+              const fm = fmMatch[1];
+              const nameMatch = fm.match(/^name:\s*["']?(.+?)["']?\s*$/m);
+              const descMatch = fm.match(/^description:\s*["']?([\s\S]*?)["']?\s*$/m);
+              const emojiMatch = fm.match(/"emoji":\s*"([^"]+)"/);
+
+              agents.push({
+                id: entry.name,
+                name: nameMatch?.[1]?.trim() ?? entry.name,
+                emoji: emojiMatch?.[1] ?? '🤖',
+                description: descMatch?.[1]?.trim().slice(0, 120) ?? '',
+                isDefault: entry.name === 'coding-agent' || entry.name === 'canvas',
+              });
+            } catch { /* skip malformed */ }
+          }
+        }
+
+        res.json({ agents });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
     // ── Video Stream Vision (v4.9) ────────────────────────────────────────
 
     /**

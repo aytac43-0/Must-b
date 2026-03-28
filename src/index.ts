@@ -14,6 +14,7 @@ import { ApiServer, startHealthMonitor } from './interface/api.js';
 import { SessionHistory } from './memory/history.js';
 import { LongTermMemory } from './memory/long-term.js';
 import { runDoctor } from './commands/doctor.js';
+import { runBootCheck } from './core/doctor.js';
 import { runOnboard } from './commands/onboard.js';
 import { startIdlingInference, attemptSelfRepair } from './core/executor.js';
 import { getAgentRole } from './core/hierarchy.js';
@@ -156,29 +157,10 @@ async function main() {
   }
 }
 
-// ── Gateway Pre-Flight: silent self-healing doctor ────────────────────────
+// ── Gateway Pre-Flight: visible boot health check ────────────────────────
 async function runPreFlight(): Promise<void> {
-  const red    = (s: string) => `\x1b[31m${s}\x1b[0m`;
-  const yellow = (s: string) => `\x1b[33m${s}\x1b[0m`;
-  const green  = (s: string) => `\x1b[32m${s}\x1b[0m`;
-  const dim    = (s: string) => `\x1b[2m${s}\x1b[0m`;
-
-  const result = await runDoctor(ROOT, true, true);
-
-  if (result.healed > 0) {
-    console.log(green(`  [pre-flight] ${result.healed} issue(s) auto-repaired.`));
-  }
-
-  if (result.criticalBlock) {
-    console.error(red('\n  ══════════════════════════════════════════════════'));
-    console.error(red('  [pre-flight] CRITICAL ERROR — Gateway cannot start!'));
-    console.error(red('  ══════════════════════════════════════════════════'));
-    console.error(yellow('  Required components are missing or corrupted.'));
-    console.error('');
-    console.error(dim('  Run diagnostics and repair: must-b doctor --fix'));
-    console.error('');
-    process.exit(1);
-  }
+  const result = await runBootCheck(ROOT);
+  if (result.criticalBlock) process.exit(1);
 }
 
 // ── Launch URL in default browser (cross-platform) ─────────────────────────
