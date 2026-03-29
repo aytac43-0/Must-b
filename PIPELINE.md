@@ -136,8 +136,11 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S3-B001 | Backend_Architect | **NATIVE YAPILANMA**: OpenClaw kalıntılarını temizle — `OpenClawBridge`→`MustbGatewayBridge` (`src/core/gateway-bridge.ts`), `/api/openclaw/*`→`/api/gateway/*`, tüm yorum satırları güncelle | DONE | Backend_Architect \| 2026-03-29 |
 | S3-B002 | Backend_Architect | **DOCTOR**: pip otomatik kurulum desteği ekle (`checkPip` fonksiyonu) | DONE | Backend_Architect \| 2026-03-29 |
 | S3-B003 | Backend_Architect | **DOCTOR FIX**: `checkPythonHeaders` sysconfig ile gerçek include path + node-gyp `npm config set python` otomatik düzeltme | DONE | Backend_Architect \| 2026-03-29 |
+| S3-B004 | Backend_Architect | **DOCTOR v2.0**: `refreshPathFromRegistry`, `withSpinner`, `verifyBinaryOnPath` altyapısı + C++ `--wait` + Python PATH enjeksiyonu + post-fix doğrulama | DONE | Backend_Architect \| 2026-03-30 |
 | S3-QA | QA_Lead | `npm run build:prod` + TypeScript denetimi | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.2MB ✓ pip: v25.3 ✓ Python.h: found ✓ node-gyp path: set ✓ Network: ortam kısıtı (kod hatası değil) \| QA_Lead \| 2026-03-29 |
 | S3-DEPLOY | Deploy_Chief | v1.11.0 deploy | DEPLOYED | Deploy_Chief \| 2026-03-29 \| commit: Must-b v1.11.0: Glassmorphism Overhaul \| push: BAŞARILI |
+| S3-B004-QA | QA_Lead | Doctor v2.0 — `npx tsc --noEmit` backend + frontend | QA_PASSED | TS: 0 hata (backend+frontend) \| QA_Lead \| 2026-03-30 |
+| S3-B004-DEPLOY | Deploy_Chief | v1.12.0 deploy — Doctor v2.0: Autonomous Install Engine | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.12.0: Autonomous Install Engine \| push: BAŞARILI |
 
 ---
 

@@ -56,6 +56,65 @@ function getInstallCmd(cmds: { win32?: string; darwin?: string; linux?: string }
   return cmds[process.platform as 'win32' | 'darwin' | 'linux'];
 }
 
+// ── PATH refresh from Windows Registry ────────────────────────────────────
+// After any winget/installer run, new entries are in HKCU\Environment but not
+// in the current process.env.PATH (Windows doesn't propagate to running procs).
+// This reads both User + Machine PATH and merges them into process.env.PATH.
+
+function refreshPathFromRegistry(): void {
+  if (process.platform !== 'win32') return;
+  try {
+    const userPath = execSync(
+      'powershell -NoProfile -Command "[System.Environment]::GetEnvironmentVariable(\'PATH\',\'User\')"',
+      { encoding: 'utf-8', stdio: 'pipe', timeout: 5000 }
+    ).trim();
+    const machinePath = execSync(
+      'powershell -NoProfile -Command "[System.Environment]::GetEnvironmentVariable(\'PATH\',\'Machine\')"',
+      { encoding: 'utf-8', stdio: 'pipe', timeout: 5000 }
+    ).trim();
+    const current = process.env.PATH ?? '';
+    const merged = [userPath, machinePath, current]
+      .flatMap(p => p.split(';'))
+      .map(p => p.trim())
+      .filter(Boolean)
+      .filter((p, i, arr) => arr.findIndex(x => x.toLowerCase() === p.toLowerCase()) === i)
+      .join(';');
+    process.env.PATH = merged;
+  } catch { /* best-effort */ }
+}
+
+// ── Animated spinner with elapsed time ────────────────────────────────────
+// Shows a live spinner + label + elapsed seconds while an async operation runs.
+// Returns the fn's result. Clears the line when done.
+
+async function withSpinner<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  let tick = 0;
+  const start = Date.now();
+  const interval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - start) / 1000);
+    const frame = cyan(frames[tick++ % frames.length]);
+    process.stdout.write(`\r  ${frame}  ${label}${dim(` [${elapsed}s]`)}   `);
+  }, 120);
+  try {
+    return await fn();
+  } finally {
+    clearInterval(interval);
+    process.stdout.write('\r' + ' '.repeat(80) + '\r');
+  }
+}
+
+// ── Post-fix verification probe ────────────────────────────────────────────
+// After autoFix claims success, run a lightweight re-check to confirm the
+// binary is actually reachable. Returns true if probe passes.
+
+function verifyBinaryOnPath(cmd: string, args: string[] = ['--version']): boolean {
+  try {
+    const r = spawnSync(cmd, args, { encoding: 'utf-8', stdio: 'pipe', timeout: 5000 });
+    return r.status === 0;
+  } catch { return false; }
+}
+
 // ── Windows: smart winget installer with "already installed" handling ──────
 //
 // winget install exits non-zero with "Found an existing package already
@@ -108,32 +167,40 @@ function addToPath(dir: string): void {
 }
 
 /**
- * Run `winget install <pkgId>`.
- * Returns true on clean install OR when winget reports "already installed"
- * (treating pre-existing installations as a success, not a failure).
- * When already-installed, probes `commonPathKey` entries and auto-adds to PATH.
+ * Run `winget install <pkgId> --wait`.
+ * Blocks until the installer completes (winget --wait).
+ * Returns true on clean install OR when winget reports "already installed".
+ * After any install attempt, refreshes process.env.PATH from the registry
+ * so the newly installed binary is findable without a terminal restart.
  */
 function wingetInstall(pkgId: string, commonPathKey?: keyof typeof WIN_COMMON_PATHS): boolean {
   if (process.platform !== 'win32') return false;
   try {
-    execSync(`winget install --id ${pkgId} --accept-source-agreements --accept-package-agreements`,
-      { stdio: 'pipe', encoding: 'utf-8' });
+    execSync(
+      `winget install --id ${pkgId} --wait --accept-source-agreements --accept-package-agreements`,
+      { stdio: 'pipe', encoding: 'utf-8' }
+    );
+    // Refresh PATH so the newly installed binary is visible immediately
+    refreshPathFromRegistry();
+    if (commonPathKey) {
+      for (const candidate of WIN_COMMON_PATHS[commonPathKey]) {
+        if (fs.existsSync(candidate)) { addToPath(path.dirname(candidate)); break; }
+      }
+    }
     return true;
   } catch (err: any) {
     const output = ((err.stdout ?? '') + (err.stderr ?? '')).toLowerCase();
     // winget non-zero but package was already present — NOT a real failure
     if (output.includes('already installed') || output.includes('no available upgrade') ||
         output.includes('no applicable update') || output.includes('already up to date')) {
-      console.log(dim('  ↳ Paket zaten kurulu — PATH kontrol ediliyor…'));
+      console.log(dim('  ↳ Paket zaten kurulu — PATH yenileniyor…'));
+      refreshPathFromRegistry();
       if (commonPathKey) {
         for (const candidate of WIN_COMMON_PATHS[commonPathKey]) {
-          if (fs.existsSync(candidate)) {
-            addToPath(path.dirname(candidate));
-            return true;
-          }
+          if (fs.existsSync(candidate)) { addToPath(path.dirname(candidate)); return true; }
         }
       }
-      return true; // installed, even if PATH wasn't updated (new shell will have it)
+      return true;
     }
     return false;
   }
@@ -168,14 +235,18 @@ function checkNode(): CheckResult {
     detail: `${version} ${ok ? '(>= 18 required)' : '(upgrade to Node 18+)'}`,
     fix: ok ? undefined : 'Install Node 18+ from https://nodejs.org',
     autoFix: ok ? undefined : async () => {
-      if (process.platform === 'win32') return wingetInstall('OpenJS.NodeJS.LTS', 'node');
+      if (process.platform === 'win32') {
+        const ok = wingetInstall('OpenJS.NodeJS.LTS', 'node');
+        if (ok) refreshPathFromRegistry();
+        return ok && verifyBinaryOnPath('node', ['--version']);
+      }
       const cmd = getInstallCmd({
         darwin: 'brew install node@20',
         linux:  'curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs',
       });
       if (!cmd) return false;
       console.log(dim(`  → ${cmd}`));
-      try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
+      try { execSync(cmd, { stdio: 'inherit' }); return verifyBinaryOnPath('node', ['--version']); } catch { return false; }
     },
   };
 }
@@ -191,14 +262,18 @@ function checkGit(): CheckResult {
       detail: 'not found',
       fix: 'Install Git from https://git-scm.com',
       autoFix: async () => {
-        if (process.platform === 'win32') return wingetInstall('Git.Git', 'git');
+        if (process.platform === 'win32') {
+          const ok = wingetInstall('Git.Git', 'git');
+          if (ok) refreshPathFromRegistry();
+          return ok && verifyBinaryOnPath('git', ['--version']);
+        }
         const cmd = getInstallCmd({
           darwin: 'brew install git',
           linux:  'sudo apt-get install -y git',
         });
         if (!cmd) return false;
         console.log(dim(`  → ${cmd}`));
-        try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
+        try { execSync(cmd, { stdio: 'inherit' }); return verifyBinaryOnPath('git', ['--version']); } catch { return false; }
       },
     };
   }
@@ -212,6 +287,31 @@ function checkPython(): CheckResult {
       return { label: 'Python', ok: true, detail: ver };
     }
   }
+
+  // PATH injection: Python may be installed but not on PATH (common after winget/choco installs).
+  // Scan known install locations and silently add to PATH — no user interaction required.
+  if (process.platform === 'win32') {
+    // Also check the AppData\Local\Python path pattern used by the official installer
+    const extraPaths: string[] = [
+      ...['314', '313', '312', '311', '310', '39', '38'].flatMap(v => [
+        `${os.homedir()}\\AppData\\Local\\Python\\pythoncore-3.${v.length === 3 ? v[0] + '.' + v.slice(1) : v}-64\\python.exe`,
+        `${os.homedir()}\\AppData\\Local\\Programs\\Python\\Python${v}\\python.exe`,
+        `C:\\Python${v}\\python.exe`,
+      ]),
+      ...WIN_COMMON_PATHS.python,
+    ];
+    for (const candidate of extraPaths) {
+      if (fs.existsSync(candidate)) {
+        addToPath(path.dirname(candidate));
+        // Verify it's now reachable
+        if (verifyBinaryOnPath('python', ['--version']) || verifyBinaryOnPath('python3', ['--version'])) {
+          const ver = spawnSync('python', ['--version'], { encoding: 'utf-8', stdio: 'pipe' });
+          return { label: 'Python', ok: true, detail: `${(ver.stdout || ver.stderr || '').trim()} ${dim('(PATH enjekte edildi)')}` };
+        }
+      }
+    }
+  }
+
   return {
     label: 'Python',
     ok: false,
@@ -219,13 +319,16 @@ function checkPython(): CheckResult {
     fix: 'Install Python 3 from https://python.org',
     autoFix: async () => {
       if (process.platform === 'win32') {
-        // Try preferred winget IDs; wingetInstall handles "already installed" as success
+        console.log(cyan('  ⟳  Python kuruluyor (winget)…'));
         for (const pkgId of ['Python.Python.3.12', 'Python.Python.3.11', 'Python.Python.3']) {
-          if (wingetInstall(pkgId, 'python')) return true;
+          if (wingetInstall(pkgId, 'python')) {
+            refreshPathFromRegistry();
+            if (verifyBinaryOnPath('python', ['--version'])) return true;
+          }
         }
-        // Last resort: probe common paths without install
+        // Still not on PATH — scan common paths and inject
         for (const p of WIN_COMMON_PATHS.python) {
-          if (fs.existsSync(p)) { addToPath(path.dirname(p)); return true; }
+          if (fs.existsSync(p)) { addToPath(path.dirname(p)); return verifyBinaryOnPath('python', ['--version']); }
         }
         console.log(yellow('  ⚠  Python bulunamadı — indirin: https://www.python.org/downloads/windows/'));
         return false;
@@ -233,7 +336,7 @@ function checkPython(): CheckResult {
       const cmd = getInstallCmd({ darwin: 'brew install python3', linux: 'sudo apt-get install -y python3' });
       if (!cmd) return false;
       console.log(dim(`  → ${cmd}`));
-      try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
+      try { execSync(cmd, { stdio: 'inherit' }); return verifyBinaryOnPath('python3', ['--version']); } catch { return false; }
     },
   };
 }
@@ -603,31 +706,64 @@ function checkCppBuildTools(): CheckResult {
         console.log('');
         console.log(yellow('  ⚠  Sisteminde C++ derleyiciler (MSVC) eksik.'));
         console.log(yellow('     Bu, Must-b\'nin yerel modüllerini tam derleyebilmesi için gereklidir.'));
-        console.log(yellow('     Kurulum yaklaşık 2GB indirir ve birkaç dakika sürer.'));
-        const yes = await askYN('Visual Studio 2022 Build Tools kurulumunu başlatmamı ister misin?');
+        console.log(yellow('     Kurulum yaklaşık 2–4GB indirir ve 5–15 dakika sürebilir.'));
+        console.log(yellow('     Bu terminal penceresi açık kalmalı — kurulum bitene kadar bekliyoruz.'));
+        const yes = await askYN('Visual Studio 2022 Build Tools kurulumunu şimdi başlatmamı ister misin?');
         if (!yes) {
           console.log(dim('     Manuel: https://visualstudio.microsoft.com/visual-cpp-build-tools/'));
           return false;
         }
+
         const cmd = [
           'winget install',
           '--id Microsoft.VisualStudio.2022.BuildTools',
-          '--silent',
+          '--wait',
+          '--accept-source-agreements',
+          '--accept-package-agreements',
           '--override',
           '"--quiet --wait',
           '--add Microsoft.VisualStudio.Workload.VCTools',
           '--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
           '--includeRecommended"',
         ].join(' ');
+
+        console.log('');
         console.log(dim(`  → ${cmd}`));
-        try {
-          execSync(cmd, { stdio: 'inherit' });
-          return true;
-        } catch {
-          console.log(yellow('  ⚠  Kurulum başarısız. Manuel:'));
-          console.log(yellow('     https://visualstudio.microsoft.com/visual-cpp-build-tools/'));
+        console.log('');
+
+        const success = await withSpinner(
+          'Derleyici kuruluyor (MSVC), bu pencereyi kapatmayın…',
+          async () => {
+            try {
+              execSync(cmd, { stdio: 'pipe', encoding: 'utf-8' });
+              return true;
+            } catch (err: any) {
+              const out = ((err.stdout ?? '') + (err.stderr ?? '')).toLowerCase();
+              // Already installed counts as success
+              return out.includes('already installed') || out.includes('no available upgrade');
+            }
+          }
+        );
+
+        if (!success) {
+          console.log(red('  ✗  Kurulum başarısız.'));
+          console.log(yellow('     Manuel kurulum: https://visualstudio.microsoft.com/visual-cpp-build-tools/'));
           return false;
         }
+
+        // Post-install: refresh PATH and verify cl.exe is now findable
+        refreshPathFromRegistry();
+        const clPath = findMsvcCompiler();
+        if (clPath) {
+          console.log(green(`  ✓  MSVC derleyici bulundu: ${path.basename(path.dirname(clPath))}`));
+          return true;
+        }
+
+        // Installed but cl.exe not on PATH yet — new terminal needed
+        console.log(yellow('  ⚠  Kurulum tamamlandı. cl.exe henüz PATH\'te değil.'));
+        console.log(yellow('     Bu terminali kapatıp yeni bir terminal açarak tekrar çalıştırın:'));
+        console.log(dim('     must-b doctor --fix'));
+        return false;
       },
     };
   }
@@ -934,12 +1070,20 @@ async function selfHeal(
     }
     if (!shouldFix) continue;
 
-    if (!silent) process.stdout.write(`  ${cyan('⟳')}  ${check.label} onarılıyor...`);
-    const success = await check.autoFix();
-    if (!silent) process.stdout.write('\r' + ' '.repeat(60) + '\r');
+    // Use spinner for visual feedback during long operations
+    let success: boolean;
+    if (silent) {
+      // Silent mode (gateway pre-flight): no spinner, no output
+      success = await check.autoFix();
+    } else {
+      success = await withSpinner(
+        `${check.label} onarılıyor…`,
+        check.autoFix
+      );
+    }
 
     if (success) {
-      console.log(`  ${PASS}  ${bold(check.label.padEnd(28))} ${green('onarıldı!')}`);
+      console.log(`  ${PASS}  ${bold(check.label.padEnd(28))} ${green('onarıldı ✓')}`);
       healed++;
     } else {
       console.log(`  ${FAIL}  ${bold(check.label.padEnd(28))} ${red('onarım başarısız')}${check.fix ? dim(` — ${check.fix}`) : ''}`);
@@ -959,8 +1103,8 @@ export async function runDoctor(
   if (!silent) {
     console.log('');
     console.log(cyan('  ══════════════════════════════════════════════════════'));
-    console.log(cyan('    Must-b Doctor — System Health Check'));
-    if (fix) console.log(cyan('    ⚡ Mod: Self-Healing  (--fix)'));
+    console.log(cyan('    Must-b Doctor v2.0 — System Health Check'));
+    if (fix) console.log(cyan('    ⚡ Mod: Otonom Self-Healing  (--fix)'));
     console.log(cyan('  ══════════════════════════════════════════════════════'));
     console.log('');
   }
