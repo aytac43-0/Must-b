@@ -111,7 +111,15 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(cat:*)",
-      "Bash(find C:/Users/aytac/must-b \\\\\\(-name dashboard*new* -o -name *dashboard*new* -o -name *new*dashboard* \\\\\\))"
+      "Bash(find C:/Users/aytac/must-b \\\\\\(-name dashboard*new* -o -name *dashboard*new* -o -name *new*dashboard* \\\\\\))",
+      "Bash(py --version)",
+      "Bash(pip --version)",
+      "Bash(pip3 --version)",
+      "Bash(where python:*)",
+      "Bash(where py:*)",
+      "Bash(python -c \"import sysconfig; print\\(sysconfig.get_path\\(''include''\\)\\)\")",
+      "Bash(python -c \"import sys; print\\(sys.prefix\\)\")",
+      "Read(//c/Users/aytac/AppData/Local/Python/**)"
     ]
   },
   "hooks": {

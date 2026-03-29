@@ -62,10 +62,11 @@ export class Planner {
     );
   }
 
-  async plan(goal: string): Promise<PlanStep[]> {
+  async plan(goal: string, memCtx = ''): Promise<PlanStep[]> {
     this.logger.info(`Planner: Generating plan for goal: "${goal}"`);
 
-    const systemPrompt = getSystemPrompt('agent') + `\n\nYou are the Planner for Must-b, an autonomous AI agent with full browser, filesystem, terminal, and memory capabilities.
+    const memBlock = memCtx ? `\n\n${memCtx}\n` : '';
+    const systemPrompt = getSystemPrompt('agent') + memBlock + `\n\nYou are the Planner for Must-b, an autonomous AI agent with full browser, filesystem, terminal, and memory capabilities.
 Your job is to break down a high-level user Goal into a precise, executable sequence of steps.
 
 Available Tools:
@@ -164,13 +165,13 @@ Example Output:
    * Fast-path: answer a conversational prompt directly without planning or tool use.
    * Used by the Orchestrator's direct-chat router for simple queries.
    */
-  async directChat(goal: string): Promise<string> {
+  async directChat(goal: string, memCtx = ''): Promise<string> {
     this.logger.info(`Planner: directChat — "${goal.slice(0, 80)}"`);
+    const sysContent = memCtx
+      ? `${getSystemPrompt('direct')}\n\n${memCtx}`
+      : getSystemPrompt('direct');
     const messages: CompletionMessage[] = [
-      {
-        role: 'system',
-        content: getSystemPrompt('direct'),
-      },
+      { role: 'system', content: sysContent },
       { role: 'user', content: goal },
     ];
     try {

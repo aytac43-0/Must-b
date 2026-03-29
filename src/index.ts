@@ -20,6 +20,7 @@ import { startIdlingInference, attemptSelfRepair } from './core/executor.js';
 import { getAgentRole } from './core/hierarchy.js';
 import { ErrorObserver } from './core/observer.js';
 import { initWorkspace } from './core/paths.js';
+import { LTMController } from './core/memory/ltm.js';
 
 dotenv.config();
 
@@ -254,7 +255,14 @@ async function bootServer(arg: string, suppressBrowser = false) {
 
   const planner      = new Planner(logger);
   const executor     = new Executor(logger, mem);
-  const orchestrator = new Orchestrator(logger, planner, executor);
+
+  // ── Long-Term Memory — vector store (TF-IDF cosine, categorized) ──────────
+  const ltm = new LTMController(ROOT);
+  await ltm.init();
+  const ltmStats = ltm.stats();
+  logger.info(`[LTM] Initialized — episodic: ${ltmStats.episodic}, semantic: ${ltmStats.semantic}`);
+
+  const orchestrator = new Orchestrator(logger, planner, executor, ltm);
 
   // ── Web Dashboard mode (and "Host in Terminal" menu choice) ─────────────
   if (resolvedMode === 'dashboard' || isHostMode) {

@@ -2361,6 +2361,44 @@ export class ApiServer {
       }
     });
 
+    // ── LTM (Long-Term Memory) — vector store endpoints ──────────────────
+
+    /**
+     * GET /api/memory/ltm/stats
+     * Returns episodic + semantic entry counts from the LTM vector store.
+     */
+    this.app.get('/api/memory/ltm/stats', requireAuth, (_req, res) => {
+      const stats = this.orchestrator.getLTM()?.stats() ?? { episodic: 0, semantic: 0, total: 0 };
+      res.json(stats);
+    });
+
+    /**
+     * GET /api/memory/ltm/search?q=<text>&limit=<n>&category=episodic|semantic
+     * TF-IDF cosine similarity search over LTM vector store.
+     */
+    this.app.get('/api/memory/ltm/search', requireAuth, (req, res) => {
+      const q        = String(req.query.q        ?? '').trim();
+      const limit    = Math.min(Number(req.query.limit ?? 6), 20);
+      const category = req.query.category as 'episodic' | 'semantic' | undefined;
+      if (!q) return res.status(400).json({ error: 'q is required' });
+      const results = this.orchestrator.getLTM()?.retrieve(q, limit, category) ?? [];
+      res.json({ results });
+    });
+
+    /**
+     * POST /api/memory/ltm/semantic
+     * Body: { content: string, tags?: string[] }
+     * Stores semantic knowledge (preferences, standards, architecture).
+     */
+    this.app.post('/api/memory/ltm/semantic', requireAuth, (req, res) => {
+      const { content, tags } = req.body ?? {};
+      if (!content || typeof content !== 'string') {
+        return res.status(400).json({ error: 'content (string) is required' });
+      }
+      this.orchestrator.getLTM()?.indexSemantic(content, Array.isArray(tags) ? tags : []);
+      res.json({ ok: true });
+    });
+
     /**
      * DELETE /api/memory/clear-index
      * Wipes and recreates the vector index.

@@ -22,6 +22,7 @@
     "src/core/executor.ts",
     "src/core/planner.ts",
     "src/core/provider.ts",
+    "src/core/memory/**/*",
     "src/commands/**/*",
     "src/interface/**/*",
     "src/memory/**/*",

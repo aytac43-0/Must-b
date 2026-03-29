@@ -6,6 +6,7 @@ import winston from 'winston';
 import { Planner, type PlanStep } from './planner.js';
 import { Executor } from './executor.js';
 import { type CompletionMessage } from './provider.js';
+import type { LTMController } from './memory/ltm.js';
 
 export { PlanStep };
 
@@ -140,6 +141,7 @@ export class Orchestrator extends EventEmitter {
   private logger: winston.Logger;
   private planner: Planner;
   private executor: Executor;
+  private ltm: LTMController | null = null;
   private readonly MAX_REVISIONS = 3;
   private _busy = false;
   /** Tracks recurring error signatures for auto-repair loop deduplication */
@@ -147,12 +149,23 @@ export class Orchestrator extends EventEmitter {
 
   get busy(): boolean { return this._busy; }
 
-  constructor(logger: winston.Logger, planner: Planner, executor: Executor) {
+  constructor(logger: winston.Logger, planner: Planner, executor: Executor, ltm?: LTMController) {
     super();
     this.logger = logger;
     this.planner = planner;
     this.executor = executor;
+    this.ltm = ltm ?? null;
     this.logger.info('Orchestrator: Initialized.');
+  }
+
+  /** Attach or replace the LTM instance after construction. */
+  setLTM(ltm: LTMController): void {
+    this.ltm = ltm;
+  }
+
+  /** Expose LTM for API layer use. */
+  getLTM(): LTMController | null {
+    return this.ltm;
   }
 
   /**
@@ -163,25 +176,33 @@ export class Orchestrator extends EventEmitter {
   async runDirect(goal: string): Promise<void> {
     this._busy = true;
     this.emit('planStart', { goal, timestamp: Date.now() });
+
+    // ── LTM: inject relevant memories into system context ─────────────────
+    const memCtx = this.ltm?.buildSystemContext(goal) ?? '';
+
     try {
-      const answer = await this.planner.directChat(goal);
+      const answer = await this.planner.directChat(goal, memCtx);
       this.emit('finalAnswer', { goal, answer, timestamp: Date.now() });
       this.emit('planFinish', {
         goal, status: 'completed', answer, steps: [], timestamp: Date.now(),
       });
+      // ── LTM: auto-index successful conversation ──────────────────────────
+      this.ltm?.indexEpisodic(goal, 'completed', answer.slice(0, 400));
     } catch (err: any) {
       const msg = err?.message ?? String(err);
       this.logger.warn(`Orchestrator: directChat failed — ${msg}`);
       // Self-heal: try once more after env reload
       await reloadEnv();
       try {
-        const answer = await this.planner.directChat(goal);
+        const answer = await this.planner.directChat(goal, memCtx);
         this.emit('finalAnswer', { goal, answer, timestamp: Date.now() });
         this.emit('planFinish', { goal, status: 'completed', answer, steps: [], timestamp: Date.now() });
+        this.ltm?.indexEpisodic(goal, 'completed', answer.slice(0, 400));
       } catch (err2: any) {
         const msg2 = err2?.message ?? String(err2);
         this.emit('finalAnswer', { goal, answer: `I'm sorry, I ran into an error: ${msg2}`, timestamp: Date.now() });
         this.emit('planFinish', { goal, status: 'failed', error: msg2, timestamp: Date.now() });
+        this.ltm?.indexEpisodic(goal, 'failed');
       }
     } finally {
       this._busy = false;
@@ -202,13 +223,16 @@ export class Orchestrator extends EventEmitter {
     this._busy = true;
     this.emit('planStart', { goal, timestamp: Date.now() });
 
+    // ── LTM: inject relevant memories into planning context ───────────────
+    const memCtx = this.ltm?.buildSystemContext(goal) ?? '';
+
     let revision = 0;
     let currentGoal = goal;
 
     while (revision <= this.MAX_REVISIONS) {
       try {
         // Plan
-        const steps = await this.planner.plan(currentGoal);
+        const steps = await this.planner.plan(currentGoal, memCtx);
         this.emit('planGenerated', { goal: currentGoal, steps, timestamp: Date.now() });
 
         if (!steps.length) {
@@ -239,6 +263,8 @@ export class Orchestrator extends EventEmitter {
           steps:     steps.map(s => ({ description: s.description, tool: s.tool })),
           timestamp: Date.now(),
         });
+        // ── LTM: auto-index successful agent run ────────────────────────────
+        this.ltm?.indexEpisodic(goal, 'completed', answer.slice(0, 400));
         break;
 
       } catch (err: any) {

@@ -14,7 +14,7 @@ public/Luma/.env
 public/Luma/.env.local
 
 # Runtime-generated data (never commit)
-memory/
+/memory/
 workspace/
 
 # Logs
