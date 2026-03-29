@@ -33,6 +33,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
     return this.props.children;
   }
 }
+import WelcomePage      from "@/pages/WelcomePage";
 import SetupPage        from "@/pages/SetupPage";
 import DashboardPage    from "@/pages/DashboardPage";
 import SettingsPage     from "@/pages/SettingsPage";
@@ -106,12 +107,12 @@ export default function App() {
         <ConflictModal />
         <Routes>
           {/*
-           * Root redirect — no landing page.
-           * Setup complete  → /app
-           * Setup pending   → /setup
+           * Entry point: Sleeping Fox screen (sleep.png + UYANDIR).
+           * UYANDIR click → /app/chat (skips awake intermediate).
+           * /welcome kept as alias for legacy links.
            */}
-          <Route path="/"        element={<RootRedirect />} />
-          <Route path="/welcome" element={<Navigate to="/" replace />} />
+          <Route path="/"        element={<WelcomePage />} />
+          <Route path="/welcome" element={<WelcomePage />} />
 
           {/* Visual Setup Wizard — rendered when setupComplete === false */}
           <Route path="/setup" element={<SetupPage />} />
@@ -123,6 +124,7 @@ export default function App() {
             </SetupGuard>
           }>
             <Route index             element={<DashboardPage />} />
+            <Route path="chat"       element={<DashboardPage />} />
             <Route path="settings"   element={<SettingsPage />} />
             <Route path="active"     element={<ActivePage />} />
             <Route path="automations" element={<AutomationsPage />} />

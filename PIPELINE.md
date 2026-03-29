@@ -144,6 +144,8 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S3-F003 | Frontend_Engineer | **ROOT REDIRECT**: `/` → WelcomePage kaldırıldı; setup tamamsa `/app`, değilse `/setup`'a yönlendir (`RootRedirect` bileşeni) | DONE | Frontend_Engineer \| 2026-03-30 |
 | S3-F003-QA | QA_Lead | Root redirect — TS: 0 hata, build: başarılı | QA_PASSED | QA_Lead \| 2026-03-30 |
 | S3-F003-DEPLOY | Deploy_Chief | v1.12.1 deploy — Root redirect: no landing page | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.12.1: Root Redirect — No Landing Page \| push: BAŞARILI |
+| S3-F004 | Frontend_Engineer | **ROUTER OVERHAUL v1.12.1-fix**: WelcomePage awake ara-ekran silindi; UYANDIR → /app/chat direkt; /app/chat alias eklendi; WelcomePage import fix | QA_PASSED | TS: 0 hata, Build: exit 0 \| Frontend_Engineer \| 2026-03-30 |
+| S3-F004-DEPLOY | Deploy_Chief | v1.12.1 deploy — Hızlı Uyanış: Router Overhaul + WelcomePage fix | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.12.1: Hızlı Uyanış — Router Overhaul \| push: BAŞARILI |
 
 ---
 
