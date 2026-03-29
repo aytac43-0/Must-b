@@ -117,9 +117,9 @@ async function main() {
       const dim  = (s: string) => `\x1b[2m${s}\x1b[0m`;
       printBanner('help', 4309);
       console.log('  Usage: must-b [command]\n');
-      console.log(`  ${cyan('web')}          ${dim('Start web dashboard (http://localhost:4309)')}`);
+      console.log(`  ${cyan('(no args)')}    ${dim('Start web dashboard + open browser (default)')}`);
+      console.log(`  ${cyan('--logs')}       ${dim('Start web dashboard, stream logs to terminal (no browser)')}`);
       console.log(`  ${cyan('cli')}          ${dim('Interactive terminal chat')}`);
-      console.log(`  ${cyan('gateway')}      ${dim('Alias for web')}`);
       console.log(`  ${cyan('doctor')}       ${dim('System health check')}`);
       console.log(`  ${cyan('doctor --fix')} ${dim('Self-Healing mode — auto-repair issues')}`);
       console.log(`  ${cyan('onboard')}      ${dim('Re-run the setup wizard')}`);
@@ -128,16 +128,12 @@ async function main() {
       process.exit(0);
     }
 
-    // ── Onboard: run wizard then ask how to launch ────────────────────────
+    // ── Onboard: run wizard then launch dashboard ─────────────────────────
     case 'onboard': {
       const onboardResult = await runOnboard(ROOT);
       dotenv.config({ override: true });
-      // Web Dashboard path: boot gateway immediately (browser was already opened by onboard.ts)
-      if (onboardResult.webMode) {
-        await bootServer('gateway', true);
-      } else {
-        await bootServer(''); // ask launch mode after CLI wizard completes
-      }
+      // suppressBrowser when onboard.ts already opened a tab to /setup
+      await bootServer('gateway', Boolean(onboardResult.webMode));
       return;
     }
 
@@ -151,9 +147,14 @@ async function main() {
       await bootServer('cli');
       return;
 
-    // ── Default: no arg → show launch prompt ─────────────────────────────
+    // ── --logs: host web server, stream logs to terminal, no auto-browser ─
+    case '--logs':
+      await bootServer('--logs');
+      return;
+
+    // ── Default: no arg → Web Dashboard + open browser immediately ────────
     default:
-      await bootServer('');
+      await bootServer('gateway');
   }
 }
 
@@ -174,35 +175,6 @@ function openBrowser(url: string): void {
   });
 }
 
-// ── Launch mode prompt (inquirer list) ──────────────────────────────────────
-async function askLaunchMode(): Promise<'terminal' | 'dashboard'> {
-  // Deep stdin flush — attach a data sink, resume stdin, and actively consume
-  // ALL buffered bytes for 100ms.  This physically destroys any stray \n
-  // keypresses left by Doctor's inquirer prompts; a bare setTimeout only
-  // delays — it does not drain the buffer.
-  await new Promise<void>((resolve) => {
-    const onData = () => { /* consume and discard every buffered byte */ };
-    process.stdin.on('data', onData);
-    process.stdin.resume();
-    setTimeout(() => {
-      process.stdin.removeListener('data', onData);
-      process.stdin.pause();
-      resolve();
-    }, 100);
-  });
-
-  const { default: inquirer } = await import('inquirer');
-  const { mode } = await inquirer.prompt([{
-    type:    'list',
-    name:    'mode',
-    message: 'How would you like to launch Must-b?',
-    choices: [
-      { name: 'Web Dashboard             — opens http://localhost:4309 in browser', value: 'dashboard' },
-      { name: 'Host Web Dashboard        — show terminal logs (no auto-browser)',    value: 'terminal'  },
-    ],
-  }]);
-  return mode as 'terminal' | 'dashboard';
-}
 
 // ── Server / CLI boot ──────────────────────────────────────────────────────
 // arg: 'cli' → terminal directly
@@ -217,10 +189,10 @@ async function bootServer(arg: string, suppressBrowser = false) {
   let resolvedMode: 'terminal' | 'dashboard';
   if (arg === 'cli') {
     resolvedMode = 'terminal';
-  } else if (arg === 'gateway' || arg === 'web') {
-    resolvedMode = 'dashboard';
+  } else if (arg === '--logs') {
+    resolvedMode = 'terminal'; // isHostMode=true → web server + terminal logs, no browser
   } else {
-    resolvedMode = await askLaunchMode();
+    resolvedMode = 'dashboard'; // 'gateway' | 'web' | default
   }
 
   const PORT = parseInt(process.env.PORT || '4309', 10);
