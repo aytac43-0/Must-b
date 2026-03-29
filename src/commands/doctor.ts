@@ -686,7 +686,31 @@ function checkPythonHeaders(): CheckResult {
   }
 
   if (process.platform === 'win32') {
-    // On Windows, headers ship with the standard Python installer under Include/
+    // On Windows, headers ship with the standard Python installer under Include/.
+    // python.exe may be a shim/launcher in a bin/ dir — use sysconfig for the real prefix.
+
+    // 1) Ask Python itself for the include path (works regardless of shim/launcher setup)
+    const sysconfigResult = spawnSync(
+      pyCmd,
+      ['-c', "import sysconfig; print(sysconfig.get_path('include'))"],
+      { encoding: 'utf-8', stdio: 'pipe' },
+    );
+    if (sysconfigResult.status === 0) {
+      const includeDir = sysconfigResult.stdout.trim();
+      const headerFile = path.join(includeDir, 'Python.h');
+      if (fs.existsSync(headerFile)) {
+        // Silently ensure node-gyp points to the real Python exe (not Windows Store stub)
+        const pyWhich = spawnSync('where', [pyCmd], { encoding: 'utf-8', stdio: 'pipe' });
+        const pyPaths = (pyWhich.stdout ?? '').split('\n').map(l => l.trim()).filter(Boolean);
+        const realPy = pyPaths.find(p => !p.toLowerCase().includes('windowsapps')) ?? pyPaths[0];
+        if (realPy) {
+          try { execSync(`npm config set python "${realPy}"`, { stdio: 'pipe' }); } catch { /* ignore */ }
+        }
+        return { label: 'Python Headers', ok: true, detail: headerFile };
+      }
+    }
+
+    // 2) Fallback: dirname(where python)/Include
     const pyExe = spawnSync('where', [pyCmd], { encoding: 'utf-8', stdio: 'pipe' });
     const pyPath = pyExe.stdout?.split('\n')[0].trim();
     if (pyPath) {
@@ -696,11 +720,32 @@ function checkPythonHeaders(): CheckResult {
         return { label: 'Python Headers', ok: true, detail: headerFile };
       }
     }
+
     return {
       label: 'Python Headers',
       ok: false,
-      detail: 'Python.h not found — reinstall Python with "Add to PATH" checked',
-      fix: 'Reinstall Python from https://python.org (check "Add Python to PATH")',
+      detail: 'Python.h not found — headers not installed alongside Python',
+      fix: [
+        '1. Reinstall Python from https://python.org',
+        '   → Check "Add Python to PATH" during install',
+        '   → Under "Optional Features" make sure "pip" is checked',
+        '   → Under "Advanced Options" make sure "Download debugging symbols" is checked',
+        '2. After install, run:  npm config set python python3',
+        '3. Restart this terminal and rerun:  must-b doctor',
+      ].join('\n      '),
+      autoFix: async () => {
+        // node-gyp fix: point npm at the correct python executable
+        const pyExeResult = spawnSync('where', [pyCmd], { encoding: 'utf-8', stdio: 'pipe' });
+        const resolvedPy = pyExeResult.stdout?.split('\n').map(l => l.trim()).find(l => l.endsWith('.exe'));
+        if (resolvedPy) {
+          try {
+            execSync(`npm config set python "${resolvedPy}"`, { stdio: 'pipe' });
+            console.log(green(`  ✓  npm config set python → ${resolvedPy}`));
+          } catch { /* ignore */ }
+        }
+        // If Python.h still missing — headers not installed, cannot silently fix on Windows
+        return false;
+      },
     };
   }
 

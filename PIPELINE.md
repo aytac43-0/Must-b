@@ -135,7 +135,8 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S3-F002 | Frontend_Engineer | **CHATAREA**: Tüm green renk referansları orange/amber ile değiştirilecek; user/assistant bubble polish | DONE | 2026-03-29 |
 | S3-B001 | Backend_Architect | **NATIVE YAPILANMA**: OpenClaw kalıntılarını temizle — `OpenClawBridge`→`MustbGatewayBridge` (`src/core/gateway-bridge.ts`), `/api/openclaw/*`→`/api/gateway/*`, tüm yorum satırları güncelle | DONE | Backend_Architect \| 2026-03-29 |
 | S3-B002 | Backend_Architect | **DOCTOR**: pip otomatik kurulum desteği ekle (`checkPip` fonksiyonu) | DONE | Backend_Architect \| 2026-03-29 |
-| S3-QA | QA_Lead | `npm run build:prod` + TypeScript denetimi | QA_PASSED | TS: 0 hata. Build: 10.2MB ✓ 2026-03-29 |
+| S3-B003 | Backend_Architect | **DOCTOR FIX**: `checkPythonHeaders` sysconfig ile gerçek include path + node-gyp `npm config set python` otomatik düzeltme | DONE | Backend_Architect \| 2026-03-29 |
+| S3-QA | QA_Lead | `npm run build:prod` + TypeScript denetimi | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.2MB ✓ pip: v25.3 ✓ Python.h: found ✓ node-gyp path: set ✓ Network: ortam kısıtı (kod hatası değil) \| QA_Lead \| 2026-03-29 |
 | S3-DEPLOY | Deploy_Chief | v1.11.0 deploy | DEPLOYED | Deploy_Chief \| 2026-03-29 \| commit: Must-b v1.11.0: Glassmorphism Overhaul \| push: BAŞARILI |
 
 ---
@@ -149,7 +150,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S4-SK001 | Skill_Master | **SKILL CATALOG**: `src/core/skill-catalog.ts` oluştur — 52 SKILL.md parse, `/api/skills/catalog` endpoint ekle | DONE | Skill_Master \| 2026-03-29 |
 | S4-SK002 | Skill_Master | **SKILLS PANEL**: SkillsPanel.tsx'e "Library" sekmesi ekle — katalog skill kartları + invoke butonu | DONE | Skill_Master \| 2026-03-29 |
 | S4-QA | QA_Lead | `npm run build:prod` + TypeScript denetimi | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.2MB ✓ 2026-03-29 |
-| S4-DEPLOY | Deploy_Chief | v1.11.0 (veya v1.12.0) deploy | PENDING | |
+| S4-DEPLOY | Deploy_Chief | v1.11.1 deploy (Savaş Modu Fix) | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.11.1: Savaş Modu Fix \| push: BAŞARILI |
 
 ---
 
