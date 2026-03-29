@@ -1,7 +1,6 @@
 import { Component, type ReactNode, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Toaster } from "sonner";
-import WelcomePage    from "@/pages/WelcomePage";
 
 // ── Global Error Boundary — prevents white screens from uncaught render errors
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -80,6 +79,23 @@ function SetupGuard({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+// ── Root Redirect ─────────────────────────────────────────────────────────────
+// Replaces the old WelcomePage landing screen.
+// Setup complete  → /app  (War Room dashboard)
+// Setup pending   → /setup (Visual Setup Wizard)
+function RootRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    fetch("/api/setup/status")
+      .then(r => r.ok ? r.json() : { configured: true })
+      .then((data: { configured?: boolean }) => {
+        navigate(data.configured ? "/app" : "/setup", { replace: true });
+      })
+      .catch(() => navigate("/app", { replace: true }));
+  }, [navigate]);
+  return null;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -90,18 +106,12 @@ export default function App() {
         <ConflictModal />
         <Routes>
           {/*
-           * Phase 2 routing fork:
-           *   setupComplete === false → Visual Setup Wizard (/setup)
-           *   setupComplete === true  → War Room dashboard (Sleeping / Wake aesthetic)
-           *
-           * WelcomePage already performs the setup check and redirects to /setup
-           * if not configured.  SetupGuard adds a second safety layer on /app so
-           * that direct navigation (e.g. bookmark, back button) also gets caught.
+           * Root redirect — no landing page.
+           * Setup complete  → /app
+           * Setup pending   → /setup
            */}
-
-          {/* War Room entry point — sleeping / wake Must-b aesthetic */}
-          <Route path="/"        element={<WelcomePage />} />
-          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/"        element={<RootRedirect />} />
+          <Route path="/welcome" element={<Navigate to="/" replace />} />
 
           {/* Visual Setup Wizard — rendered when setupComplete === false */}
           <Route path="/setup" element={<SetupPage />} />

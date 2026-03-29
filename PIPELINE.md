@@ -141,6 +141,9 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S3-DEPLOY | Deploy_Chief | v1.11.0 deploy | DEPLOYED | Deploy_Chief \| 2026-03-29 \| commit: Must-b v1.11.0: Glassmorphism Overhaul \| push: BAŞARILI |
 | S3-B004-QA | QA_Lead | Doctor v2.0 — `npx tsc --noEmit` backend + frontend | QA_PASSED | TS: 0 hata (backend+frontend) \| QA_Lead \| 2026-03-30 |
 | S3-B004-DEPLOY | Deploy_Chief | v1.12.0 deploy — Doctor v2.0: Autonomous Install Engine | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.12.0: Autonomous Install Engine \| push: BAŞARILI |
+| S3-F003 | Frontend_Engineer | **ROOT REDIRECT**: `/` → WelcomePage kaldırıldı; setup tamamsa `/app`, değilse `/setup`'a yönlendir (`RootRedirect` bileşeni) | DONE | Frontend_Engineer \| 2026-03-30 |
+| S3-F003-QA | QA_Lead | Root redirect — TS: 0 hata, build: başarılı | QA_PASSED | QA_Lead \| 2026-03-30 |
+| S3-F003-DEPLOY | Deploy_Chief | v1.12.1 deploy — Root redirect: no landing page | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.12.1: Root Redirect — No Landing Page \| push: BAŞARILI |
 
 ---
 
