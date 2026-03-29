@@ -61,7 +61,7 @@ function classifyError(msg: string): 'auth' | 'network' | 'ratelimit' | 'overflo
   if (m.includes('401') || m.includes('unauthorized') || m.includes('api key') || m.includes('invalid key')) return 'auth';
   if (m.includes('429') || m.includes('rate limit') || m.includes('too many requests')) return 'ratelimit';
   if (m.includes('econnrefused') || m.includes('enotfound') || m.includes('fetch failed') || m.includes('network')) return 'network';
-  // Context window overflow — ported from OpenClaw pi-embedded-runner pattern
+  // Context window overflow detection
   if (
     m.includes('context length') ||
     m.includes('context window') ||
@@ -78,7 +78,7 @@ function classifyError(msg: string): 'auth' | 'network' | 'ratelimit' | 'overflo
 /**
  * Compact message history when context window overflow is detected.
  * Drops the oldest non-system turns (keeping system prompt + last N turns).
- * Mirrors OpenClaw's overflow-compaction strategy.
+ * Must-b overflow-compaction strategy.
  */
 function compactMessages(
   messages: CompletionMessage[],
@@ -283,8 +283,7 @@ export class Orchestrator extends EventEmitter {
           await new Promise(r => setTimeout(r, wait));
         }
 
-        // Context window overflow — ported from OpenClaw overflow-compaction strategy.
-        // Compact the planner's message history and shorten the goal to fit within limits.
+        // Context window overflow — compact history and shorten the goal to fit within limits.
         if (kind === 'overflow') {
           this.logger.warn('Orchestrator: Context window overflow — compacting history and retrying.');
           this.emit('agentRepair', { action: 'context_compaction', reason: msg, timestamp: Date.now() });

@@ -1,7 +1,7 @@
 /**
  * ProductsPage — Must-b native tools catalog & agents.
  * Tabs: Tools (skill-router + plugins) / Agents (src/core/skills)
- * No OpenClaw dependency — works 100% standalone.
+ * Must-b native — works 100% standalone.
  */
 
 import { useState, useEffect } from "react";

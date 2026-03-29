@@ -2,7 +2,7 @@
  * Must-b Provider Catalog (v1.5.0-alpha.3)
  *
  * Comprehensive registry of every AI provider Must-b can connect to.
- * Extracted from OpenClaw's models-config.providers.* analysis + current AI landscape.
+ * Covers current AI landscape and is maintained natively within Must-b.
  *
  * Categories:
  *   frontier    — Leading commercial labs (OpenAI, Anthropic, Google, xAI)

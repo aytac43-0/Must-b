@@ -1,7 +1,7 @@
 /**
- * Must-b ChatArea (v1.6.1) — Liquid Glass Green Theme
+ * Must-b ChatArea (v1.11.0) — Glassmorphism Dark (ref: dashboard new.jpeg)
  *
- * Empty state : Massive "Must-b" hero title + centered deep-green glass input.
+ * Empty state : Massive "Must-b" hero title + centered glass input.
  * Message state: Conversation turns (dark-glass user / white-glass assistant)
  *                + glass input bar pinned at the bottom.
  *
@@ -94,19 +94,19 @@ function eventToThought(type: string, data: Record<string, unknown>): string | n
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="my-3 rounded-xl overflow-hidden border border-white/8 bg-[#0a1a06]/90">
+    <div className="my-3 rounded-xl overflow-hidden border border-white/8 bg-[#1a0800]/90">
       <div className="flex items-center justify-between px-4 py-1.5 border-b border-white/6 select-none">
-        <span className="text-[11px] font-mono text-green-300/50">{lang || "code"}</span>
+        <span className="text-[11px] font-mono text-orange-300/50">{lang || "code"}</span>
         <button
           onClick={() => { navigator.clipboard.writeText(code).catch(() => {}); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-          className="flex items-center gap-1.5 text-[11px] text-green-300/50 hover:text-green-200 transition-colors"
+          className="flex items-center gap-1.5 text-[11px] text-orange-300/50 hover:text-orange-200 transition-colors"
         >
           {copied
-            ? <><Check size={10} className="text-green-400" /><span className="text-green-400">Copied</span></>
+            ? <><Check size={10} className="text-orange-400" /><span className="text-orange-400">Copied</span></>
             : <><Copy size={10} />Copy</>}
         </button>
       </div>
-      <pre className="overflow-x-auto px-4 py-3 text-[13px] text-green-100 font-mono leading-relaxed whitespace-pre">
+      <pre className="overflow-x-auto px-4 py-3 text-[13px] text-orange-50 font-mono leading-relaxed whitespace-pre">
         <code>{code}</code>
       </pre>
     </div>
@@ -118,7 +118,7 @@ function inlineRender(text: string, baseKey: string): ReactNode {
   return codeParts.map((part, ci) => {
     if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
       return (
-        <code key={`${baseKey}-ic${ci}`} className="px-1.5 py-0.5 rounded bg-black/15 text-green-800 font-mono text-[12px]">
+        <code key={`${baseKey}-ic${ci}`} className="px-1.5 py-0.5 rounded bg-black/15 text-orange-700 font-mono text-[12px]">
           {part.slice(1, -1)}
         </code>
       );
@@ -139,7 +139,7 @@ function inlineRender(text: string, baseKey: string): ReactNode {
 }
 
 function Markdown({ text, dark = false }: { text: string; dark?: boolean }) {
-  const textCls = dark ? "text-green-100" : "text-[#1a3810]";
+  const textCls = dark ? "text-orange-50" : "text-[#3d1a06]";
   const nodes: ReactNode[] = [];
   const lines = text.split("\n");
   let i = 0, seq = 0;
@@ -171,7 +171,7 @@ function Markdown({ text, dark = false }: { text: string; dark?: boolean }) {
         <ul key={k()} className="my-2 space-y-1.5 pl-1">
           {items.map((item, idx) => (
             <li key={idx} className={`flex items-start gap-2.5 text-[14px] leading-relaxed ${textCls}`}>
-              <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-green-600/50 flex-shrink-0" />
+              <span className="mt-[7px] w-1.5 h-1.5 rounded-full bg-orange-500/60 flex-shrink-0" />
               <span>{inlineRender(item, `ul-${idx}`)}</span>
             </li>
           ))}
@@ -186,7 +186,7 @@ function Markdown({ text, dark = false }: { text: string; dark?: boolean }) {
         <ol key={k()} className="my-2 space-y-1.5 pl-1">
           {items.map((item, idx) => (
             <li key={idx} className={`flex items-start gap-2.5 text-[14px] leading-relaxed ${textCls}`}>
-              <span className={`flex-shrink-0 mt-px font-mono text-[12px] w-5 text-right text-green-700/60`}>{idx + 1}.</span>
+              <span className="flex-shrink-0 mt-px font-mono text-[12px] w-5 text-right text-orange-600/60">{idx + 1}.</span>
               <span>{inlineRender(item, `ol-${idx}`)}</span>
             </li>
           ))}
@@ -233,18 +233,18 @@ function SaveSkillBanner({ workflow, onDismiss }: { workflow: CompletedWorkflow;
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.2 }} className="mt-3">
-      <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-green-900/20 border border-green-600/30">
+      <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-orange-900/20 border border-orange-600/30">
         {state === "saved" ? (
-          <><CheckCircle2 size={13} className="text-green-400 shrink-0" /><span className="text-xs font-medium text-green-400">Skill saved!</span></>
+          <><CheckCircle2 size={13} className="text-orange-400 shrink-0" /><span className="text-xs font-medium text-orange-400">Skill saved!</span></>
         ) : (
           <>
-            <BookmarkPlus size={13} className="text-green-700 shrink-0" />
-            <span className="text-[11px] text-green-900 shrink-0 font-medium">Save as Skill:</span>
-            <input value={skillName} onChange={e => setSkillName(e.target.value)} onKeyDown={e => e.key === "Enter" && state === "idle" && handleSave()} placeholder="Skill name…" className="flex-1 bg-transparent text-[12px] text-green-900 outline-none placeholder-green-700/50 min-w-0" />
-            <button onClick={handleSave} disabled={state !== "idle"} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-green-900/30 hover:bg-green-900/50 border border-green-800/40 text-green-200 text-[11px] font-semibold transition-all shrink-0 disabled:opacity-50">
+            <BookmarkPlus size={13} className="text-orange-600 shrink-0" />
+            <span className="text-[11px] text-orange-200 shrink-0 font-medium">Save as Skill:</span>
+            <input value={skillName} onChange={e => setSkillName(e.target.value)} onKeyDown={e => e.key === "Enter" && state === "idle" && handleSave()} placeholder="Skill name…" className="flex-1 bg-transparent text-[12px] text-orange-100 outline-none placeholder-orange-600/50 min-w-0" />
+            <button onClick={handleSave} disabled={state !== "idle"} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-orange-900/30 hover:bg-orange-900/50 border border-orange-800/40 text-orange-200 text-[11px] font-semibold transition-all shrink-0 disabled:opacity-50">
               {state === "saving" ? <><Loader2 size={10} className="animate-spin" /> Saving…</> : state === "error" ? "Retry" : "Save"}
             </button>
-            <button onClick={onDismiss} className="text-green-800 hover:text-green-600 transition-colors text-[11px] shrink-0">✕</button>
+            <button onClick={onDismiss} className="text-orange-700 hover:text-orange-500 transition-colors text-[11px] shrink-0">✕</button>
           </>
         )}
       </div>
@@ -263,9 +263,9 @@ class ChatErrorBoundary extends Component<{ children: ReactNode }, { error: stri
       return (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
           <span className="text-2xl">⚠️</span>
-          <p className="text-red-500 font-bold text-sm">Chat render error</p>
-          <p className="text-green-900 text-xs font-mono max-w-sm break-all">{this.state.error}</p>
-          <button onClick={() => this.setState({ error: null })} className="mt-1 px-4 py-2 rounded-xl bg-green-900/20 border border-green-800/30 text-green-200 text-xs font-bold hover:bg-green-900/40 transition-all">Retry</button>
+          <p className="text-red-400 font-bold text-sm">Chat render error</p>
+          <p className="text-orange-200/70 text-xs font-mono max-w-sm break-all">{this.state.error}</p>
+          <button onClick={() => this.setState({ error: null })} className="mt-1 px-4 py-2 rounded-xl bg-orange-900/20 border border-orange-800/30 text-orange-200 text-xs font-bold hover:bg-orange-900/40 transition-all">Retry</button>
         </div>
       );
     }
@@ -333,7 +333,7 @@ function HeroInput({ onSend, disabled }: { onSend: (msg: string) => void; disabl
             <button
               type="button"
               onClick={toggleMic}
-              className={`p-2 rounded-full transition-all ${listening ? "text-green-300 bg-green-800/40 animate-pulse" : "text-white/40 hover:text-white/70 hover:bg-white/8"}`}
+              className={`p-2 rounded-full transition-all ${listening ? "text-orange-300 bg-orange-800/40 animate-pulse" : "text-white/40 hover:text-white/70 hover:bg-white/8"}`}
             >
               {listening ? <MicOff size={18} /> : <Mic size={18} />}
             </button>
@@ -343,7 +343,7 @@ function HeroInput({ onSend, disabled }: { onSend: (msg: string) => void; disabl
             disabled={!value.trim() || disabled}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
               value.trim() && !disabled
-                ? "bg-[#1a0c06] hover:bg-[#3d1a06] text-white shadow-lg active:scale-95"
+                ? "bg-orange-600 hover:bg-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)] active:scale-95"
                 : "bg-white/10 text-white/25 cursor-not-allowed"
             }`}
           >
@@ -414,7 +414,7 @@ function BottomInput({ onSend, disabled }: { onSend: (msg: string) => void; disa
           />
           <div className="flex items-center gap-1.5 mb-0.5 shrink-0">
             {hasSR && (
-              <button onClick={toggleMic} className={`p-2 rounded-full transition-all ${listening ? "text-green-300 bg-green-800/40 animate-pulse" : "text-white/40 hover:text-white/70 hover:bg-white/8"}`}>
+              <button onClick={toggleMic} className={`p-2 rounded-full transition-all ${listening ? "text-orange-300 bg-orange-800/40 animate-pulse" : "text-white/40 hover:text-white/70 hover:bg-white/8"}`}>
                 {listening ? <MicOff size={17} /> : <Mic size={17} />}
               </button>
             )}
@@ -423,7 +423,7 @@ function BottomInput({ onSend, disabled }: { onSend: (msg: string) => void; disa
               disabled={!value.trim() || disabled}
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                 value.trim() && !disabled
-                  ? "bg-[#1a0c06] hover:bg-[#3d1a06] text-white shadow-lg active:scale-95"
+                  ? "bg-orange-600 hover:bg-orange-500 text-white shadow-[0_0_15px_rgba(249,115,22,0.4)] active:scale-95"
                   : "bg-white/10 text-white/25 cursor-not-allowed"
               }`}
             >
@@ -510,8 +510,12 @@ export function ChatArea() {
               initial={{ opacity: 0, y: -24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: "easeOut" }}
-              className="font-black leading-none tracking-tighter text-[#1a0c06] mb-10 text-center"
-              style={{ fontSize: "clamp(5rem, 18vw, 12rem)" }}
+              className="font-black leading-none tracking-tighter mb-10 text-center"
+              style={{
+                fontSize: "clamp(5rem, 18vw, 12rem)",
+                color: "#0a0400",
+                textShadow: "0 0 80px rgba(249,115,22,0.5), 0 0 160px rgba(249,115,22,0.25)",
+              }}
             >
               Must-b
             </motion.h1>
@@ -533,8 +537,8 @@ export function ChatArea() {
               transition={{ delay: 1.2 }}
               className="mt-10 flex flex-col items-center gap-1"
             >
-              <div className="w-6 h-9 rounded-full border-2 border-[#1a0c06]/30 flex items-start justify-center pt-1.5">
-                <div className="w-1 h-2 rounded-full bg-[#1a0c06]/40 animate-bounce" />
+              <div className="w-6 h-9 rounded-full border-2 border-white/20 flex items-start justify-center pt-1.5">
+                <div className="w-1 h-2 rounded-full bg-white/30 animate-bounce" />
               </div>
             </motion.div>
           </div>
@@ -554,7 +558,7 @@ export function ChatArea() {
                         <div className="max-w-[78%]">
                           <div
                             className="rounded-2xl rounded-br-sm px-5 py-3 text-white text-[14px] leading-relaxed whitespace-pre-wrap"
-                            style={{ background: "rgba(10,25,8,0.62)", border: "1px solid rgba(160,220,80,0.18)", backdropFilter: "blur(12px)" }}
+                            style={{ background: "rgba(25,10,2,0.72)", border: "1px solid rgba(249,115,22,0.22)", backdropFilter: "blur(12px)" }}
                           >
                             {turn.content}
                           </div>
@@ -574,12 +578,12 @@ export function ChatArea() {
                       {/* Avatar row */}
                       <div className="flex items-center gap-2 mb-2.5">
                         <div className="relative w-5 h-5 shrink-0">
-                          <div className="absolute inset-0 bg-green-700/30 rounded-full blur-sm" />
+                          <div className="absolute inset-0 bg-orange-600/30 rounded-full blur-sm" />
                           <img src="/logo.png" alt="Must-b" className="w-full h-full object-contain relative z-10" />
                         </div>
-                        <span className="text-[12px] font-semibold text-[#1a0c06]/70 tracking-wide">Must-b</span>
+                        <span className="text-[12px] font-semibold text-white/70 tracking-wide">Must-b</span>
                         {hasThoughts && (
-                          <span className="text-[10px] text-[#1a0c06]/40 font-mono">
+                          <span className="text-[10px] text-white/35 font-mono">
                             {turn.thoughts.length} step{turn.thoughts.length !== 1 ? "s" : ""}
                           </span>
                         )}
@@ -589,14 +593,14 @@ export function ChatArea() {
                       {hasThoughts && (
                         <details className="mb-3 group" {...(!hasAnswer ? { open: true } : {})}>
                           <summary className="flex items-center gap-1.5 cursor-pointer list-none select-none w-fit">
-                            <ChevronRight size={11} className="text-[#1a0c06]/40 group-open:rotate-90 transition-transform duration-150 flex-shrink-0" />
-                            <span className="text-[11px] font-medium text-[#1a0c06]/50 hover:text-[#1a0c06]/70 transition-colors">
+                            <ChevronRight size={11} className="text-white/30 group-open:rotate-90 transition-transform duration-150 flex-shrink-0" />
+                            <span className="text-[11px] font-medium text-white/40 hover:text-white/60 transition-colors">
                               Thought Process
                             </span>
                           </summary>
-                          <div className="mt-2 ml-3.5 pl-3.5 border-l border-[#1a0c06]/10 space-y-1">
+                          <div className="mt-2 ml-3.5 pl-3.5 border-l border-white/10 space-y-1">
                             {turn.thoughts.map((thought, idx) => (
-                              <p key={idx} className="text-[11px] font-mono text-[#1a0c06]/50 leading-relaxed break-all">{thought}</p>
+                              <p key={idx} className="text-[11px] font-mono text-white/35 leading-relaxed break-all">{thought}</p>
                             ))}
                           </div>
                         </details>
@@ -613,11 +617,11 @@ export function ChatArea() {
                       ) : isPending ? (
                         <div className="flex items-center gap-1.5 py-2 px-1">
                           {[0, 150, 300].map(delay => (
-                            <div key={delay} className="w-2 h-2 bg-green-700/60 rounded-full animate-bounce" style={{ animationDelay: `-${delay}ms` }} />
+                            <div key={delay} className="w-2 h-2 bg-orange-500/60 rounded-full animate-bounce" style={{ animationDelay: `-${delay}ms` }} />
                           ))}
                         </div>
                       ) : isError ? (
-                        <p className="text-sm text-red-600/80">Something went wrong. Please try again.</p>
+                        <p className="text-sm text-red-400/80">Something went wrong. Please try again.</p>
                       ) : null}
 
                       <AnimatePresence>

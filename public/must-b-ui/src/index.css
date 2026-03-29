@@ -30,24 +30,19 @@
 @layer base {
   * { @apply border-border; }
 
-  /* ── Liquid Glass Orange — Must-b v1.7 ── */
+  /* ── Glassmorphism Dark — Must-b v1.11 ── */
   body {
     @apply antialiased font-sans;
     min-height: 100vh;
     color: #fdf3e7;
-    /* Cream top → warm orange amber glow → deep charcoal bottom */
-    background: linear-gradient(
-      180deg,
-      #fefaf5 0%,
-      #fef0dc 7%,
-      #fdb96a 18%,
-      #f97316 30%,
-      #c2440c 44%,
-      #7c2d12 58%,
-      #2d160a 72%,
-      #180c05 86%,
-      #0d0602 100%
-    );
+    /* Dark base + radial orange/amber spotlight (ref: dashboard new.jpeg) */
+    background:
+      radial-gradient(ellipse 85% 60% at 50% 22%,
+        rgba(253,186,116,0.42) 0%,
+        rgba(249,115,22,0.52) 22%,
+        rgba(154,52,18,0.38) 48%,
+        transparent 72%),
+      #0a0400;
     background-attachment: fixed;
   }
   html { color-scheme: dark; }

@@ -1,8 +1,8 @@
 /**
  * ChannelGrid — shared channel management component.
  * Used by both IntegrationsPage (full page) and SettingsPage (Channels tab).
- * Data source: GET /api/openclaw/channels → OpenClaw channels.status RPC.
- * Falls back to Must-b's own /api/channels when OpenClaw is offline.
+ * Data source: GET /api/gateway/channels → Must-b gateway channels.status RPC.
+ * Falls back to Must-b's own /api/channels when gateway is offline.
  */
 
 import { useState, useEffect } from "react";
@@ -11,7 +11,7 @@ import {
   LogOut, RefreshCw, Wifi, WifiOff,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { useOpenClawStatus } from "@/hooks/useOpenClawStatus";
+import { useGatewayStatus } from "@/hooks/useGatewayStatus";
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
 
@@ -49,19 +49,19 @@ function StatusDot({ connected, configured }: { connected?: boolean; configured?
 
 /* ── Main component ─────────────────────────────────────────────────────── */
 export function ChannelGrid() {
-  const { online } = useOpenClawStatus();
+  const { online } = useGatewayStatus();
   const [ocData, setOcData] = useState<OcChannelData | null>(null);
   const [fallback, setFallback] = useState<FallbackChannel[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch OpenClaw channels
+  // Fetch gateway channels
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const res = await apiFetch("/api/openclaw/channels");
+        const res = await apiFetch("/api/gateway/channels");
         const data: OcChannelData = await res.json();
         setOcData(data);
         if (data.channelOrder?.length) {
@@ -76,7 +76,7 @@ export function ChannelGrid() {
     load();
   }, [online]);
 
-  // Fallback: Must-b's own channels when OpenClaw offline
+  // Fallback: Must-b's own channels when gateway is offline
   useEffect(() => {
     if (!ocData?.offline) return;
     apiFetch("/api/channels")
@@ -88,12 +88,12 @@ export function ChannelGrid() {
   const handleLogout = async (channel: string, accountId: string) => {
     setLoggingOut(`${channel}-${accountId}`);
     try {
-      await apiFetch(`/api/openclaw/channels/${channel}/logout`, {
+      await apiFetch(`/api/gateway/channels/${channel}/logout`, {
         method: "POST",
         body: JSON.stringify({ accountId }),
       });
       // Refresh
-      const res = await apiFetch("/api/openclaw/channels");
+      const res = await apiFetch("/api/gateway/channels");
       setOcData(await res.json());
     } catch { /* ignore */ }
     finally { setLoggingOut(null); }
@@ -108,15 +108,14 @@ export function ChannelGrid() {
     );
   }
 
-  // OpenClaw offline — show Must-b fallback
+  // Gateway offline — show Must-b fallback
   if (ocData?.offline) {
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-orange-500/8 border border-orange-500/20">
           <WifiOff size={14} className="text-orange-400 flex-shrink-0" />
           <p className="text-[12px] text-orange-300">
-            OpenClaw gateway çevrimdışı — yerel kanallar gösteriliyor.
-            Başlatmak için: <code className="font-mono bg-white/5 px-1 rounded">cd openclaw && node openclaw.mjs</code>
+            Must-b gateway çevrimdışı — yerel kanallar gösteriliyor.
           </p>
         </div>
 
@@ -151,7 +150,7 @@ export function ChannelGrid() {
   if (channelOrder.length === 0) {
     return (
       <p className="text-center text-sm text-gray-600 py-8">
-        OpenClaw'da yapılandırılmış kanal bulunamadı.
+        Yapılandırılmış kanal bulunamadı.
       </p>
     );
   }

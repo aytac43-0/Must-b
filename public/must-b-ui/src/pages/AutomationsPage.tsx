@@ -1,12 +1,12 @@
 /**
- * AutomationsPage — OpenClaw cron job management.
- * Data: GET /api/openclaw/automations → cron.list RPC
+ * AutomationsPage — Must-b cron job management.
+ * Data: GET /api/gateway/automations → cron.list RPC
  */
 
 import { useState, useEffect } from "react";
 import { Zap, WifiOff, Plus, Play, Trash2, RefreshCw, Clock, CheckCircle2, XCircle, ToggleLeft, ToggleRight } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { useOpenClawStatus } from "@/hooks/useOpenClawStatus";
+import { useGatewayStatus } from "@/hooks/useGatewayStatus";
 
 interface CronJob {
   id: string;
@@ -43,7 +43,7 @@ function countdownTo(ms?: number): string {
 type Filter = "all" | "enabled" | "disabled";
 
 export default function AutomationsPage() {
-  const { online } = useOpenClawStatus();
+  const { online } = useGatewayStatus();
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
@@ -53,7 +53,7 @@ export default function AutomationsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/openclaw/automations?enabled=all&limit=50");
+      const res = await apiFetch("/api/gateway/automations?enabled=all&limit=50");
       const data = await res.json();
       setJobs(Array.isArray(data?.jobs) ? data.jobs : Array.isArray(data) ? data : []);
     } catch { setJobs([]); }
@@ -64,7 +64,7 @@ export default function AutomationsPage() {
 
   const handleToggle = async (job: CronJob) => {
     try {
-      await apiFetch(`/api/openclaw/automations/${job.id}`, {
+      await apiFetch(`/api/gateway/automations/${job.id}`, {
         method: "PATCH",
         body: JSON.stringify({ patch: { enabled: !job.enabled } }),
       });
@@ -75,7 +75,7 @@ export default function AutomationsPage() {
   const handleRun = async (id: string) => {
     setRunning(id);
     try {
-      await apiFetch(`/api/openclaw/automations/${id}/run`, { method: "POST" });
+      await apiFetch(`/api/gateway/automations/${id}/run`, { method: "POST" });
       await load();
     } catch { /* ignore */ }
     finally { setRunning(null); }
@@ -85,7 +85,7 @@ export default function AutomationsPage() {
     if (!window.confirm("Bu otomasyon silinsin mi?")) return;
     setDeleting(id);
     try {
-      await apiFetch(`/api/openclaw/automations/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/gateway/automations/${id}`, { method: "DELETE" });
       setJobs(prev => prev.filter(j => j.id !== id));
     } catch { /* ignore */ }
     finally { setDeleting(null); }
@@ -156,7 +156,7 @@ export default function AutomationsPage() {
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <Zap size={32} className="text-gray-700" />
           <p className="text-sm text-gray-600">
-            {online ? "Otomasyon bulunamadı." : "OpenClaw çevrimdışı."}
+            {online ? "Otomasyon bulunamadı." : "Gateway çevrimdışı."}
           </p>
         </div>
       ) : (

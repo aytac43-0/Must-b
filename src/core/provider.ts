@@ -1,9 +1,9 @@
 /**
  * Must-b LLM Provider (v3.0) — Unified Brain
  *
- * Brain-Graft Phase 1 (v1.5.0-alpha.1):
- *   - Fused Must-b Titanium Ollama Architecture (v1.4.7) with OpenClaw's
- *     comprehensive API provider suite intelligence.
+ * Native Provider Expansion (v1.5.0+):
+ *   - Fused Must-b Titanium Ollama Architecture (v1.4.7) with a
+ *     comprehensive API provider suite.
  *   - New providers: Perplexity, Cohere, Fireworks AI, NVIDIA NIM,
  *     Cloudflare Workers AI, generic OpenAI-compatible custom endpoint.
  *   - SSE streaming support via LLMProvider.stream().
@@ -145,7 +145,7 @@ function rc(): PC {
       headers: { Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, noJM: true };
   }
 
-  // ── New providers from OpenClaw's comprehensive catalog ──────────────────────
+  // ── Extended provider catalog ────────────────────────────────────────────────
 
   if (p === 'perplexity') {
     const k = resolveKey('perplexity', 'PERPLEXITY_API_KEY');

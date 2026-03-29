@@ -1,11 +1,11 @@
 /**
- * Ollama Auto-Discovery (v1.0) — Ported from OpenClaw agents/ollama-models.ts
+ * Ollama Auto-Discovery (v1.0) — Must-b Native
  *
  * Silent auto-detection of locally running Ollama instances at startup.
  * Fetches available models, enriches them with context-window info,
  * and heuristically marks reasoning models.
  *
- * Behaviour (mirrors OpenClaw):
+ * Behaviour:
  *   - Silent failure if Ollama is unreachable AND not explicitly configured.
  *   - console.warn if Ollama is explicitly configured (OLLAMA_BASE_URL) but
  *     the daemon is not reachable.
@@ -60,7 +60,7 @@ export function resolveOllamaApiBase(configuredBaseUrl?: string): string {
 /**
  * Heuristic: treat models whose ID contains "r1", "reasoning", "think", or
  * "reason" as reasoning models (extended chain-of-thought output).
- * Mirrors OpenClaw's isReasoningModelHeuristic().
+ * Must-b reasoning model heuristic.
  */
 export function isReasoningModelHeuristic(modelId: string): boolean {
   return /r1|reasoning|think|reason/i.test(modelId);

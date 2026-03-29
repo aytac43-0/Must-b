@@ -1,12 +1,12 @@
 /**
- * ActivePage — OpenClaw active sessions viewer.
- * Data: GET /api/openclaw/sessions
+ * ActivePage — Must-b active sessions viewer.
+ * Data: GET /api/gateway/sessions
  */
 
 import { useState, useEffect } from "react";
 import { Globe, WifiOff, RefreshCw, MessageSquare, Clock, Cpu } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { useOpenClawStatus } from "@/hooks/useOpenClawStatus";
+import { useGatewayStatus } from "@/hooks/useGatewayStatus";
 
 interface Session {
   key: string;
@@ -30,7 +30,7 @@ function relativeTime(ms?: number): string {
 type Filter = "all" | "running" | "idle";
 
 export default function ActivePage() {
-  const { online } = useOpenClawStatus();
+  const { online } = useGatewayStatus();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
@@ -38,7 +38,7 @@ export default function ActivePage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/openclaw/sessions?limit=50&includeDerivedTitles=true&includeLastMessage=true");
+      const res = await apiFetch("/api/gateway/sessions?limit=50&includeDerivedTitles=true&includeLastMessage=true");
       const data = await res.json();
       const list: Session[] = Array.isArray(data)
         ? data
@@ -90,7 +90,7 @@ export default function ActivePage() {
       {!online && (
         <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-orange-500/8 border border-orange-500/20">
           <WifiOff size={13} className="text-orange-400 flex-shrink-0" />
-          <p className="text-[12px] text-orange-300">OpenClaw çevrimdışı — oturum verisi alınamıyor.</p>
+          <p className="text-[12px] text-orange-300">Gateway çevrimdışı — oturum verisi alınamıyor.</p>
         </div>
       )}
 
@@ -120,7 +120,7 @@ export default function ActivePage() {
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <MessageSquare size={32} className="text-gray-700" />
           <p className="text-sm text-gray-600">
-            {online ? "Aktif oturum bulunamadı." : "OpenClaw çevrimdışı."}
+            {online ? "Aktif oturum bulunamadı." : "Gateway çevrimdışı."}
           </p>
         </div>
       ) : (

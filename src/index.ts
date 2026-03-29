@@ -295,9 +295,9 @@ async function bootServer(arg: string, suppressBrowser = false) {
     apiServer.start();
     startHealthMonitor(ROOT, logger);
 
-    // ── Ollama Auto-Discovery (OpenClaw port) ────────────────────────────
+    // ── Ollama Auto-Discovery ─────────────────────────────────────────────
     // Runs silently in background. Warns only if OLLAMA_BASE_URL is set but
-    // the daemon is unreachable. Mirrors OpenClaw's implicit-provider pattern.
+    // the daemon is unreachable.
     if ((process.env.LLM_PROVIDER ?? '').toLowerCase() === 'ollama') {
       import('./utils/ollama-autodiscovery.js').then(async ({ autoDiscoverOllama }) => {
         const explicitly = Boolean(process.env.OLLAMA_BASE_URL);

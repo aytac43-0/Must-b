@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import { WebSocket } from 'ws';
+import { MustbGatewayBridge } from '../core/gateway-bridge.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -127,149 +127,6 @@ const CHANNEL_REGISTRY: ChannelDef[] = [
 /** Pending OAuth state tokens — map of state → { timestamp, resolve } */
 const _pendingCloudStates = new Map<string, { ts: number; resolve: (token: string) => void }>();
 
-// ── OpenClaw Gateway Bridge ────────────────────────────────────────────────
-// Maintains a single persistent WebSocket connection to the OpenClaw gateway.
-// Implements the OpenClaw wire protocol: challenge-response handshake + RPC frames.
-// All /api/openclaw/* endpoints use this bridge.
-
-class OpenClawBridge {
-  private ws: WebSocket | null = null;
-  private pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: unknown) => void }>();
-  private reconnectTimer: NodeJS.Timeout | null = null;
-  private logger: winston.Logger;
-  private connected = false;
-
-  constructor(logger: winston.Logger) {
-    this.logger = logger;
-    this.connect();
-  }
-
-  isAlive(): boolean { return this.connected; }
-
-  private get url(): string {
-    return `ws://127.0.0.1:${process.env.OPENCLAW_PORT ?? '18789'}`;
-  }
-
-  private connect() {
-    if (this.connected) return;
-    let ws: WebSocket;
-    try {
-      ws = new WebSocket(this.url, { maxPayload: 25 * 1024 * 1024 });
-    } catch {
-      this.scheduleReconnect();
-      return;
-    }
-
-    ws.on('message', (raw) => {
-      try {
-        const msg = JSON.parse(raw.toString()) as Record<string, unknown>;
-
-        // Server challenge — send connect handshake
-        if (msg['event'] === 'connect.challenge') {
-          const id = crypto.randomUUID();
-          const params = {
-            minProtocol: 3, maxProtocol: 3,
-            client: {
-              id: 'must-b-bridge',
-              displayName: 'Must-b Bridge',
-              version: '1.8.1',
-              platform: process.platform,
-              mode: 'backend',
-            },
-            caps: [] as string[],
-            role: 'operator',
-            scopes: ['operator.admin'],
-            auth: process.env.OPENCLAW_PASSWORD
-              ? { password: process.env.OPENCLAW_PASSWORD }
-              : process.env.OPENCLAW_TOKEN
-              ? { token: process.env.OPENCLAW_TOKEN }
-              : undefined,
-          };
-          this.pending.set(id, {
-            resolve: () => {
-              this.connected = true;
-              this.ws = ws;
-              this.logger.info('[OpenClaw] Bridge connected and ready');
-            },
-            reject: (err) => {
-              this.logger.warn(`[OpenClaw] Handshake failed: ${String(err)}`);
-              ws.terminate();
-            },
-          });
-          ws.send(JSON.stringify({ type: 'req', id, method: 'connect', params }));
-          return;
-        }
-
-        // Response frame: { type: "res", id: "...", result?: ..., error?: ... }
-        if (msg['type'] === 'res' && typeof msg['id'] === 'string') {
-          const pend = this.pending.get(msg['id']);
-          if (!pend) return;
-          this.pending.delete(msg['id']);
-          if (msg['error']) {
-            const err = msg['error'] as Record<string, unknown>;
-            pend.reject(new Error((err['message'] as string | undefined) ?? 'OpenClaw RPC error'));
-          } else {
-            pend.resolve(msg['result']);
-          }
-        }
-      } catch { /* ignore parse errors */ }
-    });
-
-    ws.on('close', () => {
-      this.connected = false;
-      if (this.ws === ws) this.ws = null;
-      for (const [, p] of this.pending) p.reject({ offline: true });
-      this.pending.clear();
-      this.scheduleReconnect();
-    });
-
-    ws.on('error', (err) => {
-      this.logger.debug(`[OpenClaw] WS error: ${err.message}`);
-    });
-  }
-
-  private scheduleReconnect() {
-    if (this.reconnectTimer) return;
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null;
-      this.connect();
-    }, 5_000);
-    this.reconnectTimer.unref();
-  }
-
-  async call(method: string, params?: unknown): Promise<unknown> {
-    if (!this.connected) {
-      // Wait up to 2s for a connection
-      await new Promise<void>((res, rej) => {
-        const start = Date.now();
-        const timer = setInterval(() => {
-          if (this.connected) { clearInterval(timer); res(); }
-          else if (Date.now() - start > 2000) { clearInterval(timer); rej({ offline: true }); }
-        }, 100);
-      });
-    }
-    if (!this.connected || !this.ws) throw { offline: true };
-
-    return new Promise((resolve, reject) => {
-      const id = crypto.randomUUID();
-      this.pending.set(id, { resolve, reject });
-      try {
-        this.ws!.send(JSON.stringify({ type: 'req', id, method, params: params ?? {} }));
-      } catch {
-        this.pending.delete(id);
-        reject({ offline: true });
-        return;
-      }
-      // 10-second RPC timeout
-      setTimeout(() => {
-        if (this.pending.has(id)) {
-          this.pending.delete(id);
-          reject(new Error(`OpenClaw RPC timeout: ${method}`));
-        }
-      }, 10_000);
-    });
-  }
-}
 
 export class ApiServer {
   private app: express.Application;
@@ -280,7 +137,7 @@ export class ApiServer {
   private history: SessionHistory;
   private port: number;
   private root: string;
-  private openClawBridge: OpenClawBridge;
+  private gatewayBridge: MustbGatewayBridge;
 
   constructor(
     logger: winston.Logger,
@@ -298,7 +155,7 @@ export class ApiServer {
     this.server = http.createServer(this.app);
     this.io = new SocketIOServer(this.server, { cors: { origin: '*' } });
 
-    this.openClawBridge = new OpenClawBridge(logger);
+    this.gatewayBridge = new MustbGatewayBridge(logger);
     this.setupMiddleware();
     this.setupRoutes();
     this.setupSocketIO();
@@ -565,20 +422,20 @@ export class ApiServer {
       res.json({ ok: true, channel: ch.id });
     });
 
-    // ── OpenClaw Gateway Bridge Endpoints ─────────────────────────────────
-    // All /api/openclaw/* routes proxy to the OpenClaw gateway (ws://127.0.0.1:18789).
+    // ── Must-b Gateway Bridge Endpoints ───────────────────────────────────
+    // All /api/gateway/* routes proxy to the local Must-b gateway daemon (ws://127.0.0.1:18789).
     // On offline: read endpoints return { offline: true, ...emptyData } (200),
     //             mutation endpoints return 503.
 
-    const ocCall = async (method: string, params?: unknown) => this.openClawBridge.call(method, params);
+    const ocCall = async (method: string, params?: unknown) => this.gatewayBridge.call(method, params);
     const isOcOffline = (err: unknown): boolean => !!(err && typeof err === 'object' && 'offline' in err);
 
-    /** GET /api/openclaw/status — always 200, { online: boolean } */
-    this.app.get('/api/openclaw/status', requireAuth, async (_req, res) => {
+    /** GET /api/gateway/status — always 200, { online: boolean } */
+    this.app.get('/api/gateway/status', requireAuth, async (_req, res) => {
       try {
         const controller = new AbortController();
         const t = setTimeout(() => controller.abort(), 2000);
-        const port = process.env.OPENCLAW_PORT ?? '18789';
+        const port = process.env.MUSTB_GATEWAY_PORT ?? '18789';
         const r = await fetch(`http://127.0.0.1:${port}/health`, { signal: controller.signal });
         clearTimeout(t);
         const body = await r.json().catch(() => ({}));
@@ -588,42 +445,42 @@ export class ApiServer {
       }
     });
 
-    /** GET /api/openclaw/channels — channels.status */
-    this.app.get('/api/openclaw/channels', requireAuth, async (_req, res) => {
+    /** GET /api/gateway/channels — channels.status */
+    this.app.get('/api/gateway/channels', requireAuth, async (_req, res) => {
       try {
         const result = await ocCall('channels.status', {});
         res.json(result);
       } catch (err) {
         if (isOcOffline(err)) return res.json({ offline: true, channelOrder: [], channelLabels: {}, channelAccounts: {} });
-        this.logger.warn(`[OpenClaw] channels.status: ${String(err)}`);
+        this.logger.warn(`[Gateway] channels.status: ${String(err)}`);
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** POST /api/openclaw/channels/:channel/logout */
-    this.app.post('/api/openclaw/channels/:channel/logout', requireAuth, async (req, res) => {
+    /** POST /api/gateway/channels/:channel/logout */
+    this.app.post('/api/gateway/channels/:channel/logout', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('channels.logout', { channel: req.params.channel, accountId: req.body?.accountId });
         res.json(result ?? { ok: true });
       } catch (err) {
-        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        if (isOcOffline(err)) return res.status(503).json({ error: 'Gateway offline', offline: true });
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** POST /api/openclaw/channels/config — config.patch */
-    this.app.post('/api/openclaw/channels/config', requireAuth, async (req, res) => {
+    /** POST /api/gateway/channels/config — config.patch */
+    this.app.post('/api/gateway/channels/config', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('config.patch', req.body ?? {});
         res.json(result ?? { ok: true });
       } catch (err) {
-        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        if (isOcOffline(err)) return res.status(503).json({ error: 'Gateway offline', offline: true });
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** GET /api/openclaw/sessions — sessions.list */
-    this.app.get('/api/openclaw/sessions', requireAuth, async (req, res) => {
+    /** GET /api/gateway/sessions — sessions.list */
+    this.app.get('/api/gateway/sessions', requireAuth, async (req, res) => {
       try {
         const params: Record<string, unknown> = {};
         if (req.query.limit) params.limit = Number(req.query.limit);
@@ -637,8 +494,8 @@ export class ApiServer {
       }
     });
 
-    /** GET /api/openclaw/sessions/usage */
-    this.app.get('/api/openclaw/sessions/usage', requireAuth, async (req, res) => {
+    /** GET /api/gateway/sessions/usage */
+    this.app.get('/api/gateway/sessions/usage', requireAuth, async (req, res) => {
       try {
         const params = { limit: Number(req.query.limit ?? 30) };
         let result: unknown;
@@ -651,8 +508,8 @@ export class ApiServer {
       }
     });
 
-    /** GET /api/openclaw/usage/cost */
-    this.app.get('/api/openclaw/usage/cost', requireAuth, async (_req, res) => {
+    /** GET /api/gateway/usage/cost */
+    this.app.get('/api/gateway/usage/cost', requireAuth, async (_req, res) => {
       try {
         const result = await ocCall('usage.cost', {});
         res.json(result);
@@ -662,8 +519,8 @@ export class ApiServer {
       }
     });
 
-    /** GET /api/openclaw/logs — logs.tail */
-    this.app.get('/api/openclaw/logs', requireAuth, async (req, res) => {
+    /** GET /api/gateway/logs — logs.tail */
+    this.app.get('/api/gateway/logs', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('logs.tail', {
           cursor: Number(req.query.cursor ?? 0),
@@ -676,8 +533,8 @@ export class ApiServer {
       }
     });
 
-    /** GET /api/openclaw/automations — cron.list */
-    this.app.get('/api/openclaw/automations', requireAuth, async (req, res) => {
+    /** GET /api/gateway/automations — cron.list */
+    this.app.get('/api/gateway/automations', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('cron.list', {
           enabled: req.query.enabled ?? 'all',
@@ -690,52 +547,52 @@ export class ApiServer {
       }
     });
 
-    /** POST /api/openclaw/automations — cron.add */
-    this.app.post('/api/openclaw/automations', requireAuth, async (req, res) => {
+    /** POST /api/gateway/automations — cron.add */
+    this.app.post('/api/gateway/automations', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('cron.add', req.body ?? {});
         res.json(result ?? { ok: true });
       } catch (err) {
-        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        if (isOcOffline(err)) return res.status(503).json({ error: 'Gateway offline', offline: true });
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** PATCH /api/openclaw/automations/:id — cron.update */
-    this.app.patch('/api/openclaw/automations/:id', requireAuth, async (req, res) => {
+    /** PATCH /api/gateway/automations/:id — cron.update */
+    this.app.patch('/api/gateway/automations/:id', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('cron.update', { id: req.params.id, patch: req.body?.patch ?? req.body });
         res.json(result ?? { ok: true });
       } catch (err) {
-        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        if (isOcOffline(err)) return res.status(503).json({ error: 'Gateway offline', offline: true });
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** DELETE /api/openclaw/automations/:id — cron.remove */
-    this.app.delete('/api/openclaw/automations/:id', requireAuth, async (req, res) => {
+    /** DELETE /api/gateway/automations/:id — cron.remove */
+    this.app.delete('/api/gateway/automations/:id', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('cron.remove', { id: req.params.id });
         res.json(result ?? { ok: true });
       } catch (err) {
-        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        if (isOcOffline(err)) return res.status(503).json({ error: 'Gateway offline', offline: true });
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** POST /api/openclaw/automations/:id/run — cron.run */
-    this.app.post('/api/openclaw/automations/:id/run', requireAuth, async (req, res) => {
+    /** POST /api/gateway/automations/:id/run — cron.run */
+    this.app.post('/api/gateway/automations/:id/run', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('cron.run', { id: req.params.id, mode: req.body?.mode ?? 'force' });
         res.json(result ?? { ok: true });
       } catch (err) {
-        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        if (isOcOffline(err)) return res.status(503).json({ error: 'Gateway offline', offline: true });
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** GET /api/openclaw/automations/:id/runs — cron.runs */
-    this.app.get('/api/openclaw/automations/:id/runs', requireAuth, async (req, res) => {
+    /** GET /api/gateway/automations/:id/runs — cron.runs */
+    this.app.get('/api/gateway/automations/:id/runs', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('cron.runs', { id: req.params.id, limit: Number(req.query.limit ?? 20) });
         res.json(result);
@@ -745,8 +602,8 @@ export class ApiServer {
       }
     });
 
-    /** GET /api/openclaw/clients — node.list */
-    this.app.get('/api/openclaw/clients', requireAuth, async (_req, res) => {
+    /** GET /api/gateway/clients — node.list */
+    this.app.get('/api/gateway/clients', requireAuth, async (_req, res) => {
       try {
         const result = await ocCall('node.list', {});
         res.json(result);
@@ -756,30 +613,30 @@ export class ApiServer {
       }
     });
 
-    /** GET /api/openclaw/clients/:nodeId — node.describe */
-    this.app.get('/api/openclaw/clients/:nodeId', requireAuth, async (req, res) => {
+    /** GET /api/gateway/clients/:nodeId — node.describe */
+    this.app.get('/api/gateway/clients/:nodeId', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('node.describe', { nodeId: req.params.nodeId });
         res.json(result);
       } catch (err) {
-        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        if (isOcOffline(err)) return res.status(503).json({ error: 'Gateway offline', offline: true });
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** POST /api/openclaw/clients/:nodeId/rename — node.rename */
-    this.app.post('/api/openclaw/clients/:nodeId/rename', requireAuth, async (req, res) => {
+    /** POST /api/gateway/clients/:nodeId/rename — node.rename */
+    this.app.post('/api/gateway/clients/:nodeId/rename', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('node.rename', { nodeId: req.params.nodeId, displayName: req.body?.displayName });
         res.json(result ?? { ok: true });
       } catch (err) {
-        if (isOcOffline(err)) return res.status(503).json({ error: 'OpenClaw offline', offline: true });
+        if (isOcOffline(err)) return res.status(503).json({ error: 'Gateway offline', offline: true });
         res.status(502).json({ error: String(err) });
       }
     });
 
-    /** GET /api/openclaw/tools — tools.catalog */
-    this.app.get('/api/openclaw/tools', requireAuth, async (req, res) => {
+    /** GET /api/gateway/tools — tools.catalog */
+    this.app.get('/api/gateway/tools', requireAuth, async (req, res) => {
       try {
         const result = await ocCall('tools.catalog', {
           includePlugins: req.query.includePlugins !== 'false',
@@ -792,8 +649,8 @@ export class ApiServer {
       }
     });
 
-    /** GET /api/openclaw/agents — agents.list */
-    this.app.get('/api/openclaw/agents', requireAuth, async (_req, res) => {
+    /** GET /api/gateway/agents — agents.list */
+    this.app.get('/api/gateway/agents', requireAuth, async (_req, res) => {
       try {
         const result = await ocCall('agents.list', {});
         res.json(result);
@@ -1930,6 +1787,33 @@ export class ApiServer {
       }
     });
 
+    /**
+     * GET /api/skills/catalog
+     * Returns the native skill catalog parsed from src/core/skills/ SKILL.md files.
+     * Must-b native — no external dependencies.
+     */
+    this.app.get('/api/skills/catalog', requireAuth, async (_req, res) => {
+      try {
+        const { loadSkillCatalog } = await import('../core/skill-catalog.js');
+        res.json({ skills: loadSkillCatalog() });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/skills/catalog/refresh
+     * Force re-scan of src/core/skills/ and return updated catalog.
+     */
+    this.app.post('/api/skills/catalog/refresh', requireAuth, async (_req, res) => {
+      try {
+        const { refreshCatalog } = await import('../core/skill-catalog.js');
+        res.json({ skills: refreshCatalog() });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
     // ── Skill Router — Omni-Menu direct invocations (Skill_Master v1.0) ───
 
     /**
@@ -2230,13 +2114,13 @@ export class ApiServer {
       }
     });
 
-    // ── Native Tools & Agents catalog (no OpenClaw dependency) ──────────────
+    // ── Native Tools & Agents catalog ────────────────────────────────────────
 
     /**
      * GET /api/tools
      * Returns Must-b's own tool catalog: skill routes + built-in plugins.
      * Groups: "skills" (prompt/direct routes) and "plugins" (built-in + user).
-     * Format mirrors /api/openclaw/tools so ProductsPage works with either.
+     * Format mirrors /api/gateway/tools so ProductsPage works with either.
      */
     this.app.get('/api/tools', requireAuth, async (_req, res) => {
       try {
@@ -2275,7 +2159,7 @@ export class ApiServer {
      * GET /api/agents
      * Returns Must-b's own agent/skill metadata from src/core/skills/*.
      * Reads SKILL.md frontmatter: name, description, emoji, tags.
-     * Format mirrors /api/openclaw/agents so ProductsPage works with either.
+     * Format mirrors /api/gateway/agents so ProductsPage works with either.
      */
     this.app.get('/api/agents', requireAuth, async (_req, res) => {
       try {
@@ -2795,15 +2679,15 @@ export class ApiServer {
       }
     });
 
-    // ── OpenClaw Gateway — Ported Routes (v1.8.0) ──────────────────────────
-    // These routes replicate the most useful OpenClaw gateway methods as
-    // standard REST endpoints, making the Must-b API surface compatible with
-    // OpenClaw tooling and frontend expectations.
+    // ── Must-b Gateway — Native Routes ─────────────────────────────────────
+    // These routes replicate the most useful gateway methods as standard REST
+    // endpoints, making the Must-b API surface self-contained and accessible
+    // from any frontend or tooling without external dependencies.
 
     /**
      * GET /api/ollama/models
      * Live Ollama model list with context-window info (auto-discovery).
-     * Ported from OpenClaw: fetchOllamaModels + enrichOllamaModelsWithContext.
+     * Live Ollama model list with context-window enrichment.
      */
     this.app.get('/api/ollama/models', async (_req, res) => {
       try {
@@ -2823,7 +2707,7 @@ export class ApiServer {
     /**
      * GET /api/ollama/model-info/:name
      * Returns context-window size and reasoning flag for a specific model.
-     * Ported from OpenClaw: queryOllamaContextWindow.
+     * Context-window size and reasoning flag for a specific Ollama model.
      */
     this.app.get('/api/ollama/model-info/:name', async (req, res) => {
       try {
@@ -2846,8 +2730,7 @@ export class ApiServer {
 
     /**
      * GET /api/gateway/health
-     * Full health check — mirrors OpenClaw's `health` gateway method.
-     * Returns process uptime, memory, provider config, and Ollama reachability.
+     * Full health check — returns process uptime, memory, provider config, and Ollama reachability.
      */
     this.app.get('/api/gateway/health', async (_req, res) => {
       const mem = process.memoryUsage();
@@ -2872,10 +2755,10 @@ export class ApiServer {
 
     /**
      * GET /api/sessions
-     * List recent agent sessions (chat sessions) — mirrors OpenClaw sessions.list.
+     * List recent agent sessions (chat sessions).
      */
     this.app.get('/api/sessions', (_req, res) => {
-      // Surface the in-memory local chats as "sessions" for OpenClaw-compatible consumers
+      // Surface in-memory local chats as sessions
       const sessions = localChats.slice(-50).reverse().map(c => ({
         id:         c.id,
         title:      c.title,
@@ -2887,7 +2770,7 @@ export class ApiServer {
 
     /**
      * POST /api/sessions/:id/abort
-     * Abort an in-progress agent run for a session — mirrors OpenClaw sessions.abort.
+     * Abort an in-progress agent run for a session.
      */
     this.app.post('/api/sessions/:id/abort', (req, res) => {
       const id = req.params['id'];
@@ -2904,8 +2787,7 @@ export class ApiServer {
 
     /**
      * GET /api/gateway/logs
-     * Tail recent log lines — mirrors OpenClaw logs.tail gateway method.
-     * Returns the last N lines from the Winston log file if present.
+     * Tail recent log lines from the Winston log file.
      */
     this.app.get('/api/gateway/logs', (req, res) => {
       const n     = Math.min(parseInt(String(req.query['n'] ?? '100'), 10), 500);
@@ -2925,7 +2807,7 @@ export class ApiServer {
     // ── Desktop clients ────────────────────────────────────────────────────
     this.io.on('connection', (socket) => {
       this.logger.info(`Gateway: client connected ${socket.id}`);
-      // Send initial health state on connect (mirrors OpenClaw gateway connect.challenge pattern)
+      // Send initial health state on connect
       socket.emit('agentUpdate', {
         type:   'health',
         status: 'ready',
@@ -2934,7 +2816,7 @@ export class ApiServer {
       socket.on('disconnect', () => this.logger.info(`Gateway: client disconnected ${socket.id}`));
     });
 
-    // ── Heartbeat tick (OpenClaw: gateway tick / last-heartbeat pattern) ───
+    // ── Heartbeat tick ───────────────────────────────────────────────────────
     // Emits a 'tick' event every 30 s so clients can detect stale connections.
     setInterval(() => {
       this.io.emit('agentUpdate', { type: 'tick', ts: Date.now() });

@@ -1,12 +1,12 @@
 /**
- * LogsPage — OpenClaw logs, usage and session stats.
+ * LogsPage — Must-b gateway logs, usage and session stats.
  * Tabs: Logs (logs.tail) / Usage (usage.cost) / Sessions (sessions.usage)
  */
 
 import { useState, useEffect, useRef } from "react";
 import { BarChart3, WifiOff, RefreshCw, Copy, DollarSign, Cpu } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { useOpenClawStatus } from "@/hooks/useOpenClawStatus";
+import { useGatewayStatus } from "@/hooks/useGatewayStatus";
 
 type Tab = "logs" | "usage" | "sessions";
 
@@ -21,7 +21,7 @@ function LogsTab({ online }: { online: boolean }) {
 
   const fetch_ = async (cursor = 0) => {
     try {
-      const res = await apiFetch(`/api/openclaw/logs?cursor=${cursor}&limit=200`);
+      const res = await apiFetch(`/api/gateway/logs?cursor=${cursor}&limit=200`);
       const d: LogData = await res.json();
       if (cursor === 0) {
         setData(d);
@@ -85,7 +85,7 @@ function LogsTab({ online }: { online: boolean }) {
         {loading ? (
           <p className="text-gray-600">Yükleniyor…</p>
         ) : !online || data.offline ? (
-          <p className="text-orange-500">OpenClaw çevrimdışı — log verisi alınamıyor.</p>
+          <p className="text-orange-500">Gateway çevrimdışı — log verisi alınamıyor.</p>
         ) : (data.lines ?? []).length === 0 ? (
           <p className="text-gray-600">Henüz log yok.</p>
         ) : (
@@ -112,7 +112,7 @@ function UsageTab({ online }: { online: boolean }) {
 
   useEffect(() => {
     setLoading(true);
-    apiFetch("/api/openclaw/usage/cost")
+    apiFetch("/api/gateway/usage/cost")
       .then(r => r.json())
       .then(setData)
       .catch(() => setData({}))
@@ -127,7 +127,7 @@ function UsageTab({ online }: { online: boolean }) {
       {(!online || data.offline) && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-orange-500/8 border border-orange-500/20">
           <WifiOff size={12} className="text-orange-400" />
-          <p className="text-[11px] text-orange-300">OpenClaw çevrimdışı.</p>
+          <p className="text-[11px] text-orange-300">Gateway çevrimdışı.</p>
         </div>
       )}
 
@@ -207,7 +207,7 @@ function SessionsTab({ online }: { online: boolean }) {
 
   useEffect(() => {
     setLoading(true);
-    apiFetch("/api/openclaw/sessions/usage?limit=30")
+    apiFetch("/api/gateway/sessions/usage?limit=30")
       .then(r => r.json())
       .then(d => setSessions(Array.isArray(d) ? d : (d?.sessions ?? [])))
       .catch(() => setSessions([]))
@@ -227,7 +227,7 @@ function SessionsTab({ online }: { online: boolean }) {
         </div>
       ) : sessions.length === 0 ? (
         <p className="text-center text-sm text-gray-600 py-6">
-          {online ? "Oturum bulunamadı." : "OpenClaw çevrimdışı."}
+          {online ? "Oturum bulunamadı." : "Gateway çevrimdışı."}
         </p>
       ) : (
         sessions.map((s, i) => (
@@ -246,7 +246,7 @@ function SessionsTab({ online }: { online: boolean }) {
 
 /* ── Page ─────────────────────────────────────────────────────────────── */
 export default function LogsPage() {
-  const { online } = useOpenClawStatus();
+  const { online } = useGatewayStatus();
   const [tab, setTab] = useState<Tab>("logs");
 
   return (
@@ -258,7 +258,7 @@ export default function LogsPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-white">Loglar & Aktivite</h1>
-          <p className="text-[11px] text-gray-500">OpenClaw log, kullanım ve oturum istatistikleri</p>
+          <p className="text-[11px] text-gray-500">Must-b gateway log, kullanım ve oturum istatistikleri</p>
         </div>
         {!online && (
           <span className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] bg-red-500/8 border border-red-500/20 text-red-400">

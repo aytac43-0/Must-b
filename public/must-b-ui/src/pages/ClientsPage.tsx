@@ -1,12 +1,12 @@
 /**
- * ClientsPage — OpenClaw connected nodes (devices/clients).
- * Data: GET /api/openclaw/clients → node.list RPC
+ * ClientsPage — Must-b connected nodes (devices/clients).
+ * Data: GET /api/gateway/clients → node.list RPC
  */
 
 import { useState, useEffect } from "react";
 import { Users, WifiOff, RefreshCw, Monitor, Smartphone, Apple, Laptop } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { useOpenClawStatus } from "@/hooks/useOpenClawStatus";
+import { useGatewayStatus } from "@/hooks/useGatewayStatus";
 
 interface NodeEntry {
   nodeId: string;
@@ -33,7 +33,7 @@ function PlatformIcon({ platform }: { platform?: string }) {
 }
 
 export default function ClientsPage() {
-  const { online } = useOpenClawStatus();
+  const { online } = useGatewayStatus();
   const [nodes, setNodes] = useState<NodeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export default function ClientsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/openclaw/clients");
+      const res = await apiFetch("/api/gateway/clients");
       const data = await res.json();
       setNodes(Array.isArray(data?.nodes) ? data.nodes : Array.isArray(data) ? data : []);
     } catch { setNodes([]); }
@@ -54,7 +54,7 @@ export default function ClientsPage() {
   const handleRename = async (nodeId: string) => {
     if (!editName.trim()) { setEditingId(null); return; }
     try {
-      await apiFetch(`/api/openclaw/clients/${nodeId}/rename`, {
+      await apiFetch(`/api/gateway/clients/${nodeId}/rename`, {
         method: "POST",
         body: JSON.stringify({ displayName: editName.trim() }),
       });
@@ -101,8 +101,8 @@ export default function ClientsPage() {
           <Users size={32} className="text-gray-700" />
           <p className="text-sm text-gray-600">
             {online
-              ? "Bağlı node yok. Bağlamak için: openclaw pair"
-              : "OpenClaw çevrimdışı."}
+              ? "Bağlı node yok."
+              : "Gateway çevrimdışı."}
           </p>
         </div>
       ) : (

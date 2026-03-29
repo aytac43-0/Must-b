@@ -49,7 +49,7 @@ export class Planner {
   /**
    * Context-window overflow recovery (called by Orchestrator on 'overflow' error).
    * Drops the oldest conversation turns while keeping the system prompt.
-   * Mirrors OpenClaw's overflow-compaction strategy.
+   * Must-b overflow-compaction strategy.
    */
   compactHistory(keepTurns = 4): void {
     const system  = this._chatHistory.filter(m => m.role === 'system');

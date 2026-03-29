@@ -238,6 +238,46 @@ function checkPython(): CheckResult {
   };
 }
 
+function checkPip(): CheckResult {
+  for (const cmd of ['pip3', 'pip']) {
+    const result = spawnSync(cmd, ['--version'], { encoding: 'utf-8', stdio: 'pipe' });
+    if (result.status === 0) {
+      const ver = (result.stdout || '').trim().split('\n')[0];
+      return { label: 'pip', ok: true, detail: ver };
+    }
+  }
+  return {
+    label: 'pip',
+    ok: false,
+    detail: 'not found (optional — required for Python-based tools)',
+    fix: 'Run: python3 -m ensurepip --upgrade  or  python -m ensurepip --upgrade',
+    autoFix: async () => {
+      // Try ensurepip first (ships with Python 3.4+, works on all platforms)
+      for (const pyCmd of ['python3', 'python']) {
+        const r = spawnSync(pyCmd, ['--version'], { encoding: 'utf-8', stdio: 'pipe' });
+        if (r.status !== 0) continue;
+        try {
+          execSync(`${pyCmd} -m ensurepip --upgrade`, { stdio: 'pipe' });
+          console.log(green(`  ✓  pip kuruldu (${pyCmd} -m ensurepip)`));
+          return true;
+        } catch { /* try next */ }
+      }
+      // Fallback: platform-specific installer
+      if (process.platform === 'win32') {
+        // Re-run Python installer with pip component (silent)
+        for (const pkgId of ['Python.Python.3.12', 'Python.Python.3.11', 'Python.Python.3']) {
+          if (wingetInstall(pkgId, 'python')) return true;
+        }
+        return false;
+      }
+      const cmd = getInstallCmd({ darwin: 'brew install python3', linux: 'sudo apt-get install -y python3-pip' });
+      if (!cmd) return false;
+      console.log(dim(`  → ${cmd}`));
+      try { execSync(cmd, { stdio: 'inherit' }); return true; } catch { return false; }
+    },
+  };
+}
+
 function checkEnvFile(root: string): CheckResult {
   const envPath = path.join(root, '.env');
   const bakPath = path.join(root, '.env.bak');
@@ -888,6 +928,7 @@ export async function runDoctor(
     checkNode(),
     checkGit(),
     checkPython(),
+    checkPip(),
     checkEnvFile(root),
     checkApiKey(),
     checkMode(root),

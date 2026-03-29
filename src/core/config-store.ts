@@ -1,13 +1,9 @@
 /**
  * Must-b UniversalStore / ConfigStore (v1.5.0-alpha.1)
  *
- * Brain-Graft Phase 1: Adapted from OpenClaw's battle-tested config architecture.
+ * Must-b Native Config Architecture.
  * Provides secure env-var management, auth-profile rotation, and config persistence.
- *
- * OpenClaw → Must-b adaptations:
- *   OPENCLAW_HOME → MUSTB_HOME
- *   ~/.openclaw/  → ~/.mustb/
- *   .openclawrc   → .mustbrc
+ * Config home: MUSTB_HOME env var (default ~/.mustb/)
  */
 import fs    from 'fs';
 import path  from 'path';
@@ -15,13 +11,12 @@ import os    from 'os';
 import dotenv from 'dotenv';
 
 // ── MUSTB_HOME ─────────────────────────────────────────────────────────────────
-// Mirrors OpenClaw's ~/.openclaw/ → adapted for Must-b at ~/.mustb/
 export function getMustbHome(): string {
   return process.env.MUSTB_HOME ?? path.join(os.homedir(), '.mustb');
 }
 
 // ── Dangerous env var blocking ─────────────────────────────────────────────────
-// Adapted from OpenClaw's isDangerousHostEnvVarName() + isDangerousHostEnvOverrideVarName().
+// Prevents config files from overriding critical system / loader environment variables.
 // Prevents config files from overriding critical system / loader environment variables.
 const BLOCKED_ENV_NAMES = new Set([
   'HOME', 'USER', 'SHELL', 'PATH', 'TERM', 'LANG', 'LC_ALL', 'LC_CTYPE',
@@ -37,7 +32,6 @@ export function isDangerousEnvVar(key: string): boolean {
 }
 
 // ── Auth Profile Store ─────────────────────────────────────────────────────────
-// Adapted from OpenClaw's auth-profiles/store.ts.
 // Persists multiple API keys per provider at ~/.mustb/auth-profiles.json,
 // enabling in-process key rotation without touching .env.
 
@@ -112,7 +106,7 @@ export function rotateProviderKey(provider: string): string | null {
 /**
  * Collect all available keys for a given env-var base name.
  * Reads VAR_NAME, VAR_NAME_2, VAR_NAME_3 … VAR_NAME_5 from process.env.
- * Adapted from OpenClaw's resolveEnvApiKey() suffix-scan pattern.
+ * Scans VAR_NAME, VAR_NAME_2 … VAR_NAME_5 for key rotation.
  */
 export function resolveEnvKeys(baseEnvVar: string): string[] {
   const keys: string[] = [];
@@ -126,7 +120,7 @@ export function resolveEnvKeys(baseEnvVar: string): string[] {
 }
 
 // ── Dot-notation config path access ───────────────────────────────────────────
-// Adapted from OpenClaw's config-paths.ts.
+// Dot-notation path accessor.
 
 export function getConfigAtPath(obj: Record<string, any>, dotPath: string): any {
   return dotPath.split('.').reduce(
@@ -147,7 +141,6 @@ export function setConfigAtPath(obj: Record<string, any>, dotPath: string, value
 }
 
 // ── Config env-var application ─────────────────────────────────────────────────
-// Adapted from OpenClaw's applyConfigEnvVars().
 // Applies config-sourced vars to process.env, skipping dangerous overrides
 // and unresolved ${VAR} placeholder references.
 
@@ -168,7 +161,7 @@ export function applyConfigEnvVars(
 
 // ── .env hot-reload ────────────────────────────────────────────────────────────
 // Reloads .env from disk, applying only safe (non-dangerous) variables.
-// Adapted from OpenClaw's createConfigRuntimeEnv() pattern.
+// .env hot-reload — reloads vars from disk, skipping dangerous overrides.
 
 export function reloadEnvFile(envPath?: string): void {
   try {
