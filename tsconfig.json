@@ -25,6 +25,7 @@
     "src/core/memory/**/*",
     "src/core/guard/**/*",
     "src/core/intelligence/**/*",
+    "src/core/automation/**/*",
     "src/commands/**/*",
     "src/interface/**/*",
     "src/memory/**/*",

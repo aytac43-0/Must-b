@@ -23,6 +23,7 @@ import { initWorkspace } from './core/paths.js';
 import { LTMController } from './core/memory/ltm.js';
 import { GhostGuard }          from './core/guard/ghost-guard.js';
 import { ProjectIntelligence } from './core/intelligence/project-intelligence.js';
+import { NightOwl }            from './core/automation/night-owl.js';
 
 dotenv.config();
 
@@ -292,6 +293,11 @@ async function bootServer(arg: string, suppressBrowser = false) {
     const pi = new ProjectIntelligence({ root: ROOT, workspaceRoot: WORKSPACE_ROOT, ltm, logger });
     apiServer.attachIntelligence(pi);
     pi.start();
+
+    // ── NightOwl — Autonomous Night-Shift Deep Scan Scheduler ─────────────
+    const owl = new NightOwl({ root: ROOT, guard, intelligence: pi, ltm, logger, orchestrator });
+    apiServer.attachNightOwl(owl);
+    owl.start();
 
     // ── Ollama Auto-Discovery ─────────────────────────────────────────────
     // Runs silently in background. Warns only if OLLAMA_BASE_URL is set but

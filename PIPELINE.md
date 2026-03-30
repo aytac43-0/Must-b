@@ -164,6 +164,18 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 
 ---
 
+## Sprint 9 — Live Browser View (CEO Direktifi 2026-03-30)
+
+> **Hedef:** Must-b tarayıcıda gezinirken floating PiP penceresi — JPEG stream + URL bar + son aksiyon.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S9-F001 | Frontend_Engineer | **LiveBrowserView**: Floating PiP; shadowFrame/ghostFrame stream; URL bar; son aksiyon | DONE | 2026-03-30 |
+| S9-QA | QA_Lead | TS + build | QA_PASSED | TS: 0 hata. Build: 2002 modül, exit 0, clean ✓ \| 2026-03-30 |
+| S9-DEPLOY | Deploy_Chief | v1.17.0 deploy | READY | Deploy_Chief bekliyor \| 2026-03-30 |
+
+---
+
 ## Sprint 8 — Dashboard Intelligence UI (CEO Direktifi 2026-03-30)
 
 > **Hedef:** Ghost Guard `systemStats`/`systemHealth` + Project Intelligence `projectInsight` event'lerini glassmorphism bileşenlerle Dashboard'a bağla.
@@ -176,6 +188,18 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S8-ACT001 | Backend_Architect | **ACTION FORCE v1.16.0**: `browser_perceive` (snapshot+url+title tek çağrı), `browser_scroll`, `browser_wait` — BrowserTools'a eklendi. `executor.ts`'e GhostGuard RAM guard (%82 limit), her browser_* op öncesi checkBrowserRAM(), navigate/click/type sonrası otomatik perception inject. Planner sistem prompt güncellendi. | DONE | Backend_Architect \| 2026-03-30 |
 | S8-ACT001-QA | QA_Lead | Action Force — TS: 0 hata. Backend tsc --noEmit: temiz | QA_PASSED | QA_Lead \| 2026-03-30 |
 | S8-DEPLOY | Deploy_Chief | v1.16.0 deploy | READY | Deploy_Chief bekliyor \| 2026-03-30 |
+
+---
+
+## Sprint 9 — NightOwl Automation (CEO Direktifi 2026-03-30)
+
+> **Hedef:** Sistem boştayken (düşük CPU/RAM) otonom derin tarama görevlerini başlat; bulguları Semantic Memory'ye 'NightShift-Insights' etiketiyle işle.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S9-OWL001 | Backend_Architect | **NIGHTOWL SCHEDULER**: `src/core/automation/night-owl.ts` — CPU<%15 ve RAM<%65 idle algılama (90s poll, 2h cooldown), 5 derin tarama görevi: CodeHealth/DepAudit/LogAnalysis/LTMGap/WorkspaceDiff, bulguları `['NightShift-Insights', task]` tag'i ile LTM semantik belleğe indeksle. `attachNightOwl()` + `/api/automation/nightowl/status` + `/api/automation/nightowl/trigger` endpoint'leri. | DONE | Backend_Architect \| 2026-03-30 |
+| S9-OWL001-QA | QA_Lead | NightOwl — TS: 0 hata. Build: exit 0 | QA_PASSED | QA_Lead \| 2026-03-30 |
+| S9-OWL001-DEPLOY | Deploy_Chief | v1.17.0 deploy — NightOwl Autonomous Night-Shift Scheduler | READY | Deploy_Chief bekliyor \| 2026-03-30 |
 
 ---
 

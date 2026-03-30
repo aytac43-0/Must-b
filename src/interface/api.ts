@@ -12,6 +12,7 @@ import winston from 'winston';
 import { Orchestrator, type PlanStep } from '../core/orchestrator.js';
 import type { GhostGuard }            from '../core/guard/ghost-guard.js';
 import type { ProjectIntelligence }   from '../core/intelligence/project-intelligence.js';
+import type { NightOwl }              from '../core/automation/night-owl.js';
 import { SessionHistory } from '../memory/history.js';
 import { LongTermMemory } from '../memory/long-term.js';
 import { runDoctor } from '../commands/doctor.js';
@@ -141,6 +142,7 @@ export class ApiServer {
   private root: string;
   private gatewayBridge:  MustbGatewayBridge;
   private intelligence:   ProjectIntelligence | null = null;
+  private nightOwl:       NightOwl | null = null;
 
   constructor(
     logger: winston.Logger,
@@ -3082,6 +3084,43 @@ export class ApiServer {
       this.io.emit('projectInsight', ev);
     });
     this.logger.info('[Intelligence] Whisper kanal aktif.');
+  }
+
+  /**
+   * Wire up NightOwl: forward 'nightShiftStart', 'nightShiftEnd', 'finding'
+   * events to Socket.io clients as 'nightOwlEvent' messages.
+   * Registers /api/automation/nightowl/* REST endpoints.
+   */
+  attachNightOwl(owl: NightOwl): void {
+    this.nightOwl = owl;
+
+    owl.on('nightShiftStart', (ev: object) => this.io.emit('nightOwlEvent', { type: 'shiftStart', ...ev }));
+    owl.on('nightShiftEnd',   (ev: object) => this.io.emit('nightOwlEvent', { type: 'shiftEnd',   ...ev }));
+    owl.on('finding', (ev: object)          => this.io.emit('nightOwlEvent', { type: 'finding',   ...ev }));
+
+    // ── REST endpoints ──────────────────────────────────────────────────────
+    const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      const token = req.headers['x-mustb-token'] ?? req.query['token'];
+      if (token === LOCAL_TOKEN) return next();
+      return res.status(401).json({ error: 'Unauthorized' });
+    };
+
+    /** GET /api/automation/nightowl/status */
+    this.app.get('/api/automation/nightowl/status', requireAuth, (_req, res) => {
+      res.json(owl.getStatus());
+    });
+
+    /** POST /api/automation/nightowl/trigger — bypass idle check, run immediately */
+    this.app.post('/api/automation/nightowl/trigger', requireAuth, async (_req, res) => {
+      try {
+        const findings = await owl.triggerNow();
+        res.json({ ok: true, findingsCount: findings.length, findings });
+      } catch (e: any) {
+        res.status(500).json({ ok: false, error: e.message });
+      }
+    });
+
+    this.logger.info('[NightOwl] API endpoints aktif: /api/automation/nightowl/*');
   }
 
   start() {
