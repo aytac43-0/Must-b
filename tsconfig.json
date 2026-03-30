@@ -23,6 +23,7 @@
     "src/core/planner.ts",
     "src/core/provider.ts",
     "src/core/memory/**/*",
+    "src/core/guard/**/*",
     "src/commands/**/*",
     "src/interface/**/*",
     "src/memory/**/*",

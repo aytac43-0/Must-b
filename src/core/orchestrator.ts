@@ -142,6 +142,7 @@ export class Orchestrator extends EventEmitter {
   private planner: Planner;
   private executor: Executor;
   private ltm: LTMController | null = null;
+  private _liteMode = false;
   private readonly MAX_REVISIONS = 3;
   private _busy = false;
   /** Tracks recurring error signatures for auto-repair loop deduplication */
@@ -168,6 +169,15 @@ export class Orchestrator extends EventEmitter {
     return this.ltm;
   }
 
+  /** GhostGuard calls this when RAM/CPU thresholds are crossed. */
+  setLiteMode(active: boolean): void {
+    this._liteMode = active;
+  }
+
+  get isLiteMode(): boolean {
+    return this._liteMode;
+  }
+
   /**
    * Fast-path: bypass Planner/Executor entirely.
    * Emits planStart → finalAnswer → planFinish using a single direct LLM call.
@@ -181,7 +191,7 @@ export class Orchestrator extends EventEmitter {
     const memCtx = this.ltm?.buildSystemContext(goal) ?? '';
 
     try {
-      const answer = await this.planner.directChat(goal, memCtx);
+      const answer = await this.planner.directChat(goal, memCtx, this._liteMode);
       this.emit('finalAnswer', { goal, answer, timestamp: Date.now() });
       this.emit('planFinish', {
         goal, status: 'completed', answer, steps: [], timestamp: Date.now(),
@@ -194,7 +204,7 @@ export class Orchestrator extends EventEmitter {
       // Self-heal: try once more after env reload
       await reloadEnv();
       try {
-        const answer = await this.planner.directChat(goal, memCtx);
+        const answer = await this.planner.directChat(goal, memCtx, this._liteMode);
         this.emit('finalAnswer', { goal, answer, timestamp: Date.now() });
         this.emit('planFinish', { goal, status: 'completed', answer, steps: [], timestamp: Date.now() });
         this.ltm?.indexEpisodic(goal, 'completed', answer.slice(0, 400));
@@ -232,7 +242,7 @@ export class Orchestrator extends EventEmitter {
     while (revision <= this.MAX_REVISIONS) {
       try {
         // Plan
-        const steps = await this.planner.plan(currentGoal, memCtx);
+        const steps = await this.planner.plan(currentGoal, memCtx, this._liteMode);
         this.emit('planGenerated', { goal: currentGoal, steps, timestamp: Date.now() });
 
         if (!steps.length) {

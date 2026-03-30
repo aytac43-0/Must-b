@@ -62,11 +62,14 @@ export class Planner {
     );
   }
 
-  async plan(goal: string, memCtx = ''): Promise<PlanStep[]> {
+  async plan(goal: string, memCtx = '', liteMode = false): Promise<PlanStep[]> {
     this.logger.info(`Planner: Generating plan for goal: "${goal}"`);
 
+    const liteNote = liteMode
+      ? '\n\nSYSTEM: Kaynak kısıtı aktif (Hafif Mod). Adım sayısını minimumda tut, gereksiz araç çağrılarından kaçın.'
+      : '';
     const memBlock = memCtx ? `\n\n${memCtx}\n` : '';
-    const systemPrompt = getSystemPrompt('agent') + memBlock + `\n\nYou are the Planner for Must-b, an autonomous AI agent with full browser, filesystem, terminal, and memory capabilities.
+    const systemPrompt = getSystemPrompt('agent') + liteNote + memBlock + `\n\nYou are the Planner for Must-b, an autonomous AI agent with full browser, filesystem, terminal, and memory capabilities.
 Your job is to break down a high-level user Goal into a precise, executable sequence of steps.
 
 Available Tools:
@@ -165,11 +168,12 @@ Example Output:
    * Fast-path: answer a conversational prompt directly without planning or tool use.
    * Used by the Orchestrator's direct-chat router for simple queries.
    */
-  async directChat(goal: string, memCtx = ''): Promise<string> {
+  async directChat(goal: string, memCtx = '', liteMode = false): Promise<string> {
     this.logger.info(`Planner: directChat — "${goal.slice(0, 80)}"`);
-    const sysContent = memCtx
-      ? `${getSystemPrompt('direct')}\n\n${memCtx}`
-      : getSystemPrompt('direct');
+    const liteNote = liteMode
+      ? '\n\nSYSTEM: Kaynak kısıtı aktif (Hafif Mod). Yanıtları kısa ve öz tut.'
+      : '';
+    const sysContent = `${getSystemPrompt('direct')}${liteNote}${memCtx ? '\n\n' + memCtx : ''}`;
     const messages: CompletionMessage[] = [
       { role: 'system', content: sysContent },
       { role: 'user', content: goal },

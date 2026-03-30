@@ -10,6 +10,7 @@ import os from 'os';
 import winston from 'winston';
 
 import { Orchestrator, type PlanStep } from '../core/orchestrator.js';
+import type { GhostGuard } from '../core/guard/ghost-guard.js';
 import { SessionHistory } from '../memory/history.js';
 import { LongTermMemory } from '../memory/long-term.js';
 import { runDoctor } from '../commands/doctor.js';
@@ -3002,6 +3003,27 @@ export class ApiServer {
     } catch (err: any) {
       this.logger.warn(`[Input] Bridge setup failed: ${err?.message}`);
     }
+  }
+
+  /**
+   * Wire up GhostGuard: forward 'alert' events to all Socket.io clients
+   * as 'systemHealth' messages, and log 'autoHeal' events.
+   */
+  attachGuard(guard: GhostGuard): void {
+    guard.on('alert', (alert) => {
+      this.io.emit('systemHealth', alert);
+    });
+    guard.on('autoHeal', (ev: { kind: string; message: string }) => {
+      this.logger.info(`[GhostGuard → ApiServer] AutoHeal: ${ev.message}`);
+      this.io.emit('systemHealth', {
+        level: 'info',
+        kind: 'autoHeal',
+        message: `Otomatik onarım başlatıldı: ${ev.message}`,
+        recommendation: 'İşlem arka planda çalışıyor.',
+        ts: Date.now(),
+      });
+    });
+    this.logger.info('[GhostGuard] Dashboard alert kanalı aktif.');
   }
 
   start() {

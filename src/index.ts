@@ -21,6 +21,7 @@ import { getAgentRole } from './core/hierarchy.js';
 import { ErrorObserver } from './core/observer.js';
 import { initWorkspace } from './core/paths.js';
 import { LTMController } from './core/memory/ltm.js';
+import { GhostGuard }   from './core/guard/ghost-guard.js';
 
 dotenv.config();
 
@@ -274,6 +275,15 @@ async function bootServer(arg: string, suppressBrowser = false) {
     const apiServer = new ApiServer(logger, orchestrator, history, PORT, ROOT);
     apiServer.start();
     startHealthMonitor(ROOT, logger);
+
+    // ── GhostGuard — Resource + Log Intelligence ──────────────────────────
+    const guard = new GhostGuard({ root: ROOT, logger });
+    guard.on('liteMode', (ev: { active: boolean; reason: string }) => {
+      orchestrator.setLiteMode(ev.active);
+      logger.warn(`[GhostGuard] Lite mode → ${ev.active ? 'AKTİF' : 'DEVRE DIŞI'}: ${ev.reason}`);
+    });
+    apiServer.attachGuard(guard);
+    guard.start();
 
     // ── Ollama Auto-Discovery ─────────────────────────────────────────────
     // Runs silently in background. Warns only if OLLAMA_BASE_URL is set but

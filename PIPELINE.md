@@ -164,6 +164,18 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 
 ---
 
+## Sprint 6 — Ghost Guard (CEO Direktifi 2026-03-30)
+
+> **Hedef:** Kaynak izleme, log tarama, proaktif uyarı ve auto-heal altyapısı.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S6-GRD001 | Backend_Architect | **GHOST GUARD**: `src/core/guard/ghost-guard.ts` — Resource Monitor (CPU/RAM, Lite Mode), Log Scanner (chokidar, pattern matching), Proaktif Uyarı (Socket.io systemHealth), Auto-Heal (doctor --fix tetikleme) | DONE | Backend_Architect \| 2026-03-30 |
+| S6-GRD001-QA | QA_Lead | Ghost Guard — TS: 0 hata. Build: exit 0 | QA_PASSED | QA_Lead \| 2026-03-30 |
+| S6-GRD001-DEPLOY | Deploy_Chief | v1.14.0 deploy — Ghost Guard: Resource & Error Intelligence | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.14.0: Ghost Guard \| push: BAŞARILI |
+
+---
+
 ## Sprint 4 — Skill Entegrasyonu (CEO Direktifi 2026-03-29)
 
 > **Hedef:** 52 SKILL.md kataloğu Dashboard'a entegre edilecek. Skills & Plugins panelleri OpenClaw bağımsız çalışacak.
