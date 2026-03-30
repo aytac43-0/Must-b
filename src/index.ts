@@ -21,7 +21,8 @@ import { getAgentRole } from './core/hierarchy.js';
 import { ErrorObserver } from './core/observer.js';
 import { initWorkspace } from './core/paths.js';
 import { LTMController } from './core/memory/ltm.js';
-import { GhostGuard }   from './core/guard/ghost-guard.js';
+import { GhostGuard }          from './core/guard/ghost-guard.js';
+import { ProjectIntelligence } from './core/intelligence/project-intelligence.js';
 
 dotenv.config();
 
@@ -284,6 +285,12 @@ async function bootServer(arg: string, suppressBrowser = false) {
     });
     apiServer.attachGuard(guard);
     guard.start();
+
+    // ── Project Intelligence — workspace insight + auto-documentation ─────
+    const { WORKSPACE_ROOT } = await import('./core/paths.js');
+    const pi = new ProjectIntelligence({ root: ROOT, workspaceRoot: WORKSPACE_ROOT, ltm, logger });
+    apiServer.attachIntelligence(pi);
+    pi.start();
 
     // ── Ollama Auto-Discovery ─────────────────────────────────────────────
     // Runs silently in background. Warns only if OLLAMA_BASE_URL is set but

@@ -176,6 +176,18 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 
 ---
 
+## Sprint 7 — Project Intelligence (CEO Direktifi 2026-03-30)
+
+> **Hedef:** Workspace izleme, proje özetleme, insight fısıltısı, otomatik CHANGELOG.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S7-INS001 | Backend_Architect | **PROJECT INTELLIGENCE**: `workspace-watcher.ts` (chokidar, 5 kategori), `summary-engine.ts` (klasör+dep özeti → LTM semantic), `project-intelligence.ts` (insight heuristik, whisper, CHANGELOG gen), `attachIntelligence()`, `/api/intelligence/changelog` | DONE | Backend_Architect \| 2026-03-30 |
+| S7-INS001-QA | QA_Lead | Project Intelligence — TS: 0 hata. esbuild: 0 hata, 456kb ✓ | QA_PASSED | QA_Lead \| 2026-03-30 |
+| S7-INS001-DEPLOY | Deploy_Chief | v1.15.0 deploy — Project Intelligence | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.15.0: Project Intelligence \| push: BAŞARILI |
+
+---
+
 ## Sprint 4 — Skill Entegrasyonu (CEO Direktifi 2026-03-29)
 
 > **Hedef:** 52 SKILL.md kataloğu Dashboard'a entegre edilecek. Skills & Plugins panelleri OpenClaw bağımsız çalışacak.

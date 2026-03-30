@@ -10,7 +10,8 @@ import os from 'os';
 import winston from 'winston';
 
 import { Orchestrator, type PlanStep } from '../core/orchestrator.js';
-import type { GhostGuard } from '../core/guard/ghost-guard.js';
+import type { GhostGuard }            from '../core/guard/ghost-guard.js';
+import type { ProjectIntelligence }   from '../core/intelligence/project-intelligence.js';
 import { SessionHistory } from '../memory/history.js';
 import { LongTermMemory } from '../memory/long-term.js';
 import { runDoctor } from '../commands/doctor.js';
@@ -138,7 +139,8 @@ export class ApiServer {
   private history: SessionHistory;
   private port: number;
   private root: string;
-  private gatewayBridge: MustbGatewayBridge;
+  private gatewayBridge:  MustbGatewayBridge;
+  private intelligence:   ProjectIntelligence | null = null;
 
   constructor(
     logger: winston.Logger,
@@ -2415,6 +2417,24 @@ export class ApiServer {
       }
     });
 
+    // ── Project Intelligence (v1.15.0) ───────────────────────────────────
+
+    /**
+     * POST /api/intelligence/changelog
+     * Generate CHANGELOG.md from PIPELINE.md + LTM memory.
+     */
+    this.app.post('/api/intelligence/changelog', requireAuth, (_req, res) => {
+      if (!this.intelligence) {
+        return res.status(503).json({ error: 'Intelligence module not initialized' });
+      }
+      try {
+        const outPath = this.intelligence.generateChangelog();
+        res.json({ ok: true, path: outPath });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
     // ── Companion / Mobile (v4.6) ─────────────────────────────────────────
 
     /**
@@ -3024,6 +3044,19 @@ export class ApiServer {
       });
     });
     this.logger.info('[GhostGuard] Dashboard alert kanalı aktif.');
+  }
+
+  /**
+   * Wire up ProjectIntelligence: forward 'whisper' events to Socket.io clients
+   * as 'projectInsight' messages.
+   * Note: /api/intelligence/changelog is registered in setupRoutes() via this.intelligence.
+   */
+  attachIntelligence(pi: ProjectIntelligence): void {
+    this.intelligence = pi;
+    pi.on('whisper', (ev: { message: string; filePath?: string; ts: number }) => {
+      this.io.emit('projectInsight', ev);
+    });
+    this.logger.info('[Intelligence] Whisper kanal aktif.');
   }
 
   start() {
