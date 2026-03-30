@@ -23,6 +23,9 @@ export interface PlanStep {
     | 'browser_evaluate'
     | 'browser_url'
     | 'browser_close'
+    | 'browser_perceive'
+    | 'browser_scroll'
+    | 'browser_wait'
     | 'memory_search'
     | 'memory_write'
     | 'web_search'
@@ -95,31 +98,41 @@ BROWSER (Playwright-powered):
 12. browser_url        {}                                        – Get current URL and page title.
 13. browser_close      {}                                        – Close the browser and free resources.
 
+ACTION FORCE — El-Göz (Hand-Eye) tools:
+14. browser_perceive   {}                                        – Combined ARIA snapshot + URL + title in one call. Best first step before interacting.
+15. browser_scroll     { x?: number, y?: number, selector?: string }
+                                                                 – Scroll the page or a specific element (pixels; negative = up/left).
+16. browser_wait       { selector?: string, state?: "visible"|"hidden"|"attached"|"detached"|"networkidle", timeout?: number }
+                                                                 – Wait until a selector appears or network is idle.
+
 MEMORY (SQLite FTS5 + Temporal Decay):
 14. memory_search      { query: string, limit?: number }         – Search past conversations and memory files.
 15. memory_write       { content: string, summary?: string }     – Save an important note to long-term memory.
 
 WEB SEARCH:
-16. web_search         { query: string, maxResults?: number }    – DuckDuckGo search via Playwright. Returns { query, snippets }.
+19. web_search         { query: string, maxResults?: number }    – DuckDuckGo search via Playwright. Returns { query, snippets }.
 
 FILESYSTEM (extended):
-17. filesystem_search  { pattern: string, cwd?: string, maxResults?: number }           – Search for files by name pattern.
-18. filesystem_copy    { src: string, dest: string }                                     – Copy a file.
-19. filesystem_delete  { path: string }                                                  – Delete a file or directory.
-20. filesystem_mkdir   { path: string }                                                  – Create a directory recursively.
+20. filesystem_search  { pattern: string, cwd?: string, maxResults?: number }           – Search for files by name pattern.
+21. filesystem_copy    { src: string, dest: string }                                     – Copy a file.
+22. filesystem_delete  { path: string }                                                  – Delete a file or directory.
+23. filesystem_mkdir   { path: string }                                                  – Create a directory recursively.
 
 HTTP:
-21. http_request       { url: string, method?: "GET"|"POST"|"PUT"|"PATCH"|"DELETE", headers?: object, body?: object }
+24. http_request       { url: string, method?: "GET"|"POST"|"PUT"|"PATCH"|"DELETE", headers?: object, body?: object }
                                                                                          – HTTP request to any URL (GitHub API, REST, webhooks).
 
 UTILITY:
-22. log                { message: string }                       – Log a message or observation.
+25. log                { message: string }                       – Log a message or observation.
 
 Rules:
 - Return ONLY a valid JSON object with no markdown, no backticks, no explanation.
 - The JSON must have a single key "steps" which is an array of step objects.
 - Each step must have: "id" (unique string), "description" (what this step does), "tool" (exact name), "parameters" (object).
-- For browser tasks: always start with browser_navigate, then use browser_snapshot to understand the page before clicking.
+- For browser tasks: always start with browser_navigate, then use browser_perceive to see the full page context before interacting. browser_perceive returns snapshot+url+title in one shot — prefer it over browser_snapshot when you also need the URL.
+- After browser_navigate, browser_click, and browser_type the executor automatically appends perception data (snapshot+url+title) to the result — you can read it without an extra step.
+- Use browser_wait before clicking elements that may load asynchronously.
+- Use browser_scroll to reveal off-screen content before trying to extract or click.
 - For memory-intensive tasks: start with memory_search to check what was done before.
 - Be precise with CSS selectors. Prefer IDs and aria-labels over class names.
 - Close the browser with browser_close when the browsing task is complete.

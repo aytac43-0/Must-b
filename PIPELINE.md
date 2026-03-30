@@ -164,6 +164,21 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 
 ---
 
+## Sprint 8 — Dashboard Intelligence UI (CEO Direktifi 2026-03-30)
+
+> **Hedef:** Ghost Guard `systemStats`/`systemHealth` + Project Intelligence `projectInsight` event'lerini glassmorphism bileşenlerle Dashboard'a bağla.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S8-F001 | Frontend_Engineer | **SystemHealthBadge**: Nav pill'e live CPU/RAM bar + alert pulse; `systemStats`+`systemHealth` socket | DONE | 2026-03-30 |
+| S8-F002 | Frontend_Engineer | **WhisperPanel**: Sağ-alt glassmorphism fısıltı kartları; `projectInsight` socket | DONE | 2026-03-30 |
+| S8-F003 | Frontend_Engineer | **AppLayout wiring**: Statik System badge → SystemHealthBadge, WhisperPanel inject | DONE | 2026-03-30 |
+| S8-ACT001 | Backend_Architect | **ACTION FORCE v1.16.0**: `browser_perceive` (snapshot+url+title tek çağrı), `browser_scroll`, `browser_wait` — BrowserTools'a eklendi. `executor.ts`'e GhostGuard RAM guard (%82 limit), her browser_* op öncesi checkBrowserRAM(), navigate/click/type sonrası otomatik perception inject. Planner sistem prompt güncellendi. | DONE | Backend_Architect \| 2026-03-30 |
+| S8-ACT001-QA | QA_Lead | Action Force — TS: 0 hata. Backend tsc --noEmit: temiz | QA_PASSED | QA_Lead \| 2026-03-30 |
+| S8-DEPLOY | Deploy_Chief | v1.16.0 deploy | READY | Deploy_Chief bekliyor \| 2026-03-30 |
+
+---
+
 ## Sprint 6 — Ghost Guard (CEO Direktifi 2026-03-30)
 
 > **Hedef:** Kaynak izleme, log tarama, proaktif uyarı ve auto-heal altyapısı.

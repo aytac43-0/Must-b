@@ -9,6 +9,10 @@ import { FilesystemTools } from '../tools/filesystem.js';
 import { TerminalTools } from '../tools/terminal.js';
 import { BrowserTools } from '../tools/browser.js';
 import { LongTermMemory } from '../memory/long-term.js';
+import type { GhostGuard } from './guard/ghost-guard.js';
+
+// RAM threshold above which browser operations are blocked (%)
+const BROWSER_RAM_LIMIT_PCT = 82;
 
 export interface PlanStep {
   id: string;
@@ -58,13 +62,41 @@ export class Executor {
   private terminalTools: TerminalTools;
   private browserTools: BrowserTools;
   private mem: LongTermMemory | null;
+  private guard: GhostGuard | null;
 
-  constructor(logger: winston.Logger, mem?: LongTermMemory) {
+  constructor(logger: winston.Logger, mem?: LongTermMemory, guard?: GhostGuard) {
     this.logger = logger;
     this.fsTools = new FilesystemTools();
     this.terminalTools = new TerminalTools();
     this.browserTools = new BrowserTools(logger);
     this.mem = mem ?? null;
+    this.guard = guard ?? null;
+  }
+
+  /** Wire GhostGuard after construction (guard is created after executor in index.ts). */
+  setGuard(guard: GhostGuard): void {
+    this.guard = guard;
+  }
+
+  /**
+   * Check current RAM — blocks browser ops when above BROWSER_RAM_LIMIT_PCT.
+   * Also closes an open browser session if GhostGuard has activated lite mode.
+   */
+  private async checkBrowserRAM(): Promise<{ ok: boolean; ramPct: number }> {
+    if (!this.guard) return { ok: true, ramPct: 0 };
+    const { ram, liteMode } = this.guard.getStats();
+
+    // Emergency close if lite mode is already active and browser is open
+    if (liteMode && this.browserTools.isOpen) {
+      this.logger.warn('[ActionForce] Lite mode aktif — tarayıcı acil kapatılıyor.');
+      await this.browserTools.close().catch(() => {});
+    }
+
+    if (ram >= BROWSER_RAM_LIMIT_PCT) {
+      this.logger.warn(`[ActionForce] RAM %${ram.toFixed(1)} — tarayıcı işlemi engellendi (limit: %${BROWSER_RAM_LIMIT_PCT}).`);
+      return { ok: false, ramPct: ram };
+    }
+    return { ok: true, ramPct: ram };
   }
 
   async executeStep(step: PlanStep): Promise<any> {
@@ -92,34 +124,67 @@ export class Executor {
           result = await this.terminalTools.execute(step.parameters as any);
           break;
 
-        // ── Browser ─────────────────────────────────────────────────────────
-        case 'browser_navigate':
-          result = await this.browserTools.navigate(step.parameters as any);
+        // ── Browser (Action Force — El-Göz) ────────────────────────────────
+        case 'browser_navigate': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) {
+            result = { error: `RAM çok yüksek (%${ramCheck.ramPct.toFixed(1)}) — tarayıcı başlatılamadı.` };
+            break;
+          }
+          const navResult = await this.browserTools.navigate(step.parameters as any);
+          // Auto-perception: return visual context after navigation
+          const afterNav = await this.browserTools.perceive().catch(() => null);
+          result = afterNav ? { ...navResult, perception: afterNav } : navResult;
           break;
+        }
 
-        case 'browser_screenshot':
+        case 'browser_screenshot': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
           result = await this.browserTools.screenshot(step.parameters as any);
           break;
+        }
 
-        case 'browser_click':
-          result = await this.browserTools.click(step.parameters as any);
+        case 'browser_click': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
+          await this.browserTools.click(step.parameters as any);
+          // Auto-perception after click
+          const afterClick = await this.browserTools.perceive().catch(() => null);
+          result = afterClick ? { success: true, perception: afterClick } : { success: true };
           break;
+        }
 
-        case 'browser_type':
-          result = await this.browserTools.type(step.parameters as any);
+        case 'browser_type': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
+          await this.browserTools.type(step.parameters as any);
+          // Auto-perception after type
+          const afterType = await this.browserTools.perceive().catch(() => null);
+          result = afterType ? { success: true, perception: afterType } : { success: true };
           break;
+        }
 
-        case 'browser_extract':
+        case 'browser_extract': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
           result = await this.browserTools.extract(step.parameters as any);
           break;
+        }
 
-        case 'browser_snapshot':
+        case 'browser_snapshot': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
           result = await this.browserTools.snapshot();
           break;
+        }
 
-        case 'browser_evaluate':
+        case 'browser_evaluate': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
           result = await this.browserTools.evaluate(step.parameters as any);
           break;
+        }
 
         case 'browser_url':
           result = await this.browserTools.currentUrl();
@@ -129,6 +194,28 @@ export class Executor {
           await this.browserTools.close();
           result = { success: true };
           break;
+
+        // ── Action Force — New perception tools ─────────────────────────────
+        case 'browser_perceive': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
+          result = await this.browserTools.perceive();
+          break;
+        }
+
+        case 'browser_scroll': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
+          result = await this.browserTools.scroll(step.parameters as any);
+          break;
+        }
+
+        case 'browser_wait': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
+          result = await this.browserTools.waitFor(step.parameters as any);
+          break;
+        }
 
         // ── Memory ──────────────────────────────────────────────────────────
         case 'memory_search': {

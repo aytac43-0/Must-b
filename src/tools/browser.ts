@@ -396,4 +396,70 @@ export class BrowserTools {
     const result = await osVisionClick(params);
     return result ?? { ok: false };
   }
+
+  // ── Action Force — El-Göz (Hand-Eye) tools ────────────────────────────
+
+  /**
+   * Combined perception: returns ARIA snapshot + current URL + title in one call.
+   * LLM kullanır, sayfayı "görmek" için ideal — screenshot almaya gerek yok.
+   */
+  async perceive(): Promise<{ snapshot: string; url: string; title: string }> {
+    const page = await this.ensurePage();
+    const [snapResult, url, title] = await Promise.all([
+      this.snapshot(),
+      page.url(),
+      page.title(),
+    ]);
+    return { snapshot: snapResult.snapshot, url, title };
+  }
+
+  /**
+   * Sayfayı kaydır — x/y pixel cinsinden (negatif değer yukarı/sola kaydırır).
+   * selector verilmişse o elementi, verilmemişse pencereyi kaydırır.
+   */
+  async scroll(params: {
+    x?: number;
+    y?: number;
+    selector?: string;
+  }): Promise<{ success: boolean }> {
+    const page = await this.ensurePage();
+    const dx = params.x ?? 0;
+    const dy = params.y ?? 0;
+    if (params.selector) {
+      const el = await page.$(params.selector);
+      if (!el) throw new Error(`Scroll target not found: ${params.selector}`);
+      await el.evaluate((node, [sx, sy]) => {
+        (node as Element).scrollBy(sx as number, sy as number);
+      }, [dx, dy]);
+    } else {
+      await page.evaluate(([sx, sy]) => window.scrollBy(sx as number, sy as number), [dx, dy]);
+    }
+    return { success: true };
+  }
+
+  /**
+   * Belirli bir selector görünene veya ağ idle durumuna gelene kadar bekle.
+   * state: 'visible' (default) | 'hidden' | 'attached' | 'detached' | 'networkidle'
+   */
+  async waitFor(params: {
+    selector?: string;
+    state?: 'visible' | 'hidden' | 'attached' | 'detached' | 'networkidle';
+    timeout?: number;
+  }): Promise<{ success: boolean }> {
+    const page    = await this.ensurePage();
+    const timeout = params.timeout ?? 15_000;
+    const state   = params.state as string | undefined;
+
+    if (state === 'networkidle') {
+      await page.waitForLoadState('networkidle', { timeout });
+    } else if (params.selector) {
+      await page.waitForSelector(params.selector, {
+        state:   (state ?? 'visible') as 'visible' | 'hidden' | 'attached' | 'detached',
+        timeout,
+      });
+    } else {
+      await page.waitForLoadState('domcontentloaded', { timeout });
+    }
+    return { success: true };
+  }
 }

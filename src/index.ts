@@ -284,6 +284,7 @@ async function bootServer(arg: string, suppressBrowser = false) {
       logger.warn(`[GhostGuard] Lite mode → ${ev.active ? 'AKTİF' : 'DEVRE DIŞI'}: ${ev.reason}`);
     });
     apiServer.attachGuard(guard);
+    executor.setGuard(guard);   // Action Force: wire RAM protection into browser tools
     guard.start();
 
     // ── Project Intelligence — workspace insight + auto-documentation ─────
