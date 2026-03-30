@@ -138,6 +138,8 @@ export class ProjectIntelligence extends EventEmitter {
   // Debounce: don't emit duplicate whispers for the same file
   private recentWhispers = new Map<string, number>();
   private readonly WHISPER_COOLDOWN_MS = 10 * 60 * 1000; // 10 min per file
+  // Last whisper — sent to newly connected clients
+  private _lastWhisper: WhisperEvent | null = null;
 
   constructor(opts: {
     root:          string;
@@ -167,6 +169,11 @@ export class ProjectIntelligence extends EventEmitter {
   stop(): void {
     this.watcher.stop();
     this.engine.stop();
+  }
+
+  /** Returns the most recent whisper — sent to newly connected Socket.io clients. */
+  getLastWhisper(): WhisperEvent | null {
+    return this._lastWhisper;
   }
 
   /**
@@ -202,6 +209,7 @@ export class ProjectIntelligence extends EventEmitter {
       ts:       now,
     };
 
+    this._lastWhisper = whisper;
     this.logger.info(`[Intelligence] Whisper: ${whisper.message}`);
     this.emit('whisper', whisper);
 

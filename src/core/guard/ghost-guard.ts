@@ -121,6 +121,9 @@ export class GhostGuard extends EventEmitter {
   private liteActive      = false;
   private healing         = false;
   private lastAlertTs:    Map<string, number> = new Map();
+  // Latest sampled values — exposed via getStats()
+  private _lastCpu        = 0;
+  private _lastRam        = 0;
   // Track log-pattern hit counts (kind → [count, windowStart])
   private patternHits:    Map<string, [number, number]> = new Map();
   private readonly PATTERN_WINDOW_MS = 5 * 60 * 1000;
@@ -139,6 +142,16 @@ export class GhostGuard extends EventEmitter {
     this.startResourceMonitor();
     this.startLogScanner();
     this.logger.info('[GhostGuard] Resource monitor + log scanner active.');
+  }
+
+  /** Current system snapshot — safe to call at any frequency. */
+  getStats(): { cpu: number; ram: number; liteMode: boolean; ts: number } {
+    return {
+      cpu:      Math.round(this._lastCpu),
+      ram:      Math.round(this._lastRam),
+      liteMode: this.liteActive,
+      ts:       Date.now(),
+    };
   }
 
   stop(): void {
@@ -189,6 +202,8 @@ export class GhostGuard extends EventEmitter {
   }
 
   private onResourceSample(cpu: number, ram: number): void {
+    this._lastCpu = cpu;
+    this._lastRam = ram;
     // ── Lite mode toggle ────────────────────────────────────────────────────
     if (ram >= RAM_LITE_PCT && !this.liteActive) {
       this.liteActive = true;

@@ -2866,12 +2866,27 @@ export class ApiServer {
     // ── Desktop clients ────────────────────────────────────────────────────
     this.io.on('connection', (socket) => {
       this.logger.info(`Gateway: client connected ${socket.id}`);
+
       // Send initial health state on connect
       socket.emit('agentUpdate', {
         type:   'health',
         status: 'ready',
         ts:     Date.now(),
       });
+
+      // ── Immediate system stats snapshot ─────────────────────────────────
+      const guard = (this as any)._guard as GhostGuard | undefined;
+      if (guard) {
+        socket.emit('systemStats', guard.getStats());
+      }
+
+      // ── Replay last whisper for late-joining clients ──────────────────
+      const intel = this.intelligence;
+      if (intel) {
+        const w = intel.getLastWhisper();
+        if (w) socket.emit('projectInsight', w);
+      }
+
       socket.on('disconnect', () => this.logger.info(`Gateway: client disconnected ${socket.id}`));
     });
 
@@ -3030,6 +3045,9 @@ export class ApiServer {
    * as 'systemHealth' messages, and log 'autoHeal' events.
    */
   attachGuard(guard: GhostGuard): void {
+    // Store reference so setupSocketIO connection handler can send initial stats
+    (this as any)._guard = guard;
+
     guard.on('alert', (alert) => {
       this.io.emit('systemHealth', alert);
     });
@@ -3043,7 +3061,14 @@ export class ApiServer {
         ts: Date.now(),
       });
     });
-    this.logger.info('[GhostGuard] Dashboard alert kanalı aktif.');
+
+    // ── Stats stream — broadcast every 3 s to all connected clients ─────────
+    const statsTimer = setInterval(() => {
+      this.io.emit('systemStats', guard.getStats());
+    }, 3_000);
+    statsTimer.unref();
+
+    this.logger.info('[GhostGuard] Dashboard alert + stats stream (3s) aktif.');
   }
 
   /**
