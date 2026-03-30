@@ -160,7 +160,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 |---|---|---|---|---|
 | S5-MEM001 | Backend_Architect | **LTM ALTYAPI**: `src/core/memory/vector-store.ts` (TF-IDF cosine, SQLite, episodic\|semantic), `src/core/memory/ltm.ts` (LTMController, buildSystemContext, auto-index), Orchestrator+Planner context injection, `/api/memory/ltm/*` endpoint'leri | DONE | Backend_Architect \| 2026-03-30 |
 | S5-MEM001-QA | QA_Lead | LTM — Backend TS: 0 hata. Frontend TS: 0 hata. Build: exit 0, 10.2MB ✓, clean ✓ | QA_PASSED | QA_Lead \| 2026-03-30 |
-| S5-MEM001-DEPLOY | Deploy_Chief | v1.13.0 deploy — Deep Memory: LTM Vector Engine | READY | QA_Lead → Deploy_Chief \| 2026-03-30 |
+| S5-MEM001-DEPLOY | Deploy_Chief | v1.13.0 deploy — Deep Memory: LTM Vector Engine | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.13.0 + v1.13.1 \| push: BAŞARILI |
 
 ---
 
