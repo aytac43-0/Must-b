@@ -13,7 +13,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, FolderOpen, Globe, ChevronDown,
-  Brain, Puzzle, Settings, Cpu, X,
+  Brain, Puzzle, Settings, X,
   Search, FileText, Image, Volume2, Clock,
   Network, Bot, Layers, BookOpen, Plus,
   Play, Terminal, Zap, Activity, GitBranch,
@@ -28,6 +28,9 @@ import SkillsPanel           from "@/components/SkillsPanel";
 import WorkspacePreview      from "@/components/WorkspacePreview";
 import LiveSightPanel        from "@/components/LiveSightPanel";
 import LanguageSwitcher      from "@/components/layout/LanguageSwitcher";
+import SystemHealthBadge     from "@/components/SystemHealthBadge";
+import WhisperPanel          from "@/components/WhisperPanel";
+import LiveBrowserView       from "@/components/LiveBrowserView";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Types
@@ -496,16 +499,8 @@ export default function AppLayout() {
           {/* Wake word listener */}
           <WakeWordListener onWake={handleWake} />
 
-          {/* Hardware / System status */}
-          <div
-            className="flex items-center gap-1.5 px-3 py-1.5 ml-0.5 rounded-full select-none"
-            style={{ background: "rgba(26,12,6,0.08)", border: "1px solid rgba(0,0,0,0.08)" }}
-          >
-            <Cpu size={12} style={{ color: "#ea580c" }} />
-            <span className="text-[11px] font-semibold hidden sm:inline" style={{ color: "rgba(0,0,0,0.55)" }}>
-              {d.system}
-            </span>
-          </div>
+          {/* Hardware / System status — live via Ghost Guard */}
+          <SystemHealthBadge />
 
         </nav>
       </header>
@@ -514,6 +509,12 @@ export default function AppLayout() {
       <main className="relative min-h-screen pt-[72px]">
         <Outlet />
       </main>
+
+      {/* ── Project Intelligence whispers — fixed bottom-right overlay ─── */}
+      <WhisperPanel />
+
+      {/* ── Live Browser View — floating PiP bottom-left ─────────────── */}
+      <LiveBrowserView />
 
     </div>
   );

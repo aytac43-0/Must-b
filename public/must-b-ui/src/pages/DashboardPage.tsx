@@ -9,6 +9,8 @@ import { useEffect }          from "react";
 import { ChatArea }           from "@/components/chat/ChatArea";
 import ScreenScanOverlay      from "@/components/ScreenScanOverlay";
 import WarRoomPanel           from "@/components/WarRoomPanel";
+import MorningBriefing        from "@/components/MorningBriefing";
+import NightShiftLog          from "@/components/NightShiftLog";
 import { getSocket }          from "@/lib/socket";
 
 export default function DashboardPage() {
@@ -22,6 +24,10 @@ export default function DashboardPage() {
       <ScreenScanOverlay />
       <WarRoomPanel />
       <ChatArea />
+      {/* Morning Briefing — full-screen modal, shows once per shift */}
+      <MorningBriefing />
+      {/* Night Shift Log — real-time floating panel, top-right */}
+      <NightShiftLog />
     </div>
   );
 }
