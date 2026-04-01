@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** Deploy_Chief | 2026-04-01 | v1.21.0 DEPLOYED — Hayalet Temizliği + Skill-Brain + OS-Standard Storage | commit: 37d34d5d
+> **Son güncelleme:** PM_MustB | 2026-04-01 | Sprint 13 başladı — Cloud Köprüsü: /api/auth/callback + UserProfilePanel
 
 ---
 
@@ -238,6 +238,19 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S7-INS001 | Backend_Architect | **PROJECT INTELLIGENCE**: `workspace-watcher.ts` (chokidar, 5 kategori), `summary-engine.ts` (klasör+dep özeti → LTM semantic), `project-intelligence.ts` (insight heuristik, whisper, CHANGELOG gen), `attachIntelligence()`, `/api/intelligence/changelog` | DONE | Backend_Architect \| 2026-03-30 |
 | S7-INS001-QA | QA_Lead | Project Intelligence — TS: 0 hata. esbuild: 0 hata, 456kb ✓ | QA_PASSED | QA_Lead \| 2026-03-30 |
 | S7-INS001-DEPLOY | Deploy_Chief | v1.15.0 deploy — Project Intelligence | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.15.0: Project Intelligence \| push: BAŞARILI |
+
+---
+
+## Sprint 13 — Cloud Köprüsü (CEO Direktifi 2026-04-01)
+
+> **Hedef:** auth.ts gerçek callback mekanizması, /api/auth/callback + config.json storage, UserProfilePanel glassmorphism bileşeni.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S13-B001 | Backend_Architect | **AUTH CALLBACK**: `auth.ts` — signInFromCallback(), restoreSessionFromDisk(), getOAuthUrl(), config.json persist (STORAGE_ROOT/config.json). `api.ts` — `/api/auth/callback`, `/api/auth/user-status`, `/api/auth/signout`, `/api/auth/user-connect` rotaları | DONE | Backend_Architect \| 2026-04-01 |
+| S13-F001 | Frontend_Engineer | **USER PROFILE PANEL**: `UserProfilePanel.tsx` — fixed top-right avatar; glassmorphism panel; login/profil/signout; Socket.io authStateChanged reaktif | DONE | Frontend_Engineer \| 2026-04-01 |
+| S13-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-01 |
+| S13-DEPLOY | Deploy_Chief | v1.22.0 deploy — Cloud Köprüsü: OAuth + UserProfilePanel | IN_PROGRESS | |
 
 ---
 

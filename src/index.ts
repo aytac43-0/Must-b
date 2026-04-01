@@ -20,6 +20,7 @@ import { startIdlingInference, attemptSelfRepair } from './core/executor.js';
 import { getAgentRole } from './core/hierarchy.js';
 import { ErrorObserver } from './core/observer.js';
 import { initStorage, MEMORY_DIR } from './core/paths.js';
+import { restoreSessionFromDisk }  from './core/auth.js';
 import { LTMController } from './core/memory/ltm.js';
 import { GhostGuard }          from './core/guard/ghost-guard.js';
 import { ProjectIntelligence } from './core/intelligence/project-intelligence.js';
@@ -227,6 +228,11 @@ async function bootServer(arg: string, suppressBrowser = false) {
 
   initStorage();
   logger.info('[Paths] Storage + workspace directories initialised.');
+
+  // Restore user session from config.json (if saved from previous OAuth login)
+  restoreSessionFromDisk().then(r => {
+    if (r.data) logger.info(`[Auth] Session restored — ${r.data.user.email}`);
+  }).catch(() => {});
 
   // ── Error Observer — autonomous runtime error capture + self-repair ───────
   const observer = new ErrorObserver({

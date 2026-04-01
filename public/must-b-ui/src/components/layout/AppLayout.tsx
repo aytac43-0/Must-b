@@ -31,6 +31,7 @@ import LanguageSwitcher      from "@/components/layout/LanguageSwitcher";
 import SystemHealthBadge     from "@/components/SystemHealthBadge";
 import WhisperPanel          from "@/components/WhisperPanel";
 import LiveBrowserView       from "@/components/LiveBrowserView";
+import UserProfilePanel      from "@/components/UserProfilePanel";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Types
@@ -515,6 +516,9 @@ export default function AppLayout() {
 
       {/* ── Live Browser View — floating PiP bottom-left ─────────────── */}
       <LiveBrowserView />
+
+      {/* ── User Profile — fixed top-right avatar + glassmorphism panel ── */}
+      <UserProfilePanel />
 
     </div>
   );

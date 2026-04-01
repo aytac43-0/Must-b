@@ -25,6 +25,8 @@ import { CloudSync, type SyncDecision } from '../core/cloud-sync.js';
 import { getAgentRole, getNodeCard, canRouteTo } from '../core/hierarchy.js';
 import { PROVIDER_CATALOG, findProvider, PROVIDER_ENV_KEY_MAP } from '../core/provider-catalog.js';
 import { getSkillsMarket, publishSkill } from '../commands/doctor.js';
+import * as mustbAuth from '../core/auth.js';
+import type { OAuthProvider } from '../core/auth.js';
 
 /** One-time random local auth token — valid for this process lifetime */
 const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
@@ -306,6 +308,98 @@ export class ApiServer {
         connected: Boolean(process.env.MUSTB_CLOUD_TOKEN),
         cloudUrl:  process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com',
       });
+    });
+
+    // ── User OAuth Bridge ─────────────────────────────────────────────────
+
+    /**
+     * GET /api/auth/user-connect?provider=github|google
+     * Opens the must-b.com OAuth page for the given provider.
+     * After consent, must-b.com redirects back to /api/auth/callback.
+     */
+    this.app.get('/api/auth/user-connect', async (req, res) => {
+      const provider = (req.query.provider as string) || 'github';
+      if (provider !== 'github' && provider !== 'google') {
+        return res.status(400).json({ error: 'provider must be github or google' });
+      }
+      const callbackBase = `http://localhost:${this.port}`;
+      const result = await mustbAuth.signInWithOAuth(provider as OAuthProvider, callbackBase);
+      if (result.error || !result.data) {
+        return res.status(503).json({ error: result.error });
+      }
+      res.redirect(302, result.data.url);
+    });
+
+    /**
+     * GET /api/auth/callback?access_token=...&refresh_token=...&expires_at=...&user_id=...&user_email=...
+     * Receives the OAuth token from must-b.com, saves session to config.json,
+     * broadcasts authStateChanged via Socket.io, then closes the popup tab.
+     */
+    this.app.get('/api/auth/callback', async (req, res) => {
+      const {
+        access_token, refresh_token, expires_at,
+        user_id, user_email, user_name, user_avatar, error,
+      } = req.query as Record<string, string>;
+
+      if (error || !access_token) {
+        this.logger.warn(`[UserAuth] Callback error: ${error ?? 'no access_token'}`);
+        return res.status(400).send(
+          `<html><head><title>Must-b Auth</title></head>
+           <body style="font-family:system-ui;text-align:center;padding:48px;background:#0d0d0d;color:#fff">
+             <p style="color:#f97316;font-size:18px">Giriş başarısız</p>
+             <p style="color:#aaa;font-size:14px">${error ?? 'Token alınamadı. Lütfen tekrar deneyin.'}</p>
+             <script>setTimeout(()=>window.close(),2500)</script>
+           </body></html>`
+        );
+      }
+
+      const result = await mustbAuth.signInFromCallback({
+        access_token, refresh_token, expires_at,
+        user_id, user_email, user_name, user_avatar,
+      });
+
+      if (result.error) {
+        this.logger.warn(`[UserAuth] signInFromCallback error: ${result.error}`);
+      } else {
+        this.logger.info(`[UserAuth] Session saved — ${user_email ?? 'unknown'}`);
+        this.io.emit('authStateChanged', {
+          authenticated: true,
+          userEmail:     user_email ?? null,
+          userName:      user_name  ?? null,
+          avatarUrl:     user_avatar ?? null,
+        });
+      }
+
+      res.send(
+        `<html><head><title>Must-b Auth</title></head>
+         <body style="font-family:system-ui;text-align:center;padding:48px;background:#0d0d0d;color:#fff">
+           <p style="color:#f97316;font-size:22px">✓ Giriş başarılı!</p>
+           <p style="color:#aaa;font-size:14px">Bu sekmeyi kapatabilirsin.</p>
+           <script>
+             if(window.opener) window.opener.postMessage('mustb:auth:done','*');
+             setTimeout(()=>window.close(),1400);
+           </script>
+         </body></html>`
+      );
+    });
+
+    /**
+     * GET /api/auth/user-status
+     * Returns the current user session info for the dashboard UserProfilePanel.
+     * Public — no auth middleware (the panel renders on load before any login).
+     */
+    this.app.get('/api/auth/user-status', (_req, res) => {
+      res.json(mustbAuth.authInfo());
+    });
+
+    /**
+     * POST /api/auth/signout
+     * Signs out the current user: clears in-memory session + config.json.
+     */
+    this.app.post('/api/auth/signout', async (_req, res) => {
+      await mustbAuth.signOut();
+      this.io.emit('authStateChanged', { authenticated: false, userEmail: null });
+      res.json({ ok: true });
     });
 
     // ── Chats (local store — no Supabase needed) ──────────────────────────
