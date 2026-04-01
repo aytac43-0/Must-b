@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** Deploy_Chief | 2026-04-02 | v1.23.1 DEPLOYED — Voice Core: Wake-Word + TTS + Transcribe API | commit: e4a8bd63
+> **Son güncelleme:** PM_MustB | 2026-04-02 | Sprint 19 tamamlandı — v1.23.3 Profile Links + Import Audit + TTS Feedback
 
 ---
 
@@ -238,6 +238,31 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S7-INS001 | Backend_Architect | **PROJECT INTELLIGENCE**: `workspace-watcher.ts` (chokidar, 5 kategori), `summary-engine.ts` (klasör+dep özeti → LTM semantic), `project-intelligence.ts` (insight heuristik, whisper, CHANGELOG gen), `attachIntelligence()`, `/api/intelligence/changelog` | DONE | Backend_Architect \| 2026-03-30 |
 | S7-INS001-QA | QA_Lead | Project Intelligence — TS: 0 hata. esbuild: 0 hata, 456kb ✓ | QA_PASSED | QA_Lead \| 2026-03-30 |
 | S7-INS001-DEPLOY | Deploy_Chief | v1.15.0 deploy — Project Intelligence | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.15.0: Project Intelligence \| push: BAŞARILI |
+
+---
+
+## Sprint 19 — Profile Links + Import Audit + TTS Feedback (v1.23.3)
+
+> **Hedef:** UserProfilePanel profil linklerini `https://must-b.com/profile/...` adreslerine yönlendir; `/api/memory/import` rotasını STORAGE_ROOT/memory doğrulaması + LTM anında indeksleme + TTS başarı geri bildirimi ile mühürle.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S19-F001 | Frontend_Engineer | `UserProfilePanel.tsx` — "Profil Ayarları" → `/profile/settings`, "Şifre Değiştir" → `/profile/security` | DONE | |
+| S19-B001 | Backend_Architect | `api.ts /api/memory/import` — destPath log ile STORAGE_ROOT/memory doğrulama; `indexDocument('custom')` ile anında LTM indeksleme; başarı sonrası `Speaker.speak('Geçmiş verilerinizi başarıyla hafızama ekledim, Patron')` TTS | DONE | |
+| S19-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | |
+| S19-DEPLOY | Deploy_Chief | v1.23.3 deploy | DEPLOYED | |
+
+---
+
+## Sprint 18 — Auth Aktivasyon (CEO Direktifi / Burak Onayı 2026-04-02)
+
+> **Hedef:** auth.ts'i aktive et — getOAuthUrl'yi `https://must-b.com/auth/oauth`'a sabitle; /api/auth/callback rotasını token doğrulama + signInFromCallback iletimi açısından mühürle.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S18-B001 | Backend_Architect | **AUTH AKTİVASYON**: `auth.ts` — getOAuthUrl hardcode `https://must-b.com/auth/oauth`; expires_at Unix↔ISO normalizasyonu; modül header aktif olarak işaretle. `/api/auth/callback` — error path düzelt (signInFromCallback hata → error HTML, success → success HTML; sessiz bug giderildi); token uzunluk doğrulama | DONE | |
+| S18-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | |
+| S18-DEPLOY | Deploy_Chief | v1.24.0 deploy — Auth Aktivasyon: must-b.com OAuth Bridge | DEPLOYED | |
 
 ---
 

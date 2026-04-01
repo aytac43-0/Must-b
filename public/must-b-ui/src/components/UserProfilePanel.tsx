@@ -289,13 +289,13 @@ export default function UserProfilePanel() {
                     icon:  <User size={13} />,
                     label: "Profil Ayarları",
                     sub:   "Web",
-                    action: () => openCloud("/profile"),
+                    action: () => openCloud("/profile/settings"),
                   },
                   {
                     icon:  <KeyRound size={13} />,
                     label: "Şifre Değiştir",
                     sub:   "Web",
-                    action: () => openCloud("/change-password"),
+                    action: () => openCloud("/profile/security"),
                   },
                 ].map((item) => (
                   <button

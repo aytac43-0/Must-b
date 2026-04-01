@@ -1,15 +1,16 @@
 /**
- * Must-b Auth Module (v1.22.0 — Cloud Bridge)
+ * Must-b Auth Module (v1.24.0 — Active)
  *
- * OAuth flow:
+ * OAuth flow (live — must-b.com):
  *   1. Frontend opens /api/auth/user-connect?provider=github|google
- *   2. Server redirects → must-b.com/auth/oauth?provider=...&callback=localhost:4309/api/auth/callback
- *   3. must-b.com calls back → /api/auth/callback?access_token=...&user_email=...
- *   4. Server calls signInFromCallback() → persists session to STORAGE_ROOT/config.json
- *   5. Socket.io emits 'authStateChanged' → Frontend refreshes via /api/auth/user-status
+ *   2. Server → getOAuthUrl() → https://must-b.com/auth/oauth?provider=...&callback=...
+ *   3. must-b.com OAuth consent → redirects to /api/auth/callback?access_token=...
+ *   4. /api/auth/callback validates token → signInFromCallback() → config.json
+ *   5. Socket.io 'authStateChanged' → UserProfilePanel refreshes
  *
- * When must-b.com goes live, replace the OAuth redirect URL in getOAuthUrl().
- * Session storage already writes to OS-standard path via STORAGE_ROOT.
+ * Session storage: STORAGE_ROOT/config.json
+ *   Windows  → %APPDATA%/must-b/config.json
+ *   Linux/mac → ~/.config/must-b/config.json
  */
 
 import path from 'node:path';
@@ -50,15 +51,23 @@ export interface AuthResult<T = void> {
   error: string | null;
 }
 
-/** Params received from must-b.com OAuth callback */
+/** Params received from must-b.com OAuth callback (query-string or JSON body) */
 export interface CallbackParams {
-  access_token:  string;
+  access_token:   string;
   refresh_token?: string;
-  expires_at?:   string;
-  user_id?:      string;
-  user_email?:   string;
-  user_name?:    string;
-  user_avatar?:  string;
+  /**
+   * Token expiry — accepts either:
+   *   ISO-8601 string  ("2026-04-02T18:00:00.000Z")
+   *   Unix timestamp   (1743609600)           ← seconds since epoch
+   *   seconds-from-now (3600)                 ← OAuth "expires_in" style
+   */
+  expires_at?:    string | number;
+  /** Seconds until expiry — alternative to expires_at */
+  expires_in?:    string | number;
+  user_id?:       string;
+  user_email?:    string;
+  user_name?:     string;
+  user_avatar?:   string;
 }
 
 // ── Internal config store ────────────────────────────────────────────────
@@ -96,12 +105,19 @@ function _emit(event: AuthStateEvent, session: MustbSession | null): void {
 
 /**
  * Build the OAuth redirect URL for a given provider.
- * The local server will redirect the browser here; must-b.com handles
- * the provider handshake and calls back to callbackBase/api/auth/callback.
+ *
+ * Live endpoint: https://must-b.com/auth/oauth
+ * Override with MUSTB_CLOUD_URL env var for staging/local must-b server development.
+ *
+ * Params sent to must-b.com:
+ *   provider  — 'github' | 'google'
+ *   callback  — full URL of /api/auth/callback on this local server
  */
 export function getOAuthUrl(provider: OAuthProvider, callbackBase: string): string {
-  const CLOUD_URL = process.env.MUSTB_CLOUD_URL ?? 'https://must-b.com';
-  const url = new URL(`${CLOUD_URL}/auth/oauth`);
+  const base = process.env.MUSTB_CLOUD_URL
+    ? `${process.env.MUSTB_CLOUD_URL.replace(/\/$/, '')}/auth/oauth`
+    : 'https://must-b.com/auth/oauth';
+  const url = new URL(base);
   url.searchParams.set('provider', provider);
   url.searchParams.set('callback', `${callbackBase}/api/auth/callback`);
   return url.toString();
@@ -131,15 +147,45 @@ export async function signInWithOAuth(
 }
 
 /**
+ * Normalise any expiry representation to an ISO-8601 string.
+ *
+ * Handles three formats sent by OAuth providers:
+ *   ISO string   → used as-is
+ *   Unix epoch   → converted (values > 1e9 are seconds since epoch)
+ *   seconds-from-now → Date.now() + value * 1000
+ */
+function _normaliseExpiry(raw: string | number | undefined, fallbackSecs = 3600): string {
+  if (!raw) return new Date(Date.now() + fallbackSecs * 1000).toISOString();
+
+  if (typeof raw === 'string') {
+    // Already ISO? Quick-validate by parsing
+    const d = new Date(raw);
+    if (!Number.isNaN(d.getTime())) return d.toISOString();
+    // Might be a numeric string
+    raw = Number(raw);
+  }
+
+  if (typeof raw === 'number' && !Number.isNaN(raw)) {
+    // Heuristic: Unix epoch timestamps are > 1 Jan 2000 (946684800 seconds)
+    if (raw > 946_684_800) return new Date(raw * 1000).toISOString();
+    // Otherwise treat as seconds-from-now (OAuth "expires_in")
+    return new Date(Date.now() + raw * 1000).toISOString();
+  }
+
+  return new Date(Date.now() + fallbackSecs * 1000).toISOString();
+}
+
+/**
  * Process the OAuth callback params received from must-b.com.
  * Creates a session, persists it to STORAGE_ROOT/config.json,
  * and emits SIGNED_IN to all listeners.
+ *
+ * Normalises expires_at / expires_in into ISO-8601 before storing.
  */
 export async function signInFromCallback(
   params: CallbackParams,
 ): Promise<AuthResult<MustbSession>> {
-  const expiresAt = params.expires_at
-    ?? new Date(Date.now() + 3600 * 1000).toISOString();
+  const expiresAt = _normaliseExpiry(params.expires_at ?? params.expires_in);
 
   const session: MustbSession = {
     user: {

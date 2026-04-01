@@ -32,6 +32,7 @@ import SystemHealthBadge     from "@/components/SystemHealthBadge";
 import WhisperPanel          from "@/components/WhisperPanel";
 import LiveBrowserView       from "@/components/LiveBrowserView";
 import UserProfilePanel      from "@/components/UserProfilePanel";
+import VoiceFeedbackLayer   from "@/components/VoiceFeedbackLayer";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Types
@@ -272,6 +273,7 @@ export default function AppLayout() {
 
   const handleWake = () => {
     document.querySelector<HTMLTextAreaElement>("textarea")?.focus();
+    window.dispatchEvent(new CustomEvent("mustb:wake"));
   };
 
   const d = t.dock; // shorthand
@@ -520,6 +522,9 @@ export default function AppLayout() {
 
       {/* ── User Profile — fixed top-right avatar + glassmorphism panel ── */}
       <UserProfilePanel />
+
+      {/* ── Voice Feedback — wake aura + speaking bar ─────────────────── */}
+      <VoiceFeedbackLayer />
 
     </div>
   );

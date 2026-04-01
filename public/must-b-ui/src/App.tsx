@@ -42,6 +42,7 @@ import AutomationsPage  from "@/pages/AutomationsPage";
 import ClientsPage      from "@/pages/ClientsPage";
 import LogsPage         from "@/pages/LogsPage";
 import ProductsPage     from "@/pages/ProductsPage";
+import LTMExplorerPage  from "@/pages/LTMExplorerPage";
 import MobilePage       from "@/pages/MobilePage";
 import AppLayout        from "@/components/layout/AppLayout";
 import ConflictModal    from "@/components/ConflictModal";
@@ -131,6 +132,7 @@ export default function App() {
             <Route path="clients"    element={<ClientsPage />} />
             <Route path="logs"       element={<LogsPage />} />
             <Route path="products"   element={<ProductsPage />} />
+            <Route path="memory"     element={<LTMExplorerPage />} />
             <Route path="*"          element={<Navigate to="/app" replace />} />
           </Route>
 

@@ -33,6 +33,25 @@ import * as Speaker from '../tools/speaker.js';
 /** One-time random local auth token — valid for this process lifetime */
 const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
 
+// ── Auth HTML helper ──────────────────────────────────────────────────────
+
+function _authHtml(success: boolean, title?: string, subtitle?: string): string {
+  if (success) {
+    return `<html><head><title>Must-b Auth</title></head>
+<body style="font-family:system-ui;text-align:center;padding:48px;background:#0d0d0d;color:#fff">
+  <p style="color:#f97316;font-size:22px">✓ Giriş başarılı!</p>
+  <p style="color:#aaa;font-size:14px">Bu sekmeyi kapatabilirsin.</p>
+  <script>if(window.opener)window.opener.postMessage('mustb:auth:done','*');setTimeout(()=>window.close(),1400);</script>
+</body></html>`;
+  }
+  return `<html><head><title>Must-b Auth</title></head>
+<body style="font-family:system-ui;text-align:center;padding:48px;background:#0d0d0d;color:#fff">
+  <p style="color:#f97316;font-size:18px">${title ?? 'Giriş başarısız'}</p>
+  <p style="color:#aaa;font-size:14px">${subtitle ?? 'Lütfen tekrar deneyin.'}</p>
+  <script>setTimeout(()=>window.close(),2500);</script>
+</body></html>`;
+}
+
 // ── Workspace file listing helper (v4.3) ─────────────────────────────────
 
 interface WsFile { name: string; rel: string; ext: string; size: number; mtime: string; }
@@ -335,56 +354,76 @@ export class ApiServer {
     });
 
     /**
-     * GET /api/auth/callback?access_token=...&refresh_token=...&expires_at=...&user_id=...&user_email=...
-     * Receives the OAuth token from must-b.com, saves session to config.json,
-     * broadcasts authStateChanged via Socket.io, then closes the popup tab.
+     * GET /api/auth/callback
+     *
+     * Sealed OAuth callback — called by must-b.com after OAuth consent.
+     *
+     * Expected query params (all from must-b.com):
+     *   access_token   — JWT / opaque bearer token  (required, min 8 chars)
+     *   refresh_token  — rotation token              (optional)
+     *   expires_at     — ISO-8601 | Unix epoch secs  (optional, default 1 h)
+     *   expires_in     — seconds-until-expiry        (optional alternative)
+     *   user_id        — unique user identifier      (optional)
+     *   user_email     — user's email address        (optional)
+     *   user_name      — display name                (optional)
+     *   user_avatar    — avatar URL                  (optional)
+     *   error          — error code from provider    (presence → abort)
+     *
+     * On success: persists session to config.json, emits 'authStateChanged',
+     *   posts 'mustb:auth:done' to opener, closes popup tab.
+     * On failure: returns 400 error page — does NOT fall through to success HTML.
      */
     this.app.get('/api/auth/callback', async (req, res) => {
+      const q = req.query as Record<string, string>;
       const {
-        access_token, refresh_token, expires_at,
+        access_token, refresh_token, expires_at, expires_in,
         user_id, user_email, user_name, user_avatar, error,
-      } = req.query as Record<string, string>;
+      } = q;
 
-      if (error || !access_token) {
-        this.logger.warn(`[UserAuth] Callback error: ${error ?? 'no access_token'}`);
-        return res.status(400).send(
-          `<html><head><title>Must-b Auth</title></head>
-           <body style="font-family:system-ui;text-align:center;padding:48px;background:#0d0d0d;color:#fff">
-             <p style="color:#f97316;font-size:18px">Giriş başarısız</p>
-             <p style="color:#aaa;font-size:14px">${error ?? 'Token alınamadı. Lütfen tekrar deneyin.'}</p>
-             <script>setTimeout(()=>window.close(),2500)</script>
-           </body></html>`
-        );
+      // ── Step 1: Provider-level error ──────────────────────────────────
+      if (error) {
+        this.logger.warn(`[UserAuth] Provider error: ${error}`);
+        return res.status(400).send(_authHtml(false,
+          `Sağlayıcı hatası: ${error}`, 'Lütfen tekrar deneyin.'
+        ));
       }
 
+      // ── Step 2: Token presence + basic format check ───────────────────
+      if (!access_token || access_token.trim().length < 8) {
+        this.logger.warn('[UserAuth] Callback rejected — access_token missing or too short');
+        return res.status(400).send(_authHtml(false,
+          'Token alınamadı.', 'access_token eksik veya geçersiz.'
+        ));
+      }
+
+      // ── Step 3: Build session via auth module ─────────────────────────
       const result = await mustbAuth.signInFromCallback({
-        access_token, refresh_token, expires_at,
-        user_id, user_email, user_name, user_avatar,
+        access_token: access_token.trim(),
+        refresh_token,
+        expires_at:   expires_at ?? expires_in,
+        user_id,
+        user_email,
+        user_name,
+        user_avatar,
       });
 
-      if (result.error) {
-        this.logger.warn(`[UserAuth] signInFromCallback error: ${result.error}`);
-      } else {
-        this.logger.info(`[UserAuth] Session saved — ${user_email ?? 'unknown'}`);
-        this.io.emit('authStateChanged', {
-          authenticated: true,
-          userEmail:     user_email ?? null,
-          userName:      user_name  ?? null,
-          avatarUrl:     user_avatar ?? null,
-        });
+      if (result.error || !result.data) {
+        this.logger.warn(`[UserAuth] signInFromCallback failed — ${result.error}`);
+        return res.status(400).send(_authHtml(false,
+          'Oturum oluşturulamadı.', result.error ?? 'Bilinmeyen hata.'
+        ));
       }
 
-      res.send(
-        `<html><head><title>Must-b Auth</title></head>
-         <body style="font-family:system-ui;text-align:center;padding:48px;background:#0d0d0d;color:#fff">
-           <p style="color:#f97316;font-size:22px">✓ Giriş başarılı!</p>
-           <p style="color:#aaa;font-size:14px">Bu sekmeyi kapatabilirsin.</p>
-           <script>
-             if(window.opener) window.opener.postMessage('mustb:auth:done','*');
-             setTimeout(()=>window.close(),1400);
-           </script>
-         </body></html>`
-      );
+      // ── Step 4: Broadcast + success response ──────────────────────────
+      this.logger.info(`[UserAuth] Session saved — ${user_email ?? result.data.user.id}`);
+      this.io.emit('authStateChanged', {
+        authenticated: true,
+        userEmail:     result.data.user.email     || null,
+        userName:      result.data.user.name      || null,
+        avatarUrl:     result.data.user.avatarUrl || null,
+      });
+
+      res.send(_authHtml(true));
     });
 
     /**
@@ -3000,11 +3039,32 @@ export class ApiServer {
         }
 
         fs.mkdirSync(MEMORY_DIR, { recursive: true });
-        fs.writeFileSync(path.join(MEMORY_DIR, safeName), fileContent);
+        const destPath = path.join(MEMORY_DIR, safeName);
+        fs.writeFileSync(destPath, fileContent);
 
-        this.logger.info(`[MemoryImport] ${safeName} imported (${fileContent.length} bytes)`);
+        this.logger.info(`[MemoryImport] ${safeName} imported (${fileContent.length} bytes) → ${destPath}`);
         this.io.emit('agentUpdate', { type: 'memoryImported', filename: safeName, bytes: fileContent.length });
         res.json({ ok: true, filename: safeName, bytes: fileContent.length });
+
+        // ── LTM indexing (async, non-blocking) ──────────────────────────
+        const textForIndex = fileContent.toString('utf-8');
+        import('../core/memory-index.js').then(({ indexDocument }) => {
+          return indexDocument(textForIndex, {
+            source:  'custom',
+            title:   safeName,
+            path:    destPath,
+            savedAt: new Date().toISOString(),
+            tags:    ['imported'],
+          });
+        }).then(() => {
+          this.logger.info(`[MemoryImport] ${safeName} → LTM indexing complete`);
+        }).catch((err: Error) => {
+          this.logger.warn(`[MemoryImport] LTM indexing failed: ${err.message}`);
+        });
+
+        // ── TTS success feedback ─────────────────────────────────────────
+        Speaker.speak('Geçmiş verilerinizi başarıyla hafızama ekledim, Patron', this.io)
+          .catch(() => {});
       } catch (err: any) {
         this.logger.error(`[MemoryImport] Failed: ${err.message}`);
         res.status(500).json({ error: err.message });
