@@ -20,10 +20,25 @@ import { MEMORY_DIR } from '../paths.js';
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface LTMSearchResult {
-  category: MemoryCategory;
-  content:  string;
-  tags:     string[];
-  score:    number;
+  category:  MemoryCategory;
+  content:   string;
+  tags:      string[];
+  score:     number;
+  createdAt: string;
+}
+
+/**
+ * Full entry shape returned by getAllSemanticEntries().
+ * isNightOwl is true when the entry carries the 'NightShift-Insights' tag
+ * (written by NightOwl's autonomous scanner).
+ */
+export interface LTMEntry {
+  id:         number;
+  category:   MemoryCategory;
+  content:    string;
+  tags:       string[];
+  createdAt:  string;
+  isNightOwl: boolean;
 }
 
 // ── LTMController ─────────────────────────────────────────────────────────────
@@ -79,10 +94,23 @@ export class LTMController {
   retrieve(query: string, k = 6, category?: MemoryCategory): LTMSearchResult[] {
     if (!this.store) return [];
     return this.store.search(query, k, category).map(e => ({
-      category: e.category,
-      content:  e.content,
-      tags:     e.tags,
-      score:    e.score,
+      category:  e.category,
+      content:   e.content,
+      tags:      e.tags,
+      score:     e.score,
+      createdAt: e.createdAt,
+    }));
+  }
+
+  /** Return all entries newest-first for the LTM Explorer UI. */
+  listAll(category?: MemoryCategory, limit = 200): LTMSearchResult[] {
+    if (!this.store) return [];
+    return this.store.getAll(category, limit).map(e => ({
+      category:  e.category,
+      content:   e.content,
+      tags:      e.tags,
+      score:     0,
+      createdAt: e.createdAt,
     }));
   }
 
@@ -124,6 +152,54 @@ export class LTMController {
     }
 
     return lines.join('\n');
+  }
+
+  // ── Browse & Delete ────────────────────────────────────────────────────────
+
+  /**
+   * Return all semantic entries, newest first.
+   * Entries tagged 'NightShift-Insights' (written by NightOwl) are flagged
+   * with isNightOwl = true so the dashboard can highlight them distinctly.
+   *
+   * @param limit  Max rows (default 200)
+   */
+  getAllSemanticEntries(limit = 200): LTMEntry[] {
+    if (!this.store) return [];
+    return this.store.getAll('semantic', limit).map(e => ({
+      id:         e.id,
+      category:   e.category,
+      content:    e.content,
+      tags:       e.tags,
+      createdAt:  e.createdAt,
+      isNightOwl: e.tags.includes('NightShift-Insights'),
+    }));
+  }
+
+  /**
+   * Return all episodic entries, newest first.
+   *
+   * @param limit  Max rows (default 200)
+   */
+  getAllEpisodicEntries(limit = 200): LTMEntry[] {
+    if (!this.store) return [];
+    return this.store.getAll('episodic', limit).map(e => ({
+      id:         e.id,
+      category:   e.category,
+      content:    e.content,
+      tags:       e.tags,
+      createdAt:  e.createdAt,
+      isNightOwl: false,
+    }));
+  }
+
+  /**
+   * Delete an LTM entry by its numeric id.
+   * Covers both semantic and episodic entries.
+   * Returns true if the entry existed and was deleted.
+   */
+  deleteEntry(id: number): boolean {
+    if (!this.store) return false;
+    return this.store.deleteById(id);
   }
 
   // ── Stats ──────────────────────────────────────────────────────────────────

@@ -324,9 +324,10 @@ export default function AppLayout() {
       category: d.cat_knowledgeBase,
       items: [
         // Real MemoryPanel UI for browse & search
-        { icon: <BookOpen size={13} />, label: d.mem_browse, desc: d.desc_memBrowse, panel: "memory" as StagePanel },
-        { icon: <Search size={13} />,   label: d.mem_search, desc: d.desc_memSearch, panel: "memory" as StagePanel },
-        { icon: <Plus size={13} />,     label: d.mem_add,    desc: d.desc_memAdd,    action: () => invokeSkill("memory-add") },
+        { icon: <BookOpen size={13} />, label: d.mem_browse,    desc: d.desc_memBrowse, panel: "memory" as StagePanel },
+        { icon: <Search size={13} />,   label: d.mem_search,    desc: d.desc_memSearch, panel: "memory" as StagePanel },
+        { icon: <Clock size={13} />,    label: "Hafıza Tüneli", desc: "LTM Explorer — tüm hafıza kayıtları, filtreleme ve zaman göstergesi", action: () => navigate("/app/memory") },
+        { icon: <Plus size={13} />,     label: d.mem_add,       desc: d.desc_memAdd,    action: () => invokeSkill("memory-add") },
       ],
     },
     {

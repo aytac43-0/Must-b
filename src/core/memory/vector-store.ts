@@ -202,6 +202,66 @@ export class VectorStore {
     return row.c;
   }
 
+  /**
+   * Return all entries, newest first.
+   * @param category  Optional filter ('episodic' | 'semantic')
+   * @param limit     Max rows to return (default 500)
+   */
+  getAll(category?: MemoryCategory, limit = 500): VectorEntry[] {
+    type Row = { id: number; category: string; content: string; tags: string; created_at: string };
+    const rows = (
+      category
+        ? this.db
+            .prepare(`SELECT id, category, content, tags, created_at FROM vector_entries WHERE category = ? ORDER BY id DESC LIMIT ?`)
+            .all(category, limit)
+        : this.db
+            .prepare(`SELECT id, category, content, tags, created_at FROM vector_entries ORDER BY id DESC LIMIT ?`)
+            .all(limit)
+    ) as Row[];
+
+    return rows.map(r => ({
+      id:        r.id,
+      category:  r.category as MemoryCategory,
+      content:   r.content,
+      tags:      r.tags ? r.tags.split(',').filter(Boolean) : [],
+      score:     0,
+      createdAt: r.created_at,
+    }));
+  }
+
+  /**
+   * Delete an entry by primary key.
+   * Also decrements corpus_stats DF values for the entry's tokens.
+   * Returns true if a row was deleted, false if id not found.
+   */
+  deleteById(id: number): boolean {
+    type Row = { tokens: string };
+    const existing = this.db
+      .prepare(`SELECT tokens FROM vector_entries WHERE id = ?`)
+      .get(id) as Row | undefined;
+
+    if (!existing) return false;
+
+    // Decrement DF for each unique token in the deleted document
+    const tokens = existing.tokens.split(' ').filter(Boolean);
+    const unique  = new Set(tokens);
+    const decr    = this.db.prepare(
+      `UPDATE corpus_stats SET doc_freq = MAX(0, doc_freq - 1) WHERE term = ?`,
+    );
+    for (const term of unique) decr.run(term);
+
+    // Decrement total doc count
+    this.db
+      .prepare(`UPDATE meta SET value = CAST(MAX(0, CAST(value AS INTEGER) - 1) AS TEXT) WHERE key = 'doc_count'`)
+      .run();
+
+    const result = this.db
+      .prepare(`DELETE FROM vector_entries WHERE id = ?`)
+      .run(id) as { changes: number };
+
+    return result.changes > 0;
+  }
+
   close(): void {
     this.db.close();
   }

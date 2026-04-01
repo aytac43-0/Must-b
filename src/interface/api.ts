@@ -2485,6 +2485,17 @@ export class ApiServer {
     });
 
     /**
+     * GET /api/memory/ltm/list?category=episodic|semantic&limit=<n>
+     * Returns all LTM entries newest-first (for the LTM Explorer UI).
+     */
+    this.app.get('/api/memory/ltm/list', requireAuth, (req, res) => {
+      const category = req.query.category as 'episodic' | 'semantic' | undefined;
+      const limit    = Math.min(Number(req.query.limit ?? 200), 500);
+      const entries  = this.orchestrator.getLTM()?.listAll(category, limit) ?? [];
+      res.json({ entries });
+    });
+
+    /**
      * POST /api/memory/ltm/semantic
      * Body: { content: string, tags?: string[] }
      * Stores semantic knowledge (preferences, standards, architecture).
@@ -2496,6 +2507,56 @@ export class ApiServer {
       }
       this.orchestrator.getLTM()?.indexSemantic(content, Array.isArray(tags) ? tags : []);
       res.json({ ok: true });
+    });
+
+    /**
+     * GET /api/memory/ltm/explore?category=semantic|episodic|all&limit=<n>
+     * Returns all LTM entries (newest first) with an isNightOwl flag.
+     * NightShift-Insights entries (written by NightOwl) are flagged so the
+     * dashboard can render them with a distinct badge.
+     */
+    this.app.get('/api/memory/ltm/explore', requireAuth, (req, res) => {
+      const ltm = this.orchestrator.getLTM();
+      if (!ltm) return res.status(503).json({ error: 'LTM not initialised' });
+
+      const categoryParam = String(req.query.category ?? 'all');
+      const limit         = Math.min(Number(req.query.limit ?? 200), 500);
+
+      let entries;
+      if (categoryParam === 'episodic') {
+        entries = ltm.getAllEpisodicEntries(limit);
+      } else if (categoryParam === 'semantic') {
+        entries = ltm.getAllSemanticEntries(limit);
+      } else {
+        // 'all' — merge both lists, newest first by id
+        const sem = ltm.getAllSemanticEntries(limit);
+        const epi = ltm.getAllEpisodicEntries(limit);
+        entries   = [...sem, ...epi].sort((a, b) => b.id - a.id).slice(0, limit);
+      }
+
+      const nightOwlCount = entries.filter(e => e.isNightOwl).length;
+      res.json({ entries, total: entries.length, nightOwlCount });
+    });
+
+    /**
+     * DELETE /api/memory/ltm/delete/:id
+     * Delete a single LTM entry by its numeric id.
+     * Works for both semantic and episodic entries.
+     */
+    this.app.delete('/api/memory/ltm/delete/:id', requireAuth, (req, res) => {
+      const ltm = this.orchestrator.getLTM();
+      if (!ltm) return res.status(503).json({ error: 'LTM not initialised' });
+
+      const id = parseInt(req.params.id, 10);
+      if (!Number.isFinite(id) || id <= 0) {
+        return res.status(400).json({ error: 'id must be a positive integer' });
+      }
+
+      const deleted = ltm.deleteEntry(id);
+      if (!deleted) return res.status(404).json({ error: `Entry ${id} not found` });
+
+      this.logger.info(`[LTM] Entry ${id} deleted`);
+      res.json({ ok: true, deletedId: id });
     });
 
     /**
