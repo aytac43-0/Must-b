@@ -140,6 +140,8 @@ export class ProjectIntelligence extends EventEmitter {
   private readonly WHISPER_COOLDOWN_MS = 10 * 60 * 1000; // 10 min per file
   // Last whisper — sent to newly connected clients
   private _lastWhisper: WhisperEvent | null = null;
+  // Stored handler reference for clean removeListener in stop()
+  private _fileChangeHandler: ((ev: FileChangeEvent) => void) | null = null;
 
   constructor(opts: {
     root:          string;
@@ -157,7 +159,8 @@ export class ProjectIntelligence extends EventEmitter {
 
   start(): void {
     // Wire workspace watcher → insight analysis
-    this.watcher.on('fileChange', (ev: FileChangeEvent) => this.onFileChange(ev));
+    this._fileChangeHandler = (ev: FileChangeEvent) => this.onFileChange(ev);
+    this.watcher.on('fileChange', this._fileChangeHandler);
     this.watcher.start();
 
     // Start periodic summary engine
@@ -167,6 +170,10 @@ export class ProjectIntelligence extends EventEmitter {
   }
 
   stop(): void {
+    if (this._fileChangeHandler) {
+      this.watcher.off('fileChange', this._fileChangeHandler);
+      this._fileChangeHandler = null;
+    }
     this.watcher.stop();
     this.engine.stop();
   }

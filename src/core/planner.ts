@@ -1,6 +1,7 @@
 import winston from 'winston';
 import { LLMProvider, CompletionMessage } from './provider.js';
 import { getSystemPrompt } from './identity.js';
+import { loadSkillCatalog } from './skill-catalog.js';
 
 export interface PlanStep {
   id: string;
@@ -30,7 +31,8 @@ export interface PlanStep {
     | 'memory_write'
     | 'web_search'
     | 'http_request'
-    | 'log';
+    | 'log'
+    | 'invoke_skill';
   parameters: Record<string, any>;
 }
 
@@ -72,6 +74,16 @@ export class Planner {
       ? '\n\nSYSTEM: Kaynak kısıtı aktif (Hafif Mod). Adım sayısını minimumda tut, gereksiz araç çağrılarından kaçın.'
       : '';
     const memBlock = memCtx ? `\n\n${memCtx}\n` : '';
+
+    // Dynamic Skill Catalog — injected at plan-time
+    const catalogSkills = loadSkillCatalog();
+    const skillsBlock = catalogSkills.length > 0
+      ? `\n\nDYNAMIC SKILLS — ${catalogSkills.length} Native Capabilities:\n26. invoke_skill   { skill: string, params?: object, goal?: string }\n` +
+        `                                                                 – Invoke a specialized built-in skill by its ID. The executor routes this to the skill module autonomously.\n\n` +
+        `Skill Catalog (use the "id" as the skill value):\n` +
+        catalogSkills.map(s => `  • ${s.id.padEnd(24)} ${s.description}`).join('\n')
+      : '';
+
     const systemPrompt = getSystemPrompt('agent') + liteNote + memBlock + `\n\nYou are the Planner for Must-b, an autonomous AI agent with full browser, filesystem, terminal, and memory capabilities.
 Your job is to break down a high-level user Goal into a precise, executable sequence of steps.
 
@@ -124,6 +136,12 @@ HTTP:
 
 UTILITY:
 25. log                { message: string }                       – Log a message or observation.
+${skillsBlock}
+
+CONTEXT ALIGNMENT — Dynamic Skill Priority:
+- If the user's request matches one of the Dynamic Skills listed above (e.g., Spotify control, Docker management, GitHub operations, code analysis, data pipelines), prefer invoke_skill with the matching skill ID over basic terminal/browser tools.
+- invoke_skill autonomously routes the request to the correct skill module — no manual plugin wiring needed.
+- For skills requiring setup (config/bins listed in catalog), still use invoke_skill — the skill handles its own requirements or returns a helpful error.
 
 Rules:
 - Return ONLY a valid JSON object with no markdown, no backticks, no explanation.

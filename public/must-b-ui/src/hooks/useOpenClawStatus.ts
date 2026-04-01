@@ -1,2 +1,2 @@
-// Deprecated — use useGatewayStatus instead
-export { useGatewayStatus as useOpenClawStatus, type GatewayStatus as OpenClawStatus } from "./useGatewayStatus";
+// Modernized — use useMustbStatus / MustbStatus
+export { useGatewayStatus as useMustbStatus, type GatewayStatus as MustbStatus } from "./useGatewayStatus";

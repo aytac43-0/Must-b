@@ -296,7 +296,7 @@ async function must-bCliJson<T>(params: { must-bBin: string; args: string[] }): 
   return JSON.parse(stdout) as T;
 }
 
-async function readMessagesWithOpenclaw(params: {
+async function readMessagesMustb(params: {
   must-bBin: string;
   target: string;
   limit: number;
@@ -488,7 +488,7 @@ async function loadParentRecentMessages(params: {
   readAuthHeader: string;
 }): Promise<DiscordMessage[]> {
   if (params.args.driverMode === "must-b") {
-    return await readMessagesWithOpenclaw({
+    return await readMessagesMustb({
       must-bBin: params.args.must-bBin,
       target: params.args.channelId,
       limit: 20,
@@ -756,7 +756,7 @@ async function run(): Promise<SuccessResult | FailureResult> {
       try {
         const threadMessages =
           args.driverMode === "must-b"
-            ? await readMessagesWithOpenclaw({
+            ? await readMessagesMustb({
                 must-bBin: args.must-bBin,
                 target: threadId,
                 limit: 50,

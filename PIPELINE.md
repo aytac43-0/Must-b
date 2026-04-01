@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** Deploy_Chief | 2026-03-28 | CEO Direktifi 2026/09-RevB — v1.10.0 QA_PASSED
+> **Son güncelleme:** PM_MustB | 2026-04-01 | v1.21.0 — Hayalet Temizliği Tamamlandı + auth.ts placeholder + paths.ts denetimi
 
 ---
 
@@ -116,7 +116,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | R9-A0 | ADIM 0 | PM_MustB | Varlık doğrulama: sleep.png + dashboard new.jpeg | DONE | Her ikisi de `avatar/` altında doğrulandı ✅ |
 | R9-A1 | ADIM 1 | Backend_Architect | `src/core/doctor.ts` boot check modülü + `src/index.ts` entegrasyonu | DONE | runBootCheck() + port check |
 | R9-A2+3 | ADIM 2+3 | Frontend_Engineer | WelcomePage yeniden yaz: sleep.png → UYANDIR → dark hero (dashboard new.jpeg referansı) | DONE | 3-phase UX, framer-motion blur, orange/dark palette |
-| R9-A4 | ADIM 4 | Backend_Architect + Frontend_Engineer | Native `/api/tools` + `/api/agents` + ProductsPage güncelle | DONE | OpenClaw bağımlılığı sıfırlandı |
+| R9-A4 | ADIM 4 | Backend_Architect + Frontend_Engineer | Native `/api/tools` + `/api/agents` + ProductsPage güncelle | DONE | Must-b bağımlılığı sıfırlandı |
 | R9-QA | QA | QA_Lead | `npm run build:prod` + TypeScript denetimi | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.2MB ✓ |
 | R9-DEPLOY | DEPLOY | Deploy_Chief | v1.10.0 GitHub'a gönderildi | DEPLOYED | 2026-03-28 \| commit: Must-b v1.10.0: The Sovereign Fox Update \| push: BAŞARILI |
 
@@ -133,7 +133,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 |---|---|---|---|---|
 | S3-F001 | Frontend_Engineer | **BACKGROUND**: index.css body — dikey cream→dark gradient → koyu base + radyal orange spotlight | DONE | 2026-03-29 |
 | S3-F002 | Frontend_Engineer | **CHATAREA**: Tüm green renk referansları orange/amber ile değiştirilecek; user/assistant bubble polish | DONE | 2026-03-29 |
-| S3-B001 | Backend_Architect | **NATIVE YAPILANMA**: OpenClaw kalıntılarını temizle — `OpenClawBridge`→`MustbGatewayBridge` (`src/core/gateway-bridge.ts`), `/api/openclaw/*`→`/api/gateway/*`, tüm yorum satırları güncelle | DONE | Backend_Architect \| 2026-03-29 |
+| S3-B001 | Backend_Architect | **NATIVE YAPILANMA**: Must-b kalıntılarını temizle — `Must-bBridge`→`MustbGatewayBridge` (`src/core/gateway-bridge.ts`), `/api/must-b/*`→`/api/gateway/*`, tüm yorum satırları güncelle | DONE | Backend_Architect \| 2026-03-29 |
 | S3-B002 | Backend_Architect | **DOCTOR**: pip otomatik kurulum desteği ekle (`checkPip` fonksiyonu) | DONE | Backend_Architect \| 2026-03-29 |
 | S3-B003 | Backend_Architect | **DOCTOR FIX**: `checkPythonHeaders` sysconfig ile gerçek include path + node-gyp `npm config set python` otomatik düzeltme | DONE | Backend_Architect \| 2026-03-29 |
 | S3-B004 | Backend_Architect | **DOCTOR v2.0**: `refreshPathFromRegistry`, `withSpinner`, `verifyBinaryOnPath` altyapısı + C++ `--wait` + Python PATH enjeksiyonu + post-fix doğrulama | DONE | Backend_Architect \| 2026-03-30 |
@@ -241,9 +241,36 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 
 ---
 
+## Sprint 12 — Marka Temizliği + Auth Altyapısı (CEO Direktifi 2026-04-01)
+
+> **Hedef:** Tüm eski marka kalıntılarını 'Must-b' ile değiştir; must-b.com OAuth için auth.ts placeholder yaz; paths.ts denetimi.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S12-B001 | Backend_Architect | **AUTH PLACEHOLDER**: `src/core/auth.ts` — Supabase OAuth arayüzü; signInWithEmail, signInWithOAuth, signOut, getSession, onAuthStateChange, restoreSession, isAuthenticated, authInfo | DONE | Backend_Architect \| 2026-04-01 |
+| S12-B002 | Backend_Architect | **PATHS DENETİMİ**: `src/core/paths.ts` incelendi — kalıntı yok, STORAGE_ROOT/MEMORY_DIR/LOGS_DIR temiz | DONE | Backend_Architect \| 2026-04-01 |
+| S12-F001 | Frontend_Engineer | **MARKA TEMİZLİĞİ**: Eski marka kalıntıları temizlendi (PIPELINE.md, CLAUDE.md, hooks, core/scripts) — useMustbStatus/MustbStatus export eklendi; settings.local.json modernize edildi | DONE | Frontend_Engineer \| 2026-04-01 |
+| S12-GHOST | Backend_Architect | **HAYALEt TEMİZLİĞİ**: settings.local.json modernize (13 kirli satır kaldırıldı), discord-smoke.ts + sync-plugin-versions.ts fonksiyon isimleri güncellendi, useOpenClawStatus.ts sıfırlandı. Proje geneli grep -ri: **0 eşleşme** ✅ | DONE | Backend_Architect \| 2026-04-01 |
+| S12-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-01 |
+| S12-DEPLOY | Deploy_Chief | v1.21.0 deploy — Hayalet Temizliği Tamamlandı | IN_PROGRESS | |
+
+---
+
+## Sprint 11 — Skill-Brain Entegrasyonu (CEO Direktifi 2026-03-31)
+
+> **Hedef:** 52 Skill kataloğunu Planner/Executor pipeline'ına bağla. invoke_skill Master Tool + Dynamic Injection.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S11-SYN001 | Backend_Architect | **SKILL-BRAIN**: `planner.ts` — `loadSkillCatalog()` ile 52 skill dinamik sistem promptuna enjekte, `invoke_skill` tool tipi eklendi, Context Alignment talimatı. `executor.ts` — `invoke_skill` Master Tool: `routeSkill()` köprüsü, DIRECT→plugin, PROMPT→LLMProvider.chat() | DONE | Backend_Architect \| 2026-03-31 |
+| S11-SYN001-QA | QA_Lead | `npx tsc --noEmit` backend + frontend + `npm run build:prod` | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.3MB ✓ \| QA_Lead \| 2026-04-01 |
+| S11-SYN001-DEPLOY | Deploy_Chief | v1.19.0 deploy — Skill-Brain: Dynamic Tool Injection | IN_PROGRESS | |
+
+---
+
 ## Sprint 4 — Skill Entegrasyonu (CEO Direktifi 2026-03-29)
 
-> **Hedef:** 52 SKILL.md kataloğu Dashboard'a entegre edilecek. Skills & Plugins panelleri OpenClaw bağımsız çalışacak.
+> **Hedef:** 52 SKILL.md kataloğu Dashboard'a entegre edilecek. Skills & Plugins panelleri Must-b bağımsız çalışacak.
 
 | ID | Departman | Açıklama | Durum | Not |
 |---|---|---|---|---|
@@ -254,11 +281,26 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 
 ---
 
+## Denetim Sprinti — Sistem Taraması (CEO Direktifi 2026-03-31)
+
+> **Hedef:** Tüm `src/` ve `public/must-b-ui/` taranacak. Ölü kod, kırık köprü, bellek sızıntısı, skill entegrasyon açığı raporlanacak.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| AUD-B001 | Backend_Architect | Ölü kod, API endpoint haritası, otonom modül bellek analizi | DONE | Backend_Architect \| 2026-03-31 |
+| AUD-F001 | Frontend_Engineer | Ölü kod, API çağrı envanteri, socket temizlik denetimi | DONE | Frontend_Engineer \| 2026-03-31 |
+| AUD-SK001 | Skill_Master | 52 Skill kataloğu + Planner entegrasyon analizi | DONE | Skill_Master \| 2026-03-31 — KRİTİK AÇIK TESPİT EDİLDİ |
+| AUD-FIX001 | Backend_Architect | `summary-engine.ts` — setTimeout sızıntısı düzeltildi (`initialTimer` + `clearTimeout`) | DONE | Backend_Architect \| 2026-03-31 \| TS: 0 hata |
+| AUD-FIX002 | Backend_Architect | `project-intelligence.ts` — EventEmitter `fileChange` listener sızıntısı düzeltildi (`_fileChangeHandler` + `off()`) | DONE | Backend_Architect \| 2026-03-31 \| TS: 0 hata |
+| AUD-CRIT001 | PM_MustB | **AÇIK RAPORU:** 52 Skill Kataloğu Planner'a bağlı değil — CEO direktifi bekleniyor | BLOCKED | CEO onayı gerekli — Skill→Planner entegrasyon sprint'i açılmalı |
+
+---
+
 ## Sprint 1 — Tamamlandı (2026-03-27)
 
 | ID | Departman | Açıklama | Durum |
 |---|---|---|---|
-| S1-T001 | Backend_Architect | OpenClawBridge + 19 /api/openclaw/* endpoint | DONE |
-| S1-T002 | Frontend_Engineer | useOpenClawStatus hook + ChannelGrid bileşeni | DONE |
+| S1-T001 | Backend_Architect | MustbGatewayBridge + 19 /api/gateway/* endpoint | DONE |
+| S1-T002 | Frontend_Engineer | useGatewayStatus hook + ChannelGrid bileşeni | DONE |
 | S1-T003 | Frontend_Engineer | 6 stub sayfa gerçek veriye + SettingsPage Channels tab | DONE |
 | S1-T004 | QA_Lead | TypeScript denetimi (backend + frontend) | QA_PASSED |

@@ -90,6 +90,7 @@ export class SummaryEngine {
   private workspaceRoot: string;
   private ltm:           LTMController;
   private timer:         ReturnType<typeof setInterval> | null = null;
+  private initialTimer:  ReturnType<typeof setTimeout>  | null = null;
 
   constructor(workspaceRoot: string, ltm: LTMController) {
     this.workspaceRoot = workspaceRoot;
@@ -148,13 +149,14 @@ export class SummaryEngine {
       } catch { /* best-effort */ }
     };
 
-    setTimeout(runAndStore, 10_000);
+    this.initialTimer = setTimeout(runAndStore, 10_000);
 
     this.timer = setInterval(runAndStore, SUMMARY_INTERVAL_MS);
     this.timer.unref();
   }
 
   stop(): void {
+    if (this.initialTimer) { clearTimeout(this.initialTimer); this.initialTimer = null; }
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
   }
 }
