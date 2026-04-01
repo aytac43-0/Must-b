@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** Deploy_Chief | 2026-04-01 | v1.23.0 DEPLOYED — LTM Explore & Delete API | commit: e339843c
+> **Son güncelleme:** Deploy_Chief | 2026-04-02 | v1.23.1 DEPLOYED — Voice Core: Wake-Word + TTS + Transcribe API | commit: pending
 
 ---
 
@@ -241,9 +241,48 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 
 ---
 
+## Sprint 17 — Voice Core Backend (CEO Direktifi 2026-04-02)
+
+> **Hedef:** Backend wake-word motoru, Whisper transkripsiyon ucu, platform TTS + Socket.io assistantSpeaking olayları.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S17-B001 | Backend_Architect | **WAKE-WORD**: `src/core/voice/wake-word.ts` — WakeWordDetector; processTranscript(), trigger(), attachToSocket(io); 3 s cooldown; Orchestrator.run() bridge; Socket.io `wakeWord`/`transcript`/`wakeTriggered` olayları | DONE | Backend_Architect \| 2026-04-02 |
+| S17-B002 | Backend_Architect | **SPEAKER**: `src/tools/speaker.ts` — speak(text, io?): OpenAI TTS → OS fallback (Win:SAPI5/macOS:say/Linux:espeak); stop(io?); isSpeaking(); Socket.io `assistantSpeaking:{speaking,text}` | DONE | Backend_Architect \| 2026-04-02 |
+| S17-B003 | Backend_Architect | **API UÇLARI**: `api.ts` — POST /api/voice/transcribe (audioBase64→Whisper→wakeWord.processTranscript), POST /api/voice/speak, POST /api/voice/stop, GET /api/voice/status, POST /api/voice/wake; WakeWordDetector constructor'da init; attachToSocket setupSocketIO'da | DONE | Backend_Architect \| 2026-04-02 |
+| S17-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | TS: 0 hata. Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-02 |
+| S17-DEPLOY | Deploy_Chief | v1.23.1 deploy — Voice Core: Wake-Word + TTS + Transcribe | DEPLOYED | Deploy_Chief \| 2026-04-02 \| commit: pending \| push: pending |
+
+---
+
+## Sprint 16 — Voice Feedback UI (CEO Direktifi 2026-04-01)
+
+> **Hedef:** Wake word → turuncu radyal ses dalgası aura; planStart → glassmorphism konuşma çubuğu.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S16-F001 | Frontend_Engineer | `VoiceFeedbackLayer.tsx` — `mustb:wake` CustomEvent → 4 staggered halka aura (3s auto-dismiss); `agentUpdate.planStart/planFinish` → glassmorphism Speaking Bar + 7 çubuklu waveform animasyonu. `AppLayout.handleWake` → `mustb:wake` dispatch. AppLayout'a inject | DONE | Frontend_Engineer \| 2026-04-01 |
+| S16-QA | QA_Lead | TS: 0 hata. Build: exit 0 ✓ | QA_PASSED | QA_Lead \| 2026-04-01 |
+| S16-DEPLOY | Deploy_Chief | v1.24.0 deploy — Voice Feedback UI Katmanı | READY | Deploy_Chief bekliyor |
+
+---
+
+## Sprint 15 — Hafıza Tüneli UI (CEO Direktifi 2026-04-01)
+
+> **Hedef:** LTMExplorerPage — glassmorphism kartlar, 6 kategori filtresi, anlık arama, Relativity zaman tüneli göstergesi.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S15-B001 | Backend_Architect | `ltm.ts` — `LTMSearchResult.createdAt` eklendi; `listAll(category?, limit)` metodu. `api.ts` — `GET /api/memory/ltm/list` endpoint | DONE | Backend_Architect \| 2026-04-01 |
+| S15-F001 | Frontend_Engineer | `LTMExplorerPage.tsx` — 6 filtre (Tümü/NightOwl/Tercih/Mimari/Episodik/Semantik), inline arama, Relativity renk kodlaması (fresh/recent/old/ancient), kart expand, App.tsx `/app/memory` route, AppLayout Memory → Hafıza Tüneli nav | DONE | Frontend_Engineer \| 2026-04-01 |
+| S15-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0 ✓ | QA_PASSED | QA_Lead \| 2026-04-01 |
+| S15-DEPLOY | Deploy_Chief | v1.23.0 deploy — Hafıza Tüneli: LTM Explorer | READY | Deploy_Chief bekliyor |
+
+---
+
 ## Sprint 14 — LTM Yönetim Uçları (CEO Direktifi 2026-04-01)
 
-> **Hedef:** LTM vector store üzerinde tam liste + silme yönetimi; NightShift-Insights giriŞlerini parlat.
+> **Hedef:** LTM vector store üzerinde tam liste + silme yönetimi; NightShift-Insights girişlerini parlat.
 
 | ID | Departman | Açıklama | Durum | Not |
 |---|---|---|---|---|

@@ -27,6 +27,8 @@ import { PROVIDER_CATALOG, findProvider, PROVIDER_ENV_KEY_MAP } from '../core/pr
 import { getSkillsMarket, publishSkill } from '../commands/doctor.js';
 import * as mustbAuth from '../core/auth.js';
 import type { OAuthProvider } from '../core/auth.js';
+import { WakeWordDetector } from '../core/voice/wake-word.js';
+import * as Speaker from '../tools/speaker.js';
 
 /** One-time random local auth token — valid for this process lifetime */
 const LOCAL_TOKEN = process.env.MUSTB_LOCAL_TOKEN ?? crypto.randomBytes(16).toString('hex');
@@ -146,6 +148,7 @@ export class ApiServer {
   private gatewayBridge:  MustbGatewayBridge;
   private intelligence:   ProjectIntelligence | null = null;
   private nightOwl:       NightOwl | null = null;
+  private wakeWord:       WakeWordDetector;
 
   constructor(
     logger: winston.Logger,
@@ -164,6 +167,7 @@ export class ApiServer {
     this.io = new SocketIOServer(this.server, { cors: { origin: '*' } });
 
     this.gatewayBridge = new MustbGatewayBridge(logger);
+    this.wakeWord = new WakeWordDetector(orchestrator);
     this.setupMiddleware();
     this.setupRoutes();
     this.setupSocketIO();
@@ -2574,6 +2578,120 @@ export class ApiServer {
       }
     });
 
+    // ── Voice Core (v1.23.1) ─────────────────────────────────────────────
+
+    /**
+     * POST /api/voice/transcribe
+     * Body (JSON): { audioBase64: string, mimeType?: string, language?: string }
+     *
+     * Transcribes audio using OpenAI Whisper (if OPENAI_API_KEY is set).
+     * Falls back to a descriptive error when no transcription service is configured.
+     * Returns: { text: string, durationMs: number }
+     */
+    this.app.post('/api/voice/transcribe', requireAuth, async (req, res) => {
+      const t0 = Date.now();
+      const { audioBase64, mimeType = 'audio/webm', language } = req.body ?? {};
+
+      if (!audioBase64 || typeof audioBase64 !== 'string') {
+        return res.status(400).json({ error: 'audioBase64 (string) is required' });
+      }
+
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({
+          error: 'No transcription service configured. Set OPENAI_API_KEY to enable Whisper.',
+        });
+      }
+
+      try {
+        // Decode and wrap in built-in FormData (Node 18+, zero extra deps)
+        const ext = mimeType.includes('mp4') ? 'm4a'
+                  : mimeType.includes('mp3') ? 'mp3'
+                  : mimeType.includes('wav') ? 'wav'
+                  : mimeType.includes('ogg') ? 'ogg'
+                  : 'webm';
+        const buf  = Buffer.from(audioBase64, 'base64');
+        const form = new FormData();
+        form.append('file',  new File([buf], `audio.${ext}`, { type: mimeType }));
+        form.append('model', 'whisper-1');
+        if (language) form.append('language', language);
+
+        const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          method:  'POST',
+          headers: { Authorization: `Bearer ${apiKey}` },
+          body:    form as unknown as BodyInit,
+        });
+
+        if (!whisperRes.ok) {
+          const msg = await whisperRes.text().catch(() => '');
+          return res.status(whisperRes.status).json({ error: `Whisper API error: ${msg}` });
+        }
+
+        const data = await whisperRes.json() as { text?: string };
+        const text = data.text?.trim() ?? '';
+
+        // Feed transcript into wake-word detector (handles "Hey Must-b" detection)
+        this.wakeWord.processTranscript(text);
+
+        res.json({ text, durationMs: Date.now() - t0 });
+      } catch (err: any) {
+        this.logger.warn(`[Voice] transcribe error: ${err?.message}`);
+        res.status(500).json({ error: err?.message ?? 'Transcription failed' });
+      }
+    });
+
+    /**
+     * POST /api/voice/speak
+     * Body: { text: string }
+     * Speaks the given text via the OS TTS engine (or OpenAI TTS if key set).
+     * Emits assistantSpeaking: true on start, false when done.
+     */
+    this.app.post('/api/voice/speak', requireAuth, (req, res) => {
+      const { text } = req.body ?? {};
+      if (!text || typeof text !== 'string') {
+        return res.status(400).json({ error: 'text (string) is required' });
+      }
+      // Fire-and-forget — do not await so the HTTP response returns immediately
+      Speaker.speak(text.slice(0, 4000), this.io).catch(err => {
+        this.logger.warn(`[Voice] speak error: ${err?.message}`);
+      });
+      res.json({ ok: true, speaking: true });
+    });
+
+    /**
+     * POST /api/voice/stop
+     * Immediately stops any in-progress TTS speech.
+     */
+    this.app.post('/api/voice/stop', requireAuth, (_req, res) => {
+      Speaker.stop(this.io);
+      res.json({ ok: true, speaking: false });
+    });
+
+    /**
+     * GET /api/voice/status
+     * Returns the current voice module state.
+     */
+    this.app.get('/api/voice/status', requireAuth, (_req, res) => {
+      res.json({
+        speaking:  Speaker.isSpeaking(),
+        listening: this.wakeWord.isListening,
+        wakePhrase: 'hey must-b',
+      });
+    });
+
+    /**
+     * POST /api/voice/wake
+     * Body: { goal?: string }
+     * Programmatically triggers the wake-word detector.
+     * Useful for keyboard shortcuts, mobile companion apps, and tests.
+     */
+    this.app.post('/api/voice/wake', requireAuth, (req, res) => {
+      const goal = String(req.body?.goal ?? '').trim();
+      this.wakeWord.trigger(goal);
+      this.io.emit('wakeTriggered', { goal, ts: Date.now() });
+      res.json({ ok: true, goal });
+    });
+
     // ── Project Intelligence (v1.15.0) ───────────────────────────────────
 
     /**
@@ -3018,6 +3136,10 @@ export class ApiServer {
   }
 
   private setupSocketIO() {
+    // ── Wake-word bridge — listens for 'wakeWord' & 'transcript' socket events ──
+    this.wakeWord.attachToSocket(this.io);
+    this.wakeWord.start(); // start listening immediately
+
     // ── Desktop clients ────────────────────────────────────────────────────
     this.io.on('connection', (socket) => {
       this.logger.info(`Gateway: client connected ${socket.id}`);
