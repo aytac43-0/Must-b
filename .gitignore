@@ -3,23 +3,38 @@ node_modules/
 
 # Build outputs
 dist/
+
 public/Luma/.next/
 public/Luma/out/
 
-# Environment files
+# Environment files — never commit secrets
 .env
 .env.local
 .env.production
+.env.*.local
 public/Luma/.env
 public/Luma/.env.local
 
 # Runtime-generated data (never commit)
 /memory/
+/storage/*
+!/storage/.gitkeep
 workspace/
 
-# Logs
+# SQLite databases — runtime only
+*.db
+*.db-shm
+*.db-wal
+
+# Session & history files — runtime only
+history.json
+sessions.json
+
+# Log files (including Markdown reports in logs/)
 logs/
 *.log
+**/logs/*.md
+memory/logs/
 
 # OS
 .DS_Store

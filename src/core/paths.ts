@@ -1,42 +1,85 @@
 /**
- * Must-b Workspace Paths
+ * Must-b Runtime Paths (v1.20.0)
  *
- * Single source of truth for every user-generated file produced at runtime:
- * code files, fetched data, downloads, screenshots, received files, etc.
+ * Two roots:
  *
- * ALL agent output MUST be written under WORKSPACE_ROOT.
- * Nothing outside this directory should be written by agent tools.
+ *   STORAGE_ROOT — OS-standard location for ALL user data (memory, DB, logs).
+ *     Global install  → %APPDATA%/must-b           (Windows)
+ *                     → ~/.config/must-b            (Linux / macOS)
+ *     Project/dev     → <projectRoot>/storage/
+ *     Explicit        → $MUSTB_DATA_DIR
  *
- * Default: c:/Users/<user>/must-b/workspace/
- * Override: set the MUSTB_WORKSPACE environment variable.
+ *   WORKSPACE_ROOT — Agent output (code, downloads, screenshots).
+ *     Default  → STORAGE_ROOT/workspace/
+ *     Override → $MUSTB_WORKSPACE
+ *
+ * Rule: .env stays in the project root. Everything else lives under STORAGE_ROOT.
  */
 
 import fs   from 'fs';
 import os   from 'os';
 import path from 'path';
 
-// ── Root ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+function _resolveProjectRoot(): string {
+  if (process.env.MUSTB_ROOT) return path.resolve(process.env.MUSTB_ROOT);
+  if (typeof __dirname !== 'undefined') return path.resolve(__dirname, '..');
+  return process.cwd();
+}
+
+function _isGlobalInstall(projectRoot: string): boolean {
+  // Explicit flags
+  if (process.env.MUSTB_GLOBAL === 'true')  return true;
+  if (process.env.MUSTB_GLOBAL === 'false') return false;
+  // npm sets this when running from a global install
+  if (process.env.npm_config_global === 'true') return true;
+  // Path-based heuristic: global npm packages live inside node_modules
+  const norm = projectRoot.replace(/\\/g, '/');
+  return norm.includes('/node_modules/') || norm.includes('\\node_modules\\');
+}
+
+function _osDataDir(): string {
+  if (process.platform === 'win32') {
+    const appData = process.env.APPDATA ?? path.join(os.homedir(), 'AppData', 'Roaming');
+    return path.join(appData, 'must-b');
+  }
+  // macOS / Linux: respect XDG_CONFIG_HOME if set
+  const xdgConfig = process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config');
+  return path.join(xdgConfig, 'must-b');
+}
+
+// ── Storage Root ──────────────────────────────────────────────────────────
 
 /**
- * Absolute path to the user workspace directory.
- * Determined once at module load; guaranteed to exist on disk.
+ * Absolute path to the Must-b data directory.
+ *
+ * Priority:
+ *   1. $MUSTB_DATA_DIR  — explicit override
+ *   2. OS-standard dir  — when globally installed ($MUSTB_GLOBAL=true or npm global)
+ *   3. <projectRoot>/storage/  — project / dev mode
+ */
+export const STORAGE_ROOT: string = (() => {
+  if (process.env.MUSTB_DATA_DIR) return path.resolve(process.env.MUSTB_DATA_DIR);
+  const projectRoot = _resolveProjectRoot();
+  if (_isGlobalInstall(projectRoot)) return _osDataDir();
+  return path.join(projectRoot, 'storage');
+})();
+
+/** Long-term memory, vector DB, session history — under STORAGE_ROOT. */
+export const MEMORY_DIR: string = path.join(STORAGE_ROOT, 'memory');
+
+/** Runtime log reports (Guard, NightOwl, Observer) — under MEMORY_DIR. */
+export const LOGS_DIR: string   = path.join(MEMORY_DIR, 'logs');
+
+// ── Workspace Root ────────────────────────────────────────────────────────
+
+/**
+ * Absolute path to the agent output workspace directory.
  */
 export const WORKSPACE_ROOT: string = (() => {
   if (process.env.MUSTB_WORKSPACE) return path.resolve(process.env.MUSTB_WORKSPACE);
-
-  // Resolve project root — works in CJS bundle (esbuild __dirname) and tsx,
-  // and always when MUSTB_ROOT is set by bin/must-b.cjs.
-  let projectRoot: string;
-  if (process.env.MUSTB_ROOT) {
-    projectRoot = path.resolve(process.env.MUSTB_ROOT);
-  } else if (typeof __dirname !== 'undefined') {
-    // CJS bundle / tsx: __dirname = dist/ → one level up is project root
-    projectRoot = path.resolve(__dirname, '..');
-  } else {
-    // Last resort — should never reach here
-    projectRoot = process.cwd();
-  }
-  return path.join(projectRoot, 'workspace');
+  return path.join(STORAGE_ROOT, 'workspace');
 })();
 
 // ── Sub-directories ───────────────────────────────────────────────────────
@@ -98,6 +141,17 @@ export function initWorkspace(): void {
   ]) {
     ensureDir(dir);
   }
+}
+
+/**
+ * Initialise the full storage tree (memory + logs + workspace).
+ * Replaces the old per-module mkdir calls.
+ */
+export function initStorage(): void {
+  ensureDir(STORAGE_ROOT);
+  ensureDir(MEMORY_DIR);
+  ensureDir(LOGS_DIR);
+  initWorkspace();
 }
 
 // ── Debug ─────────────────────────────────────────────────────────────────

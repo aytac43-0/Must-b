@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { SemanticMemory, type MemoryEntry } from './semantic.js';
+import { MEMORY_DIR } from '../core/paths.js';
 
 export interface UserProfile {
   name: string;
@@ -35,15 +36,15 @@ export class LongTermMemory {
   }
 
   private get jsonPath() {
-    return path.join(this.root, 'memory', 'user.json');
+    return path.join(MEMORY_DIR, 'user.json');
   }
 
   private get mdPath() {
-    return path.join(this.root, 'memory', 'must-b.md');
+    return path.join(MEMORY_DIR, 'must-b.md');
   }
 
   private get memoryDir() {
-    return path.join(this.root, 'memory');
+    return MEMORY_DIR;
   }
 
   /**

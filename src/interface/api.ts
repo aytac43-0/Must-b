@@ -15,6 +15,7 @@ import type { ProjectIntelligence }   from '../core/intelligence/project-intelli
 import type { NightOwl }              from '../core/automation/night-owl.js';
 import { SessionHistory } from '../memory/history.js';
 import { LongTermMemory } from '../memory/long-term.js';
+import { MEMORY_DIR }     from '../core/paths.js';
 import { runDoctor } from '../commands/doctor.js';
 import { loadOrCreateIdentity, sign, getHardwareScore } from '../core/identity.js';
 import { MODELS_LIST, CLOUD_MODELS_LIST } from '../core/models-catalog.js';
@@ -885,7 +886,7 @@ export class ApiServer {
       }
 
       // memory/must-b.md varlık kontrolü → "Giriş yap veya dosyanı yükle" butonu için
-      const memoryMdPath = path.join(root, 'memory', 'must-b.md');
+      const memoryMdPath = path.join(MEMORY_DIR, 'must-b.md');
       const hasMemory = fs.existsSync(memoryMdPath);
 
       // Donanım puanı (önbelleğe alınır, identity.json'a kaydedilir)
@@ -1621,8 +1622,7 @@ export class ApiServer {
         const packets: Array<{ payload: { iv: string; tag: string; ciphertext: string } }> = JSON.parse(raw);
         const { decrypt } = await import('../core/identity.js');
 
-        const root     = process.cwd();
-        const saveDir  = path.join(root, 'memory', 'received-files');
+        const saveDir  = path.join(MEMORY_DIR, 'received-files');
         fs.mkdirSync(saveDir, { recursive: true });
 
         const saved: Array<{ filename: string; bytes: number }> = [];
@@ -2726,10 +2726,8 @@ export class ApiServer {
           return res.status(400).json({ error: 'Only .md and .json files are accepted' });
         }
 
-        const root   = process.cwd();
-        const memDir = path.join(root, 'memory');
-        fs.mkdirSync(memDir, { recursive: true });
-        fs.writeFileSync(path.join(memDir, safeName), fileContent);
+        fs.mkdirSync(MEMORY_DIR, { recursive: true });
+        fs.writeFileSync(path.join(MEMORY_DIR, safeName), fileContent);
 
         this.logger.info(`[MemoryImport] ${safeName} imported (${fileContent.length} bytes)`);
         this.io.emit('agentUpdate', { type: 'memoryImported', filename: safeName, bytes: fileContent.length });

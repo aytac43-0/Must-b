@@ -6,6 +6,7 @@ import os from 'os';
 import path from 'path';
 import readline from 'readline';
 import dotenv from 'dotenv';
+import { MEMORY_DIR } from '../core/paths.js';
 
 const cyan   = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
 const green  = (s: string) => `\x1b[32m${s}\x1b[0m`;
@@ -469,12 +470,12 @@ function checkMode(root: string): CheckResult {
   return { label: 'MUSTB_MODE', ok: true, detail: mode };
 }
 
-function checkMemoryDir(root: string): CheckResult {
-  const memDir = path.join(root, 'memory');
+function checkMemoryDir(_root: string): CheckResult {
+  const memDir = MEMORY_DIR;
   try {
     fs.mkdirSync(memDir, { recursive: true });
     fs.accessSync(memDir, fs.constants.R_OK | fs.constants.W_OK);
-    return { label: 'memory/ dir', ok: true, detail: memDir };
+    return { label: 'storage/memory dir', ok: true, detail: memDir };
   } catch (e: any) {
     return {
       label: 'memory/ dir',

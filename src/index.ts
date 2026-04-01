@@ -19,7 +19,7 @@ import { runOnboard } from './commands/onboard.js';
 import { startIdlingInference, attemptSelfRepair } from './core/executor.js';
 import { getAgentRole } from './core/hierarchy.js';
 import { ErrorObserver } from './core/observer.js';
-import { initWorkspace } from './core/paths.js';
+import { initStorage, MEMORY_DIR } from './core/paths.js';
 import { LTMController } from './core/memory/ltm.js';
 import { GhostGuard }          from './core/guard/ghost-guard.js';
 import { ProjectIntelligence } from './core/intelligence/project-intelligence.js';
@@ -225,8 +225,8 @@ async function bootServer(arg: string, suppressBrowser = false) {
     process.exit(1);
   }
 
-  initWorkspace();
-  logger.info('[Paths] Workspace directories initialised.');
+  initStorage();
+  logger.info('[Paths] Storage + workspace directories initialised.');
 
   // ── Error Observer — autonomous runtime error capture + self-repair ───────
   const observer = new ErrorObserver({
@@ -273,7 +273,7 @@ async function bootServer(arg: string, suppressBrowser = false) {
       logger.info('Starting Web Dashboard host in terminal — logs will stream here.');
       logger.info(`Open your browser:  http://localhost:${PORT}`);
     }
-    const history   = new SessionHistory(logger, path.join(ROOT, 'memory'));
+    const history   = new SessionHistory(logger, MEMORY_DIR);
     const apiServer = new ApiServer(logger, orchestrator, history, PORT, ROOT);
     apiServer.start();
     startHealthMonitor(ROOT, logger);

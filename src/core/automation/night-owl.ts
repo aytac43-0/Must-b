@@ -31,6 +31,7 @@ import { EventEmitter } from 'events';
 import fs               from 'fs';
 import path             from 'path';
 import winston          from 'winston';
+import { LOGS_DIR }     from '../paths.js';
 import type { GhostGuard }          from '../guard/ghost-guard.js';
 import type { ProjectIntelligence } from '../intelligence/project-intelligence.js';
 import type { LTMController }       from '../memory/ltm.js';
@@ -387,7 +388,7 @@ export class NightOwl extends EventEmitter {
   // ── Task 3: Log Analysis ────────────────────────────────────────────────────
 
   private async _taskLogAnalysis(): Promise<NightShiftFinding | null> {
-    const logDir = path.join(this.root, 'memory', 'logs');
+    const logDir = LOGS_DIR;
     if (!fs.existsSync(logDir)) {
       return {
         task:    'LogAnalysis',

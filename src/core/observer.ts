@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import winston from 'winston';
+import { LOGS_DIR } from './paths.js';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -40,7 +41,7 @@ export class ErrorObserver {
     onError: (err: ObservedError) => void;
   }) {
     this.logger  = opts.logger;
-    this.logDir  = path.join(opts.root, 'memory', 'logs');
+    this.logDir  = LOGS_DIR;
     this.onError = opts.onError;
   }
 

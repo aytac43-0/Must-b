@@ -1,0 +1,15 @@
+# storage/
+#
+# This directory is the runtime storage root for Must-b.
+# All user-generated data lives here at runtime — never in source code.
+#
+# Contents created automatically on first run:
+#   storage/memory/        — long-term memory, episodic logs
+#   storage/memory/vectors.db   — TF-IDF vector store (SQLite)
+#   storage/memory/user.json    — user profile
+#   storage/memory/sessions.json — session history
+#   storage/memory/logs/        — Guard / NightOwl Markdown reports
+#   storage/workspace/     — user workspace files
+#
+# .gitignore rule:  /storage/* + !/storage/.gitkeep
+# This file is the only tracked entry — everything else is runtime-only.

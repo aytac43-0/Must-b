@@ -10,6 +10,9 @@ import { TerminalTools } from '../tools/terminal.js';
 import { BrowserTools } from '../tools/browser.js';
 import { LongTermMemory } from '../memory/long-term.js';
 import type { GhostGuard } from './guard/ghost-guard.js';
+import { LLMProvider } from './provider.js';
+import { routeSkill } from '../plugins/skill-router.js';
+import { MEMORY_DIR, LOGS_DIR } from './paths.js';
 
 // RAM threshold above which browser operations are blocked (%)
 const BROWSER_RAM_LIMIT_PCT = 82;
@@ -63,6 +66,7 @@ export class Executor {
   private browserTools: BrowserTools;
   private mem: LongTermMemory | null;
   private guard: GhostGuard | null;
+  private _provider: LLMProvider;
 
   constructor(logger: winston.Logger, mem?: LongTermMemory, guard?: GhostGuard) {
     this.logger = logger;
@@ -71,6 +75,7 @@ export class Executor {
     this.browserTools = new BrowserTools(logger);
     this.mem = mem ?? null;
     this.guard = guard ?? null;
+    this._provider = new LLMProvider(logger);
   }
 
   /** Wire GhostGuard after construction (guard is created after executor in index.ts). */
@@ -371,6 +376,39 @@ export class Executor {
           result = { success: true };
           break;
 
+        // ── Unified Skill Bridge (Skill-Brain v1.19.0) ───────────────────────
+        case 'invoke_skill': {
+          const skillId     = String(step.parameters.skill ?? '');
+          const skillParams = { ...(step.parameters.params ?? {}) } as Record<string, unknown>;
+          if (step.parameters.goal) skillParams.goal = step.parameters.goal;
+
+          this.logger.info(`[SkillBridge] Routing skill: "${skillId}"`);
+          const routeResult = await routeSkill(skillId, skillParams);
+
+          if (!routeResult.ok && routeResult.error) {
+            result = { ok: false, skill: skillId, error: routeResult.error };
+            break;
+          }
+
+          if (routeResult.mode === 'direct') {
+            result = { ok: true, mode: 'direct', skill: skillId, data: routeResult.data };
+            break;
+          }
+
+          // PROMPT mode — execute via LLM provider
+          if (routeResult.prompt) {
+            this.logger.info(`[SkillBridge] Skill "${skillId}" → PROMPT mode — executing via LLM.`);
+            const answer = await this._provider.chat(
+              [{ role: 'user', content: routeResult.prompt }],
+              { jsonMode: false },
+            );
+            result = { ok: true, mode: 'prompt', skill: skillId, answer: answer.trim() };
+          } else {
+            result = { ok: false, skill: skillId, error: 'Skill returned no prompt or data.' };
+          }
+          break;
+        }
+
         default:
           throw new Error(`Unknown tool: ${step.tool}`);
       }
@@ -421,7 +459,7 @@ export function startIdlingInference(
 
   const OLLAMA_BASE = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
   const EXT_DIR     = path.join(root, 'src', 'core', 'extensions');
-  const REPORT_PATH = path.join(root, 'memory', 'idling-report.md');
+  const REPORT_PATH = path.join(MEMORY_DIR, 'idling-report.md');
   const MODEL       = process.env.OLLAMA_IDLE_MODEL ?? 'phi3:mini';
 
   /** Check if Ollama daemon is reachable */
@@ -514,7 +552,7 @@ export function startIdlingInference(
     }
 
     try {
-      fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+      fs.mkdirSync(MEMORY_DIR, { recursive: true });
       fs.writeFileSync(REPORT_PATH, sections.join('\n'), 'utf-8');
       logger.info(`[Idling] Report written → ${REPORT_PATH}`);
     } catch (err: any) {
@@ -562,7 +600,7 @@ export async function attemptSelfRepair(
 ): Promise<SelfRepairResult> {
   const OLLAMA_BASE  = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
   const MODEL        = process.env.OLLAMA_REPAIR_MODEL ?? process.env.OLLAMA_IDLE_MODEL ?? 'phi3:mini';
-  const REPORT_DIR   = path.join(root, 'memory', 'logs');
+  const REPORT_DIR   = LOGS_DIR;
 
   fs.mkdirSync(REPORT_DIR, { recursive: true });
 
@@ -659,7 +697,7 @@ export async function attemptSelfRepair(
   // Write a restart flag; the watchdog / process manager picks it up.
   // On systems where Must-b is managed by systemd / pm2 / launchd this file
   // triggers a restart.  We also attempt SIGTERM so the supervisor restarts us.
-  const flagPath = path.join(root, 'memory', '.restart-flag');
+  const flagPath = path.join(MEMORY_DIR, '.restart-flag');
   try { fs.writeFileSync(flagPath, new Date().toISOString(), 'utf-8'); } catch { /* best-effort */ }
 
   // Allow current event-loop tick to drain before exiting

@@ -181,7 +181,17 @@ const REQUIRED = [
 
 // Patterns that must NOT appear inside dist/
 const BLOCKED_PATTERNS = [
+  // Secrets & environment
   ".env",
+  // Runtime databases — user data must stay in storage/, not ship with dist/
+  ".db",
+  "vectors.db",
+  // Session / history files — generated at runtime
+  "history.json",
+  "sessions.json",
+  // Log reports — written by Guard/NightOwl at runtime
+  "logs/",
+  // Dev / test artefacts
   "visual-audit",
   "tsconfig.json",
   "playwright.config",

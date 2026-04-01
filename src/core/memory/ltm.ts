@@ -15,6 +15,7 @@
 import path from 'path';
 import fs   from 'fs/promises';
 import { VectorStore, type MemoryCategory, type VectorEntry } from './vector-store.js';
+import { MEMORY_DIR } from '../paths.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -32,8 +33,8 @@ export class LTMController {
   private memDir: string;
   private initialized = false;
 
-  constructor(root: string) {
-    this.memDir = path.join(root, 'memory');
+  constructor(_root?: string) {
+    this.memDir = MEMORY_DIR;
   }
 
   /** Initialize storage (creates memory dir if needed). Call once at startup. */

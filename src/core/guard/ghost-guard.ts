@@ -19,6 +19,7 @@ import fs              from 'fs';
 import path            from 'path';
 import { watch, type FSWatcher } from 'chokidar';
 import winston         from 'winston';
+import { LOGS_DIR }    from '../paths.js';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -133,7 +134,7 @@ export class GhostGuard extends EventEmitter {
     super();
     this.root   = opts.root;
     this.logger = opts.logger;
-    this.logDir = path.join(opts.root, 'memory', 'logs');
+    this.logDir = LOGS_DIR;
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────
