@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** PM_MustB | 2026-04-01 | Sprint 14 başladı — LTM Yönetim Uçları v1.23.0
+> **Son güncelleme:** Deploy_Chief | 2026-04-01 | v1.23.0 DEPLOYED — LTM Explore & Delete API | commit: e339843c
 
 ---
 
@@ -250,7 +250,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S14-B001 | Backend_Architect | **VECTOR STORE**: `getAll(category?, limit)` + `deleteById(id)` → `vector-store.ts`. **LTM**: `getAllSemanticEntries(limit?)` + `getAllEpisodicEntries()` + `deleteEntry(id)` + `LTMEntry{isNightOwl}` → `ltm.ts` | DONE | Backend_Architect \| 2026-04-01 |
 | S14-B002 | Backend_Architect | **API UÇLARI**: `GET /api/memory/ltm/explore?category&limit` + `DELETE /api/memory/ltm/delete/:id` → `api.ts` | DONE | Backend_Architect \| 2026-04-01 |
 | S14-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | TS: 0 hata. Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-01 |
-| S14-DEPLOY | Deploy_Chief | v1.23.0 deploy — LTM Explore & Delete API | IN_PROGRESS | |
+| S14-DEPLOY | Deploy_Chief | v1.23.0 deploy — LTM Explore & Delete API | DEPLOYED | Deploy_Chief \| 2026-04-01 \| commit: e339843c \| push: BAŞARILI |
 
 ---
 
