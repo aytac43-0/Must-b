@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** PM_MustB | 2026-04-01 | v1.21.0 — Hayalet Temizliği Tamamlandı + auth.ts placeholder + paths.ts denetimi
+> **Son güncelleme:** Deploy_Chief | 2026-04-01 | v1.21.0 DEPLOYED — Hayalet Temizliği + Skill-Brain + OS-Standard Storage | commit: 37d34d5d
 
 ---
 
@@ -252,7 +252,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S12-F001 | Frontend_Engineer | **MARKA TEMİZLİĞİ**: Eski marka kalıntıları temizlendi (PIPELINE.md, CLAUDE.md, hooks, core/scripts) — useMustbStatus/MustbStatus export eklendi; settings.local.json modernize edildi | DONE | Frontend_Engineer \| 2026-04-01 |
 | S12-GHOST | Backend_Architect | **HAYALEt TEMİZLİĞİ**: settings.local.json modernize (13 kirli satır kaldırıldı), discord-smoke.ts + sync-plugin-versions.ts fonksiyon isimleri güncellendi, useOpenClawStatus.ts sıfırlandı. Proje geneli grep -ri: **0 eşleşme** ✅ | DONE | Backend_Architect \| 2026-04-01 |
 | S12-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-01 |
-| S12-DEPLOY | Deploy_Chief | v1.21.0 deploy — Hayalet Temizliği Tamamlandı | IN_PROGRESS | |
+| S12-DEPLOY | Deploy_Chief | v1.21.0 deploy — Hayalet Temizliği Tamamlandı | DEPLOYED | Deploy_Chief \| 2026-04-01 \| commit: feat(v1.21.0): Ghost Cleanup + Skill-Brain + OS-Standard Storage \| push: BAŞARILI |
 
 ---
 
@@ -264,7 +264,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 |---|---|---|---|---|
 | S11-SYN001 | Backend_Architect | **SKILL-BRAIN**: `planner.ts` — `loadSkillCatalog()` ile 52 skill dinamik sistem promptuna enjekte, `invoke_skill` tool tipi eklendi, Context Alignment talimatı. `executor.ts` — `invoke_skill` Master Tool: `routeSkill()` köprüsü, DIRECT→plugin, PROMPT→LLMProvider.chat() | DONE | Backend_Architect \| 2026-03-31 |
 | S11-SYN001-QA | QA_Lead | `npx tsc --noEmit` backend + frontend + `npm run build:prod` | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.3MB ✓ \| QA_Lead \| 2026-04-01 |
-| S11-SYN001-DEPLOY | Deploy_Chief | v1.19.0 deploy — Skill-Brain: Dynamic Tool Injection | IN_PROGRESS | |
+| S11-SYN001-DEPLOY | Deploy_Chief | v1.19.0 deploy — Skill-Brain: Dynamic Tool Injection | DEPLOYED | Deploy_Chief \| 2026-04-01 \| v1.21.0 omnibus commit: 37d34d5d \| push: BAŞARILI |
 
 ---
 
