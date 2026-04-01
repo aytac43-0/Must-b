@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** PM_MustB | 2026-04-01 | Sprint 13 başladı — Cloud Köprüsü: /api/auth/callback + UserProfilePanel
+> **Son güncelleme:** Deploy_Chief | 2026-04-01 | v1.22.0 DEPLOYED — Cloud Köprüsü: OAuth + UserProfilePanel | commit: dcba6c4c
 
 ---
 
@@ -250,7 +250,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S13-B001 | Backend_Architect | **AUTH CALLBACK**: `auth.ts` — signInFromCallback(), restoreSessionFromDisk(), getOAuthUrl(), config.json persist (STORAGE_ROOT/config.json). `api.ts` — `/api/auth/callback`, `/api/auth/user-status`, `/api/auth/signout`, `/api/auth/user-connect` rotaları | DONE | Backend_Architect \| 2026-04-01 |
 | S13-F001 | Frontend_Engineer | **USER PROFILE PANEL**: `UserProfilePanel.tsx` — fixed top-right avatar; glassmorphism panel; login/profil/signout; Socket.io authStateChanged reaktif | DONE | Frontend_Engineer \| 2026-04-01 |
 | S13-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | TS: 0 hata (backend+frontend). Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-01 |
-| S13-DEPLOY | Deploy_Chief | v1.22.0 deploy — Cloud Köprüsü: OAuth + UserProfilePanel | IN_PROGRESS | |
+| S13-DEPLOY | Deploy_Chief | v1.22.0 deploy — Cloud Köprüsü: OAuth + UserProfilePanel | DEPLOYED | Deploy_Chief \| 2026-04-01 \| commit: dcba6c4c \| push: BAŞARILI |
 
 ---
 
