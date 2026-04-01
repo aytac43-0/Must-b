@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** Deploy_Chief | 2026-04-02 | v1.23.1 DEPLOYED — Voice Core: Wake-Word + TTS + Transcribe API | commit: pending
+> **Son güncelleme:** Deploy_Chief | 2026-04-02 | v1.23.1 DEPLOYED — Voice Core: Wake-Word + TTS + Transcribe API | commit: e4a8bd63
 
 ---
 
@@ -251,7 +251,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S17-B002 | Backend_Architect | **SPEAKER**: `src/tools/speaker.ts` — speak(text, io?): OpenAI TTS → OS fallback (Win:SAPI5/macOS:say/Linux:espeak); stop(io?); isSpeaking(); Socket.io `assistantSpeaking:{speaking,text}` | DONE | Backend_Architect \| 2026-04-02 |
 | S17-B003 | Backend_Architect | **API UÇLARI**: `api.ts` — POST /api/voice/transcribe (audioBase64→Whisper→wakeWord.processTranscript), POST /api/voice/speak, POST /api/voice/stop, GET /api/voice/status, POST /api/voice/wake; WakeWordDetector constructor'da init; attachToSocket setupSocketIO'da | DONE | Backend_Architect \| 2026-04-02 |
 | S17-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | TS: 0 hata. Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-02 |
-| S17-DEPLOY | Deploy_Chief | v1.23.1 deploy — Voice Core: Wake-Word + TTS + Transcribe | DEPLOYED | Deploy_Chief \| 2026-04-02 \| commit: pending \| push: pending |
+| S17-DEPLOY | Deploy_Chief | v1.23.1 deploy — Voice Core: Wake-Word + TTS + Transcribe | DEPLOYED | Deploy_Chief \| 2026-04-02 \| commit: e4a8bd63 \| push: BAŞARILI |
 
 ---
 
