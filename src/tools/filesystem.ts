@@ -36,6 +36,12 @@ export interface SearchResult {
   text:   string;
 }
 
+export interface MarkdownSection {
+  heading:  string;
+  level:    number;  // 1–6 (H1–H6); 0 = content before first heading
+  content:  string;
+}
+
 // ── FilesystemTools ────────────────────────────────────────────────────────
 
 export class FilesystemTools {
@@ -222,5 +228,121 @@ export class FilesystemTools {
     await fs.mkdir(path.dirname(dest), { recursive: true });
     await fs.rename(src, dest);
     return `Moved ${params.src} → ${params.dest}`;
+  }
+
+  // ── JSON Smart Operations (v1.23.4) ──────────────────────────────────────
+
+  /**
+   * Read and parse a JSON file.
+   * Throws a clear error if the file is not valid JSON.
+   */
+  async readJson<T = unknown>(params: { path: string }): Promise<T> {
+    const p   = this.safe(params.path);
+    const raw = await fs.readFile(p, 'utf-8');
+    try {
+      return JSON.parse(raw) as T;
+    } catch (e: any) {
+      throw new Error(`[filesystem] readJson: invalid JSON in "${params.path}" — ${e.message}`);
+    }
+  }
+
+  /**
+   * Serialize data and write it to a JSON file.
+   * indent: spaces for pretty-printing (default 2).
+   */
+  async writeJson(params: { path: string; data: unknown; indent?: number }): Promise<string> {
+    const p       = this.safe(params.path);
+    const indent  = params.indent ?? 2;
+    const content = JSON.stringify(params.data, null, indent) + '\n';
+    await fs.mkdir(path.dirname(p), { recursive: true });
+    await fs.writeFile(p, content, 'utf-8');
+    return `JSON written: ${params.path}`;
+  }
+
+  /**
+   * Set a value at a dot-notation key path inside a JSON file.
+   * Missing intermediate objects are created automatically.
+   * Example: key "user.preferences.theme", value "dark"
+   */
+  async patchJson(params: { path: string; key: string; value: unknown; indent?: number }): Promise<string> {
+    const p   = this.safe(params.path);
+    let data: Record<string, unknown> = {};
+    try {
+      const raw = await fs.readFile(p, 'utf-8');
+      data = JSON.parse(raw) as Record<string, unknown>;
+    } catch { /* file missing or empty — start fresh */ }
+
+    const parts = params.key.split('.');
+    let node: Record<string, unknown> = data;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const k = parts[i];
+      if (typeof node[k] !== 'object' || node[k] === null) node[k] = {};
+      node = node[k] as Record<string, unknown>;
+    }
+    node[parts[parts.length - 1]] = params.value;
+
+    const indent  = params.indent ?? 2;
+    await fs.mkdir(path.dirname(p), { recursive: true });
+    await fs.writeFile(p, JSON.stringify(data, null, indent) + '\n', 'utf-8');
+    return `JSON patched: ${params.path} → ${params.key}`;
+  }
+
+  // ── Markdown Smart Operations (v1.23.4) ──────────────────────────────────
+
+  /**
+   * Read a Markdown file and return its sections split by headings.
+   * Each section: { heading, level (1-6), content }.
+   * Content that appears before the first heading gets level 0 / heading "".
+   */
+  async readMarkdown(params: { path: string }): Promise<{ sections: MarkdownSection[] }> {
+    const p    = this.safe(params.path);
+    const raw  = await fs.readFile(p, 'utf-8');
+    const lines = raw.split('\n');
+
+    const sections: MarkdownSection[] = [];
+    let currentHeading = '';
+    let currentLevel   = 0;
+    let currentLines:  string[] = [];
+
+    const flush = () => {
+      const content = currentLines.join('\n').trim();
+      if (content || currentHeading) {
+        sections.push({ heading: currentHeading, level: currentLevel, content });
+      }
+    };
+
+    for (const line of lines) {
+      const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+      if (headingMatch) {
+        flush();
+        currentHeading = headingMatch[2].trim();
+        currentLevel   = headingMatch[1].length;
+        currentLines   = [];
+      } else {
+        currentLines.push(line);
+      }
+    }
+    flush();
+
+    return { sections };
+  }
+
+  /**
+   * Append a new Markdown section (heading + content) to a file.
+   * If the file doesn't exist it is created.
+   * level: heading depth 1–6 (default 2 = ##).
+   */
+  async appendMarkdownSection(params: {
+    path:     string;
+    heading:  string;
+    content:  string;
+    level?:   number;
+  }): Promise<string> {
+    const p      = this.safe(params.path);
+    const hashes = '#'.repeat(Math.max(1, Math.min(6, params.level ?? 2)));
+    const block  = `\n${hashes} ${params.heading}\n\n${params.content.trimEnd()}\n`;
+    await fs.mkdir(path.dirname(p), { recursive: true });
+    await fs.appendFile(p, block, 'utf-8');
+    return `Markdown section appended to ${params.path}: "${params.heading}"`;
   }
 }

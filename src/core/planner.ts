@@ -14,12 +14,21 @@ export interface PlanStep {
     | 'filesystem_copy'
     | 'filesystem_delete'
     | 'filesystem_mkdir'
+    | 'filesystem_read_json'
+    | 'filesystem_write_json'
+    | 'filesystem_patch_json'
+    | 'filesystem_read_markdown'
+    | 'filesystem_append_markdown'
     | 'terminal'
+    | 'terminal_stream'
     | 'browser_navigate'
     | 'browser_screenshot'
     | 'browser_click'
     | 'browser_type'
     | 'browser_extract'
+    | 'browser_extract_text'
+    | 'browser_extract_links'
+    | 'browser_research'
     | 'browser_snapshot'
     | 'browser_evaluate'
     | 'browser_url'
@@ -95,7 +104,8 @@ FILESYSTEM:
 3.  filesystem_list    { path: string }                          – List files in a directory.
 
 TERMINAL:
-4.  terminal           { command: string }                       – Execute a shell command (git, npm, node, ls, etc).
+4.  terminal           { command: string }                       – Execute a shell command and return full output when done.
+4b. terminal_stream    { command: string }                       – Same as terminal but streams stdout lines to the dashboard in real-time. Use for long-running commands (builds, tests, installs).
 
 BROWSER (Playwright-powered):
 5.  browser_navigate   { url: string, waitFor?: "load"|"domcontentloaded"|"networkidle" }
@@ -111,11 +121,17 @@ BROWSER (Playwright-powered):
 13. browser_close      {}                                        – Close the browser and free resources.
 
 ACTION FORCE — El-Göz (Hand-Eye) tools:
-14. browser_perceive   {}                                        – Combined ARIA snapshot + URL + title in one call. Best first step before interacting.
-15. browser_scroll     { x?: number, y?: number, selector?: string }
-                                                                 – Scroll the page or a specific element (pixels; negative = up/left).
-16. browser_wait       { selector?: string, state?: "visible"|"hidden"|"attached"|"detached"|"networkidle", timeout?: number }
-                                                                 – Wait until a selector appears or network is idle.
+14. browser_perceive      {}                                        – Combined ARIA snapshot + URL + title in one call. Best first step before interacting.
+15. browser_scroll        { x?: number, y?: number, selector?: string }
+                                                                    – Scroll the page or a specific element (pixels; negative = up/left).
+16. browser_wait          { selector?: string, state?: "visible"|"hidden"|"attached"|"detached"|"networkidle", timeout?: number }
+                                                                    – Wait until a selector appears or network is idle.
+
+AUTONOMOUS RESEARCH (Action Layer v1.23.4):
+17. browser_research      { url: string, waitFor?: "load"|"domcontentloaded"|"networkidle", linkLimit?: number }
+                                                                    – Navigate + extract full page text + all links in ONE call. Best single-step for researching a URL. Returns { url, title, text, charCount, links }.
+18. browser_extract_text  {}                                        – Extract clean readable text from current page (strips scripts/styles). Returns { text, charCount }.
+19. browser_extract_links { selector?: string, limit?: number }     – Return all <a> links from page or a subtree. Returns { links: [{text, href}] }.
 
 MEMORY (SQLite FTS5 + Temporal Decay):
 14. memory_search      { query: string, limit?: number }         – Search past conversations and memory files.
@@ -125,10 +141,18 @@ WEB SEARCH:
 19. web_search         { query: string, maxResults?: number }    – DuckDuckGo search via Playwright. Returns { query, snippets }.
 
 FILESYSTEM (extended):
-20. filesystem_search  { pattern: string, cwd?: string, maxResults?: number }           – Search for files by name pattern.
-21. filesystem_copy    { src: string, dest: string }                                     – Copy a file.
-22. filesystem_delete  { path: string }                                                  – Delete a file or directory.
-23. filesystem_mkdir   { path: string }                                                  – Create a directory recursively.
+20. filesystem_search           { pattern: string, cwd?: string, maxResults?: number }   – Search for files by name pattern.
+21. filesystem_copy             { src: string, dest: string }                            – Copy a file.
+22. filesystem_delete           { path: string }                                         – Delete a file or directory.
+23. filesystem_mkdir            { path: string }                                         – Create a directory recursively.
+
+FILESYSTEM — JSON & Markdown (Action Layer v1.23.4):
+26. filesystem_read_json        { path: string }                                         – Parse and return a JSON file as an object.
+27. filesystem_write_json       { path: string, data: object, indent?: number }          – Serialize object and write to a JSON file.
+28. filesystem_patch_json       { path: string, key: string, value: any }                – Set a dot-notation key in a JSON file (e.g. "user.name"). Creates missing keys.
+29. filesystem_read_markdown    { path: string }                                         – Read a Markdown file and return sections: [{heading, level, content}].
+30. filesystem_append_markdown  { path: string, heading: string, content: string, level?: number }
+                                                                                         – Append a new heading+content section to a Markdown file.
 
 HTTP:
 24. http_request       { url: string, method?: "GET"|"POST"|"PUT"|"PATCH"|"DELETE", headers?: object, body?: object }

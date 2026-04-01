@@ -67,6 +67,8 @@ export class Executor {
   private mem: LongTermMemory | null;
   private guard: GhostGuard | null;
   private _provider: LLMProvider;
+  /** Socket.io server — wired via setIo() for terminal_stream live output. */
+  private _io: import('socket.io').Server | null = null;
 
   constructor(logger: winston.Logger, mem?: LongTermMemory, guard?: GhostGuard) {
     this.logger = logger;
@@ -81,6 +83,11 @@ export class Executor {
   /** Wire GhostGuard after construction (guard is created after executor in index.ts). */
   setGuard(guard: GhostGuard): void {
     this.guard = guard;
+  }
+
+  /** Wire Socket.io server for terminal_stream live output. */
+  setIo(io: import('socket.io').Server): void {
+    this._io = io;
   }
 
   /**
@@ -128,6 +135,18 @@ export class Executor {
         case 'terminal':
           result = await this.terminalTools.execute(step.parameters as any);
           break;
+
+        case 'terminal_stream': {
+          const io = this._io;
+          result = await this.terminalTools.executeStream(
+            step.parameters as any,
+            (line, stream) => {
+              io?.emit('terminalStream', { stepId: step.id, line, stream });
+              this.logger.debug(`[terminal_stream] ${stream}: ${line}`);
+            },
+          );
+          break;
+        }
 
         // ── Browser (Action Force — El-Göz) ────────────────────────────────
         case 'browser_navigate': {
@@ -219,6 +238,28 @@ export class Executor {
           const ramCheck = await this.checkBrowserRAM();
           if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
           result = await this.browserTools.waitFor(step.parameters as any);
+          break;
+        }
+
+        // ── Action Layer — Autonomous Research (v1.23.4) ────────────────────
+        case 'browser_research': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
+          result = await this.browserTools.researchPage(step.parameters as any);
+          break;
+        }
+
+        case 'browser_extract_text': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
+          result = await this.browserTools.extractPageText();
+          break;
+        }
+
+        case 'browser_extract_links': {
+          const ramCheck = await this.checkBrowserRAM();
+          if (!ramCheck.ok) { result = { error: `RAM %${ramCheck.ramPct.toFixed(1)} — engellendi.` }; break; }
+          result = await this.browserTools.extractLinks(step.parameters as any);
           break;
         }
 
@@ -349,6 +390,27 @@ export class Executor {
           result = { success: true, path: mkdirPath };
           break;
         }
+
+        // ── Action Layer — JSON & Markdown (v1.23.4) ─────────────────────────
+        case 'filesystem_read_json':
+          result = await this.fsTools.readJson(step.parameters as any);
+          break;
+
+        case 'filesystem_write_json':
+          result = await this.fsTools.writeJson(step.parameters as any);
+          break;
+
+        case 'filesystem_patch_json':
+          result = await this.fsTools.patchJson(step.parameters as any);
+          break;
+
+        case 'filesystem_read_markdown':
+          result = await this.fsTools.readMarkdown(step.parameters as any);
+          break;
+
+        case 'filesystem_append_markdown':
+          result = await this.fsTools.appendMarkdownSection(step.parameters as any);
+          break;
 
         // ── HTTP Request ─────────────────────────────────────────────────────
         case 'http_request': {

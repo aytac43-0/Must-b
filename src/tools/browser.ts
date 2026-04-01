@@ -462,4 +462,99 @@ export class BrowserTools {
     }
     return { success: true };
   }
+
+  // ── Autonomous Research Tools (v1.23.4) ───────────────────────────────
+
+  /**
+   * Extract clean, readable text from the entire page.
+   * Removes script, style, nav, footer and collapses whitespace.
+   * Ideal for feeding page content directly to the Planner/LLM.
+   */
+  async extractPageText(): Promise<{ text: string; charCount: number }> {
+    const page = await this.ensurePage();
+    const text = await page.evaluate((): string => {
+      // Remove non-content elements
+      const remove = document.querySelectorAll(
+        'script,style,noscript,nav,footer,header,[aria-hidden="true"]',
+      );
+      remove.forEach((el) => el.remove());
+
+      const body = document.body?.innerText ?? document.documentElement.innerText ?? '';
+      return body
+        .replace(/[ \t]+/g, ' ')          // collapse horizontal whitespace
+        .replace(/\n{3,}/g, '\n\n')       // max 2 consecutive newlines
+        .trim();
+    });
+    return { text, charCount: text.length };
+  }
+
+  /**
+   * Extract all anchor links from the page (or a subtree).
+   * Returns deduplicated absolute hrefs with their visible text.
+   */
+  async extractLinks(params?: {
+    selector?: string;
+    limit?: number;
+  }): Promise<{ links: Array<{ text: string; href: string }> }> {
+    const page  = await this.ensurePage();
+    const limit = params?.limit ?? 50;
+    const root  = params?.selector ?? 'body';
+
+    const links = await page.evaluate(
+      ({ sel, lim }: { sel: string; lim: number }): Array<{ text: string; href: string }> => {
+        const container = document.querySelector(sel) ?? document.body;
+        const seen      = new Set<string>();
+        const result:   Array<{ text: string; href: string }> = [];
+
+        for (const a of Array.from(container.querySelectorAll('a[href]'))) {
+          if (result.length >= lim) break;
+          const href = (a as HTMLAnchorElement).href;
+          const text = (a as HTMLAnchorElement).textContent?.trim().replace(/\s+/g, ' ') ?? '';
+          if (href && href !== '#' && !seen.has(href)) {
+            seen.add(href);
+            result.push({ text: text.slice(0, 120), href });
+          }
+        }
+        return result;
+      },
+      { sel: root, lim: limit },
+    );
+
+    return { links };
+  }
+
+  /**
+   * Autonomous research in one call:
+   *   navigate → wait for load → extractPageText + extractLinks
+   * Returns everything the Planner needs to reason about a page.
+   */
+  async researchPage(params: {
+    url:      string;
+    waitFor?: 'load' | 'domcontentloaded' | 'networkidle';
+    linkLimit?: number;
+  }): Promise<{
+    url:      string;
+    title:    string;
+    text:     string;
+    charCount: number;
+    links:    Array<{ text: string; href: string }>;
+  }> {
+    const ramCheck = await this.navigate({
+      url: params.url,
+      waitFor: params.waitFor ?? 'domcontentloaded',
+    }).catch((err: Error) => { throw err; });
+
+    const [textResult, linksResult] = await Promise.all([
+      this.extractPageText(),
+      this.extractLinks({ limit: params.linkLimit ?? 40 }),
+    ]);
+
+    return {
+      url:       ramCheck.url,
+      title:     ramCheck.title,
+      text:      textResult.text,
+      charCount: textResult.charCount,
+      links:     linksResult.links,
+    };
+  }
 }

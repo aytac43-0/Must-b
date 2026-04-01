@@ -291,6 +291,7 @@ async function bootServer(arg: string, suppressBrowser = false) {
       logger.warn(`[GhostGuard] Lite mode → ${ev.active ? 'AKTİF' : 'DEVRE DIŞI'}: ${ev.reason}`);
     });
     apiServer.attachGuard(guard);
+    apiServer.attachExecutor(executor);  // Action Layer: wire Socket.io for terminal_stream
     executor.setGuard(guard);   // Action Force: wire RAM protection into browser tools
     guard.start();
 

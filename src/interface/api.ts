@@ -3409,6 +3409,13 @@ export class ApiServer {
   }
 
   /**
+   * Wire Socket.io into the Executor so terminal_stream can emit live output.
+   */
+  attachExecutor(executor: import('../core/executor.js').Executor): void {
+    executor.setIo(this.io);
+  }
+
+  /**
    * Wire up ProjectIntelligence: forward 'whisper' events to Socket.io clients
    * as 'projectInsight' messages.
    * Note: /api/intelligence/changelog is registered in setupRoutes() via this.intelligence.

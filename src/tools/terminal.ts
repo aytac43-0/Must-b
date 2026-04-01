@@ -135,6 +135,68 @@ export class TerminalTools {
   }
 
   /**
+   * Execute a command and stream each output line to `onChunk` in real-time,
+   * while also accumulating the full output for the returned TerminalResult.
+   * The Planner receives the complete result; the dashboard sees live lines.
+   *
+   * @param params   Same as execute()
+   * @param onChunk  Called for every output line as it arrives
+   */
+  executeStream(
+    params: TerminalParams,
+    onChunk: (line: string, stream: 'stdout' | 'stderr') => void,
+  ): Promise<TerminalResult> {
+    return new Promise((resolve) => {
+      const command = params.command.trim();
+      try { guardCommand(command); } catch (e: any) {
+        resolve({ stdout: '', stderr: e.message, exitCode: 1, command, durationMs: 0 });
+        return;
+      }
+
+      const shell  = process.platform === 'win32' ? 'cmd.exe' : '/bin/sh';
+      const flag   = process.platform === 'win32' ? '/C' : '-c';
+      const child  = spawn(shell, [flag, command], {
+        cwd:   params.cwd ?? this.defaultCwd,
+        env:   { ...process.env, ...(params.env ?? {}) },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+
+      const outLines: string[] = [];
+      const errLines: string[] = [];
+      const t0 = Date.now();
+
+      const handleChunk = (src: 'stdout' | 'stderr') => (chunk: Buffer) => {
+        chunk.toString().split(/\r?\n/).filter(Boolean).forEach((line) => {
+          if (src === 'stdout') outLines.push(line);
+          else errLines.push(line);
+          onChunk(line, src);
+        });
+      };
+
+      child.stdout.on('data', handleChunk('stdout'));
+      child.stderr.on('data', handleChunk('stderr'));
+      child.on('error', (err) => {
+        resolve({
+          stdout:     outLines.join('\n'),
+          stderr:     err.message,
+          exitCode:   1,
+          command,
+          durationMs: Date.now() - t0,
+        });
+      });
+      child.on('close', (code) => {
+        resolve({
+          stdout:     outLines.join('\n'),
+          stderr:     errLines.join('\n'),
+          exitCode:   code ?? 0,
+          command,
+          durationMs: Date.now() - t0,
+        });
+      });
+    });
+  }
+
+  /**
    * Detect the current platform shell info.
    */
   static platformInfo(): { platform: string; shell: string; home: string } {

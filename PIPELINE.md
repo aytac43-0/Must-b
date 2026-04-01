@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** PM_MustB | 2026-04-02 | Sprint 19 tamamlandı — v1.23.3 Profile Links + Import Audit + TTS Feedback
+> **Son güncelleme:** PM_MustB | 2026-04-02 | Sprint 20 tamamlandı — v1.23.4 Action Layer: browser research + terminal stream + filesystem JSON/MD
 
 ---
 
@@ -238,6 +238,22 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S7-INS001 | Backend_Architect | **PROJECT INTELLIGENCE**: `workspace-watcher.ts` (chokidar, 5 kategori), `summary-engine.ts` (klasör+dep özeti → LTM semantic), `project-intelligence.ts` (insight heuristik, whisper, CHANGELOG gen), `attachIntelligence()`, `/api/intelligence/changelog` | DONE | Backend_Architect \| 2026-03-30 |
 | S7-INS001-QA | QA_Lead | Project Intelligence — TS: 0 hata. esbuild: 0 hata, 456kb ✓ | QA_PASSED | QA_Lead \| 2026-03-30 |
 | S7-INS001-DEPLOY | Deploy_Chief | v1.15.0 deploy — Project Intelligence | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.15.0: Project Intelligence \| push: BAŞARILI |
+
+---
+
+## Sprint 20 — Action Layer (v1.23.4)
+
+> **Hedef:** browser.ts otonom araştırma (researchPage, extractPageText, extractLinks); terminal.ts executeStream + Socket.io live; filesystem.ts JSON+Markdown akıllı manipülasyon; planner.ts + executor.ts tam kayıt.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S20-B001 | Backend_Architect | `browser.ts` — `extractPageText()`, `extractLinks()`, `researchPage()` headless araştırma metodları | DONE | |
+| S20-B002 | Backend_Architect | `terminal.ts` — `executeStream(params, onChunk)` real-time stdout→Socket.io stream | DONE | |
+| S20-B003 | Backend_Architect | `filesystem.ts` — `readJson`, `writeJson`, `patchJson` (dot-notation), `readMarkdown` (sections), `appendMarkdownSection` | DONE | |
+| S20-B004 | Backend_Architect | `planner.ts` — PlanStep union + sistem prompt: `browser_research`, `browser_extract_text`, `browser_extract_links`, `terminal_stream`, `filesystem_read/write/patch_json`, `filesystem_read/append_markdown` | DONE | |
+| S20-B005 | Backend_Architect | `executor.ts` — tüm yeni tool case'leri; `_io` + `setIo()`; `api.ts` `attachExecutor()` + `index.ts` wiring | DONE | |
+| S20-QA | QA_Lead | TS: 0 hata (backend+frontend). Build: exit 0, dist/ temiz | QA_PASSED | |
+| S20-DEPLOY | Deploy_Chief | v1.23.4 deploy | DEPLOYED | |
 
 ---
 
