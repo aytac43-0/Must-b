@@ -174,22 +174,114 @@ export class FilesystemTools {
     return results;
   }
 
-  // ── Patch (string replace in file) ───────────────────────────────────────
+  // ── Patch (fuzzy string replace in file — 3-pass) ────────────────────────
 
+  /**
+   * Fuzzy 3-pass patch engine (inspired by moreright file-editing intelligence):
+   *   Pass 1 — Exact match: fast path, no transformation.
+   *   Pass 2 — Whitespace-normalized: collapse runs of whitespace to single space,
+   *             strip leading/trailing whitespace per line, then match.
+   *   Pass 3 — Line-similarity: slide a window of N lines over the file, score
+   *             similarity via character-level Levenshtein, apply the edit at the
+   *             most similar position (threshold: ≥ 0.6 similarity).
+   *
+   * This makes Must-b as resilient to indentation drift, tab/space mismatches,
+   * and trailing-whitespace differences as Claude Code's own patch engine.
+   */
   async patchFile(params: PatchParams): Promise<string> {
     const p       = this.safe(params.path);
     let   content = await fs.readFile(p, 'utf-8');
-    if (!content.includes(params.oldString)) {
-      throw new Error(`[filesystem] patchFile: oldString not found in ${params.path}`);
+
+    // ── Pass 1: Exact match ────────────────────────────────────────────────
+    if (content.includes(params.oldString)) {
+      const updated = params.replaceAll
+        ? content.split(params.oldString).join(params.newString)
+        : content.replace(params.oldString, params.newString);
+      await fs.writeFile(p, updated, 'utf-8');
+      const count = params.replaceAll
+        ? (content.match(new RegExp(params.oldString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) ?? []).length
+        : 1;
+      return `Patched ${params.path} (${count} replacement${count !== 1 ? 's' : ''})`;
     }
-    const updated = params.replaceAll
-      ? content.split(params.oldString).join(params.newString)
-      : content.replace(params.oldString, params.newString);
-    await fs.writeFile(p, updated, 'utf-8');
-    const count = params.replaceAll
-      ? (content.match(new RegExp(params.oldString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) ?? []).length
-      : 1;
-    return `Patched ${params.path} (${count} replacement${count !== 1 ? 's' : ''})`;
+
+    // ── Pass 2: Whitespace-normalized match ────────────────────────────────
+    const normalizeWS = (s: string) =>
+      s.split('\n').map(l => l.trim().replace(/\s+/g, ' ')).join('\n');
+
+    const normContent = normalizeWS(content);
+    const normOld     = normalizeWS(params.oldString);
+
+    if (normContent.includes(normOld)) {
+      // Reconstruct: find the real substring in content that corresponds to normOld.
+      // Strategy: split into lines, match the normalized block, replace those lines.
+      const contentLines = content.split('\n');
+      const oldLines     = params.oldString.split('\n');
+      const normOldLines = oldLines.map(l => l.trim().replace(/\s+/g, ' '));
+      const newLines     = params.newString.split('\n');
+
+      for (let i = 0; i <= contentLines.length - oldLines.length; i++) {
+        const slice = contentLines.slice(i, i + oldLines.length)
+          .map(l => l.trim().replace(/\s+/g, ' '));
+        if (slice.join('\n') === normOldLines.join('\n')) {
+          contentLines.splice(i, oldLines.length, ...newLines);
+          const updated = contentLines.join('\n');
+          await fs.writeFile(p, updated, 'utf-8');
+          return `Patched ${params.path} (whitespace-normalized match)`;
+        }
+      }
+    }
+
+    // ── Pass 3: Line-similarity sliding window ─────────────────────────────
+    const levenshtein = (a: string, b: string): number => {
+      const m = a.length, n = b.length;
+      const dp: number[] = Array.from({ length: n + 1 }, (_, i) => i);
+      for (let i = 1; i <= m; i++) {
+        let prev = dp[0];
+        dp[0] = i;
+        for (let j = 1; j <= n; j++) {
+          const temp = dp[j];
+          dp[j] = a[i - 1] === b[j - 1]
+            ? prev
+            : 1 + Math.min(prev, dp[j], dp[j - 1]);
+          prev = temp;
+        }
+      }
+      return dp[n];
+    };
+
+    const similarity = (a: string, b: string): number => {
+      if (!a && !b) return 1;
+      const maxLen = Math.max(a.length, b.length);
+      if (!maxLen) return 1;
+      return 1 - levenshtein(a, b) / maxLen;
+    };
+
+    const contentLines = content.split('\n');
+    const oldLines     = params.oldString.split('\n');
+    const newLines     = params.newString.split('\n');
+    const windowSize   = oldLines.length;
+
+    let bestIdx   = -1;
+    let bestScore = 0;
+
+    for (let i = 0; i <= contentLines.length - windowSize; i++) {
+      const windowStr = contentLines.slice(i, i + windowSize).join('\n');
+      const score     = similarity(windowStr, params.oldString);
+      if (score > bestScore) { bestScore = score; bestIdx = i; }
+    }
+
+    const SIMILARITY_THRESHOLD = 0.60;
+    if (bestScore >= SIMILARITY_THRESHOLD && bestIdx >= 0) {
+      contentLines.splice(bestIdx, windowSize, ...newLines);
+      const updated = contentLines.join('\n');
+      await fs.writeFile(p, updated, 'utf-8');
+      return `Patched ${params.path} (fuzzy match, similarity ${(bestScore * 100).toFixed(1)}%)`;
+    }
+
+    throw new Error(
+      `[filesystem] patchFile: oldString not found in ${params.path} ` +
+      `(best similarity: ${(bestScore * 100).toFixed(1)}% — below ${SIMILARITY_THRESHOLD * 100}% threshold)`,
+    );
   }
 
   // ── Stat ────────────────────────────────────────────────────────────────

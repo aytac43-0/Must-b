@@ -169,6 +169,9 @@ export class ApiServer {
   private nightOwl:       NightOwl | null = null;
   private wakeWord:       WakeWordDetector;
 
+  /** Expose Socket.io server for external wiring (e.g. CoordinatorWorkflow). */
+  get ioServer(): SocketIOServer { return this.io; }
+
   constructor(
     logger: winston.Logger,
     orchestrator: Orchestrator,

@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** PM_MustB | 2026-04-02 | Sprint 20 tamamlandı — v1.23.4 Action Layer: browser research + terminal stream + filesystem JSON/MD
+> **Son güncelleme:** PM_MustB | 2026-04-03 | Sprint 21 tamamlandı — v1.24.0 NightOwl Architect: Coordinator Mode + Fuzzy Patch + 3-Tier Model Router
 
 ---
 
@@ -238,6 +238,22 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S7-INS001 | Backend_Architect | **PROJECT INTELLIGENCE**: `workspace-watcher.ts` (chokidar, 5 kategori), `summary-engine.ts` (klasör+dep özeti → LTM semantic), `project-intelligence.ts` (insight heuristik, whisper, CHANGELOG gen), `attachIntelligence()`, `/api/intelligence/changelog` | DONE | Backend_Architect \| 2026-03-30 |
 | S7-INS001-QA | QA_Lead | Project Intelligence — TS: 0 hata. esbuild: 0 hata, 456kb ✓ | QA_PASSED | QA_Lead \| 2026-03-30 |
 | S7-INS001-DEPLOY | Deploy_Chief | v1.15.0 deploy — Project Intelligence | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.15.0: Project Intelligence \| push: BAŞARILI |
+
+---
+
+## Sprint 21 — NightOwl Architect (v1.24.0) — CEO Direktifi
+
+> **Hedef:** claude-code/src/coordinator mantığını tam entegrasyon; moreright dosya düzenleme zekası (fuzzy 3-pass patch); ruflo ADR-026 Model Tier Routing (Tier1/2/3).
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S21-B001 | Backend_Architect | `coordinator.ts` — Research→Synthesis→Implementation→Verification 4-faz motoru; `assessCoordinatorNeed()` karmaşıklık sezgisi; `CoordinatorWorkflow.run()` | DONE | Backend_Architect \| 2026-04-03 |
+| S21-B002 | Backend_Architect | `orchestrator.ts` — `runCoordinator()` metodu; `assessCoordinatorNeed` kısa devresi agent modda; `setIo()` + `_io` Socket.io wiring; `index.ts` wiring | DONE | Backend_Architect \| 2026-04-03 |
+| S21-B003 | Backend_Architect | `filesystem.ts` — `patchFile()` fuzzy 3-pass: Exact → Whitespace-normalized → Levenshtein line-similarity (≥60% eşik) | DONE | Backend_Architect \| 2026-04-03 |
+| S21-B004 | Backend_Architect | `provider.ts` — `assessModelTier()` + `TIER1_TRANSFORMS` + `rcForTier()` + `chatTiered()` — ADR-026 3-tier routing | DONE | Backend_Architect \| 2026-04-03 |
+| S21-B005 | Backend_Architect | `api.ts` — `get ioServer()` getter; `package.json` → v1.24.0 | DONE | Backend_Architect \| 2026-04-03 |
+| S21-QA | QA_Lead | TS: 0 hata (backend). Build: exit 0, dist/ temiz, v1.24.0 | QA_PASSED | TS: 0 hata. Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-03 |
+| S21-DEPLOY | Deploy_Chief | v1.24.0 commit | DONE | |
 
 ---
 

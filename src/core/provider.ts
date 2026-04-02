@@ -363,9 +363,146 @@ async function* parseOpenAIStream(body: ReadableStream<Uint8Array>): AsyncGenera
   }
 }
 
+// ── 3-Tier Model Router (ADR-026, adapted from ruflo) ─────────────────────────
+//
+// Tier 1 — Agent Booster (no LLM): sub-1ms transforms for trivial string edits
+// Tier 2 — Fast/cheap model: simple tasks with low reasoning demand
+// Tier 3 — Primary model: complex reasoning, architecture, security (default)
+//
+// Tier is selected by assessModelTier() based on goal complexity signals.
+// LLMProvider.chatTiered() routes automatically; the primary `chat()` path
+// is always Tier 3 (primary model) — preserving all existing behavior.
+
+type ModelTier = 1 | 2 | 3;
+
+/** Simple string transforms that don't need an LLM at all (Tier 1). */
+const TIER1_TRANSFORMS: Record<string, (s: string) => string> = {
+  'var-to-const':        s => s.replace(/\bvar\b/g, 'const'),
+  'remove-console':      s => s.replace(/^\s*console\.(log|warn|error|info)\([^)]*\);?\n?/gm, ''),
+  'trim-trailing-space': s => s.replace(/[ \t]+$/gm, ''),
+};
+
+/**
+ * Classify a goal into a model tier.
+ * Tier 1: trivial transform — skip LLM entirely.
+ * Tier 2: low complexity — use fast/cheap model.
+ * Tier 3: high complexity — use primary model.
+ */
+export function assessModelTier(goal: string): ModelTier {
+  const g = goal.toLowerCase();
+
+  // Tier 1: pure deterministic transforms
+  const tier1 = [
+    /^(replace|rename|change)\s+(all\s+)?var\s+(to|with)\s+const/i,
+    /^remove\s+(all\s+)?console\.(log|warn|error)/i,
+    /^trim\s+(trailing\s+)?(whitespace|spaces)/i,
+  ];
+  if (tier1.some(p => p.test(g))) return 1;
+
+  // Tier 2: simple, well-scoped tasks
+  const tier2 = [
+    /^(format|lint|fix\s+lint|prettify)/i,
+    /^add\s+(types?|type\s+annotations?)\s+to/i,
+    /^rename\s+(variable|function|method|class)\b/i,
+    /^(summarize|explain|describe)\s+this\s+(file|function|class)\b/i,
+    /^what\s+(does|is)\s+(this|the)\s+(function|class|file)\b/i,
+    /^(translate|convert)\s+(this|the)\s+(code|function)\s+to\b/i,
+    /\b(simple|small|quick|minor)\s+(fix|change|edit|update)\b/i,
+  ];
+  if (tier2.some(p => p.test(g))) return 2;
+
+  // Default: Tier 3 (primary model)
+  return 3;
+}
+
+/**
+ * Build provider config for a specific tier.
+ * Tier 2 reads MUSTB_TIER2_MODEL or falls back to a sensible cheap default.
+ * Tier 3 is the standard rc() config.
+ */
+function rcForTier(tier: ModelTier): PC {
+  if (tier === 3) return rc();
+
+  const base = rc();
+  const p    = (process.env.LLM_PROVIDER ?? 'openrouter').toLowerCase();
+
+  // Tier 2 model override — prefer explicit env var, then built-in cheaper default
+  const tier2Defaults: Record<string, string> = {
+    openrouter: 'openai/gpt-4o-mini',
+    openai:     'gpt-4o-mini',
+    anthropic:  'claude-haiku-4-5-20251001',
+    gemini:     'gemini-1.5-flash',
+    groq:       'llama3-8b-8192',
+    ollama:     base.model, // Ollama: use same model (usually already lightweight)
+    mistral:    'mistral-small-latest',
+    xai:        'grok-beta',
+    deepseek:   'deepseek-chat',
+  };
+
+  const tier2Model = process.env.MUSTB_TIER2_MODEL ?? tier2Defaults[p] ?? base.model;
+  return { ...base, model: tier2Model };
+}
+
 export class LLMProvider {
   private logger: winston.Logger;
   constructor(logger: winston.Logger) { this.logger = logger; }
+
+  /**
+   * Tiered chat — automatically selects the cheapest model that can handle
+   * the goal's complexity (ADR-026 3-tier routing).
+   *
+   * Tier 1: run a deterministic transform; no LLM call made.
+   * Tier 2: use fast/cheap model (MUSTB_TIER2_MODEL or provider default).
+   * Tier 3: use primary model (same as chat()).
+   *
+   * @param goal   The user goal string — used for tier assessment only.
+   * @param input  For Tier 1 transforms: the string to transform.
+   */
+  async chatTiered(
+    messages: CompletionMessage[],
+    options: { jsonMode?: boolean; goal?: string; tier1Input?: string } = {},
+  ): Promise<string> {
+    const tier = assessModelTier(options.goal ?? '');
+    this.logger.info(`Provider: Tier ${tier} routing for goal: "${(options.goal ?? '').slice(0, 60)}"`);
+
+    if (tier === 1) {
+      // Tier 1 — deterministic transform, no LLM
+      const input = options.tier1Input ?? '';
+      const g     = (options.goal ?? '').toLowerCase();
+      for (const [key, fn] of Object.entries(TIER1_TRANSFORMS)) {
+        if (g.includes(key.replace(/-/g, ' ')) || g.includes(key)) {
+          this.logger.info(`Provider: Tier 1 — applying "${key}" transform (0 LLM tokens)`);
+          return fn(input);
+        }
+      }
+      // No matching transform — fall through to Tier 2
+      this.logger.info('Provider: Tier 1 — no transform matched, falling back to Tier 2');
+    }
+
+    if (tier <= 2) {
+      const cfg2 = rcForTier(2);
+      this.logger.info(`Provider: Tier 2 model — ${cfg2.model}`);
+      const p = (process.env.LLM_PROVIDER ?? 'openrouter').toLowerCase();
+      try {
+        if (p === 'anthropic') return await aAnthropic(cfg2, messages);
+        if (p === 'gemini' || p === 'vertex') return await aGemini(cfg2, messages);
+        const b: any = { model: cfg2.model, messages, temperature: 0.1 };
+        if (options.jsonMode && !cfg2.noJM) b.response_format = { type: 'json_object' };
+        const res = await fetch(cfg2.baseUrl + '/chat/completions', {
+          method: 'POST', headers: cfg2.headers, body: JSON.stringify(b),
+        });
+        if (!res.ok) throw new Error(`Tier 2 ${p} ${res.status}: ${await res.text()}`);
+        const content = ((await res.json()) as any).choices?.[0]?.message?.content;
+        if (!content) throw new Error('Provider: Empty Tier 2 response.');
+        return content;
+      } catch (err: any) {
+        this.logger.warn(`Provider: Tier 2 failed (${err.message}), falling back to Tier 3`);
+      }
+    }
+
+    // Tier 3 — primary model (standard path)
+    return this.chat(messages, options);
+  }
 
   async generateJson<T>(messages: CompletionMessage[]): Promise<T> {
     const response = await this.chat(messages, { jsonMode: true });

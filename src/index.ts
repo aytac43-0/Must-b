@@ -292,6 +292,7 @@ async function bootServer(arg: string, suppressBrowser = false) {
     });
     apiServer.attachGuard(guard);
     apiServer.attachExecutor(executor);  // Action Layer: wire Socket.io for terminal_stream
+    orchestrator.setIo(apiServer.ioServer);  // Coordinator: real-time phase events
     executor.setGuard(guard);   // Action Force: wire RAM protection into browser tools
     guard.start();
 

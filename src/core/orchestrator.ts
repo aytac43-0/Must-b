@@ -7,6 +7,8 @@ import { Planner, type PlanStep } from './planner.js';
 import { Executor } from './executor.js';
 import { type CompletionMessage } from './provider.js';
 import type { LTMController } from './memory/ltm.js';
+import { CoordinatorWorkflow, assessCoordinatorNeed } from './coordinator.js';
+import type { Server as SocketServer } from 'socket.io';
 
 export { PlanStep };
 
@@ -147,8 +149,14 @@ export class Orchestrator extends EventEmitter {
   private _busy = false;
   /** Tracks recurring error signatures for auto-repair loop deduplication */
   private _errorSignatures: Map<string, number> = new Map();
+  private _io: SocketServer | null = null;
 
   get busy(): boolean { return this._busy; }
+
+  /** Wire Socket.io so CoordinatorWorkflow can emit real-time phase events. */
+  setIo(io: SocketServer): void {
+    this._io = io;
+  }
 
   constructor(logger: winston.Logger, planner: Planner, executor: Executor, ltm?: LTMController) {
     super();
@@ -219,6 +227,49 @@ export class Orchestrator extends EventEmitter {
     }
   }
 
+  /**
+   * Coordinator mode — Research → Synthesis → Implementation → Verification.
+   * Used for complex, multi-file, or architectural goals.
+   */
+  private async runCoordinator(goal: string): Promise<void> {
+    this._busy = true;
+    this.emit('planStart', { goal, timestamp: Date.now() });
+
+    const memCtx = this.ltm?.buildSystemContext(goal) ?? '';
+    const coordinator = new CoordinatorWorkflow(
+      this.logger,
+      this.planner,
+      this.executor,
+      this._io ?? undefined,
+    );
+
+    try {
+      const result = await coordinator.run(goal);
+      this.emit('finalAnswer', { goal, answer: result.finalAnswer, timestamp: Date.now() });
+      this.emit('planFinish', {
+        goal,
+        status:    'completed',
+        answer:    result.finalAnswer,
+        steps:     result.spec.implementationSteps.map(s => ({ description: s.description, tool: s.tool })),
+        coordinator: {
+          phases:          result.phases,
+          researchFindings: result.researchFindings.slice(0, 600),
+          researchSummary: result.spec.researchSummary,
+        },
+        timestamp: Date.now(),
+      });
+      this.ltm?.indexEpisodic(goal, 'completed', result.finalAnswer.slice(0, 400));
+      void memCtx; // memCtx reserved for future context injection
+    } catch (err: any) {
+      const msg = err?.message ?? String(err);
+      this.logger.error(`Orchestrator: Coordinator failed — ${msg}`);
+      this.emit('planFinish', { goal, status: 'failed', error: msg, timestamp: Date.now() });
+      this.ltm?.indexEpisodic(goal, 'failed');
+    } finally {
+      this._busy = false;
+    }
+  }
+
   async run(goal: string): Promise<void> {
     // ── Fast-Path Router ───────────────────────────────────────────────────
     // Conversational prompts skip the Planner entirely — faster, fewer tokens,
@@ -228,6 +279,13 @@ export class Orchestrator extends EventEmitter {
       this.logger.info(`Orchestrator: Fast-path (direct) — "${goal.slice(0, 80)}"`);
       return this.runDirect(goal);
     }
+
+    // ── Coordinator Mode — complex / multi-phase goals ─────────────────────
+    if (assessCoordinatorNeed(goal)) {
+      this.logger.info(`Orchestrator: Coordinator mode — "${goal.slice(0, 80)}"`);
+      return this.runCoordinator(goal);
+    }
+
     this.logger.info(`Orchestrator: Agent mode — "${goal.slice(0, 80)}"`);
 
     this._busy = true;
