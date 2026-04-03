@@ -49,3 +49,6 @@ factory-manager.js
 PIPELINE.md
 CLAUDE.md
 .claude/
+# Local development workspaces (must not go to repo)
+/ruflo
+/claude-code

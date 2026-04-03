@@ -33,6 +33,8 @@ import WhisperPanel          from "@/components/WhisperPanel";
 import LiveBrowserView       from "@/components/LiveBrowserView";
 import UserProfilePanel      from "@/components/UserProfilePanel";
 import VoiceFeedbackLayer   from "@/components/VoiceFeedbackLayer";
+import ActionMonitorPanel   from "@/components/ActionMonitorPanel";
+import GeziHaritasi         from "@/components/GeziHaritasi";
 
 /* ─────────────────────────────────────────────────────────────────────────
    Types
@@ -525,6 +527,12 @@ export default function AppLayout() {
 
       {/* ── Voice Feedback — wake aura + speaking bar ─────────────────── */}
       <VoiceFeedbackLayer />
+
+      {/* ── Action Monitor — terminal/filesystem log overlay ──────────── */}
+      <ActionMonitorPanel />
+
+      {/* ── Gezi Haritası — browser/research journey map ─────────────── */}
+      <GeziHaritasi />
 
     </div>
   );

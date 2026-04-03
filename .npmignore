@@ -30,3 +30,7 @@ factory-manager.js
 PIPELINE.md
 CLAUDE.md
 .claude/
+
+# Local development tools (must not ship to npm)
+/ruflo
+/claude-code
