@@ -10,9 +10,10 @@ import {
   Cpu, Zap, Crown, Brain, Wrench, BarChart2, Database, CheckCircle2,
   Smartphone, Ghost, Loader2, Layers, Activity, ChevronRight,
 } from "lucide-react";
-import { apiFetch } from "@/lib/api";
-import { useI18n }  from "@/i18n";
-import QRPairingModal from "@/components/QRPairingModal";
+import { apiFetch }    from "@/lib/api";
+import { getSocket }   from "@/lib/socket";
+import { useI18n }     from "@/i18n";
+import QRPairingModal  from "@/components/QRPairingModal";
 
 interface RightPanelProps {
   onClose: () => void;
@@ -63,6 +64,8 @@ function shortModel(name: string): string {
 export default function RightPanel({ onClose }: RightPanelProps) {
   const { t } = useI18n();
   const [status,     setStatus]     = useState<AgentStatus | null>(null);
+  const [liveCpu,    setLiveCpu]    = useState<number | null>(null);
+  const [liveRam,    setLiveRam]    = useState<number | null>(null);
   const [models,     setModels]     = useState<OllamaModel[]>([]);
   const [showQR,     setShowQR]     = useState(false);
   const [shadowOn,   setShadowOn]   = useState(false);
@@ -70,6 +73,17 @@ export default function RightPanel({ onClose }: RightPanelProps) {
   const [ghostSlots, setGhostSlots] = useState<boolean[]>(() => [false, false, false]);
   const [ghostBusy,  setGhostBusy]  = useState<boolean[]>(() => [false, false, false]);
   const [tone, setTone] = useState<{ tone: string; score: number; badgeClass: string; badgeLabel: string } | null>(null);
+
+  // ── Live CPU/RAM via systemStats socket (Ghost Guard) ──────────────────
+  useEffect(() => {
+    const sk = getSocket();
+    const onStats = (data: { cpu: number; ram: number }) => {
+      setLiveCpu(Math.round(data.cpu));
+      setLiveRam(Math.round(data.ram));
+    };
+    sk.on("systemStats", onStats);
+    return () => { sk.off("systemStats", onStats); };
+  }, []);
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -181,16 +195,25 @@ export default function RightPanel({ onClose }: RightPanelProps) {
           />
         </div>
         <div className="space-y-0.5">
-          {status?.cpuPct != null && (
+          {liveCpu !== null && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1 text-[10px] text-gray-600"><Cpu size={8} /> CPU</div>
-              <span className="text-[10px] text-gray-500 tabular-nums">{status.cpuPct}%</span>
+              <span
+                className="text-[10px] tabular-nums font-semibold"
+                style={{ color: liveCpu >= 85 ? "#ef4444" : liveCpu >= 60 ? "#f97316" : "#22c55e" }}
+              >{liveCpu}%</span>
             </div>
           )}
-          {status?.ramGb != null && (
-            <p className="text-[10px] text-gray-600 flex items-center gap-1">
-              <BarChart2 size={8} /> {status.ramGb} GB RAM
-            </p>
+          {liveRam !== null && (
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-gray-600 flex items-center gap-1">
+                <BarChart2 size={8} /> RAM
+              </p>
+              <span
+                className="text-[10px] tabular-nums font-semibold"
+                style={{ color: liveRam >= 85 ? "#ef4444" : liveRam >= 60 ? "#f97316" : "#22c55e" }}
+              >{liveRam}%</span>
+            </div>
           )}
           {status?.gpu && (
             <p className="text-[10px] text-gray-600 flex items-center gap-1 truncate" title={status.gpu}>

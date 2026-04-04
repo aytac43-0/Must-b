@@ -222,7 +222,26 @@ export class ApiServer {
   private setupRoutes() {
     // ── Health ────────────────────────────────────────────────────────────
     this.app.get('/api/status', (_req, res) => {
-      res.json({ status: 'online', gateway: 'Must-b', port: this.port, timestamp: Date.now() });
+      const guard = (this as any)._guard as GhostGuard | undefined;
+      const stats = guard?.getStats();
+      const ramGb = stats
+        ? parseFloat((process.memoryUsage().heapUsed / 1_073_741_824).toFixed(2))
+        : undefined;
+      res.json({
+        status:    'online',
+        gateway:   'Must-b',
+        port:      this.port,
+        timestamp: Date.now(),
+        // Live hardware snapshot (from GhostGuard when available)
+        cpuPct: stats ? Math.round(stats.cpu) : undefined,
+        ramGb:  ramGb,
+        liteMode: stats?.liteMode ?? false,
+        // Agent role/model from env
+        tier:  process.env.MUSTB_COORDINATOR_MODE === 'true' ? 'master' : 'worker',
+        role:  process.env.MUSTB_NAME ?? 'Must-b',
+        model: process.env.LLM_MODEL ?? process.env.AI_MODEL ?? '',
+        score: stats ? parseFloat(Math.max(0, 10 - stats.cpu / 15 - stats.ram / 20).toFixed(2)) : 8.5,
+      });
     });
 
     // ── Identity — expose agent name for voice wake-word ─────────────────

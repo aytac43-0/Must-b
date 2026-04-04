@@ -193,11 +193,47 @@ export async function runOnboard(root: string): Promise<OnboardResult> {
     deepseek:   'deepseek-chat',
     together:   'meta-llama/Llama-3-8b-chat-hf',
     moonshot:   'moonshot-v1-8k',
-    openrouter: 'openai/gpt-4o-mini',
+    openrouter: 'google/gemini-2.5-pro-exp-03-25:free',
     vertex:     'gemini-1.5-flash-001',
     ollama:     '', // set later by ollamaManager after the model pull
     azure:      '', // deployment-specific — set separately in .env
   };
+
+  // ── OpenRouter: Free Model Picker ─────────────────────────────────────────
+  // Shown only when user picks OpenRouter — lets them choose the best free tier model.
+  if (provider.value === 'openrouter') {
+    const FREE_MODELS = [
+      { value: 'google/gemini-2.5-pro-exp-03-25:free',         label: 'Gemini 2.5 Pro',          hint: 'Google · 1M ctx · best reasoning'      },
+      { value: 'nvidia/llama-3.1-nemotron-ultra-253b-v1:free',  label: 'Nemotron Ultra 253B',      hint: 'NVIDIA · 128k ctx · ultra-scale'        },
+      { value: 'meta-llama/llama-4-scout:free',                 label: 'Llama 4 Scout',            hint: 'Meta · 10M ctx · fast & free'           },
+      { value: 'meta-llama/llama-4-maverick:free',              label: 'Llama 4 Maverick',         hint: 'Meta · 1M ctx · multimodal'             },
+      { value: 'deepseek/deepseek-r1:free',                     label: 'DeepSeek R1',              hint: 'DeepSeek · 164k ctx · strong reasoning' },
+      { value: 'deepseek/deepseek-v3-base:free',                label: 'DeepSeek V3 Base',         hint: 'DeepSeek · 131k ctx · coding'           },
+      { value: 'qwen/qwen3-235b-a22b:free',                     label: 'Qwen3 235B',               hint: 'Alibaba · 40k ctx · multilingual'       },
+      { value: 'qwen/qwen3-30b-a3b:free',                       label: 'Qwen3 30B',                hint: 'Alibaba · 40k ctx · fast'               },
+      { value: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1 24B',    hint: 'Mistral · 128k ctx · vision'            },
+      { value: 'openai/gpt-4o-mini:free',                       label: 'GPT-4o Mini',              hint: 'OpenAI · 128k ctx · balanced'           },
+    ] as const;
+
+    console.log('');
+    console.log(dim('  OpenRouter ücretsiz model seçin (API anahtarı gerekmez):'));
+    const { freeModel } = await inquirer.prompt([{
+      type:    'list',
+      name:    'freeModel',
+      message: 'OpenRouter model:',
+      choices: FREE_MODELS.map(m => ({
+        name:  `${cyan(m.label.padEnd(22))} ${dim(m.hint)}`,
+        value: m.value,
+        short: m.label,
+      })),
+      default: FREE_MODELS[0].value,
+    }]);
+
+    writeEnvKey(envPath, 'LLM_MODEL', freeModel as string);
+    process.env.LLM_MODEL = freeModel as string;
+    UniversalStore.get().set('LLM_MODEL', freeModel as string);
+    console.log(`  ${green('✓')}  Model seçildi: ${bold(freeModel as string)}`);
+  }
 
   writeEnvKey(envPath, 'LLM_PROVIDER', provider.value);
   writeEnvKey(envPath, 'AI_PROVIDER',  provider.value);
