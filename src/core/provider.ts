@@ -194,9 +194,39 @@ function rc(): PC {
   // Default: OpenRouter
   const k = resolveKey('openrouter', 'OPENROUTER_API_KEY');
   return { baseUrl: 'https://openrouter.ai/api/v1', apiKey: k, provider: 'openrouter',
-    model: universalModel(process.env.OPENROUTER_MODEL ?? 'openai/gpt-4o-mini'),
+    model: universalModel(process.env.OPENROUTER_MODEL ?? 'google/gemini-2.5-pro-exp-03-25:free'),
     headers: { Authorization: 'Bearer ' + k, 'Content-Type': 'application/json',
       'HTTP-Referer': 'https://must-b.ai', 'X-Title': 'Must-b Agent' } };
+}
+
+// ── OpenRouter 402 free-model fallback ────────────────────────────────────────
+// When OpenRouter returns 402 (insufficient credits), silently switch to a free
+// model and retry the request — no error bubble to the user.
+
+const OPENROUTER_FREE_FALLBACK = 'google/gemini-2.5-pro-exp-03-25:free';
+
+async function handleOpenRouter402(
+  cfg: PC,
+  messages: CompletionMessage[],
+  options: { jsonMode?: boolean; stream?: boolean },
+  logger: winston.Logger,
+): Promise<Response> {
+  const freeModel = process.env.OPENROUTER_FREE_MODEL ?? OPENROUTER_FREE_FALLBACK;
+  logger.warn(`[OpenRouter] 402 kredi yetersiz — ücretsiz modele geçiliyor: ${freeModel}`);
+  // Persist the switch so future calls use the free model too
+  process.env.LLM_MODEL = freeModel;
+  process.env.OPENROUTER_MODEL = freeModel;
+  const freeCfg: PC = { ...cfg, model: freeModel };
+  const body: Record<string, unknown> = {
+    model: freeModel,
+    messages,
+    temperature: 0.1,
+    ...(options.stream ? { stream: true } : {}),
+    ...(options.jsonMode && !cfg.noJM ? { response_format: { type: 'json_object' } } : {}),
+  };
+  return fetch(freeCfg.baseUrl + '/chat/completions', {
+    method: 'POST', headers: freeCfg.headers, body: JSON.stringify(body),
+  });
 }
 
 // ── Ollama 404 fallback (v1.4.7 Titanium Armor — preserved intact) ────────────
@@ -428,7 +458,7 @@ function rcForTier(tier: ModelTier): PC {
 
   // Tier 2 model override — prefer explicit env var, then built-in cheaper default
   const tier2Defaults: Record<string, string> = {
-    openrouter: 'openai/gpt-4o-mini',
+    openrouter: 'google/gemini-2.5-pro-exp-03-25:free',
     openai:     'gpt-4o-mini',
     anthropic:  'claude-haiku-4-5-20251001',
     gemini:     'gemini-1.5-flash',
@@ -542,6 +572,14 @@ export class LLMProvider {
       if (!res.ok && p === 'ollama' && res.status === 404) {
         return await handleOllamaFallback(cfg, messages, options, this.logger);
       }
+      // OpenRouter 402: insufficient credits — auto-switch to free model, retry once
+      if (!res.ok && p === 'openrouter' && res.status === 402) {
+        const freeRes = await handleOpenRouter402(cfg, messages, options, this.logger);
+        if (!freeRes.ok) throw new Error('OpenRouter free fallback failed: ' + freeRes.status);
+        const content = ((await freeRes.json()) as any).choices?.[0]?.message?.content;
+        if (!content) throw new Error('Provider: Empty response from free fallback.');
+        return content;
+      }
       if (!res.ok) throw new Error(p + ' API ' + res.status + ': ' + await res.text());
       const content = ((await res.json()) as any).choices?.[0]?.message?.content;
       if (!content) throw new Error('Provider: Empty response from LLM.');
@@ -588,6 +626,13 @@ export class LLMProvider {
       if (p === 'ollama' && res.status === 404) {
         const full = await handleOllamaFallback(cfg, messages, {}, this.logger);
         yield full;
+        return;
+      }
+      // OpenRouter 402: switch to free model and stream from there
+      if (p === 'openrouter' && res.status === 402) {
+        const freeRes = await handleOpenRouter402(cfg, messages, { stream: true }, this.logger);
+        if (!freeRes.ok || !freeRes.body) throw new Error('OpenRouter free stream fallback failed');
+        yield* parseOpenAIStream(freeRes.body);
         return;
       }
       throw new Error(p + ' stream error ' + res.status);

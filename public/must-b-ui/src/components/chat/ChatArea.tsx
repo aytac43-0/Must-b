@@ -510,11 +510,14 @@ export function ChatArea() {
               initial={{ opacity: 0, y: -24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: "easeOut" }}
-              className="font-black leading-none tracking-tighter mb-10 text-center"
+              className="font-black leading-none tracking-tighter mb-10 text-center select-none"
               style={{
                 fontSize: "clamp(5rem, 18vw, 12rem)",
-                color: "#0a0400",
-                textShadow: "0 0 80px rgba(249,115,22,0.5), 0 0 160px rgba(249,115,22,0.25)",
+                background: "linear-gradient(135deg, rgba(251,146,60,0.95) 0%, rgba(249,115,22,1) 40%, rgba(253,186,116,0.9) 75%, rgba(255,255,255,0.7) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                filter: "drop-shadow(0 0 40px rgba(249,115,22,0.4))",
               }}
             >
               Must-b
@@ -589,39 +592,59 @@ export function ChatArea() {
                         )}
                       </div>
 
-                      {/* Thought accordion */}
+                      {/* Thought accordion — glassmorphism */}
                       {hasThoughts && (
-                        <details className="mb-3 group" {...(!hasAnswer ? { open: true } : {})}>
+                        <details
+                          className="mb-3 group"
+                          style={{ background: "rgba(255,255,255,0.025)", borderRadius: "10px", padding: "6px 10px" }}
+                          {...(!hasAnswer ? { open: true } : {})}
+                        >
                           <summary className="flex items-center gap-1.5 cursor-pointer list-none select-none w-fit">
-                            <ChevronRight size={11} className="text-white/30 group-open:rotate-90 transition-transform duration-150 flex-shrink-0" />
-                            <span className="text-[11px] font-medium text-white/40 hover:text-white/60 transition-colors">
-                              Thought Process
+                            <ChevronRight size={10} className="text-orange-400/50 group-open:rotate-90 transition-transform duration-150 flex-shrink-0" />
+                            <span className="text-[10px] font-semibold text-orange-300/50 hover:text-orange-300/80 transition-colors tracking-wide uppercase">
+                              {turn.thoughts.length} adım · Düşünce süreci
                             </span>
                           </summary>
-                          <div className="mt-2 ml-3.5 pl-3.5 border-l border-white/10 space-y-1">
+                          <div className="mt-2 ml-3.5 pl-3 border-l border-orange-500/15 space-y-1">
                             {turn.thoughts.map((thought, idx) => (
-                              <p key={idx} className="text-[11px] font-mono text-white/35 leading-relaxed break-all">{thought}</p>
+                              <p key={idx} className="text-[11px] font-mono text-white/30 leading-relaxed break-all">{thought}</p>
                             ))}
                           </div>
                         </details>
                       )}
 
-                      {/* Answer card */}
+                      {/* Answer card — dark glassmorphism */}
                       {hasAnswer ? (
                         <div
                           className="rounded-2xl px-5 py-4"
-                          style={{ background: "rgba(255,255,255,0.82)", border: "1px solid rgba(0,0,0,0.06)", backdropFilter: "blur(16px)" }}
+                          style={{
+                            background:    "rgba(255,255,255,0.04)",
+                            border:        "1px solid rgba(255,255,255,0.08)",
+                            backdropFilter:"blur(24px)",
+                            boxShadow:     "0 4px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
+                          }}
                         >
-                          <Markdown text={turn.content} dark={false} />
+                          <Markdown text={turn.content} dark={true} />
                         </div>
                       ) : isPending ? (
-                        <div className="flex items-center gap-1.5 py-2 px-1">
-                          {[0, 150, 300].map(delay => (
-                            <div key={delay} className="w-2 h-2 bg-orange-500/60 rounded-full animate-bounce" style={{ animationDelay: `-${delay}ms` }} />
+                        <div className="flex items-center gap-2 py-2 px-1">
+                          {[0, 120, 240].map(delay => (
+                            <div
+                              key={delay}
+                              className="w-1.5 h-1.5 rounded-full animate-bounce"
+                              style={{ background: "rgba(251,146,60,0.7)", animationDelay: `${delay}ms` }}
+                            />
                           ))}
+                          <span className="text-[11px] text-white/25 ml-1">Thinking…</span>
                         </div>
                       ) : isError ? (
-                        <p className="text-sm text-red-400/80">Something went wrong. Please try again.</p>
+                        <div
+                          className="rounded-xl px-4 py-3 flex items-center gap-2"
+                          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+                        >
+                          <span className="text-red-400 text-sm">⚠</span>
+                          <p className="text-sm text-red-300/80">Something went wrong. Please try again.</p>
+                        </div>
                       ) : null}
 
                       <AnimatePresence>

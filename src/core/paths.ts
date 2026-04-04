@@ -66,6 +66,34 @@ export const STORAGE_ROOT: string = (() => {
   return path.join(projectRoot, 'storage');
 })();
 
+/**
+ * ENV_PATH — Safe location for .env that survives npm updates.
+ *
+ * Global install → STORAGE_ROOT/.env  (e.g. %APPDATA%/must-b/.env)
+ * Dev / local    → <projectRoot>/.env  (original behaviour)
+ *
+ * Migration: on first start after v1.24.1, if STORAGE_ROOT/.env does not exist
+ * but <projectRoot>/.env does, the file is silently copied to STORAGE_ROOT.
+ * This means existing users keep their config without any manual steps.
+ */
+export const ENV_PATH: string = (() => {
+  const projectRoot = _resolveProjectRoot();
+  const globalEnv   = path.join(STORAGE_ROOT, '.env');
+  const localEnv    = path.join(projectRoot, '.env');
+
+  if (_isGlobalInstall(projectRoot)) {
+    // Auto-migrate: copy local .env → STORAGE_ROOT if it doesn't exist yet
+    if (!fs.existsSync(globalEnv) && fs.existsSync(localEnv)) {
+      try {
+        fs.mkdirSync(STORAGE_ROOT, { recursive: true });
+        fs.copyFileSync(localEnv, globalEnv);
+      } catch { /* best-effort */ }
+    }
+    return globalEnv;
+  }
+  return localEnv;
+})();
+
 /** Long-term memory, vector DB, session history — under STORAGE_ROOT. */
 export const MEMORY_DIR: string = path.join(STORAGE_ROOT, 'memory');
 

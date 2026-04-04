@@ -19,13 +19,16 @@ import { runOnboard } from './commands/onboard.js';
 import { startIdlingInference, attemptSelfRepair } from './core/executor.js';
 import { getAgentRole } from './core/hierarchy.js';
 import { ErrorObserver } from './core/observer.js';
-import { initStorage, MEMORY_DIR } from './core/paths.js';
+import { initStorage, MEMORY_DIR, ENV_PATH } from './core/paths.js';
 import { restoreSessionFromDisk }  from './core/auth.js';
 import { LTMController } from './core/memory/ltm.js';
 import { GhostGuard }          from './core/guard/ghost-guard.js';
 import { ProjectIntelligence } from './core/intelligence/project-intelligence.js';
 import { NightOwl }            from './core/automation/night-owl.js';
 
+// Load .env from the safe storage location (survives npm updates on global installs)
+dotenv.config({ path: ENV_PATH });
+// Also try cwd/.env as fallback for local dev without MUSTB_ROOT set
 dotenv.config();
 
 // ── Resolve project root ───────────────────────────────────────────────────
@@ -45,13 +48,12 @@ function ensureWorldUid() {
   if (process.env.MUSTB_UID) return;
   const uid = 'mustb_' + crypto.randomBytes(12).toString('hex');
   process.env.MUSTB_UID = uid;
-  const envPath = path.join(ROOT, '.env');
   try {
-    const lines = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8').split('\n') : [];
+    const lines = fs.existsSync(ENV_PATH) ? fs.readFileSync(ENV_PATH, 'utf-8').split('\n') : [];
     const idx = lines.findIndex(l => l.startsWith('MUSTB_UID='));
     if (idx >= 0) lines[idx] = `MUSTB_UID=${uid}`;
     else lines.push(`MUSTB_UID=${uid}`);
-    fs.writeFileSync(envPath, lines.join('\n'), 'utf-8');
+    fs.writeFileSync(ENV_PATH, lines.join('\n'), 'utf-8');
   } catch { /* best-effort */ }
 }
 
@@ -60,8 +62,8 @@ function ensureWorldUid() {
 // Returns { webMode: true } if the user chose Web Dashboard — caller must
 // boot the gateway server instead of continuing the normal launch prompt.
 async function runFirstTimeSetup(): Promise<{ webMode?: boolean }> {
-  const envPath    = path.join(ROOT, '.env');
-  const envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+  // ENV_PATH is the safe location (STORAGE_ROOT on global, project root in dev)
+  const envContent = fs.existsSync(ENV_PATH) ? fs.readFileSync(ENV_PATH, 'utf-8') : '';
   // Complete if: explicit flag (v1.3.2+) OR legacy users with name+provider
   const isComplete  = /^MUSTB_SETUP_COMPLETE=true/m.test(envContent);
   const hasName     = /^MUSTB_NAME=/m.test(envContent);
@@ -69,7 +71,7 @@ async function runFirstTimeSetup(): Promise<{ webMode?: boolean }> {
   if (isComplete || (hasName && hasProvider)) return {};
   // Incomplete / cancelled — run wizard then fall through to launch prompt
   const result = await runOnboard(ROOT);
-  dotenv.config({ override: true }); // pick up keys written by the wizard
+  dotenv.config({ path: ENV_PATH, override: true }); // pick up keys written by the wizard
   return result ?? {};
 }
 

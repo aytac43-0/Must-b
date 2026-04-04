@@ -21,6 +21,7 @@ import { runDoctor, DoctorResult } from './doctor.js';
 import { LongTermMemory }   from '../memory/long-term.js';
 import { runOllamaManager } from '../utils/ollamaManager.js';
 import { UniversalStore }   from '../core/config-store.js';
+import { ENV_PATH, STORAGE_ROOT } from '../core/paths.js';
 
 /** Result returned by runOnboard — webMode signals gateway boot is needed. */
 export interface OnboardResult {
@@ -106,8 +107,10 @@ export async function runOnboard(root: string): Promise<OnboardResult> {
   console.log(cyan('  Must-b — First-Time Setup Wizard'));
   console.log(dim('  Press Ctrl+C at any time to cancel and resume later.\n'));
 
-  const envPath = path.join(root, '.env');
+  // Use ENV_PATH (safe location — survives npm updates on global installs)
+  const envPath = ENV_PATH;
   if (!fs.existsSync(envPath)) {
+    fs.mkdirSync(STORAGE_ROOT, { recursive: true });
     const ex = path.join(root, '.env.example');
     if (fs.existsSync(ex)) fs.copyFileSync(ex, envPath);
     else fs.writeFileSync(envPath, '', 'utf-8');
