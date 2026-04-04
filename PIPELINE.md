@@ -254,6 +254,7 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S21-B005 | Backend_Architect | `api.ts` — `get ioServer()` getter; `package.json` → v1.24.0 | DONE | Backend_Architect \| 2026-04-03 |
 | S21-QA | QA_Lead | TS: 0 hata (backend). Build: exit 0, dist/ temiz, v1.24.0 | QA_PASSED | TS: 0 hata. Build: 10.3MB ✓, dist/ temiz ✓ \| QA_Lead \| 2026-04-03 |
 | S21-DEPLOY | Deploy_Chief | v1.24.0 commit | DONE | |
+| S21-HOT001 | Frontend_Engineer | `AppLayout.tsx` — `Cpu` lucide-react import eksikti → eklendi; v1.24.1 hotfix | DONE | Frontend_Engineer \| 2026-04-04 |
 
 ---
 

@@ -18,7 +18,7 @@ import {
   Network, Bot, Layers, BookOpen, Plus,
   Play, Terminal, Zap, Activity, GitBranch,
   Camera, Link2, Package, Code2, Workflow,
-  Users, BarChart3, Eye,
+  Users, BarChart3, Eye, Cpu,
 } from "lucide-react";
 import { WakeWordListener }  from "@/components/chat/WakeWordListener";
 import { useI18n }           from "@/i18n";
