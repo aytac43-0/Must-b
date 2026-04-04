@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** PM_MustB | 2026-04-04 | v1.26.0 — OpenRouterModelPicker → SettingsPage entegrasyonu + handleOpenRouter402 live fallback
+> **Son güncelleme:** Deploy_Chief | 2026-04-05 | v1.26.0 — "The Pristine Command": Terminal render \x1b[2K\r fix, ENV_PATH entegrasyonu, global İngilizce log standartı
 
 ---
 

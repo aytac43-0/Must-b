@@ -6,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import readline from 'readline';
 import dotenv from 'dotenv';
-import { MEMORY_DIR } from '../core/paths.js';
+import { MEMORY_DIR, ENV_PATH } from '../core/paths.js';
 
 const cyan   = (s: string) => `\x1b[38;2;0;204;255m${s}\x1b[0m`;
 const green  = (s: string) => `\x1b[32m${s}\x1b[0m`;
@@ -95,13 +95,13 @@ async function withSpinner<T>(label: string, fn: () => Promise<T>): Promise<T> {
   const interval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - start) / 1000);
     const frame = cyan(frames[tick++ % frames.length]);
-    process.stdout.write(`\r  ${frame}  ${label}${dim(` [${elapsed}s]`)}   `);
+    process.stdout.write(`\x1b[2K\r  ${frame}  ${label}${dim(` [${elapsed}s]`)}`);
   }, 120);
   try {
     return await fn();
   } finally {
     clearInterval(interval);
-    process.stdout.write('\r' + ' '.repeat(80) + '\r');
+    process.stdout.write('\x1b[2K\r');
   }
 }
 
@@ -152,7 +152,7 @@ const WIN_COMMON_PATHS: Record<string, string[]> = {
 function addToPath(dir: string): void {
   if (!process.env.PATH?.split(';').some(p => p.toLowerCase() === dir.toLowerCase())) {
     process.env.PATH = dir + ';' + (process.env.PATH ?? '');
-    console.log(green(`  ✓  PATH güncellendi: ${dir}`));
+    console.log(green(`  ✓  PATH updated: ${dir}`));
     // Persist to user-level PATH so new shells also pick it up
     if (process.platform === 'win32') {
       try {
@@ -194,7 +194,7 @@ function wingetInstall(pkgId: string, commonPathKey?: keyof typeof WIN_COMMON_PA
     // winget non-zero but package was already present — NOT a real failure
     if (output.includes('already installed') || output.includes('no available upgrade') ||
         output.includes('no applicable update') || output.includes('already up to date')) {
-      console.log(dim('  ↳ Paket zaten kurulu — PATH yenileniyor…'));
+      console.log(dim('  ↳ Package already installed — refreshing PATH...'));
       refreshPathFromRegistry();
       if (commonPathKey) {
         for (const candidate of WIN_COMMON_PATHS[commonPathKey]) {
@@ -210,7 +210,8 @@ function wingetInstall(pkgId: string, commonPathKey?: keyof typeof WIN_COMMON_PA
 // ── Shadow Config: .env ↔ .env.bak ────────────────────────────────────────
 
 function shadowEnv(root: string): void {
-  const envPath = path.join(root, '.env');
+  // Use ENV_PATH (safe app data location) as primary; fall back to project-root .env
+  const envPath = fs.existsSync(ENV_PATH) ? ENV_PATH : path.join(root, '.env');
   const bakPath = path.join(root, '.env.bak');
 
   if (fs.existsSync(envPath)) {
@@ -218,7 +219,7 @@ function shadowEnv(root: string): void {
   } else if (fs.existsSync(bakPath)) {
     try {
       fs.copyFileSync(bakPath, envPath);
-      console.log(green('  ↻  .env dosyası .env.bak\'tan geri yüklendi!'));
+      console.log(green('  ↻  .env restored from .env.bak'));
     } catch { /* best-effort */ }
   }
 }
@@ -307,7 +308,7 @@ function checkPython(): CheckResult {
         // Verify it's now reachable
         if (verifyBinaryOnPath('python', ['--version']) || verifyBinaryOnPath('python3', ['--version'])) {
           const ver = spawnSync('python', ['--version'], { encoding: 'utf-8', stdio: 'pipe' });
-          return { label: 'Python', ok: true, detail: `${(ver.stdout || ver.stderr || '').trim()} ${dim('(PATH enjekte edildi)')}` };
+          return { label: 'Python', ok: true, detail: `${(ver.stdout || ver.stderr || '').trim()} ${dim('(PATH injected)')}` };
         }
       }
     }
@@ -320,7 +321,7 @@ function checkPython(): CheckResult {
     fix: 'Install Python 3 from https://python.org',
     autoFix: async () => {
       if (process.platform === 'win32') {
-        console.log(cyan('  ⟳  Python kuruluyor (winget)…'));
+        console.log(cyan('  ⟳  Installing Python (winget)...'));
         for (const pkgId of ['Python.Python.3.12', 'Python.Python.3.11', 'Python.Python.3']) {
           if (wingetInstall(pkgId, 'python')) {
             refreshPathFromRegistry();
@@ -331,7 +332,7 @@ function checkPython(): CheckResult {
         for (const p of WIN_COMMON_PATHS.python) {
           if (fs.existsSync(p)) { addToPath(path.dirname(p)); return verifyBinaryOnPath('python', ['--version']); }
         }
-        console.log(yellow('  ⚠  Python bulunamadı — indirin: https://www.python.org/downloads/windows/'));
+        console.log(yellow('  ⚠  Python not found — download: https://www.python.org/downloads/windows/'));
         return false;
       }
       const cmd = getInstallCmd({ darwin: 'brew install python3', linux: 'sudo apt-get install -y python3' });
@@ -383,27 +384,33 @@ function checkPip(): CheckResult {
 }
 
 function checkEnvFile(root: string): CheckResult {
-  const envPath = path.join(root, '.env');
+  // Primary: ENV_PATH (safe app data location — survives npm updates)
+  if (fs.existsSync(ENV_PATH)) {
+    return { label: '.env config', ok: true, detail: ENV_PATH };
+  }
+  // Fallback: project-root .env (dev mode / local installs)
+  const localEnv = path.join(root, '.env');
+  if (fs.existsSync(localEnv)) {
+    return { label: '.env config', ok: true, detail: localEnv };
+  }
+  // Missing — repairable, not critical (gateway can start without it, onboard will guide user)
   const bakPath = path.join(root, '.env.bak');
   const exPath  = path.join(root, '.env.example');
-  if (fs.existsSync(envPath)) {
-    return { label: '.env file', ok: true, detail: envPath };
-  }
   return {
-    label: '.env file',
+    label: '.env config',
     ok: false,
-    critical: true,
-    detail: 'missing',
-    fix: 'Copy .env.example to .env and fill in your API keys:\n    cp .env.example .env',
+    // NOT critical — system can start and redirect to onboard wizard
+    detail: 'missing — run: must-b onboard',
+    fix: 'Run: must-b onboard  (interactive setup wizard)',
     autoFix: async () => {
       if (fs.existsSync(bakPath)) {
-        fs.copyFileSync(bakPath, envPath);
-        console.log(green('  ↻  .env.bak\'tan geri yüklendi'));
+        fs.copyFileSync(bakPath, ENV_PATH);
+        console.log(green('  ↻  Config restored from .env.bak'));
         return true;
       }
       if (fs.existsSync(exPath)) {
-        fs.copyFileSync(exPath, envPath);
-        console.log(green('  ↻  .env.example\'dan oluşturuldu'));
+        fs.copyFileSync(exPath, ENV_PATH);
+        console.log(green('  ↻  Config created from .env.example — run: must-b onboard'));
         return true;
       }
       return false;
@@ -459,10 +466,10 @@ function checkMode(root: string): CheckResult {
       detail: 'not set (defaulting to local)',
       fix: 'Add MUSTB_MODE=local or MUSTB_MODE=world to .env',
       autoFix: async () => {
-        const envPath = path.join(root, '.env');
-        if (!fs.existsSync(envPath)) return false;
-        fs.appendFileSync(envPath, '\nMUSTB_MODE=local\n', 'utf-8');
-        console.log(green('  ↻  MUSTB_MODE=local .env dosyasına eklendi'));
+        const target = fs.existsSync(ENV_PATH) ? ENV_PATH : path.join(root, '.env');
+        if (!fs.existsSync(target)) return false;
+        fs.appendFileSync(target, '\nMUSTB_MODE=local\n', 'utf-8');
+        console.log(green('  ↻  MUSTB_MODE=local written to config'));
         return true;
       },
     };
@@ -705,11 +712,11 @@ function checkCppBuildTools(): CheckResult {
       fix: 'winget install Microsoft.VisualStudio.2022.BuildTools (~2GB)',
       autoFix: async () => {
         console.log('');
-        console.log(yellow('  ⚠  Sisteminde C++ derleyiciler (MSVC) eksik.'));
-        console.log(yellow('     Bu, Must-b\'nin yerel modüllerini tam derleyebilmesi için gereklidir.'));
-        console.log(yellow('     Kurulum yaklaşık 2–4GB indirir ve 5–15 dakika sürebilir.'));
-        console.log(yellow('     Bu terminal penceresi açık kalmalı — kurulum bitene kadar bekliyoruz.'));
-        const yes = await askYN('Visual Studio 2022 Build Tools kurulumunu şimdi başlatmamı ister misin?');
+        console.log(yellow('  ⚠  C++ compiler (MSVC) not found.'));
+        console.log(yellow('     Required to compile native Node.js modules.'));
+        console.log(yellow('     This will download ~2-4GB and may take 5-15 minutes.'));
+        console.log(yellow('     Keep this terminal open — waiting for installation to complete.'));
+        const yes = await askYN('Install Visual Studio 2022 Build Tools now?');
         if (!yes) {
           console.log(dim('     Manuel: https://visualstudio.microsoft.com/visual-cpp-build-tools/'));
           return false;
@@ -733,7 +740,7 @@ function checkCppBuildTools(): CheckResult {
         console.log('');
 
         const success = await withSpinner(
-          'Derleyici kuruluyor (MSVC), bu pencereyi kapatmayın…',
+          'Installing C++ compiler (MSVC), do not close this window...',
           async () => {
             try {
               execSync(cmd, { stdio: 'pipe', encoding: 'utf-8' });
@@ -747,8 +754,8 @@ function checkCppBuildTools(): CheckResult {
         );
 
         if (!success) {
-          console.log(red('  ✗  Kurulum başarısız.'));
-          console.log(yellow('     Manuel kurulum: https://visualstudio.microsoft.com/visual-cpp-build-tools/'));
+          console.log(red('  ✗  Installation failed.'));
+          console.log(yellow('     Manual install: https://visualstudio.microsoft.com/visual-cpp-build-tools/'));
           return false;
         }
 
@@ -756,13 +763,13 @@ function checkCppBuildTools(): CheckResult {
         refreshPathFromRegistry();
         const clPath = findMsvcCompiler();
         if (clPath) {
-          console.log(green(`  ✓  MSVC derleyici bulundu: ${path.basename(path.dirname(clPath))}`));
+          console.log(green(`  ✓  MSVC compiler found: ${path.basename(path.dirname(clPath))}`));
           return true;
         }
 
         // Installed but cl.exe not on PATH yet — new terminal needed
-        console.log(yellow('  ⚠  Kurulum tamamlandı. cl.exe henüz PATH\'te değil.'));
-        console.log(yellow('     Bu terminali kapatıp yeni bir terminal açarak tekrar çalıştırın:'));
+        console.log(yellow('  ⚠  Installation complete. cl.exe not on PATH yet.'));
+        console.log(yellow('     Close this terminal, open a new one, then run:'));
         console.log(dim('     must-b doctor --fix'));
         return false;
       },
@@ -963,7 +970,7 @@ async function fixImports(root: string): Promise<void> {
   let tscOutput = '';
   try {
     execSync('npx tsc --noEmit', { cwd: root, encoding: 'utf-8', stdio: 'pipe' });
-    console.log(green('  ✓  TypeScript hatası bulunamadı.'));
+    console.log(green('  ✓  No TypeScript errors found.'));
     return;
   } catch (e: any) {
     tscOutput = ((e.stdout ?? '') + (e.stderr ?? '')) as string;
@@ -971,11 +978,11 @@ async function fixImports(root: string): Promise<void> {
 
   const errorLines = tscOutput.split('\n').filter(l => l.includes('error TS'));
   if (errorLines.length === 0) {
-    console.log(green('  ✓  TypeScript hatası bulunamadı.'));
+    console.log(green('  ✓  No TypeScript errors found.'));
     return;
   }
 
-  console.log(yellow(`  ⚠  ${errorLines.length} hata tespit edildi. Otomatik onarım deneniyor...`));
+  console.log(yellow(`  ⚠  ${errorLines.length} error(s) detected. Attempting auto-repair...`));
 
   let fixedCount = 0;
 
@@ -985,7 +992,7 @@ async function fixImports(root: string): Promise<void> {
     .filter((m): m is string => !!m && !m.endsWith('.js'));
 
   if (missingJsMods.length > 0) {
-    console.log(dim(`  → ${missingJsMods.length} eksik .js uzantısı düzeltiliyor...`));
+    console.log(dim(`  → Fixing ${missingJsMods.length} missing .js extension(s)...`));
     const srcDir = path.join(root, 'src');
     if (fs.existsSync(srcDir)) {
       for (const file of getAllTsFiles(srcDir)) {
@@ -1012,16 +1019,16 @@ async function fixImports(root: string): Promise<void> {
       if (!tsconfig.compilerOptions.moduleResolution) {
         tsconfig.compilerOptions.moduleResolution = 'node16';
         fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2) + '\n', 'utf-8');
-        console.log(green('  ↻  tsconfig.json güncellendi (moduleResolution: node16)'));
+        console.log(green('  ↻  tsconfig.json updated (moduleResolution: node16)'));
         fixedCount++;
       }
     } catch { /* skip */ }
   }
 
   if (fixedCount > 0) {
-    console.log(green(`  ✓  ${fixedCount} dosya/config onarıldı.`));
+    console.log(green(`  ✓  ${fixedCount} file(s)/config repaired.`));
   } else {
-    console.log(yellow('  ⚠  Otomatik düzeltilemedi. Manuel inceleme gerekiyor.'));
+    console.log(yellow('  ⚠  Could not auto-fix. Manual review required.'));
     errorLines.slice(0, 5).forEach(l => console.log(dim(`     ${l.trim()}`)));
   }
 }
@@ -1067,7 +1074,7 @@ async function selfHeal(
 
     let shouldFix = autoApply;
     if (!autoApply) {
-      shouldFix = await askYN(`${bold(check.label)} sorununu otomatik onarmamı ister misin?`);
+      shouldFix = await askYN(`Fix ${bold(check.label)} automatically?`);
     }
     if (!shouldFix) continue;
 
@@ -1078,16 +1085,16 @@ async function selfHeal(
       success = await check.autoFix();
     } else {
       success = await withSpinner(
-        `${check.label} onarılıyor…`,
+        `Repairing ${check.label}...`,
         check.autoFix
       );
     }
 
     if (success) {
-      console.log(`  ${PASS}  ${bold(check.label.padEnd(28))} ${green('onarıldı ✓')}`);
+      console.log(`  ${PASS}  ${bold(check.label.padEnd(28))} ${green('repaired ✓')}`);
       healed++;
     } else {
-      console.log(`  ${FAIL}  ${bold(check.label.padEnd(28))} ${red('onarım başarısız')}${check.fix ? dim(` — ${check.fix}`) : ''}`);
+      console.log(`  ${FAIL}  ${bold(check.label.padEnd(28))} ${red('repair failed')}${check.fix ? dim(` — ${check.fix}`) : ''}`);
     }
   }
   return healed;
@@ -1105,7 +1112,7 @@ export async function runDoctor(
     console.log('');
     console.log(cyan('  ══════════════════════════════════════════════════════'));
     console.log(cyan('    Must-b Doctor v2.0 — System Health Check'));
-    if (fix) console.log(cyan('    ⚡ Mod: Otonom Self-Healing  (--fix)'));
+    if (fix) console.log(cyan('    ⚡ Mode: Autonomous Self-Healing  (--fix)'));
     console.log(cyan('  ══════════════════════════════════════════════════════'));
     console.log('');
   }
@@ -1161,13 +1168,13 @@ export async function runDoctor(
 
   if (failed.length === 0 && warned.length === 0) {
     if (!silent) {
-      console.log(green('  ✔  Tüm kontroller geçti. Must-b tam olarak çalışıyor!'));
+      console.log(green('  ✔  All checks passed. Must-b is fully operational!'));
       console.log(dim('     Browser: Playwright  |  Memory: SQLite FTS5  |  Watcher: chokidar'));
     }
   } else {
     if (!silent) {
-      if (failed.length > 0) console.log(red(`  ${failed.length} sorun tespit edildi (yukarıdaki → ipuçlarına bak).`));
-      if (warned.length > 0) console.log(yellow(`  ${warned.length} uyarı — isteğe bağlı bileşenler yapılandırılmamış.`));
+      if (failed.length > 0) console.log(red(`  ${failed.length} issue(s) detected (see → hints above).`));
+      if (warned.length > 0) console.log(yellow(`  ${warned.length} warning(s) — optional components not configured.`));
     }
 
     if (fix) {
@@ -1184,24 +1191,24 @@ export async function runDoctor(
         if (!silent) {
           console.log('');
           console.log(healedCount > 0
-            ? green(`  ✔  ${healedCount} sorun onarıldı.`)
-            : yellow('  Hiçbir sorun otomatik onarılamadı.'));
+            ? green(`  ✔  ${healedCount} issue(s) repaired.`)
+            : yellow('  No issues could be auto-repaired.'));
         }
       } else if (!silent) {
-        console.log(yellow('  Otomatik onarılabilir sorun yok. Manuel müdahale gerekli.'));
+        console.log(yellow('  No auto-repairable issues. Manual intervention required.'));
       }
 
       // TypeScript repair — only in interactive (non-silent) mode
       if (!silent) {
         console.log('');
-        const doTsFix = await askYN('TypeScript hatalarını kontrol edip otomatik onarmamı ister misin?');
+        const doTsFix = await askYN('Check and auto-repair TypeScript errors?');
         if (doTsFix) await fixImports(root);
       }
 
     } else if (!silent) {
       console.log('');
-      console.log(dim('  Sorunları düzelttikten sonra tekrar çalıştır: must-b doctor'));
-      console.log(dim(`  ${bold('İpucu:')} must-b doctor --fix  →  otomatik onarım modu`));
+      console.log(dim('  After fixing, re-run: must-b doctor'));
+      console.log(dim(`  ${bold('Tip:')} must-b doctor --fix  →  auto-repair mode`));
     }
   }
 
