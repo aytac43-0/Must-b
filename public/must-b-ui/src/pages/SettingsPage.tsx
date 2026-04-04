@@ -22,6 +22,7 @@ import {
 import { apiFetch } from "@/lib/api";
 import { useI18n }  from "@/i18n";
 import { ChannelGrid } from "@/components/ChannelGrid";
+import OpenRouterModelPicker from "@/components/OpenRouterModelPicker";
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
 
@@ -257,6 +258,7 @@ export default function SettingsPage() {
 
   const isLocal = selected?.envKeyIsUrl ?? false;
   const isOllama = selected?.id === "ollama";
+  const isOpenRouter = selected?.id === "openrouter";
   const activeCategories = CATEGORY_ORDER.filter(c => providers.some(p => p.category === c));
 
   /* ── Hardware badge ─────────────────────────────────────────────────────── */
@@ -536,15 +538,23 @@ export default function SettingsPage() {
                   <Zap size={9} />
                   {sp.model}
                 </p>
-                <select
-                  value={model}
-                  onChange={e => setModel(e.target.value)}
-                  className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-[12px] text-white outline-none focus:border-orange-500/40 transition-colors appearance-none"
-                >
-                  {selected.latestModels.map(m => (
-                    <option key={m} value={m} className="bg-[#1a0c06]">{m}</option>
-                  ))}
-                </select>
+                {isOpenRouter ? (
+                  <OpenRouterModelPicker
+                    currentModel={model}
+                    onSelect={setModel}
+                    className="rounded-xl border border-white/10 bg-white/3"
+                  />
+                ) : (
+                  <select
+                    value={model}
+                    onChange={e => setModel(e.target.value)}
+                    className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-[12px] text-white outline-none focus:border-orange-500/40 transition-colors appearance-none"
+                  >
+                    {selected.latestModels.map(m => (
+                      <option key={m} value={m} className="bg-[#1a0c06]">{m}</option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               {/* Action buttons */}

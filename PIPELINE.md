@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** PM_MustB | 2026-04-04 | Sprint 22 tamamlandı — v1.25.0 Open Claw Reborn: Dynamic OpenRouter Catalog + TelemetryBar + Channel Onboarding
+> **Son güncelleme:** PM_MustB | 2026-04-04 | v1.26.0 — OpenRouterModelPicker → SettingsPage entegrasyonu + handleOpenRouter402 live fallback
 
 ---
 
@@ -433,6 +433,17 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | AUD-FIX001 | Backend_Architect | `summary-engine.ts` — setTimeout sızıntısı düzeltildi (`initialTimer` + `clearTimeout`) | DONE | Backend_Architect \| 2026-03-31 \| TS: 0 hata |
 | AUD-FIX002 | Backend_Architect | `project-intelligence.ts` — EventEmitter `fileChange` listener sızıntısı düzeltildi (`_fileChangeHandler` + `off()`) | DONE | Backend_Architect \| 2026-03-31 \| TS: 0 hata |
 | AUD-CRIT001 | PM_MustB | **AÇIK RAPORU:** 52 Skill Kataloğu Planner'a bağlı değil — CEO direktifi bekleniyor | BLOCKED | CEO onayı gerekli — Skill→Planner entegrasyon sprint'i açılmalı |
+
+---
+
+## Sprint 23 — v1.26.0 OpenRouter Wiring (2026-04-04)
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S23-F001 | Frontend_Engineer | `OpenRouterModelPicker` → SettingsPage model selector (openrouter provider için live 3-tier picker) | DONE | Frontend_Engineer \| 2026-04-04 |
+| S23-B001 | Backend_Architect | `handleOpenRouter402` → `pickFreeFallbackModel()` live catalog fallback (hardcoded sabit kaldırıldı) | DONE | Backend_Architect \| 2026-04-04 |
+| S23-QA | QA_Lead | Build + TS denetimi | QA_PASSED | build:prod → exit 0, 0 TS hatası, 2011 modül |
+| S23-D | Deploy_Chief | v1.26.0 yayına alındı | DEPLOYED | |
 
 ---
 

@@ -21,6 +21,7 @@ import { spawnSync, spawn } from 'child_process';
 import winston from 'winston';
 import dotenv from 'dotenv';
 import { UniversalStore } from './config-store.js';
+import { pickFreeFallbackModel } from './openrouter-live.js';
 
 dotenv.config({ override: true });
 
@@ -203,15 +204,13 @@ function rc(): PC {
 // When OpenRouter returns 402 (insufficient credits), silently switch to a free
 // model and retry the request — no error bubble to the user.
 
-const OPENROUTER_FREE_FALLBACK = 'google/gemini-2.5-pro-exp-03-25:free';
-
 async function handleOpenRouter402(
   cfg: PC,
   messages: CompletionMessage[],
   options: { jsonMode?: boolean; stream?: boolean },
   logger: winston.Logger,
 ): Promise<Response> {
-  const freeModel = process.env.OPENROUTER_FREE_MODEL ?? OPENROUTER_FREE_FALLBACK;
+  const freeModel = await pickFreeFallbackModel(cfg.apiKey ?? '');
   logger.warn(`[OpenRouter] 402 kredi yetersiz — ücretsiz modele geçiliyor: ${freeModel}`);
   // Persist the switch so future calls use the free model too
   process.env.LLM_MODEL = freeModel;
