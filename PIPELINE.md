@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** PM_MustB | 2026-04-03 | Sprint 21 tamamlandı — v1.24.0 NightOwl Architect: Coordinator Mode + Fuzzy Patch + 3-Tier Model Router
+> **Son güncelleme:** PM_MustB | 2026-04-04 | Sprint 22 tamamlandı — v1.25.0 Open Claw Reborn: Dynamic OpenRouter Catalog + TelemetryBar + Channel Onboarding
 
 ---
 
@@ -238,6 +238,23 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S7-INS001 | Backend_Architect | **PROJECT INTELLIGENCE**: `workspace-watcher.ts` (chokidar, 5 kategori), `summary-engine.ts` (klasör+dep özeti → LTM semantic), `project-intelligence.ts` (insight heuristik, whisper, CHANGELOG gen), `attachIntelligence()`, `/api/intelligence/changelog` | DONE | Backend_Architect \| 2026-03-30 |
 | S7-INS001-QA | QA_Lead | Project Intelligence — TS: 0 hata. esbuild: 0 hata, 456kb ✓ | QA_PASSED | QA_Lead \| 2026-03-30 |
 | S7-INS001-DEPLOY | Deploy_Chief | v1.15.0 deploy — Project Intelligence | DEPLOYED | Deploy_Chief \| 2026-03-30 \| commit: Must-b v1.15.0: Project Intelligence \| push: BAŞARILI |
+
+---
+
+## Sprint 22 — Open Claw Reborn (v1.25.0) — CEO Direktifi
+
+> **Hedef:** OpenRouter canlı model kataloğu (Free/Balanced/Power + API önbellek); Dashboard Telemetri Çubuğu (CPU/RAM/Model/Coordinator); Terminal + Web onboarding'e Telegram/Discord/Slack/WhatsApp kanal kurulum adımı.
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S22-B001 | Backend_Architect | `openrouter-live.ts` — `fetchOpenRouterModels()` live API + 5dk önbellek + Free/Balanced/Power kategorilendirmesi; `pickFreeFallbackModel()` | DONE | Backend_Architect \| 2026-04-04 |
+| S22-B002 | Backend_Architect | `api.ts` — `GET /api/providers/openrouter/models` endpoint (?tier, ?refresh); `/api/setup/save` — `channels` payload desteği + `ALLOWED_CHANNEL_KEYS` güvenli yazma | DONE | Backend_Architect \| 2026-04-04 |
+| S22-B003 | Backend_Architect | `onboard.ts` — `CHANNELS` tanım dizisi (Telegram/Discord/Slack/WhatsApp + token alanları); Step 5.5 interaktif kanal kurulum adımı; `CHANNEL_*_ENABLED` env yazımı | DONE | Backend_Architect \| 2026-04-04 |
+| S22-F001 | Frontend_Engineer | `TelemetryBar.tsx` — canlı CPU/RAM mini çubukları + aktif model + sağlayıcı + Coordinator faz rozeti + Lite mode rozeti; DashboardPage tepesine enjekte | DONE | Frontend_Engineer \| 2026-04-04 |
+| S22-F002 | Frontend_Engineer | `OpenRouterModelPicker.tsx` — 3 sekme (Free/Balanced/Power), canlı sayım, arama, Vision ikonu, maliyet/bağlam meta; /api/providers/openrouter/models'den canlı çekim | DONE | Frontend_Engineer \| 2026-04-04 |
+| S22-F003 | Frontend_Engineer | `SetupPage.tsx` — Step 5 "Channels" adımı eklendi (6 adım); CHANNEL_DEFS toggle kartları + token alanları; handleFinish channels payload; navBar güncellemesi | DONE | Frontend_Engineer \| 2026-04-04 |
+| S22-QA | QA_Lead | TS: 0 hata (backend + frontend). Build: exit 0, dist/ temiz, v1.25.0 | QA_PASSED | TS: 0 hata. Build: 10.3MB ✓ \| QA_Lead \| 2026-04-04 |
+| S22-DEPLOY | Deploy_Chief | v1.25.0 commit | DONE | |
 
 ---
 

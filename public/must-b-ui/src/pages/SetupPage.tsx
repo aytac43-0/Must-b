@@ -77,7 +77,51 @@ const STEP_LABELS = [
   "AI Engine",
   "Workspace",
   "Voice",
+  "Channels",
   "Finalize",
+];
+
+// ── Channel definitions for the Setup Channels step ───────────────────────────
+interface ChannelSetupDef {
+  id:     string;
+  label:  string;
+  emoji:  string;
+  hint:   string;
+  fields: { key: string; label: string; placeholder: string; secret: boolean }[];
+}
+
+const CHANNEL_DEFS: ChannelSetupDef[] = [
+  {
+    id: "telegram", label: "Telegram", emoji: "✈️",
+    hint: "Create a bot at t.me/BotFather",
+    fields: [
+      { key: "TELEGRAM_BOT_TOKEN", label: "Bot Token", placeholder: "123456789:AAF...", secret: true },
+    ],
+  },
+  {
+    id: "discord", label: "Discord", emoji: "🎮",
+    hint: "discord.com/developers → Applications",
+    fields: [
+      { key: "DISCORD_BOT_TOKEN", label: "Bot Token",  placeholder: "MT…",   secret: true  },
+      { key: "DISCORD_CLIENT_ID", label: "Client ID",  placeholder: "012…",  secret: false },
+    ],
+  },
+  {
+    id: "slack", label: "Slack", emoji: "💬",
+    hint: "api.slack.com/apps → OAuth & Permissions",
+    fields: [
+      { key: "SLACK_BOT_TOKEN",      label: "Bot Token",      placeholder: "xoxb-…",  secret: true },
+      { key: "SLACK_SIGNING_SECRET", label: "Signing Secret", placeholder: "abc123…", secret: true },
+    ],
+  },
+  {
+    id: "whatsapp", label: "WhatsApp", emoji: "📱",
+    hint: "developers.facebook.com → WhatsApp",
+    fields: [
+      { key: "WHATSAPP_API_KEY",  label: "API Token",  placeholder: "EAA…",       secret: true  },
+      { key: "WHATSAPP_PHONE_ID", label: "Phone ID",   placeholder: "1234567890", secret: false },
+    ],
+  },
 ];
 
 // ── Small sub-components ───────────────────────────────────────────────────────
@@ -192,6 +236,10 @@ export default function SetupPage() {
   const [wakeWord,      setWakeWord]      = useState(false);
   const [telemetry,     setTelemetry]     = useState(false);
 
+  // Channel state: enabled flags + token values per field key
+  const [channelEnabled,  setChannelEnabled]  = useState<Record<string, boolean>>({});
+  const [channelTokens,   setChannelTokens]   = useState<Record<string, string>>({});
+
   // Microphone permission test
   type MicState = "idle" | "testing" | "granted" | "denied";
   const [micState, setMicState] = useState<MicState>("idle");
@@ -288,6 +336,18 @@ export default function SetupPage() {
     setSaving(true);
     setError(null);
     try {
+      // Build channel credentials to persist
+      const channels: Record<string, string> = {};
+      for (const ch of CHANNEL_DEFS) {
+        if (channelEnabled[ch.id]) {
+          for (const f of ch.fields) {
+            const v = (channelTokens[f.key] ?? "").trim();
+            if (v) channels[f.key] = v;
+          }
+          channels[`CHANNEL_${ch.id.toUpperCase()}_ENABLED`] = "true";
+        }
+      }
+
       const payload = {
         name:          name.trim() || "User",
         language,
@@ -299,6 +359,7 @@ export default function SetupPage() {
         workspacePath: workspacePath.trim() || defaultWorkspace,
         wakeWord,
         telemetry,
+        channels,
       };
 
       let res = await fetch("/api/setup/save", {
@@ -345,7 +406,7 @@ export default function SetupPage() {
             </div>
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Setup Must-b</h1>
-          <p className="text-gray-400 mt-1.5 text-sm">First-time configuration · 5 steps</p>
+          <p className="text-gray-400 mt-1.5 text-sm">First-time configuration · 6 steps</p>
         </div>
 
         {/* Step progress dots */}
@@ -641,8 +702,76 @@ export default function SetupPage() {
               </div>
             )}
 
-            {/* ── Step 5: Telemetry & Finalize ─────────────────────────── */}
+            {/* ── Step 5: Messaging Channels ───────────────────────────── */}
             {step === 4 && (
+              <div className="space-y-4">
+                <p className="text-[12px] text-gray-500">
+                  Connect messaging channels so Must-b can send and receive messages on your behalf.
+                  All tokens are stored locally. You can skip and configure later in Settings.
+                </p>
+                {CHANNEL_DEFS.map(ch => {
+                  const enabled = !!channelEnabled[ch.id];
+                  return (
+                    <div
+                      key={ch.id}
+                      className="rounded-xl border transition-all overflow-hidden"
+                      style={{
+                        borderColor: enabled ? "rgba(234,88,12,0.35)" : "rgba(255,255,255,0.07)",
+                        background:  enabled ? "rgba(234,88,12,0.06)"  : "rgba(255,255,255,0.02)",
+                      }}
+                    >
+                      {/* Channel header toggle */}
+                      <button
+                        onClick={() => setChannelEnabled(p => ({ ...p, [ch.id]: !enabled }))}
+                        className="w-full flex items-center justify-between px-4 py-3"
+                      >
+                        <span className="flex items-center gap-2.5 text-[13px] font-semibold text-gray-200">
+                          <span className="text-base">{ch.emoji}</span>
+                          {ch.label}
+                          <span className="text-[10px] text-gray-600 font-normal">{ch.hint}</span>
+                        </span>
+                        <span
+                          className="w-8 h-4 rounded-full relative transition-all flex-shrink-0"
+                          style={{ background: enabled ? "#ea580c" : "rgba(255,255,255,0.1)" }}
+                        >
+                          <span
+                            className="absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all shadow-sm"
+                            style={{ left: enabled ? "calc(100% - 14px)" : "2px" }}
+                          />
+                        </span>
+                      </button>
+
+                      {/* Token fields — visible when enabled */}
+                      {enabled && (
+                        <div className="px-4 pb-3 space-y-2 border-t" style={{ borderColor: "rgba(234,88,12,0.15)" }}>
+                          {ch.fields.map(f => (
+                            <div key={f.key}>
+                              <label className="block text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-1 mt-2">
+                                {f.label}
+                              </label>
+                              <input
+                                type={f.secret ? "password" : "text"}
+                                value={channelTokens[f.key] ?? ""}
+                                onChange={e => setChannelTokens(p => ({ ...p, [f.key]: e.target.value }))}
+                                placeholder={f.placeholder}
+                                className="w-full px-3 py-2 rounded-lg text-[12px] text-gray-200 placeholder-gray-700 outline-none transition-all"
+                                style={{
+                                  background:   "rgba(255,255,255,0.05)",
+                                  border:       "1px solid rgba(255,255,255,0.08)",
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── Step 6: Telemetry & Finalize ─────────────────────────── */}
+            {step === 5 && (
               <div className="space-y-5">
                 <Toggle
                   checked={telemetry}
@@ -691,8 +820,8 @@ export default function SetupPage() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation — hidden on step 5 (big button handles it) */}
-        {step < 4 && (
+        {/* Navigation — hidden on step 6 (big button handles it) */}
+        {step < 5 && (
           <div className="flex items-center justify-between mt-5">
             <button
               onClick={() => setStep(s => s - 1)}
@@ -711,11 +840,11 @@ export default function SetupPage() {
           </div>
         )}
 
-        {/* Back button on step 5 */}
-        {step === 4 && (
+        {/* Back button on step 6 */}
+        {step === 5 && (
           <div className="flex justify-start mt-5">
             <button
-              onClick={() => setStep(3)}
+              onClick={() => setStep(4)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all text-sm font-medium"
             >
               <ChevronLeft size={16} /> Back

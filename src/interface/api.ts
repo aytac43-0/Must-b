@@ -1099,6 +1099,38 @@ export class ApiServer {
     });
 
     /**
+     * GET /api/providers/openrouter/models
+     * Returns the full live OpenRouter model catalog, categorised into
+     * free / balanced / power tiers. Cached for 5 minutes server-side.
+     *
+     * Query params:
+     *   ?tier=free|balanced|power  — filter to a single tier (optional)
+     *   ?refresh=1                  — force cache bust
+     */
+    this.app.get('/api/providers/openrouter/models', async (_req, res) => {
+      try {
+        const { fetchOpenRouterModels, clearOpenRouterCache } = await import('../core/openrouter-live.js');
+        if (_req.query.refresh === '1') clearOpenRouterCache();
+        const apiKey  = process.env.OPENROUTER_API_KEY ?? '';
+        const catalog = await fetchOpenRouterModels(apiKey);
+        const tier    = _req.query.tier as string | undefined;
+        if (tier === 'free')     return res.json({ models: catalog.free,     total: catalog.free.length,     fetchedAt: catalog.fetchedAt });
+        if (tier === 'balanced') return res.json({ models: catalog.balanced, total: catalog.balanced.length, fetchedAt: catalog.fetchedAt });
+        if (tier === 'power')    return res.json({ models: catalog.power,    total: catalog.power.length,    fetchedAt: catalog.fetchedAt });
+        return res.json({
+          free:      catalog.free,
+          balanced:  catalog.balanced,
+          power:     catalog.power,
+          totals:    { free: catalog.free.length, balanced: catalog.balanced.length, power: catalog.power.length },
+          fetchedAt: catalog.fetchedAt,
+        });
+      } catch (err: any) {
+        this.logger.warn(`[OpenRouter live catalog] ${err.message}`);
+        res.status(502).json({ error: 'Failed to fetch OpenRouter model catalog', detail: err.message });
+      }
+    });
+
+    /**
      * GET /api/setup/providers
      * Returns the full catalog of supported LLM providers with metadata.
      * Used by the Visual Setup Wizard to render the searchable provider grid.
@@ -1161,6 +1193,8 @@ export class ApiServer {
           name?: string; language?: string; provider?: string; apiKey?: string;
           model?: string; skills?: string[]; mode?: string;
           workspacePath?: string; wakeWord?: boolean; telemetry?: boolean;
+          /** Channel credentials: { TELEGRAM_BOT_TOKEN: "...", CHANNEL_TELEGRAM_ENABLED: "true", … } */
+          channels?: Record<string, string>;
         };
 
         const root    = process.cwd();
@@ -1230,6 +1264,21 @@ export class ApiServer {
 
         // ── Telemetry ─────────────────────────────────────────────────────
         envContent = syncKey(envContent, 'TELEMETRY_ENABLED', safeTelemetry ? 'true' : 'false');
+
+        // ── Messaging Channels ────────────────────────────────────────────
+        const safeChannels = body.channels ?? {};
+        const ALLOWED_CHANNEL_KEYS = new Set([
+          'TELEGRAM_BOT_TOKEN', 'DISCORD_BOT_TOKEN', 'DISCORD_CLIENT_ID',
+          'SLACK_BOT_TOKEN', 'SLACK_SIGNING_SECRET', 'SLACK_APP_TOKEN',
+          'WHATSAPP_API_KEY', 'WHATSAPP_PHONE_ID',
+          'CHANNEL_TELEGRAM_ENABLED', 'CHANNEL_DISCORD_ENABLED',
+          'CHANNEL_SLACK_ENABLED', 'CHANNEL_WHATSAPP_ENABLED',
+        ]);
+        for (const [k, v] of Object.entries(safeChannels)) {
+          if (ALLOWED_CHANNEL_KEYS.has(k) && v) {
+            envContent = syncKey(envContent, k, v);
+          }
+        }
 
         // ── World mode UID ────────────────────────────────────────────────
         if (safeMode === 'world' && !process.env.MUSTB_UID) {

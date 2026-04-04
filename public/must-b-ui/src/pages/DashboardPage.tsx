@@ -11,6 +11,7 @@ import ScreenScanOverlay      from "@/components/ScreenScanOverlay";
 import WarRoomPanel           from "@/components/WarRoomPanel";
 import MorningBriefing        from "@/components/MorningBriefing";
 import NightShiftLog          from "@/components/NightShiftLog";
+import TelemetryBar           from "@/components/TelemetryBar";
 import { getSocket }          from "@/lib/socket";
 
 export default function DashboardPage() {
@@ -21,6 +22,8 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-72px)] overflow-hidden">
+      {/* Real-Time Telemetry — CPU / RAM / Model / Coordinator phase */}
+      <TelemetryBar />
       <ScreenScanOverlay />
       <WarRoomPanel />
       <ChatArea />

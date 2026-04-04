@@ -86,6 +86,58 @@ const SKILLS = [
   { value: 'analyzer',   label: 'Project Analyzer',           envKey: 'SKILL_ANALYZER',    hint: 'Read and summarize codebases & READMEs' },
 ] as const;
 
+// ── Messaging Channel Definitions ──────────────────────────────────────────────
+
+interface ChannelField {
+  envKey:  string;
+  label:   string;
+  hint:    string;
+  isToken: boolean;
+}
+
+interface ChannelDef {
+  value:  string;
+  label:  string;
+  emoji:  string;
+  hint:   string;
+  fields: ChannelField[];
+}
+
+const CHANNELS: ChannelDef[] = [
+  {
+    value: 'telegram', label: 'Telegram', emoji: '✈️',
+    hint:  'Bot token from @BotFather — t.me/BotFather',
+    fields: [
+      { envKey: 'TELEGRAM_BOT_TOKEN', label: 'Bot Token', hint: 'Format: 123456789:AAF...', isToken: true },
+    ],
+  },
+  {
+    value: 'discord', label: 'Discord', emoji: '🎮',
+    hint:  'Bot token + Client ID from discord.com/developers',
+    fields: [
+      { envKey: 'DISCORD_BOT_TOKEN',  label: 'Bot Token',   hint: 'Applications → Bot → Token', isToken: true  },
+      { envKey: 'DISCORD_CLIENT_ID',  label: 'Client ID',   hint: 'Applications → General → Application ID', isToken: false },
+    ],
+  },
+  {
+    value: 'slack', label: 'Slack', emoji: '💬',
+    hint:  'OAuth token + signing secret from api.slack.com/apps',
+    fields: [
+      { envKey: 'SLACK_BOT_TOKEN',       label: 'Bot OAuth Token',    hint: 'OAuth & Permissions → Bot Token (xoxb-…)', isToken: true  },
+      { envKey: 'SLACK_SIGNING_SECRET',  label: 'Signing Secret',     hint: 'Basic Information → App Credentials',      isToken: true  },
+      { envKey: 'SLACK_APP_TOKEN',       label: 'App-Level Token',    hint: 'Socket Mode → App Token (xapp-…)',         isToken: true  },
+    ],
+  },
+  {
+    value: 'whatsapp', label: 'WhatsApp', emoji: '📱',
+    hint:  'Meta Business API token from developers.facebook.com',
+    fields: [
+      { envKey: 'WHATSAPP_API_KEY',    label: 'API Token',    hint: 'Meta WhatsApp Business API access token', isToken: true },
+      { envKey: 'WHATSAPP_PHONE_ID',   label: 'Phone ID',     hint: 'WhatsApp Business Phone Number ID',       isToken: false },
+    ],
+  },
+];
+
 // ── Browser launcher ───────────────────────────────────────────────────────
 
 function openBrowserToSetup(port: number): void {
@@ -311,6 +363,61 @@ export async function runOnboard(root: string): Promise<OnboardResult> {
   for (const skill of SKILLS) {
     const enabled = (selectedSkills as string[]).includes(skill.value);
     writeEnvKey(envPath, skill.envKey, enabled ? 'true' : 'false');
+  }
+
+  // ── Step 5.5: Messaging Channels ──────────────────────────────────────────
+  console.log('');
+  console.log(dim('  Connect messaging channels to receive and send messages via Must-b.'));
+  console.log(dim('  Press Space to select, Enter to confirm. You can add tokens later in Settings.\n'));
+
+  const { selectedChannels } = await inquirer.prompt([{
+    type:    'checkbox',
+    name:    'selectedChannels',
+    message: 'Activate messaging channels:',
+    choices: CHANNELS.map(c => ({
+      name:    `${c.emoji}  ${c.label.padEnd(12)} ${dim(c.hint)}`,
+      value:   c.value,
+      checked: false,
+    })),
+  }]);
+
+  for (const channelValue of (selectedChannels as string[])) {
+    const channel = CHANNELS.find(c => c.value === channelValue);
+    if (!channel) continue;
+
+    console.log('');
+    console.log(cyan(`  ${channel.emoji}  ${channel.label} Configuration`));
+    console.log(dim(`  Leave blank to skip — add later in Settings or .env\n`));
+
+    for (const field of channel.fields) {
+      const existing = readEnvKey(envPath, field.envKey)
+                    || ((process.env as Record<string, string>)[field.envKey] ?? '');
+      if (existing && existing.length > 8) {
+        console.log(`  ${green('✓')}  ${field.label} already set: ${existing.slice(0, 12)}***`);
+        continue;
+      }
+      const answer = await inquirer.prompt([{
+        type:    field.isToken ? 'password' : 'input',
+        name:    'val',
+        message: `${field.label}:`,
+        hint:    field.hint,
+        ...(field.isToken ? { mask: '▪' } : {}),
+      }]);
+      const val = (answer.val as string).trim();
+      if (val) {
+        writeEnvKey(envPath, field.envKey, val);
+        (process.env as Record<string, string>)[field.envKey] = val;
+        UniversalStore.get().set(field.envKey, val);
+        console.log(`  ${green('✓')}  ${field.label} saved.`);
+      } else {
+        console.log(`  ${yellow('⚠')}  Skipped — add later: Settings → Channels → ${channel.label}`);
+      }
+    }
+
+    // Mark channel as enabled
+    writeEnvKey(envPath, `CHANNEL_${channel.value.toUpperCase()}_ENABLED`, 'true');
+    UniversalStore.get().set(`CHANNEL_${channel.value.toUpperCase()}_ENABLED`, 'true');
+    console.log(`  ${green('✓')}  ${channel.label} channel enabled.`);
   }
 
   // ── Step 6: Mode ──────────────────────────────────────────────────────────
