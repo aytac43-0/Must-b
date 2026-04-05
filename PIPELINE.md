@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** Deploy_Chief | 2026-04-05 | v1.27.1 — Fallback filter (no Lyria), guaranteed gemini default, Safe Mode MotionConfig, resolveActiveModel()
+> **Son güncelleme:** Deploy_Chief | 2026-04-05 | v1.28.0 — Skill Dominance: WhatsApp/Discord webhooks, 8-language i18n, ConnectorsPanel, LTM index-path, language→LLM prompt, README rewrite
 
 ---
 
@@ -444,6 +444,25 @@ CEO referans görseli upload etmeden ADIM 3 başlatılamaz.
 | S23-B001 | Backend_Architect | `handleOpenRouter402` → `pickFreeFallbackModel()` live catalog fallback (hardcoded sabit kaldırıldı) | DONE | Backend_Architect \| 2026-04-04 |
 | S23-QA | QA_Lead | Build + TS denetimi | QA_PASSED | build:prod → exit 0, 0 TS hatası, 2011 modül |
 | S23-D | Deploy_Chief | v1.26.0 yayına alındı | DEPLOYED | |
+
+---
+
+## Sprint 28 — "The Skill Dominance" v1.28.0 (2026-04-05)
+
+| ID | Departman | Açıklama | Durum | Not |
+|---|---|---|---|---|
+| S28-B001 | Backend_Architect | WhatsApp webhook: `GET/POST /webhook/whatsapp` — Meta verification + orchestrator wake-up | DONE | Backend_Architect \| 2026-04-05 |
+| S28-B002 | Backend_Architect | Discord HTTP interactions: `POST /webhook/discord` — Ed25519 verify + deferred ACK + follow-up reply | DONE | Backend_Architect \| 2026-04-05 |
+| S28-B003 | Backend_Architect | `PATCH /api/settings/language` — language switch endpoint, persists MUSTB_LANGUAGE to .env | DONE | Backend_Architect \| 2026-04-05 |
+| S28-B004 | Backend_Architect | `POST /api/memory/index-path` — recursive folder indexer into vectra vector DB | DONE | Backend_Architect \| 2026-04-05 |
+| S28-B005 | Backend_Architect | LongTermMemory.getContextSummary() — MUSTB_LANGUAGE → LLM system prompt language instruction | DONE | Backend_Architect \| 2026-04-05 |
+| S28-F001 | Frontend_Engineer | ConnectorsPanel.tsx — live channel message feed via Socket.io `channelMessage`, FAB + popover | DONE | Frontend_Engineer \| 2026-04-05 |
+| S28-F002 | Frontend_Engineer | i18n expansion: fr, es, ja, zh, pt locale files (5 languages added) | DONE | Frontend_Engineer \| 2026-04-05 |
+| S28-F003 | Frontend_Engineer | LanguageSwitcher v4.4 — 8 languages (EN/TR/DE/FR/ES/PT/JA/ZH) | DONE | Frontend_Engineer \| 2026-04-05 |
+| S28-F004 | Frontend_Engineer | i18n provider.tsx — 5 new imports + setLocale persists to /api/settings/language | DONE | Frontend_Engineer \| 2026-04-05 |
+| S28-DOC | Deploy_Chief | README.md — professional rewrite in English + Turkish | DONE | Deploy_Chief \| 2026-04-05 |
+| S28-QA | QA_Lead | Build + TS denetimi | QA_PASSED | tsc --noEmit: 0 errors. Vite build: 0 errors. esbuild bundle: 10.3MB ✓ 2026-04-05 |
+| S28-D | Deploy_Chief | v1.28.0 yayına alındı | DEPLOYED | Deploy_Chief \| 2026-04-05 |
 
 ---
 

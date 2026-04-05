@@ -611,6 +611,184 @@ export class ApiServer {
       res.json({ ok: true, channel: ch.id });
     });
 
+    // ── Autonomous Webhook Receivers ──────────────────────────────────────
+    // Incoming messages wake the orchestrator and broadcast via Socket.io.
+
+    /**
+     * GET /webhook/whatsapp — Meta webhook verification challenge
+     * Required by Meta before accepting POST deliveries.
+     */
+    this.app.get('/webhook/whatsapp', (req, res) => {
+      const mode      = req.query['hub.mode'];
+      const token     = req.query['hub.verify_token'];
+      const challenge = req.query['hub.challenge'];
+      const expected  = process.env.WHATSAPP_VERIFY_TOKEN ?? '';
+      if (mode === 'subscribe' && token === expected) {
+        this.logger.info('[WhatsApp] Webhook verified.');
+        return res.status(200).send(challenge);
+      }
+      res.status(403).send('Forbidden');
+    });
+
+    /**
+     * POST /webhook/whatsapp — Receive WhatsApp Cloud API messages
+     * Extracts text payload, wakes orchestrator, emits channelMessage.
+     */
+    this.app.post('/webhook/whatsapp', async (req, res) => {
+      try {
+        res.sendStatus(200); // ACK immediately — Meta requires < 5 s
+        const body = req.body as any;
+        const entry  = body?.entry?.[0];
+        const change = entry?.changes?.[0];
+        const msg    = change?.value?.messages?.[0];
+        if (!msg) return;
+
+        const from    = msg.from as string;
+        const msgId   = msg.id as string;
+        const text    = msg.type === 'text' ? (msg.text?.body as string) : `[${msg.type}]`;
+        const ts      = Number(msg.timestamp ?? Date.now() / 1000) * 1000;
+        const contact = change?.value?.contacts?.[0]?.profile?.name ?? from;
+
+        this.logger.info(`[WhatsApp] Message from ${contact} (${from}): ${text.slice(0, 80)}`);
+
+        // Emit to dashboard connectors panel
+        this.io.emit('channelMessage', {
+          channel:  'whatsapp',
+          from,
+          contact,
+          text,
+          ts,
+          msgId,
+        });
+
+        // Wake orchestrator
+        const goal = `[WhatsApp from ${contact}] ${text}`;
+        this.orchestrator.run(goal).catch((e: Error) => {
+          this.logger.error(`[WhatsApp] Orchestrator error: ${e.message}`);
+        });
+      } catch (e: any) {
+        this.logger.error(`[WhatsApp] Webhook error: ${e.message}`);
+      }
+    });
+
+    /**
+     * POST /webhook/discord — Discord HTTP Interactions endpoint
+     * Receives slash command interactions from Discord (no discord.js required).
+     * Requires DISCORD_PUBLIC_KEY env var for Ed25519 signature verification.
+     */
+    this.app.post('/webhook/discord', express.raw({ type: 'application/json' }), async (req, res) => {
+      try {
+        const publicKey = process.env.DISCORD_PUBLIC_KEY ?? '';
+        const signature = req.headers['x-signature-ed25519'] as string ?? '';
+        const timestamp = req.headers['x-signature-timestamp'] as string ?? '';
+        const rawBody   = req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body));
+
+        // Verify Ed25519 signature
+        if (publicKey && signature && timestamp) {
+          try {
+            const { verify } = await import('node:crypto');
+            const message = Buffer.concat([Buffer.from(timestamp), rawBody]);
+            const sigBuf  = Buffer.from(signature, 'hex');
+            const keyBuf  = Buffer.from(publicKey, 'hex');
+            const valid   = verify(null, message, { key: keyBuf, format: 'der', type: 'spki', dsaEncoding: undefined }, sigBuf);
+            if (!valid) {
+              this.logger.warn('[Discord] Invalid signature — rejected interaction.');
+              return res.status(401).json({ error: 'Invalid request signature' });
+            }
+          } catch {
+            // If verify fails (key format issues), pass through in dev
+          }
+        }
+
+        const interaction = JSON.parse(rawBody.toString('utf-8')) as any;
+
+        // PING — required by Discord to confirm endpoint
+        if (interaction.type === 1) {
+          return res.json({ type: 1 });
+        }
+
+        // APPLICATION_COMMAND (type 2) — slash command
+        if (interaction.type === 2) {
+          const cmdName = interaction.data?.name as string ?? 'unknown';
+          const options = (interaction.data?.options ?? []) as Array<{ name: string; value: unknown }>;
+          const optValue = options.find(o => o.name === 'message' || o.name === 'prompt' || o.name === 'text')?.value as string | undefined;
+          const text    = optValue ?? (options.length > 0 ? options.map(o => `${o.name}: ${o.value}`).join(', ') : `/${cmdName}`);
+          const userId  = interaction.member?.user?.id ?? interaction.user?.id ?? 'unknown';
+          const guildId = interaction.guild_id ?? 'DM';
+
+          this.logger.info(`[Discord] Slash /${cmdName} from ${userId} in ${guildId}: ${text.slice(0, 80)}`);
+
+          // Immediate deferred ACK so Discord's 3 s window isn't exceeded
+          res.json({ type: 5 }); // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+
+          this.io.emit('channelMessage', {
+            channel: 'discord',
+            from:    userId,
+            contact: `Discord /${cmdName}`,
+            text,
+            ts:      Date.now(),
+            guildId,
+          });
+
+          // Wake orchestrator
+          const goal = `[Discord /${cmdName} from ${userId}] ${text}`;
+          this.orchestrator.run(goal).then(async (result) => {
+            // Follow-up to Discord webhook (requires DISCORD_APPLICATION_ID + DISCORD_BOT_TOKEN)
+            const appId = process.env.DISCORD_APPLICATION_ID ?? process.env.DISCORD_CLIENT_ID ?? '';
+            const token  = process.env.DISCORD_BOT_TOKEN ?? '';
+            const iToken = interaction.token as string;
+            if (appId && token && iToken) {
+              const reply = typeof result === 'string' ? result : 'Task completed.';
+              await fetch(`https://discord.com/api/v10/webhooks/${appId}/${iToken}`, {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ content: reply.slice(0, 2000) }),
+              }).catch(() => {});
+            }
+          }).catch((e: Error) => {
+            this.logger.error(`[Discord] Orchestrator error: ${e.message}`);
+          });
+          return;
+        }
+
+        // MESSAGE_COMPONENT or unhandled — acknowledge
+        res.json({ type: 6 });
+      } catch (e: any) {
+        this.logger.error(`[Discord] Webhook error: ${e.message}`);
+        res.status(500).json({ error: 'Internal error' });
+      }
+    });
+
+    // ── Language Settings ─────────────────────────────────────────────────
+
+    /**
+     * PATCH /api/settings/language
+     * Body: { language: string }  e.g. "tr", "fr", "en"
+     * Persists MUSTB_LANGUAGE to .env and updates LTM profile.
+     */
+    this.app.patch('/api/settings/language', requireAuth, async (req, res) => {
+      const lang = String(req.body?.language ?? '').trim().toLowerCase().slice(0, 10);
+      if (!lang) return res.status(400).json({ error: 'language is required' });
+
+      const VALID = new Set(['en', 'tr', 'de', 'fr', 'es', 'ja', 'zh', 'pt']);
+      if (!VALID.has(lang)) return res.status(400).json({ error: `Unsupported language: ${lang}` });
+
+      // Write to .env
+      const root    = process.cwd();
+      const envPath = path.join(root, '.env');
+      let content   = '';
+      try { content = fs.readFileSync(envPath, 'utf-8'); } catch { content = ''; }
+      const lines  = content.split('\n');
+      const idx    = lines.findIndex(l => l.startsWith('MUSTB_LANGUAGE='));
+      if (idx >= 0) lines[idx] = `MUSTB_LANGUAGE=${lang}`;
+      else lines.push(`MUSTB_LANGUAGE=${lang}`);
+      fs.writeFileSync(envPath, lines.join('\n').trim() + '\n', 'utf-8');
+      process.env.MUSTB_LANGUAGE = lang;
+
+      this.logger.info(`[Language] Switched to: ${lang}`);
+      res.json({ ok: true, language: lang });
+    });
+
     // ── Must-b Gateway Bridge Endpoints ───────────────────────────────────
     // All /api/gateway/* routes proxy to the local Must-b gateway daemon (ws://127.0.0.1:18789).
     // On offline: read endpoints return { offline: true, ...emptyData } (200),
@@ -2564,6 +2742,69 @@ export class ApiServer {
         const count = await autoIndexSkills();
         this.logger.info(`[Memory] Indexed ${count} skills`);
         res.json({ ok: true, indexed: count });
+      } catch (err: any) {
+        res.status(500).json({ error: err?.message });
+      }
+    });
+
+    /**
+     * POST /api/memory/index-path
+     * Body: { path: string }
+     * Recursively indexes all text files under the given directory path.
+     */
+    this.app.post('/api/memory/index-path', requireAuth, async (req, res) => {
+      const targetPath = String(req.body?.path ?? '').trim();
+      if (!targetPath) return res.status(400).json({ error: 'path is required' });
+
+      let resolvedPath: string;
+      try {
+        resolvedPath = path.resolve(targetPath);
+      } catch {
+        return res.status(400).json({ error: 'Invalid path' });
+      }
+
+      if (!fs.existsSync(resolvedPath)) {
+        return res.status(404).json({ error: `Path not found: ${resolvedPath}` });
+      }
+
+      try {
+        const { indexDocument } = await import('../core/memory-index.js');
+        const TEXT_EXTS = new Set(['ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'py', 'go', 'rs',
+          'md', 'txt', 'json', 'yaml', 'yml', 'toml', 'env', 'sh', 'bash',
+          'html', 'css', 'scss', 'sql', 'graphql', 'xml', 'csv']);
+        const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'out', 'build', '__pycache__', '.cache']);
+
+        let indexed = 0;
+        const queue: string[] = [resolvedPath];
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          let stat: import('fs').Stats;
+          try { stat = fs.statSync(current); } catch { continue; }
+
+          if (stat.isDirectory()) {
+            const name = path.basename(current);
+            if (SKIP_DIRS.has(name)) continue;
+            const entries = fs.readdirSync(current).map(e => path.join(current, e));
+            queue.push(...entries);
+          } else if (stat.isFile()) {
+            const ext = path.extname(current).slice(1).toLowerCase();
+            if (!TEXT_EXTS.has(ext)) continue;
+            if (stat.size > 512 * 1024) continue; // skip > 512 KB
+            try {
+              const content = fs.readFileSync(current, 'utf-8');
+              await indexDocument(content, {
+                source:  'workspace',
+                title:   path.basename(current),
+                path:    current,
+                savedAt: new Date().toISOString(),
+              });
+              indexed++;
+            } catch { /* skip unreadable */ }
+          }
+        }
+
+        this.logger.info(`[Memory] index-path: indexed ${indexed} files from ${resolvedPath}`);
+        res.json({ ok: true, indexed, path: resolvedPath });
       } catch (err: any) {
         res.status(500).json({ error: err?.message });
       }

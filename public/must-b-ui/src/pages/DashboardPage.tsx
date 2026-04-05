@@ -13,6 +13,7 @@ import MorningBriefing        from "@/components/MorningBriefing";
 import NightShiftLog          from "@/components/NightShiftLog";
 import TelemetryBar           from "@/components/TelemetryBar";
 import SystemBootReport       from "@/components/SystemBootReport";
+import ConnectorsPanel        from "@/components/ConnectorsPanel";
 import { getSocket }          from "@/lib/socket";
 
 export default function DashboardPage() {
@@ -30,6 +31,8 @@ export default function DashboardPage() {
       <ChatArea />
       {/* System Boot Report — shown once after first-time setup */}
       <SystemBootReport />
+      {/* Connectors Panel — live WhatsApp/Discord/channel message feed */}
+      <ConnectorsPanel />
       {/* Morning Briefing — full-screen modal, shows once per shift */}
       <MorningBriefing />
       {/* Night Shift Log — real-time floating panel, top-right */}

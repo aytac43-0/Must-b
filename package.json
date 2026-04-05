@@ -1,6 +1,6 @@
 {
   "name": "@must-b/must-b",
-  "version": "1.27.1",
+  "version": "1.28.0",
   "description": "Must-b v1.0 — Professional Autonomous AI Operating System by Auto Step",
   "files": [
     "dist/",

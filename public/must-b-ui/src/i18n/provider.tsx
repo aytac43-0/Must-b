@@ -2,10 +2,15 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { en, type Translations } from "./locales/en";
 import { tr } from "./locales/tr";
 import { de } from "./locales/de";
+import { fr } from "./locales/fr";
+import { es } from "./locales/es";
+import { ja } from "./locales/ja";
+import { zh } from "./locales/zh";
+import { pt } from "./locales/pt";
 
-export type Locale = "en" | "tr" | "de";
+export type Locale = "en" | "tr" | "de" | "fr" | "es" | "ja" | "zh" | "pt";
 
-const locales: Record<Locale, Translations> = { en, tr, de };
+const locales: Record<Locale, Translations> = { en, tr, de, fr, es, ja, zh, pt };
 
 interface I18nContextType {
   locale: Locale;
@@ -31,6 +36,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const setLocale = (l: Locale) => {
     setLocaleState(l);
     try { localStorage.setItem("mustb-lang", l); } catch { /* incognito */ }
+    // Persist to backend so LLM system prompt adopts the new language
+    fetch("/api/settings/language", {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ language: l }),
+    }).catch(() => {});
   };
 
   return (

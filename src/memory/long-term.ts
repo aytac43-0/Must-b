@@ -9,6 +9,7 @@ export interface UserProfile {
   uid?: string;
   createdAt?: string;
   lastSeenAt?: string;
+  language?: string;
   preferences?: Record<string, unknown>;
 }
 
@@ -136,6 +137,19 @@ export class LongTermMemory {
     const recent = this.getRecentConversations(5);
     const semanticCount = this.semantic?.count() ?? 0;
 
+    // Language instruction — MUSTB_LANGUAGE env var overrides stored profile language
+    const lang = (process.env.MUSTB_LANGUAGE ?? p.language ?? '').toLowerCase().trim();
+    const LANG_INSTRUCTIONS: Record<string, string> = {
+      tr: 'Always respond in Turkish (Türkçe).',
+      de: 'Always respond in German (Deutsch).',
+      fr: 'Always respond in French (Français).',
+      es: 'Always respond in Spanish (Español).',
+      ja: 'Always respond in Japanese (日本語).',
+      zh: 'Always respond in Simplified Chinese (简体中文).',
+      pt: 'Always respond in Brazilian Portuguese (Português do Brasil).',
+    };
+    const langInstruction = lang && lang !== 'en' ? LANG_INSTRUCTIONS[lang] ?? '' : '';
+
     const lines: string[] = [
       '## User Memory',
       `- Name: ${p.name}`,
@@ -143,6 +157,7 @@ export class LongTermMemory {
       p.uid ? `- World UID: ${p.uid}` : '',
       `- Last seen: ${p.lastSeenAt ?? 'now'}`,
       semanticCount > 0 ? `- Semantic index: ${semanticCount} memory entries` : '',
+      langInstruction ? `- Language: ${langInstruction}` : '',
     ].filter(Boolean);
 
     if (recent.length > 0) {

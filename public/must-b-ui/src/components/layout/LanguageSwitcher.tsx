@@ -1,5 +1,5 @@
 /**
- * LanguageSwitcher — polished locale selector (v4.3)
+ * LanguageSwitcher — polished locale selector (v4.4)
  *
  * Pill button showing current flag + code.
  * Animated dropdown with checkmark on active locale.
@@ -12,9 +12,14 @@ import { Check, Languages }             from "lucide-react";
 import { useI18n, type Locale }         from "@/i18n";
 
 const LANGS: { code: Locale; label: string; flag: string; native: string }[] = [
-  { code: "en", label: "English", flag: "🇬🇧", native: "English"  },
-  { code: "tr", label: "Turkish", flag: "🇹🇷", native: "Türkçe"   },
-  { code: "de", label: "German",  flag: "🇩🇪", native: "Deutsch"  },
+  { code: "en", label: "English",             flag: "🇬🇧", native: "English"             },
+  { code: "tr", label: "Turkish",             flag: "🇹🇷", native: "Türkçe"              },
+  { code: "de", label: "German",              flag: "🇩🇪", native: "Deutsch"             },
+  { code: "fr", label: "French",              flag: "🇫🇷", native: "Français"            },
+  { code: "es", label: "Spanish",             flag: "🇪🇸", native: "Español"             },
+  { code: "pt", label: "Portuguese (Brazil)", flag: "🇧🇷", native: "Português"           },
+  { code: "ja", label: "Japanese",            flag: "🇯🇵", native: "日本語"              },
+  { code: "zh", label: "Chinese (Simplified)",flag: "🇨🇳", native: "简体中文"            },
 ];
 
 export default function LanguageSwitcher() {
@@ -58,7 +63,7 @@ export default function LanguageSwitcher() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.96 }}
               transition={{ duration: 0.13, ease: "easeOut" }}
-              className="absolute right-0 top-full mt-2 z-20 w-44 bg-[#100806]/96 backdrop-blur-2xl border border-orange-500/15 rounded-xl shadow-2xl shadow-black/60 overflow-hidden"
+              className="absolute right-0 top-full mt-2 z-20 w-52 bg-[#100806]/96 backdrop-blur-2xl border border-orange-500/15 rounded-xl shadow-2xl shadow-black/60 overflow-hidden max-h-72 overflow-y-auto"
             >
               {/* Header */}
               <div className="px-3 py-2 border-b border-white/6">
