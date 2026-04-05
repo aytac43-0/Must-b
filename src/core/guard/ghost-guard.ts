@@ -147,11 +147,12 @@ export class GhostGuard extends EventEmitter {
   }
 
   /** Current system snapshot — safe to call at any frequency. */
-  getStats(): { cpu: number; ram: number; liteMode: boolean; ts: number } {
+  getStats(): { cpu: number; ram: number; liteMode: boolean; safeMode: boolean; ts: number } {
     return {
       cpu:      Math.round(this._lastCpu),
       ram:      Math.round(this._lastRam),
       liteMode: this.liteActive,
+      safeMode: this.watcherSuspended, // safeMode = true when RAM >= 95%
       ts:       Date.now(),
     };
   }

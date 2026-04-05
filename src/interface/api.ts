@@ -154,6 +154,30 @@ const CHANNEL_REGISTRY: ChannelDef[] = [
 /** Pending OAuth state tokens — map of state → { timestamp, resolve } */
 const _pendingCloudStates = new Map<string, { ts: number; resolve: (token: string) => void }>();
 
+/**
+ * Resolve the model that the active provider will actually use.
+ * Mirrors the logic in provider.ts rc() so /api/status always shows the real model.
+ * Reads process.env at call time — always reflects the latest dotenv state.
+ */
+function resolveActiveModel(): string {
+  const explicit = (process.env.LLM_MODEL ?? process.env.AI_MODEL ?? process.env.MUSTB_MODEL ?? '').trim();
+  if (explicit) return explicit;
+  // No explicit override — derive from provider defaults
+  const p = (process.env.LLM_PROVIDER ?? 'openrouter').toLowerCase();
+  const providerDefaults: Record<string, string> = {
+    openrouter: process.env.OPENROUTER_MODEL ?? 'google/gemini-2.5-pro-exp-03-25:free',
+    openai:     'gpt-4o-mini',
+    anthropic:  'claude-3-5-haiku-20241022',
+    gemini:     'gemini-1.5-flash',
+    groq:       'llama3-8b-8192',
+    mistral:    'mistral-small-latest',
+    xai:        'grok-beta',
+    deepseek:   'deepseek-chat',
+    ollama:     process.env.OLLAMA_MODEL ?? 'llama3',
+  };
+  return providerDefaults[p] ?? 'google/gemini-2.5-pro-exp-03-25:free';
+}
+
 
 export class ApiServer {
   private app: express.Application;
@@ -236,10 +260,10 @@ export class ApiServer {
         cpuPct: stats ? Math.round(stats.cpu) : undefined,
         ramGb:  ramGb,
         liteMode: stats?.liteMode ?? false,
-        // Agent role/model from env
+        // Agent role/model from env — resolve actual model used by the active provider
         tier:  process.env.MUSTB_COORDINATOR_MODE === 'true' ? 'master' : 'worker',
         role:  process.env.MUSTB_NAME ?? 'Must-b',
-        model: process.env.LLM_MODEL ?? process.env.AI_MODEL ?? '',
+        model: resolveActiveModel(),
         score: stats ? parseFloat(Math.max(0, 10 - stats.cpu / 15 - stats.ram / 20).toFixed(2)) : 8.5,
       });
     });

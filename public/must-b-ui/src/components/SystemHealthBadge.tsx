@@ -18,6 +18,7 @@ interface SystemStats {
   cpu:      number;
   ram:      number;
   liteMode: boolean;
+  safeMode: boolean;
   ts:       number;
 }
 
@@ -49,6 +50,14 @@ export default function SystemHealthBadge() {
   const [open,   setOpen]   = useState(false);
 
   const dismissAlert = useCallback(() => setAlert(null), []);
+
+  // Dispatch mustb:safeMode when safeMode transitions so AppLayout can
+  // toggle framer-motion's MotionConfig.reducedMotion.
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("mustb:safeMode", { detail: { active: stats?.safeMode ?? false } })
+    );
+  }, [stats?.safeMode]);
 
   useEffect(() => {
     const sk = getSocket();
@@ -123,9 +132,15 @@ export default function SystemHealthBadge() {
             <span className="text-[10px] font-mono text-black/55 w-7 text-right">{ram}%</span>
 
             {/* Lite mode badge */}
-            {stats.liteMode && (
+            {stats.liteMode && !stats.safeMode && (
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 ml-1">
                 LITE
+              </span>
+            )}
+            {/* Safe mode badge — RAM critical, animations off */}
+            {stats.safeMode && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 ml-1">
+                SAFE
               </span>
             )}
           </span>

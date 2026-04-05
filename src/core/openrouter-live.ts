@@ -48,7 +48,22 @@ interface RawModel {
   description?:   string;
   context_length?: number;
   pricing?:       { prompt?: string; completion?: string };
-  architecture?:  { modality?: string; input_modalities?: string[] };
+  architecture?:  { modality?: string; input_modalities?: string[]; output_modalities?: string[] };
+}
+
+// ── Chat-capability guard ─────────────────────────────────────────────────────
+// Models whose output modality is not text (music, image-gen, video, TTS, etc.)
+// must never be used as a chat fallback.
+const NON_CHAT_ID_PATTERNS = /lyria|imagen-3|gen-3|kling|runway|stable-diffusion|sdxl|dall-e|tts|whisper|suno|udio|musicgen|bark|elevenlabs|speech/i;
+
+function isChatCapable(m: RawModel): boolean {
+  // Output modality must produce text. Reject anything that generates audio/image/video.
+  const outModality = (m.architecture?.modality ?? '').toLowerCase();
+  if (outModality && !outModality.includes('->text') && outModality.includes('->')) return false;
+  // Reject by ID/name keyword (catches models not tagged with modality)
+  if (NON_CHAT_ID_PATTERNS.test(m.id)) return false;
+  if (NON_CHAT_ID_PATTERNS.test(m.name ?? '')) return false;
+  return true;
 }
 
 /**
@@ -87,6 +102,7 @@ export async function fetchOpenRouterModels(apiKey: string): Promise<OpenRouterC
 
   for (const m of raw) {
     if (!m.id || !m.name) continue;
+    if (!isChatCapable(m)) continue; // skip music / image-gen / TTS / video models
 
     const promptCostStr = m.pricing?.prompt ?? '0';
     const promptCost    = parseFloat(promptCostStr);
@@ -132,17 +148,32 @@ export async function fetchOpenRouterModels(apiKey: string): Promise<OpenRouterC
   return catalog;
 }
 
+/** Guaranteed safe fallback — never changes without a deliberate release. */
+export const CHAT_FREE_DEFAULT = 'google/gemini-2.5-pro-exp-03-25:free';
+
 /**
- * Pick the best available free fallback model from the live catalog.
- * Used by the 402 failover logic in provider.ts.
- * Falls back to the hardcoded constant if the catalog fetch fails.
+ * Pick the best available free chat-capable fallback model from the live catalog.
+ *
+ * Filters: only text-output (chat/instruct/thinking) models are considered.
+ * Music (Lyria), image-gen (Imagen), TTS, video, etc. are always excluded.
+ *
+ * If the catalog fetch fails OR yields no valid chat model,
+ * returns CHAT_FREE_DEFAULT unconditionally.
  */
 export async function pickFreeFallbackModel(apiKey: string): Promise<string> {
-  const HARDCODED_FREE = process.env.OPENROUTER_FREE_MODEL
-    ?? 'google/gemini-2.5-pro-exp-03-25:free';
+  // Explicit env override wins — but still validate it looks like a chat model
+  const envOverride = (process.env.OPENROUTER_FREE_MODEL ?? '').trim();
+  if (envOverride && !NON_CHAT_ID_PATTERNS.test(envOverride)) return envOverride;
+
   try {
     const catalog = await fetchOpenRouterModels(apiKey);
-    if (catalog.free.length > 0) return catalog.free[0].id;
-  } catch { /* network unavailable during failover — use hardcoded */ }
-  return HARDCODED_FREE;
+    // catalog.free is already filtered to chat-capable models by fetchOpenRouterModels
+    const candidate = catalog.free.find(m =>
+      // Prefer models with "instruct", "chat", "it", "think" in ID — extra safety net
+      /instruct|chat|\-it\b|thinking|gemini|claude|llama|mistral|qwen|deepseek/i.test(m.id)
+    ) ?? catalog.free[0];
+    if (candidate?.id) return candidate.id;
+  } catch { /* network unavailable during failover */ }
+
+  return CHAT_FREE_DEFAULT;
 }

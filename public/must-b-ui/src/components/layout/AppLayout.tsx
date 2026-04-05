@@ -10,7 +10,7 @@
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import {
   MessageSquare, FolderOpen, Globe, ChevronDown,
   Brain, Puzzle, Settings, X,
@@ -259,6 +259,16 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const [openMenu,  setOpenMenu]  = useState<string>("");
   const [stageOpen, setStageOpen] = useState<StagePanel>(null);
+  const [safeMode,  setSafeMode]  = useState(false);
+
+  // Listen for RAM-critical safe-mode signal from SystemHealthBadge
+  useEffect(() => {
+    const handler = (e: Event) => {
+      setSafeMode((e as CustomEvent<{ active: boolean }>).detail.active);
+    };
+    window.addEventListener("mustb:safeMode", handler);
+    return () => window.removeEventListener("mustb:safeMode", handler);
+  }, []);
 
   const isSettings = location.pathname === "/app/settings";
 
@@ -394,6 +404,7 @@ export default function AppLayout() {
 
   /* ── Render ─────────────────────────────────────────────────────────── */
   return (
+    <MotionConfig reducedMotion={safeMode ? "always" : "never"}>
     <div className="relative min-h-screen overflow-x-hidden font-sans">
 
       {/* ── Stage overlay (real component panels) ───────────────────────── */}
@@ -535,5 +546,6 @@ export default function AppLayout() {
       <GeziHaritasi />
 
     </div>
+    </MotionConfig>
   );
 }

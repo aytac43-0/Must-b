@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** Deploy_Chief | 2026-04-05 | v1.27.0 — "Command Integration": Channels test UI, apiFetch retry, GhostGuard watcher suspension, SystemBootReport
+> **Son güncelleme:** Deploy_Chief | 2026-04-05 | v1.27.1 — Fallback filter (no Lyria), guaranteed gemini default, Safe Mode MotionConfig, resolveActiveModel()
 
 ---
 
