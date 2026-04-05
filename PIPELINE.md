@@ -2,7 +2,7 @@
 
 > **Yönetici:** PM_MustB
 > **Protokol:** Ekipler terminal yerine bu dosyayı kullanır. Durum güncellemeleri buraya yazılır.
-> **Son güncelleme:** Deploy_Chief | 2026-04-05 | v1.26.0 — "The Pristine Command": Terminal render \x1b[2K\r fix, ENV_PATH entegrasyonu, global İngilizce log standartı
+> **Son güncelleme:** Deploy_Chief | 2026-04-05 | v1.27.0 — "Command Integration": Channels test UI, apiFetch retry, GhostGuard watcher suspension, SystemBootReport
 
 ---
 

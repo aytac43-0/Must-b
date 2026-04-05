@@ -14,20 +14,45 @@ export async function getToken(): Promise<string | null> {
   return null;
 }
 
-/** Authenticated fetch wrapper — injects Bearer token when available.
- *  Dispatches `mustb:401` CustomEvent so the Settings page can prompt
- *  the user to update their API key. */
-export async function apiFetch(input: string, init: RequestInit = {}): Promise<Response> {
+/**
+ * Authenticated fetch wrapper with connection retry.
+ *
+ * - Injects Bearer token when available.
+ * - Retries up to `retries` times on network failure (TypeError / fetch error)
+ *   with exponential back-off (800 ms → 1.6 s → 3.2 s …).
+ * - Dispatches `mustb:401`   when the server returns 401 (re-auth needed).
+ * - Dispatches `mustb:offline` when all retries are exhausted (no connection).
+ */
+export async function apiFetch(
+  input: string,
+  init: RequestInit = {},
+  { retries = 3, retryDelay = 800 }: { retries?: number; retryDelay?: number } = {},
+): Promise<Response> {
   const token = await getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(init.headers as Record<string, string>),
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(input, { ...init, headers });
-  if (res.status === 401) {
-    cachedToken = null; // force re-auth on next call
-    window.dispatchEvent(new CustomEvent("mustb:401", { detail: { url: input } }));
+
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(input, { ...init, headers });
+      if (res.status === 401) {
+        cachedToken = null;
+        window.dispatchEvent(new CustomEvent("mustb:401", { detail: { url: input } }));
+      }
+      return res;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, retryDelay * attempt));
+      }
+    }
   }
-  return res;
+
+  // All retries exhausted — signal offline state to any listener
+  window.dispatchEvent(new CustomEvent("mustb:offline", { detail: { url: input } }));
+  throw lastErr;
 }

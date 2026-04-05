@@ -239,6 +239,8 @@ export default function SetupPage() {
   // Channel state: enabled flags + token values per field key
   const [channelEnabled,  setChannelEnabled]  = useState<Record<string, boolean>>({});
   const [channelTokens,   setChannelTokens]   = useState<Record<string, string>>({});
+  type ChannelTestState = "idle" | "testing" | "ok" | "fail";
+  const [channelTest,     setChannelTest]     = useState<Record<string, ChannelTestState>>({});
 
   // Microphone permission test
   type MicState = "idle" | "testing" | "granted" | "denied";
@@ -331,6 +333,18 @@ export default function SetupPage() {
     }
   };
 
+  // ── Channel connection test ───────────────────────────────────────────────
+  const testChannel = async (id: string) => {
+    setChannelTest(p => ({ ...p, [id]: "testing" }));
+    try {
+      const r = await fetch(`/api/channels/${id}/status`);
+      const d = await r.json().catch(() => ({}));
+      setChannelTest(p => ({ ...p, [id]: d.configured ? "ok" : "fail" }));
+    } catch {
+      setChannelTest(p => ({ ...p, [id]: "fail" }));
+    }
+  };
+
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleFinish = async () => {
     setSaving(true);
@@ -379,6 +393,7 @@ export default function SetupPage() {
         const d = await res.json().catch(() => ({}));
         throw new Error((d as { error?: string }).error ?? "Setup failed");
       }
+      sessionStorage.setItem("mustb_boot_report", "1");
       navigate("/app");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
@@ -721,25 +736,46 @@ export default function SetupPage() {
                       }}
                     >
                       {/* Channel header toggle */}
-                      <button
-                        onClick={() => setChannelEnabled(p => ({ ...p, [ch.id]: !enabled }))}
-                        className="w-full flex items-center justify-between px-4 py-3"
-                      >
-                        <span className="flex items-center gap-2.5 text-[13px] font-semibold text-gray-200">
-                          <span className="text-base">{ch.emoji}</span>
-                          {ch.label}
-                          <span className="text-[10px] text-gray-600 font-normal">{ch.hint}</span>
-                        </span>
-                        <span
-                          className="w-8 h-4 rounded-full relative transition-all flex-shrink-0"
-                          style={{ background: enabled ? "#ea580c" : "rgba(255,255,255,0.1)" }}
+                      <div className="flex items-center">
+                        <button
+                          onClick={() => setChannelEnabled(p => ({ ...p, [ch.id]: !enabled }))}
+                          className="flex-1 flex items-center justify-between px-4 py-3"
                         >
+                          <span className="flex items-center gap-2.5 text-[13px] font-semibold text-gray-200">
+                            <span className="text-base">{ch.emoji}</span>
+                            {ch.label}
+                            <span className="text-[10px] text-gray-600 font-normal">{ch.hint}</span>
+                            {/* Test status indicator */}
+                            {channelTest[ch.id] === "ok"   && <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />}
+                            {channelTest[ch.id] === "fail"  && <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0"   />}
+                            {channelTest[ch.id] === "testing" && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse flex-shrink-0" />}
+                          </span>
                           <span
-                            className="absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all shadow-sm"
-                            style={{ left: enabled ? "calc(100% - 14px)" : "2px" }}
-                          />
-                        </span>
-                      </button>
+                            className="w-8 h-4 rounded-full relative transition-all flex-shrink-0"
+                            style={{ background: enabled ? "#ea580c" : "rgba(255,255,255,0.1)" }}
+                          >
+                            <span
+                              className="absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all shadow-sm"
+                              style={{ left: enabled ? "calc(100% - 14px)" : "2px" }}
+                            />
+                          </span>
+                        </button>
+                        {/* Test button — only when enabled and has at least one token */}
+                        {enabled && ch.fields.some(f => (channelTokens[f.key] ?? "").trim()) && (
+                          <button
+                            onClick={e => { e.stopPropagation(); testChannel(ch.id); }}
+                            disabled={channelTest[ch.id] === "testing"}
+                            className="mr-3 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all disabled:opacity-40"
+                            style={{
+                              background: "rgba(234,88,12,0.12)",
+                              border:     "1px solid rgba(234,88,12,0.25)",
+                              color:      "#fb923c",
+                            }}
+                          >
+                            {channelTest[ch.id] === "testing" ? "…" : "Test"}
+                          </button>
+                        )}
+                      </div>
 
                       {/* Token fields — visible when enabled */}
                       {enabled && (

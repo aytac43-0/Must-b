@@ -12,6 +12,7 @@ import WarRoomPanel           from "@/components/WarRoomPanel";
 import MorningBriefing        from "@/components/MorningBriefing";
 import NightShiftLog          from "@/components/NightShiftLog";
 import TelemetryBar           from "@/components/TelemetryBar";
+import SystemBootReport       from "@/components/SystemBootReport";
 import { getSocket }          from "@/lib/socket";
 
 export default function DashboardPage() {
@@ -27,6 +28,8 @@ export default function DashboardPage() {
       <ScreenScanOverlay />
       <WarRoomPanel />
       <ChatArea />
+      {/* System Boot Report — shown once after first-time setup */}
+      <SystemBootReport />
       {/* Morning Briefing — full-screen modal, shows once per shift */}
       <MorningBriefing />
       {/* Night Shift Log — real-time floating panel, top-right */}

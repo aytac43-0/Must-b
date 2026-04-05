@@ -55,48 +55,48 @@ const ERROR_PATTERNS: ErrorPattern[] = [
     re: /connection refused|ECONNREFUSED/i,
     kind: 'network',
     level: 'warning',
-    message: 'Ağ bağlantısı reddedildi.',
-    recommendation: 'LLM provider\'a ulaşılamıyor. .env içindeki API anahtarını ve ağ bağlantısını kontrol et.',
+    message: 'Network connection refused.',
+    recommendation: 'LLM provider unreachable. Check API key and network in .env.',
     healable: false,
   },
   {
     re: /model not found|model.*does not exist|no such model/i,
     kind: 'model',
     level: 'warning',
-    message: 'Belirtilen model bulunamadı.',
-    recommendation: 'MUSTB_MODEL değişkenini kontrol et veya Settings > Model\'dan mevcut bir model seç.',
+    message: 'Specified model not found.',
+    recommendation: 'Check MUSTB_MODEL or select a valid model in Settings > Model.',
     healable: false,
   },
   {
     re: /JavaScript heap out of memory|out of memory/i,
     kind: 'oom',
     level: 'critical',
-    message: 'Node.js bellek sınırına ulaşıldı.',
-    recommendation: 'Daha küçük bir model seç veya NODE_OPTIONS=--max-old-space-size=4096 ile başlat.',
+    message: 'Node.js memory limit reached.',
+    recommendation: 'Switch to a smaller model or start with NODE_OPTIONS=--max-old-space-size=4096.',
     healable: false,
   },
   {
     re: /python.*not found|pip.*not found|\'python\' is not recognized/i,
     kind: 'path',
     level: 'warning',
-    message: 'Python PATH\'te bulunamadı.',
-    recommendation: 'must-b doctor --fix ile otomatik onarım başlatılacak.',
+    message: 'Python not found on PATH.',
+    recommendation: 'Run must-b doctor --fix to auto-repair.',
     healable: true,
   },
   {
     re: /cannot find module|module not found/i,
     kind: 'module',
     level: 'warning',
-    message: 'Eksik Node.js modülü tespit edildi.',
-    recommendation: 'must-b doctor --fix ile npm bağımlılıkları onarılacak.',
+    message: 'Missing Node.js module detected.',
+    recommendation: 'Run must-b doctor --fix to repair npm dependencies.',
     healable: true,
   },
   {
     re: /ENOENT.*node_modules/i,
     kind: 'deps',
     level: 'warning',
-    message: 'node_modules eksik veya bozuk.',
-    recommendation: 'must-b doctor --fix ile npm install tetiklenecek.',
+    message: 'node_modules missing or corrupt.',
+    recommendation: 'Run must-b doctor --fix to trigger npm install.',
     healable: true,
   },
 ];
@@ -119,8 +119,9 @@ export class GhostGuard extends EventEmitter {
   private logDir:         string;
   private resourceTimer:  ReturnType<typeof setInterval> | null = null;
   private logWatcher:     FSWatcher | null = null;
-  private liteActive      = false;
-  private healing         = false;
+  private liteActive        = false;
+  private healing           = false;
+  private watcherSuspended  = false;
   private lastAlertTs:    Map<string, number> = new Map();
   // Latest sampled values — exposed via getStats()
   private _lastCpu        = 0;
@@ -205,17 +206,30 @@ export class GhostGuard extends EventEmitter {
   private onResourceSample(cpu: number, ram: number): void {
     this._lastCpu = cpu;
     this._lastRam = ram;
+
     // ── Lite mode toggle ────────────────────────────────────────────────────
     if (ram >= RAM_LITE_PCT && !this.liteActive) {
       this.liteActive = true;
-      const reason = `RAM kullanımı %${ram.toFixed(1)} — Hafif Mod aktif`;
+      const reason = `RAM at ${ram.toFixed(1)}% — Lite Mode active`;
       this.logger.warn(`[GhostGuard] ${reason}`);
       this.emit('liteMode', { active: true, reason } satisfies LiteModeEvent);
     } else if (ram < RAM_LITE_PCT - 5 && this.liteActive) {
       this.liteActive = false;
-      const reason = `RAM kullanımı %${ram.toFixed(1)}'e düştü — Hafif Mod devre dışı`;
+      const reason = `RAM dropped to ${ram.toFixed(1)}% — Lite Mode off`;
       this.logger.info(`[GhostGuard] ${reason}`);
       this.emit('liteMode', { active: false, reason } satisfies LiteModeEvent);
+    }
+
+    // ── Critical RAM: suspend file watcher to free handles + I/O ───────────
+    if (ram >= RAM_CRIT_PCT && !this.watcherSuspended) {
+      this.watcherSuspended = true;
+      this.logWatcher?.close();
+      this.logWatcher = null;
+      this.logger.warn(`[GhostGuard] RAM critical (${ram.toFixed(1)}%) — log watcher suspended`);
+    } else if (ram < RAM_CRIT_PCT - 5 && this.watcherSuspended) {
+      this.watcherSuspended = false;
+      this.startLogScanner(); // restart watcher once pressure drops
+      this.logger.info(`[GhostGuard] RAM recovered (${ram.toFixed(1)}%) — log watcher resumed`);
     }
 
     // ── Critical RAM alert ──────────────────────────────────────────────────
@@ -225,10 +239,10 @@ export class GhostGuard extends EventEmitter {
       this.emitAlert({
         level: 'critical',
         kind: 'ram_critical',
-        message: `CEO, RAM kullanımı %${ram.toFixed(1)} — sistem kilitlenme riski.`,
+        message: `RAM at ${ram.toFixed(1)}% — system lockup risk.`,
         recommendation: isHeavy
-          ? `${model} için RAM seviyeniz kritik. 8B veya 14B bir model önerilir.`
-          : 'Gereksiz uygulamaları kapatın veya Must-b\'yi yeniden başlatın.',
+          ? `${model} requires too much RAM. Switch to an 8B or 14B model.`
+          : 'Close unused applications or restart Must-b.',
       });
     } else if (ram >= RAM_WARN_PCT) {
       const model = process.env.LLM_MODEL ?? process.env.MUSTB_MODEL ?? '';
@@ -236,10 +250,10 @@ export class GhostGuard extends EventEmitter {
       this.emitAlert({
         level: 'warning',
         kind: 'ram_high',
-        message: `RAM kullanımı %${ram.toFixed(1)} — performans düşebilir.`,
+        message: `RAM at ${ram.toFixed(1)}% — performance may degrade.`,
         recommendation: isHeavy
-          ? `CEO, ${model} modeli için RAM seviyeniz riskli. Performansı korumak için 8B model önerilir.`
-          : 'RAM kullanımı yüksek. Hafif Mod aktifleşebilir.',
+          ? `${model} is RAM-intensive. Consider switching to an 8B model.`
+          : 'RAM pressure high. Lite Mode may activate.',
       });
     }
 
@@ -248,8 +262,8 @@ export class GhostGuard extends EventEmitter {
       this.emitAlert({
         level: 'warning',
         kind: 'cpu_high',
-        message: `CPU kullanımı %${cpu.toFixed(1)} — LLM yükü sistemi zorluyor.`,
-        recommendation: 'Aktif arka plan işlemlerini kapatın veya daha küçük bir model seçin.',
+        message: `CPU at ${cpu.toFixed(1)}% — LLM load is saturating the system.`,
+        recommendation: 'Close background processes or switch to a smaller model.',
       });
     }
   }
@@ -292,7 +306,7 @@ export class GhostGuard extends EventEmitter {
         this.emitAlert({
           level:          pat.level,
           kind:           pat.kind,
-          message:        `Tekrarlayan hata (${newCount}×): ${pat.message}`,
+          message:        `Recurring error (${newCount}×): ${pat.message}`,
           recommendation: pat.recommendation,
         });
         this.patternHits.set(pat.kind, [0, now]); // reset after alert
@@ -311,17 +325,17 @@ export class GhostGuard extends EventEmitter {
     if (this.healing) return;
     this.healing = true;
 
-    this.logger.info(`[GhostGuard] Auto-heal başlatılıyor: ${kind}`);
-    this.emit('autoHeal', { kind, message: `doctor --fix tetiklendi (${kind})` });
+    this.logger.info(`[GhostGuard] Auto-heal starting: ${kind}`);
+    this.emit('autoHeal', { kind, message: `doctor --fix triggered (${kind})` });
 
     // Import runDoctor dynamically to keep the guard module lean at parse time
     import('../../commands/doctor.js')
       .then(({ runDoctor }) => runDoctor(this.root, true, true))
       .then(() => {
-        this.logger.info('[GhostGuard] Auto-heal tamamlandı.');
+        this.logger.info('[GhostGuard] Auto-heal complete.');
       })
       .catch((e: Error) => {
-        this.logger.error(`[GhostGuard] Auto-heal başarısız: ${e.message}`);
+        this.logger.error(`[GhostGuard] Auto-heal failed: ${e.message}`);
       })
       .finally(() => {
         this.healing = false;
